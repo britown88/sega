@@ -43,3 +43,7 @@ byte *pngDataGetPalette(PNGData *self) {
 Image *pngDataCreateImage(PNGData *self) {
    return self->image->toImage();
 }
+
+void pngDataExportPNG(PNGData *self, const char*path) {
+   self->image->exportPNG(path);
+}

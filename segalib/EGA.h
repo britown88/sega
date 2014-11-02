@@ -41,6 +41,7 @@ typedef struct {
 } Frame;
 
 Palette paletteDeserialize(const char *path);
+void paletteSerialize(byte *data, const char *path);
 
 typedef struct Image_t Image;
 
@@ -89,6 +90,8 @@ enum {
    scanline_RLE = 2
 };
 
+ImageScanLine *createSmallestScanLine(short bitCount, byte *data);
+
 ImageScanLine *createUncompressedScanLine(short bitCount, byte *data);
 ImageScanLine *createRLEScanLine(short bitCount, byte *data);
 ImageScanLine *createSolidScanLine(short bitCount, byte *data);
@@ -111,12 +114,11 @@ void pngDataDestroy(PNGData *self);
 short pngDataGetWidth(PNGData *self);
 short pngDataGetHeight(PNGData *self);
 
-
-
 void pngDataRender(PNGData *self, byte *palette, byte pOffset, byte pColorCount, byte totalColorCount);
 
 byte *pngDataGetPalette(PNGData *self);
 Image *pngDataCreateImage(PNGData *self);
+void pngDataExportPNG(PNGData *self, const char*path);
 
 
 #ifdef __cplusplus

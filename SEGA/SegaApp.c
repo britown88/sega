@@ -122,10 +122,14 @@ void _onStart(VirtualApp *self){
    app->egaFrameBuffer = fboCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
 
    testFrame = frameCreate();
-   png = pngDataCreate("assets/img/test2.png");   
+   png = pngDataCreate("assets/img/test.png");   
 
    pngDataRender(png, defPal, 0, 0, 16);
-   egaDisplaySetPalette(app->egaDisplay, egaDisplayInternPalette(app->egaDisplay, pngDataGetPalette(png)));
+   pngDataExportPNG(png, "assets/img/test2-ega.png");
+
+   paletteSerialize(pngDataGetPalette(png), "test.pal");
+
+   egaDisplaySetPalette(app->egaDisplay, egaDisplayInternPalette(app->egaDisplay, paletteDeserialize("test.pal").colors));
 
    testImg = pngDataCreateImage(png);
    imageSerialize(testImg, "whatever.ega");

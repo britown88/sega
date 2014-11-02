@@ -5,6 +5,7 @@
 
 #include <malloc.h>
 #include <string.h>
+#include <stdio.h>
 
 Frame *frameCreate() {
    return checkedCalloc(1, sizeof(Frame));
@@ -24,6 +25,19 @@ void _scanLineRenderImageScanLine(ScanLine *sl, short position, byte *colorBuffe
       scanLineSetBit(sl, position + i, (t&c) + ((~t)&s));
    }
 
+}
+
+ImageScanLine *createSmallestScanLine(short bitCount, byte *data){
+   ImageScanLine *scanline = 0;
+   scanline = createSolidScanLine(bitCount, data);
+   if(!scanline) {
+      scanline = createRLEScanLine(bitCount, data);
+      if(!scanline) {
+         scanline = createUncompressedScanLine(bitCount, data);
+      }
+   }
+
+   return scanline;
 }
 
 void frameRenderImage(Frame *self, short x, short y, Image *img) {
@@ -121,6 +135,19 @@ Palette paletteDeserialize(const char *path) {
    }
 
    return p;
+}
+
+void paletteSerialize(byte *data, const char *path) {
+   BitBuffer *buff = bitBufferCreate(checkedCalloc(1, 12), 1);
+   int i;
+   FILE *out;
+   for(i = 0; i < 16; ++i) {
+      bitBufferWriteBits(buff, 6, data + i);
+   }
+
+   out = fopen(path, "wb");
+   fwrite(bitBufferGetData(buff), sizeof(char), 12, out);
+   fclose (out);
 }
 
 Frame *buildCheckerboardFrame(int width, byte color1, byte color2) {

@@ -200,22 +200,23 @@ public:
          }
 
          for(j = 0; j < EGA_IMAGE_PLANES; ++j) {
-            ImageScanLine *scanline = 0;
-
-            scanline = createSolidScanLine(m_width, lines[j].pixels);
-            if(!scanline) {
-               scanline = createRLEScanLine(m_width, lines[j].pixels);
-
-               if(!scanline) {
-                  scanline = createUncompressedScanLine(m_width, lines[j].pixels);
-               }
-            }
-
-            imageSetScanLine(img, y, j, scanline);
+            imageSetScanLine(img, y, j, createSmallestScanLine(m_width, lines[j].pixels));
          }
       }
 
       return img;
+   }
+
+   void exportPNG(const char*path){
+      PNGImage img(m_width, m_height);
+
+      for(int i = 0; i < m_width * m_height; ++i) {
+         if(m_alpha[i]){
+            img.image_data[i] = EGAColorLookup(m_palette[m_pixels[i]]);
+         }
+      }
+
+      savePng(img, path);
    }
 };
 
@@ -229,5 +230,7 @@ void EGAImage::renderWithPalette(byte *p, byte offset, byte colorCount, byte tot
 
 byte *EGAImage::palette(){ return pImpl->palette();}
 Image *EGAImage::toImage(){ return pImpl->toImage();}
+
+void EGAImage::exportPNG(const char*path){pImpl->exportPNG(path);}
 
 

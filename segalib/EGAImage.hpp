@@ -23,4 +23,6 @@ public:
 
    byte *palette();
    Image *toImage();
+
+   void exportPNG(const char*path);
 };
