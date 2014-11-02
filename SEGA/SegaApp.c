@@ -116,16 +116,26 @@ void _onStart(VirtualApp *self){
    byte mono[2] = {0, 63};
 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
+   FontFactory *ff;
+   PNGData *textPng;
+   Image *textImg;
+
+   textPng = pngDataCreate("assets/img/font.png");
+   pngDataRender(textPng, mono, 0, 2, 2);
+   textImg = pngDataCreateImage(textPng);
+   pngDataDestroy(textPng);
+   ff = fontFactoryCreate(textImg);
+   imageDestroy(textImg);
 
    app->egaDisplay = egaDisplayCreate();
    app->viewport = _buildProportionalViewport();
    app->egaFrameBuffer = fboCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
 
    testFrame = frameCreate();
-   png = pngDataCreate("assets/img/test.png");   
+   png = pngDataCreate("assets/img/test2.png");   
 
-   pngDataRender(png, defPal, 0, 0, 16);
-   pngDataExportPNG(png, "assets/img/test2-ega.png");
+   pngDataRender(png, mono, 0, 2, 2);
+   pngDataExportPNG(png, "assets/img/test2ega.png");
 
    paletteSerialize(pngDataGetPalette(png), "test.pal");
 
@@ -138,8 +148,11 @@ void _onStart(VirtualApp *self){
    testImg = imageDeserialize("whatever.ega");
 
    frameRenderImage(testFrame, 0, 0, testImg);
+   frameRenderText(testFrame, "Hello World!", 35, 15, fontFactoryGetFont(ff, 1, 0));
+
    egaDisplayRenderFrame(app->egaDisplay, testFrame);
    imageDestroy(testImg);
+   fontFactoryDestroy(ff);
 
 }
 

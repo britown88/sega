@@ -102,6 +102,7 @@
     </ClCompile>
     <ClCompile Include="RLEScanLine.c" />
     <ClCompile Include="SolidScanLine.c" />
+    <ClCompile Include="FontFactory.c" />
     <ClCompile Include="UncompressedScanLine.c" />
   </ItemGroup>
   <ItemGroup>

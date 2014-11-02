@@ -7,6 +7,10 @@ typedef struct BitBuffer_t BitBuffer;
 #define EGA_PALETTE_COLORS 16
 #define EGA_RES_WIDTH 640
 #define EGA_RES_HEIGHT 350
+#define EGA_TEXT_CHAR_WIDTH 8
+#define EGA_TEXT_CHAR_HEIGHT 14
+#define EGA_TEXT_RES_WIDTH (EGA_RES_WIDTH / EGA_TEXT_CHAR_WIDTH)
+#define EGA_TEXT_RES_HEIGHT (EGA_RES_HEIGHT / EGA_TEXT_CHAR_HEIGHT)
 #define EGA_PIXELS (EGA_RES_WIDTH * EGA_RES_HEIGHT)
 #define EGA_BYTES (EGA_PIXELS / 8)
 #define EGA_PIXEL_HEIGHT 1.37f
@@ -119,6 +123,24 @@ void pngDataRender(PNGData *self, byte *palette, byte pOffset, byte pColorCount,
 byte *pngDataGetPalette(PNGData *self);
 Image *pngDataCreateImage(PNGData *self);
 void pngDataExportPNG(PNGData *self, const char*path);
+
+/*Text Rendering*/
+typedef struct FontFactory_t FontFactory;
+typedef struct Font_t Font;
+
+/*
+Image must be:
+   - 256x112 with 256 8x14 characters organized according to ascii
+   - solid 1 alpha (no transparency)
+   - 2-color palette; 0 or background and 1 for foreground
+*/
+FontFactory *fontFactoryCreate(Image *fontImage);
+void fontFactoryDestroy(FontFactory *self);
+
+Font *fontFactoryGetFont(FontFactory *self, byte backGroundColor, byte foregroundColor);
+
+void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font);
+
 
 
 #ifdef __cplusplus

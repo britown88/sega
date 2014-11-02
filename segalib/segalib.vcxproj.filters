@@ -77,5 +77,8 @@
     <ClCompile Include="BitTwiddling.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FontFactory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
