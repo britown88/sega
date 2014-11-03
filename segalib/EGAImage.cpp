@@ -55,10 +55,9 @@ public:
                   color += (getBitFromArray(lines[i+1].pixels, x) << i);
                }
 
-               color = m_palette[color];
-               
-               m_pixelMap[y*m_width+x] = color;
-               ++m_colorCounts[color];
+               m_pixels[y*m_width+x] = color;               
+               m_pixelMap[y*m_width+x] = m_palette[color];
+               ++m_colorCounts[m_palette[color]];
             }            
          }
       }
