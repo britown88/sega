@@ -105,23 +105,37 @@ Rectf _buildProportionalViewport()
    return vp;
 }
 
-static EGAPalette *palettes[64];
 
+void testTEXT(FontFactory *ff, Frame *frame){
+   char *text2 = " Let me show you my Pokemans!!";
+   int len = strlen(text2);
+   int i;
+   char text[30];
 
-PNGData *png;
-Image *testImg;
-Frame *testFrame;
-FontFactory *ff;
+   memcpy(text, text2, len);
+
+   text[0] = 1;
+   text[23] = 138;
+   text[29] = 1;
+   for(i = 0; i < len; ++i) {
+      char chars[2] = {text[i], 0};
+      int index = i%15+1;
+      frameRenderText(frame, chars, 28+i, 20, fontFactoryGetFont(ff, 0, index));
+   }
+}
 
 void _onStart(VirtualApp *self){ 
    SegaApp *app = (SegaApp*)self;
-   EGAPalette *currentPalette = 0;
    byte mono[2] = {0, 63};
 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
    
+   FontFactory *ff;
    PNGData *textPng;
    Image *textImg;
+   PNGData *png;
+   Image *testImg;
+   Frame *testFrame;
 
    textPng = pngDataCreate("assets/img/font.png");
    pngDataRender(textPng, mono, 0, 2, 2);
@@ -135,41 +149,22 @@ void _onStart(VirtualApp *self){
    app->egaFrameBuffer = fboCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
 
    testFrame = frameCreate();
-   png = pngDataCreate("assets/img/test2.png");   //create from png
-
-   pngDataRender(png, mono, 0, 0, 16); //render it with closest palette
-   pngDataExportPNG(png, "assets/img/test2ega.png"); //output to a png
-
-   paletteSerialize(pngDataGetPalette(png), "test.pal"); //save palette
-
-   egaDisplaySetPalette(app->egaDisplay, egaDisplayInternPalette(app->egaDisplay, paletteDeserialize("test.pal").colors));
-
-   testImg = pngDataCreateImage(png);
-   imageSerialize(testImg, "whatever.ega");
-   imageDestroy(testImg);
-
-   pngDataDestroy(png);
-
-   testImg = imageDeserialize("whatever.ega");
-
-   png = pngDataCreateFromImage(testImg, paletteDeserialize("test.pal").colors);
-
-   imageDestroy(testImg);
+   png = pngDataCreate("assets/img/test2.png");
 
    pngDataRender(png, mono, 0, 0, 16);
-   pngDataExportPNG(png, "assets/img/test2ega2.png");
+   egaDisplaySetPalette(app->egaDisplay, egaDisplayInternPalette(app->egaDisplay, pngDataGetPalette(png)));
 
    testImg = pngDataCreateImage(png);
-   imageSerialize(testImg, "whatever.ega");
-   imageDestroy(testImg);
-   
-   testImg = imageDeserialize("whatever.ega");
+
    frameRenderImage(testFrame, 0, 0, testImg);
+
+   testTEXT(ff, testFrame);
 
    egaDisplayRenderFrame(app->egaDisplay, testFrame);
    imageDestroy(testImg);
    pngDataDestroy(png);
-   //fontFactoryDestroy(ff);
+   fontFactoryDestroy(ff);
+   frameDestroy(testFrame);
 
 }
 
@@ -181,24 +176,7 @@ void _onStep(VirtualApp *self){
    //Image *checker = buildCheckerboardImage(EGA_RES_WIDTH, EGA_RES_HEIGHT, 16, 0, 1);
 
    if(++testClock % 10 == 0) {
-      char *text2 = " Let me show you my Pokemans!!";
-      int len = strlen(text2);
-      int i;
-      char text[30];
-
-      memcpy(text, text2, len);
-
-      text[0] = 1;
-      text[23] = 138;
-      text[29] = 1;
-      for(i = 0; i < len; ++i) {
-         char chars[2] = {text[i], 0};
-         int index = (test + i)%15+1;
-         frameRenderText(testFrame, chars, 28+i, 20, fontFactoryGetFont(ff, 0, index));
-      }
-      ++test;
-
-      egaDisplayRenderFrame(app->egaDisplay, testFrame);
+      
 
    }
 }
