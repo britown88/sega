@@ -14,8 +14,14 @@ PNGData *pngDataCreate(const char *path) {
    PNGData *r = (PNGData *)checkedCalloc(1, sizeof(PNGData));
    r->image = std::unique_ptr<EGAImage>(new EGAImage(path));
    return r;
-
 }
+
+PNGData *pngDataCreateFromImage(Image *img, byte *palette) {
+   PNGData *r = (PNGData *)checkedCalloc(1, sizeof(PNGData));
+   r->image = std::unique_ptr<EGAImage>(new EGAImage(img, palette));
+   return r;
+}
+
 void pngDataDestroy(PNGData *self) {
    self->image.reset();
    checkedFree(self);

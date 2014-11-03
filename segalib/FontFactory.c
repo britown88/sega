@@ -62,7 +62,7 @@ Font *fontFactoryGetFont(FontFactory *self, byte backgroundColor, byte foregroun
       for(y = 0; y < FONT_FILE_HEIGHT; ++y){
          for(x = 0; x < FONT_FILE_WIDTH; ++x) {
             byte textVal = getBitFromArray(self->textPlane.lines[y].pixels, x);
-            byte color = textVal == 0 ? backgroundColor : foregroundColor;
+            byte color = textVal == 0 ? foregroundColor : backgroundColor;
 
             for(i = 0; i < EGA_PLANES; ++i) {
                byte *line = self->fonts[index].planes[i].lines[y].pixels;
@@ -79,11 +79,13 @@ Font *fontFactoryGetFont(FontFactory *self, byte backgroundColor, byte foregroun
 
 void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font){
    size_t charCount = strlen(text);
-   int c, i, iy;
+   size_t c;
+   int i, iy;
 
    for(c = 0; c < charCount; ++c) {
-      byte charY = text[c] / FONT_CHAR_WIDTH;
-      byte charX = text[c] % FONT_CHAR_WIDTH;
+      byte uc = *(unsigned char*)&text[c];
+      byte charY = uc / FONT_CHAR_WIDTH;
+      byte charX = uc % FONT_CHAR_WIDTH;
 
       if(x >= EGA_TEXT_RES_WIDTH)
          break;

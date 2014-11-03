@@ -19,9 +19,12 @@
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
+#include <string.h>
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
+#define FULLSCREEN 0
+
 typedef struct {
    VirtualApp vApp;
    AppData data;
@@ -57,7 +60,7 @@ AppData createData() {
 
    data.defaultWindowSize = int2Create(WINDOW_WIDTH, WINDOW_HEIGHT);
    data.frameRate = 60.0;
-   data.monitor = NULL;
+   data.fullScreen = FULLSCREEN;
    data.windowTitle = stringIntern("sEGA: An elegant weapon for a more civilized age.");
 
    return data;
@@ -85,7 +88,6 @@ void _destroy(VirtualApp *self){
 }
 
 AppData _getData(VirtualApp *self) {
-   //((SegaApp *)self)->data.monitor = glfwGetPrimaryMonitor();
    return ((SegaApp*)self)->data;
 }
 
@@ -109,6 +111,7 @@ static EGAPalette *palettes[64];
 PNGData *png;
 Image *testImg;
 Frame *testFrame;
+FontFactory *ff;
 
 void _onStart(VirtualApp *self){ 
    SegaApp *app = (SegaApp*)self;
@@ -116,7 +119,7 @@ void _onStart(VirtualApp *self){
    byte mono[2] = {0, 63};
 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
-   FontFactory *ff;
+   
    PNGData *textPng;
    Image *textImg;
 
@@ -132,12 +135,12 @@ void _onStart(VirtualApp *self){
    app->egaFrameBuffer = fboCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
 
    testFrame = frameCreate();
-   png = pngDataCreate("assets/img/test2.png");   
+   png = pngDataCreate("assets/img/test2.png");   //create from png
 
-   pngDataRender(png, mono, 0, 2, 2);
-   pngDataExportPNG(png, "assets/img/test2ega.png");
+   pngDataRender(png, mono, 0, 0, 16); //render it with closest palette
+   pngDataExportPNG(png, "assets/img/test2ega.png"); //output to a png
 
-   paletteSerialize(pngDataGetPalette(png), "test.pal");
+   paletteSerialize(pngDataGetPalette(png), "test.pal"); //save palette
 
    egaDisplaySetPalette(app->egaDisplay, egaDisplayInternPalette(app->egaDisplay, paletteDeserialize("test.pal").colors));
 
@@ -145,14 +148,28 @@ void _onStart(VirtualApp *self){
    imageSerialize(testImg, "whatever.ega");
    imageDestroy(testImg);
 
+   pngDataDestroy(png);
+
    testImg = imageDeserialize("whatever.ega");
 
+   png = pngDataCreateFromImage(testImg, paletteDeserialize("test.pal").colors);
+
+   imageDestroy(testImg);
+
+   pngDataRender(png, mono, 0, 0, 16);
+   pngDataExportPNG(png, "assets/img/test2ega2.png");
+
+   testImg = pngDataCreateImage(png);
+   imageSerialize(testImg, "whatever.ega");
+   imageDestroy(testImg);
+   
+   testImg = imageDeserialize("whatever.ega");
    frameRenderImage(testFrame, 0, 0, testImg);
-   frameRenderText(testFrame, "Hello World!", 35, 15, fontFactoryGetFont(ff, 1, 0));
 
    egaDisplayRenderFrame(app->egaDisplay, testFrame);
    imageDestroy(testImg);
-   fontFactoryDestroy(ff);
+   pngDataDestroy(png);
+   //fontFactoryDestroy(ff);
 
 }
 
@@ -160,21 +177,30 @@ void _onStart(VirtualApp *self){
 static int test = 0;
 static int testClock = 0;
 void _onStep(VirtualApp *self){
-   //SegaApp *app = (SegaApp*)self;
-   ////Image *checker = buildCheckerboardImage(EGA_RES_WIDTH, EGA_RES_HEIGHT, 16, 0, 1);
+   SegaApp *app = (SegaApp*)self;
+   //Image *checker = buildCheckerboardImage(EGA_RES_WIDTH, EGA_RES_HEIGHT, 16, 0, 1);
 
-   //if(++testClock % 2 == 0) {
-   //   pngDataRender(png, NULL, 0, 0, ++test%15 + 1);
+   if(++testClock % 10 == 0) {
+      char *text2 = " Let me show you my Pokemans!!";
+      int len = strlen(text2);
+      int i;
+      char text[30];
 
-   //   //pngDataRenderWithPartialPalette(png, 0, 0, 0, (++test%15 + 1));
-   //   egaDisplaySetPalette(app->egaDisplay, egaDisplayInternPalette(app->egaDisplay, pngDataGetPalette(png)));
+      memcpy(text, text2, len);
 
-   //   testImg = pngDataCreateImage(png);
-   //   //frameRenderImage(testFrame, 0, 0, checker);
-   //   frameRenderImage(testFrame, 0, 0, testImg);
-   //   egaDisplayRenderFrame(app->egaDisplay, testFrame);
-   //   imageDestroy(testImg);
-   //}
+      text[0] = 1;
+      text[23] = 138;
+      text[29] = 1;
+      for(i = 0; i < len; ++i) {
+         char chars[2] = {text[i], 0};
+         int index = (test + i)%15+1;
+         frameRenderText(testFrame, chars, 28+i, 20, fontFactoryGetFont(ff, 0, index));
+      }
+      ++test;
+
+      egaDisplayRenderFrame(app->egaDisplay, testFrame);
+
+   }
 }
 
 static Rectf egaBounds = {0.0f, 0.0f, (float)EGA_RES_WIDTH, (float)EGA_RES_HEIGHT};

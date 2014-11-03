@@ -13,7 +13,7 @@ typedef struct {
    double frameRate;
    Int2 defaultWindowSize;
    StringView windowTitle;
-   GLFWmonitor *monitor;
+   int fullScreen;
 } AppData;
 
 typedef struct {

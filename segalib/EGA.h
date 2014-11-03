@@ -113,6 +113,7 @@ typedef struct PNGData_t PNGData;
 int getEGAColor(byte c);
 
 PNGData *pngDataCreate(const char *path);
+PNGData *pngDataCreateFromImage(Image *img, byte *palette);
 void pngDataDestroy(PNGData *self);
 
 short pngDataGetWidth(PNGData *self);

@@ -14,6 +14,7 @@ class EGAImage
    std::unique_ptr<Impl> pImpl;
 public:
    EGAImage(const char *file);
+   EGAImage(Image *image, byte *palette);
    ~EGAImage();
 
    short width();

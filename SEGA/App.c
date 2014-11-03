@@ -79,7 +79,7 @@ void runApp(VirtualApp *subclass) {
 
    data = virtualAppGetData(subclass);
 
-   window = glWindowCreate(data.defaultWindowSize, data.windowTitle, data.monitor);
+   window = glWindowCreate(data.defaultWindowSize, data.windowTitle, data.fullScreen ? glfwGetPrimaryMonitor() : NULL);
    if(!window) {
       virtualAppDestroy(subclass);
       return;

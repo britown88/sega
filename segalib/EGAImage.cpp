@@ -22,6 +22,49 @@ class EGAImage::Impl {
    int m_colorCounts[64];//how many of each ega color is in the image
    byte *m_pixelMap;//has an ega value for every pixel
 public:
+   Impl(Image *image, byte *palette) {
+      m_width = imageGetWidth(image);
+      m_height = imageGetHeight(image);
+
+      m_pixels = new byte[m_width * m_height];
+      m_alpha = new byte[m_width * m_height];
+      m_pixelMap = new byte[m_width * m_height];
+
+      memset(m_colorCounts, 0, sizeof(int)*64);
+      memset(m_pixels, 0, m_width * m_height);
+      memset(m_alpha, 0, m_width * m_height);
+      memset(m_pixelMap, 0, m_width * m_height);
+
+      memcpy(m_palette, palette, 16);
+
+      SuperScanLine lines[EGA_IMAGE_PLANES];
+
+      for(int y = 0; y < m_height; ++y) {
+         for(int i = 0; i < EGA_IMAGE_PLANES; ++i) {
+            auto sl = imageGetScanLine(image, y, i);
+            imageScanLineRender(sl, lines[i].pixels);
+         }
+
+         for(int x = 0; x < m_width; ++x) {
+            byte alpha = getBitFromArray(lines[0].pixels, x);
+            if(alpha) {
+               m_alpha[y*m_width+x] = 1;
+
+               byte color = 0;
+               for(int i = 0; i < EGA_PLANES; ++i) {
+                  color += (getBitFromArray(lines[i+1].pixels, x) << i);
+               }
+
+               color = m_palette[color];
+               
+               m_pixelMap[y*m_width+x] = color;
+               ++m_colorCounts[color];
+            }            
+         }
+      }
+   }
+
+
    Impl(const char *file)
    {
       auto img = loadPng(file);
@@ -221,6 +264,7 @@ public:
 };
 
 EGAImage::EGAImage(const char *file):pImpl(new Impl(file)){}
+EGAImage::EGAImage(Image *image, byte *palette):pImpl(new Impl(image, palette)){}
 EGAImage::~EGAImage(){}
 
 short EGAImage::width(){return pImpl->width();}
