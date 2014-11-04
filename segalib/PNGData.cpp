@@ -34,12 +34,8 @@ short pngDataGetHeight(PNGData *self) {
    return self->image->height();
 }
 
-void pngDataRender(PNGData *self, byte *palette, byte pOffset, byte pColorCount, byte totalColorCount) {
-   self->image->renderWithPalette(
-      palette, 
-      pOffset, 
-      pColorCount, 
-      totalColorCount);
+void pngDataRender(PNGData *self, byte *palette) {
+   self->image->renderWithPalette(palette);
 }
 
 byte *pngDataGetPalette(PNGData *self) {

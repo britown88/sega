@@ -20,7 +20,7 @@ public:
    short width();
    short height();
 
-   void renderWithPalette(byte *p, byte offset = 0, byte colorCount = 16, byte totalColors = 16);
+   void renderWithPalette(byte *p);
 
    byte *palette();
    Image *toImage();

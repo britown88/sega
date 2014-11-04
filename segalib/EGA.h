@@ -4,6 +4,9 @@ typedef unsigned char byte;
 typedef struct BitBuffer_t BitBuffer;
 
 #define EGA_COLORS 64
+#define EGA_COLOR_UNDEFINED (EGA_COLORS)
+#define EGA_COLOR_UNUSED (EGA_COLORS + 1)
+
 #define EGA_PALETTE_COLORS 16
 #define EGA_RES_WIDTH 640
 #define EGA_RES_HEIGHT 350
@@ -44,8 +47,11 @@ typedef struct {
 	BitPlane planes[EGA_PLANES];
 } Frame;
 
+
+
 Palette paletteDeserialize(const char *path);
 void paletteSerialize(byte *data, const char *path);
+Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCount);
 
 typedef struct Image_t Image;
 
@@ -119,7 +125,7 @@ void pngDataDestroy(PNGData *self);
 short pngDataGetWidth(PNGData *self);
 short pngDataGetHeight(PNGData *self);
 
-void pngDataRender(PNGData *self, byte *palette, byte pOffset, byte pColorCount, byte totalColorCount);
+void pngDataRender(PNGData *self, byte *palette);
 
 byte *pngDataGetPalette(PNGData *self);
 Image *pngDataCreateImage(PNGData *self);

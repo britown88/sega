@@ -118,19 +118,27 @@ public:
    short width(){return m_width;}
    short height(){return m_height;}
 
-   void renderWithPalette(byte *p, byte offset, byte colorCount, byte totalCount) {
+   void renderWithPalette(byte *p) {
 
       byte forced[64];
-      memset(forced, 255, 64);
-      for(int i = offset; i < 16 && i < offset + colorCount; ++i) {
-         forced[p[i]] = i;
+      memset(forced, EGA_COLOR_UNUSED, 64);
+
+      size_t totalCount = 0;
+      for(int i = 0; i < 16; ++i) {
+         if(p[i] != EGA_COLOR_UNUSED) {
+            if(p[i] != EGA_COLOR_UNDEFINED) {
+               forced[p[i]] = totalCount;
+            }
+
+            ++totalCount;
+         }
       }
 
       std::list<PaletteColor> palette;
       ImageColor colors[64];
       for (int i = 0; i < 64; ++i)
       {
-         if(forced[i] < 255) {
+         if(forced[i] != EGA_COLOR_UNUSED) {
             palette.push_back(PaletteColor(i, forced[i]));
          }else {
             palette.push_back(PaletteColor(i));
@@ -184,7 +192,7 @@ public:
       //this also gives you the look-up table on output...
    
       byte paletteOut[MAX_PALETTE_SIZE];
-      memset(paletteOut, 255, MAX_PALETTE_SIZE);
+      memset(paletteOut, EGA_COLOR_UNUSED, MAX_PALETTE_SIZE);
       int LUTcolor = 0;
 
       //two passes, first to inster colors who have locked positions in the palette
@@ -199,7 +207,7 @@ public:
       for (auto& color : palette)
       {
          if(color.removable) {
-            while(paletteOut[LUTcolor] < 255){LUTcolor += 1;};
+            while(paletteOut[LUTcolor] != EGA_COLOR_UNUSED){LUTcolor += 1;};
             paletteOut[LUTcolor] = color.EGAColor;
             color.EGAColor = LUTcolor++;
          }
@@ -269,7 +277,7 @@ EGAImage::~EGAImage(){}
 short EGAImage::width(){return pImpl->width();}
 short EGAImage::height(){return pImpl->height();}
 
-void EGAImage::renderWithPalette(byte *p, byte offset, byte colorCount, byte totalColors){pImpl->renderWithPalette(p, offset, colorCount, totalColors);}
+void EGAImage::renderWithPalette(byte *p){pImpl->renderWithPalette(p);}
 
 byte *EGAImage::palette(){ return pImpl->palette();}
 Image *EGAImage::toImage(){ return pImpl->toImage();}

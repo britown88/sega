@@ -150,6 +150,31 @@ void paletteSerialize(byte *data, const char *path) {
    fclose (out);
 }
 
+Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCount){
+   Palette r;
+   byte i;
+
+   memset(r.colors, EGA_COLOR_UNUSED, EGA_PALETTE_COLORS);
+
+   if(pOffset < 0 || 
+      pOffset >= EGA_PALETTE_COLORS || 
+      totalCount > EGA_PALETTE_COLORS || 
+      pOffset + pCount > EGA_PALETTE_COLORS ||
+      pCount < 0) {
+         return r;
+   }
+
+   for(i = 0; i < totalCount; ++i){
+      r.colors[i] = EGA_COLOR_UNDEFINED;
+   }
+
+   for(i = 0; i < pCount; ++i){
+      r.colors[i] = data[pOffset+i];
+   }
+
+   return r;
+}
+
 Frame *buildCheckerboardFrame(int width, byte color1, byte color2) {
    Frame *fb = frameCreate();
    int x, y, j;
