@@ -21,7 +21,7 @@ typedef struct {
 
 typedef struct Font_t{
    byte built;
-	FontBitPlane planes[EGA_PLANES];
+	FontBitPlane *planes;
 };
 
 typedef struct FontFactory_t {
@@ -49,6 +49,13 @@ FontFactory *fontFactoryCreate(Image *fontImage) {
 }
 
 void fontFactoryDestroy(FontFactory *self) {
+   int i, j;
+   for(i = 0; i < 256; ++i){
+      if(self->fonts[i].built){
+         checkedFree(self->fonts[i].planes);
+      }
+   }
+
    checkedFree(self);
 }
 
@@ -58,6 +65,8 @@ Font *fontFactoryGetFont(FontFactory *self, byte backgroundColor, byte foregroun
 
       //build the font
       int x, y, i;
+
+      self->fonts[index].planes = checkedCalloc(EGA_PLANES, sizeof(FontBitPlane));
 
       for(y = 0; y < FONT_FILE_HEIGHT; ++y){
          for(x = 0; x < FONT_FILE_WIDTH; ++x) {
