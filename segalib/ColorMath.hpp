@@ -26,6 +26,7 @@ struct PaletteColor
    byte removable;
    byte pPos;
    byte EGAColor;
+   float distance;
    PaletteEntry entries[64];
    PaletteColor():removable(1){}
    PaletteColor(byte c):EGAColor(c), removable(1){}

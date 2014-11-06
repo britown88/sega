@@ -118,6 +118,21 @@ public:
    short width(){return m_width;}
    short height(){return m_height;}
 
+   void removeColorEntries(PaletteColor *removedColor, ImageColor *colors){
+      for (auto& entry : removedColor->entries)
+      {
+         for (auto color = colors; color != colors+64; ++color)
+         {
+            if (color->closestColor == &entry)  
+            {
+               color->closestColor = entry.next;  
+            }
+         }
+         if (entry.prev) entry.prev->next = entry.next;
+         if (entry.next) entry.next->prev = entry.prev;
+      }
+   }
+
    void renderWithPalette(byte *p) {
 
       byte forced[64];
@@ -174,20 +189,33 @@ public:
          }
  
          //remove rarest color, and all of its palette entries in the colors array....
-         for (auto& entry : rarestColor->entries)
-         {
-            for (auto& color : colors) // a bit slow but it works, you should just get the actual entry color here
-            {
-               if (color.closestColor == &entry)  
-               {
-                  color.closestColor = entry.next;  
-               }
-            }
-            if (entry.prev) entry.prev->next = entry.next;
-            if (entry.next) entry.next->prev = entry.prev;
-         }
+         removeColorEntries(&*rarestColor, colors);
          palette.erase(rarestColor);
       }
+
+       //eliminate unused colors
+       for (auto color = palette.begin(); color != palette.end();) {
+          if(color->removable) {
+            color->distance= 0.0f;
+
+            for (auto& entry : color->entries) {
+               if (isClosest(colors[color->EGAColor], entry)) {
+                  color->distance += m_colorCounts[color->EGAColor] * (entry.next->distance - entry.distance);
+               }
+            }
+
+            if(color->distance == 0.0f){
+               //color wasnt used
+               removeColorEntries(&*color, colors);
+               color = palette.erase(color);
+               continue;
+            }  
+          }     
+          ++color;
+       }
+
+       palette.sort([&](const PaletteColor&r1, const PaletteColor&r2){return r1.distance > r2.distance;});
+
  
       //this also gives you the look-up table on output...
    

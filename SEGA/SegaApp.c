@@ -138,7 +138,7 @@ void _onStart(VirtualApp *self){
    Frame *testFrame;
 
    textPng = pngDataCreate("assets/img/font.png");
-   pngDataRender(textPng, paletteCreatePartial(mono, 0, 2, 2).colors);
+   pngDataRender(textPng, paletteCreatePartial(mono, 0, 2, 16).colors);
    textImg = pngDataCreateImage(textPng);
    pngDataDestroy(textPng);
    ff = fontFactoryCreate(textImg);
@@ -151,7 +151,7 @@ void _onStart(VirtualApp *self){
    testFrame = frameCreate();
    png = pngDataCreate("assets/img/test2.png");
 
-   pngDataRender(png, paletteCreatePartial(mono, 0, 0, 16).colors);
+   pngDataRender(png, paletteCreatePartial(mono, 0, 1, 16).colors);
    egaDisplaySetPalette(app->egaDisplay, egaDisplayInternPalette(app->egaDisplay, pngDataGetPalette(png)));
 
    testImg = pngDataCreateImage(png);
