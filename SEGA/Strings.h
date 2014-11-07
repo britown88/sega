@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Defs.h"
+#include "DLLBullshit.h"
 
 typedef const char* StringView;
 typedef char* MutableStringView;
-StringView stringIntern(StringView view);
+DLL_PUBLIC StringView stringIntern(StringView view);

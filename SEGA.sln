@@ -7,6 +7,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "segalib", "segalib\segalib.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpng", "libpng\libpng.vcxproj", "{9FC3C5BB-1685-4C31-91A5-B98FE8903D9F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BT", "BT\BT.vcxproj", "{2F441A33-903C-4503-89C5-359BB137260C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3DE6287E-1249-41C4-A0F2-378BA3B0DD5A} = {3DE6287E-1249-41C4-A0F2-378BA3B0DD5A}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug DLL|Win32 = Debug DLL|Win32
@@ -39,6 +44,14 @@ Global
 		{9FC3C5BB-1685-4C31-91A5-B98FE8903D9F}.Release DLL|Win32.Build.0 = Release DLL|Win32
 		{9FC3C5BB-1685-4C31-91A5-B98FE8903D9F}.Release|Win32.ActiveCfg = Release|Win32
 		{9FC3C5BB-1685-4C31-91A5-B98FE8903D9F}.Release|Win32.Build.0 = Release|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Debug DLL|Win32.ActiveCfg = Debug DLL|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Debug DLL|Win32.Build.0 = Debug DLL|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Debug|Win32.Build.0 = Debug|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Release DLL|Win32.ActiveCfg = Release DLL|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Release DLL|Win32.Build.0 = Release DLL|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Release|Win32.ActiveCfg = Release|Win32
+		{2F441A33-903C-4503-89C5-359BB137260C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

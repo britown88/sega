@@ -49,7 +49,7 @@ FontFactory *fontFactoryCreate(Image *fontImage) {
 }
 
 void fontFactoryDestroy(FontFactory *self) {
-   int i, j;
+   int i;
    for(i = 0; i < 256; ++i){
       if(self->fonts[i].built){
          checkedFree(self->fonts[i].planes);

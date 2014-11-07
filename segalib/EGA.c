@@ -133,7 +133,8 @@ Palette paletteDeserialize(const char *path) {
          bitBufferReadBits(buffer, (byte*)&p+i, 6);
       }
    }
-
+   
+   bitBufferDestroy(buffer);
    return p;
 }
 
@@ -148,6 +149,7 @@ void paletteSerialize(byte *data, const char *path) {
    out = fopen(path, "wb");
    fwrite(bitBufferGetData(buff), sizeof(char), 12, out);
    fclose (out);
+   bitBufferDestroy(buff);
 }
 
 Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCount){

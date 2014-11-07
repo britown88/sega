@@ -2,4 +2,6 @@
 
 typedef struct VirtualApp_t VirtualApp;
 
-VirtualApp *SegaAppCreate();
+#include "DLLBullshit.h"
+
+DLL_PUBLIC VirtualApp *SegaAppCreate();

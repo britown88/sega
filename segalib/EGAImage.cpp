@@ -102,6 +102,12 @@ public:
       //go throuygh the image and log how often each EGA color appears
       for(int i = 0; i < img.width * img.height; ++i) {
          int c = *(int*)&img.image_data[i];
+
+         if(img.image_data[i].a != 255){
+            m_pixelMap[i] = 0;
+            continue;
+         }
+
          byte ega = std::lower_bound(begin(colorMap), end(colorMap), c)->ega;
 
          m_pixelMap[i] = ega;

@@ -6,13 +6,13 @@
 
    COPYRIGHT TODAY
 ************************************/
-#include "App.h"
-#include "SegaApp.h"
+#include "SEGA\App.h"
+#include "BT.h"
 #include "segalib\CheckedMemory.h"
 
 int main()
 {
-   runApp(SegaAppCreate());
+   runApp((VirtualApp*)btCreate());
    printMemoryLeaks();
 
    return 0;

@@ -2,6 +2,8 @@
 
 #include "Vector.h"
 #include "Strings.h"
+#include "DLLBullshit.h"
+#include "segalib\EGA.h"
 
 typedef struct GLFWmonitor GLFWmonitor;
 typedef struct Renderer_t Renderer;
@@ -23,22 +25,25 @@ typedef struct {
 
    void (*onStart)(VirtualApp *);
    void (*onStep)(VirtualApp *);
-   void (*onRender)(VirtualApp *, Renderer *);
 
 } VirtualAppVTable;
 
-struct VirtualApp_t {VirtualAppVTable *vTable;};
+struct VirtualApp_t {
+   VirtualAppVTable *vTable;
+
+   Frame *currentFrame;
+   Palette currentPalette;
+};
 
 static AppData virtualAppGetData(VirtualApp *self){return self->vTable->getData(self);}
 static void virtualAppDestroy(VirtualApp *self){self->vTable->destroy(self);}
 static void virtualAppOnStart(VirtualApp *self){self->vTable->onStart(self);}
 static void virtualAppOnStep(VirtualApp *self){self->vTable->onStep(self);}
-static void virtualAppOnRender(VirtualApp *self, Renderer *r){self->vTable->onRender(self, r);}
 
 //app and functions
 typedef struct App_t App;
 
-void runApp(VirtualApp *subclass);
+DLL_PUBLIC void runApp(VirtualApp *subclass);
 
 Int2 appGetWindowSize();
 

@@ -33,12 +33,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SegaApp.c">
-      <Filter>Source Files\Application</Filter>
-    </ClCompile>
     <ClCompile Include="App.c">
       <Filter>Source Files\Application</Filter>
     </ClCompile>
@@ -68,6 +62,9 @@
     </ClCompile>
     <ClCompile Include="Strings.c">
       <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="PaletteTable.c">
+      <Filter>Source Files\Graphical</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +112,18 @@
     </ClInclude>
     <ClInclude Include="Rect.h">
       <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="DLLBullshit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Preprocessor.h">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="HashTable_Create.h">
+      <Filter>Header Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="PaletteTable.h">
+      <Filter>Header Files\Graphical</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -28,6 +28,7 @@ struct PNGImage
       width = x;
       height = y;
       image_data.reset(new Color[width * height]);
+      memset(image_data.get(), 0, sizeof(Color)*width*height);
    }
    PNGImage(PNGImage&& rhs)
       : image_data(std::move(rhs.image_data)), width(rhs.width), height(rhs.height)
