@@ -5,7 +5,8 @@
 #include "segautils\DLLBullshit.h"
 #include "segalib\EGA.h"
 
-typedef struct GLFWmonitor GLFWmonitor;
+#include "IRenderer.h"
+
 typedef struct Renderer_t Renderer;
 
 //app subclassing
@@ -43,7 +44,7 @@ static void virtualAppOnStep(VirtualApp *self){self->vTable->onStep(self);}
 //app and functions
 typedef struct App_t App;
 
-DLL_PUBLIC void runApp(VirtualApp *subclass);
+DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer);
 
 Int2 appGetWindowSize();
 

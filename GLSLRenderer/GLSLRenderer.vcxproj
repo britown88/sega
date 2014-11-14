@@ -46,6 +46,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -62,6 +63,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -75,6 +77,33 @@
     <ProjectReference Include="..\segalib\segalib.vcxproj">
       <Project>{57b143e8-2941-478d-9873-8fd793813fa2}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\segashared\segashared.vcxproj">
+      <Project>{768a8f37-d636-4881-95ea-6ad34e95dc7d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\segautils\segautils.vcxproj">
+      <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="EGADisplay.h" />
+    <ClInclude Include="EGAPalette.h" />
+    <ClInclude Include="FBO.h" />
+    <ClInclude Include="GLSLRenderer.h" />
+    <ClInclude Include="PaletteTable.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="VBO.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EGADisplay.c" />
+    <ClCompile Include="EGAPalette.c" />
+    <ClCompile Include="FBO.c" />
+    <ClCompile Include="GLSLRenderer.c" />
+    <ClCompile Include="PaletteTable.c" />
+    <ClCompile Include="Renderer.c" />
+    <ClCompile Include="Shader.c" />
+    <ClCompile Include="VBO.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

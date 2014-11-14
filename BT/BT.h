@@ -1,5 +1,5 @@
 #pragma once
 
-typedef struct BTGame_t BTGame;
+#include "SEGA\App.h"
 
-BTGame *btCreate();
+VirtualApp *btCreate();

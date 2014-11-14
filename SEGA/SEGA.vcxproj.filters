@@ -13,96 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Graphical">
-      <UniqueIdentifier>{2ae2016f-6cd2-4200-990a-4867e264de81}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Application">
-      <UniqueIdentifier>{d49ed8f7-ccea-444f-bc41-0e4f991c603d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Utility">
-      <UniqueIdentifier>{acaae1bc-23ad-441f-8d24-ddb9f77cf8fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Graphical">
-      <UniqueIdentifier>{f168a07b-64b3-453f-99ab-55693fc73669}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Utility">
-      <UniqueIdentifier>{1da2234b-6597-4f66-9e1a-61637abb8f4c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Application">
-      <UniqueIdentifier>{fa2eda09-16b0-429e-8c75-a16a42a6ff6e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="IRenderer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="App.c">
-      <Filter>Source Files\Application</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GLWindow.c">
-      <Filter>Source Files\Application</Filter>
-    </ClCompile>
-    <ClCompile Include="EGADisplay.c">
-      <Filter>Source Files\Graphical</Filter>
-    </ClCompile>
-    <ClCompile Include="EGAPalette.c">
-      <Filter>Source Files\Graphical</Filter>
-    </ClCompile>
-    <ClCompile Include="FBO.c">
-      <Filter>Source Files\Graphical</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderer.c">
-      <Filter>Source Files\Graphical</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.c">
-      <Filter>Source Files\Graphical</Filter>
-    </ClCompile>
-    <ClCompile Include="VBO.c">
-      <Filter>Source Files\Graphical</Filter>
-    </ClCompile>
-    <ClCompile Include="PaletteTable.c">
-      <Filter>Source Files\Graphical</Filter>
-    </ClCompile>
-    <ClCompile Include="GLSLRenderer.c">
-      <Filter>Source Files\Application</Filter>
-    </ClCompile>
-    <ClCompile Include="IRenderer.c">
-      <Filter>Source Files\Graphical</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Color.h">
-      <Filter>Header Files\Graphical</Filter>
-    </ClInclude>
-    <ClInclude Include="EGADisplay.h">
-      <Filter>Header Files\Graphical</Filter>
-    </ClInclude>
-    <ClInclude Include="EGAPalette.h">
-      <Filter>Header Files\Graphical</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files\Graphical</Filter>
-    </ClInclude>
-    <ClInclude Include="VBO.h">
-      <Filter>Header Files\Graphical</Filter>
-    </ClInclude>
-    <ClInclude Include="FBO.h">
-      <Filter>Header Files\Graphical</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Header Files\Graphical</Filter>
-    </ClInclude>
     <ClInclude Include="App.h">
-      <Filter>Header Files\Application</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GLWindow.h">
-      <Filter>Header Files\Application</Filter>
-    </ClInclude>
-    <ClInclude Include="PaletteTable.h">
-      <Filter>Header Files\Graphical</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="IRenderer.h">
-      <Filter>Header Files\Application</Filter>
-    </ClInclude>
-    <ClInclude Include="GLSLRenderer.h">
-      <Filter>Header Files\Application</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

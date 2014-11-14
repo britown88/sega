@@ -14,7 +14,6 @@
 #include "segautils\Rect.h"
 
 #include "segashared\CheckedMemory.h"
-#include "GLSLRenderer.h"
 #include <GLFW/glfw3.h>
 
 
@@ -83,7 +82,7 @@ static void _step(App *self) {
       appSleep(0);
 }
 
-void runApp(VirtualApp *subclass) {
+void runApp(VirtualApp *subclass, IRenderer *renderer) {
    AppData data;
    GLWindow *window;
    App *r;
@@ -110,7 +109,7 @@ void runApp(VirtualApp *subclass) {
    r->window = window;
    r->viewport = _buildProportionalViewport(data.defaultWindowSize.x, data.defaultWindowSize.y);
 
-   r->renderer = createGLSLRenderer();
+   r->renderer = renderer;
    iRendererInit(r->renderer);
    
 

@@ -1,5 +1,4 @@
 #include "GL/glew.h"
-#include <GLFW/glfw3.h>
 
 #include "GLSLRenderer.h"
 #include "segashared\CheckedMemory.h"
@@ -44,6 +43,8 @@ IRenderer *createGLSLRenderer(){
 }
 
 void _Init(GLSLRenderer *self) {
+   glewInit();
+
    self->renderer = rendererCreate();
    self->egaDisplay = egaDisplayCreate();
    self->egaFrameBuffer = fboCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);

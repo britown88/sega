@@ -77,6 +77,9 @@
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GLSLRenderer\GLSLRenderer.vcxproj">
+      <Project>{8917fdbe-ca46-4d6a-93e4-57a0ffd0df08}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\segalib\segalib.vcxproj">
       <Project>{57b143e8-2941-478d-9873-8fd793813fa2}</Project>
     </ProjectReference>

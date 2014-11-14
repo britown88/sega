@@ -1,4 +1,3 @@
-#include "GL/glew.h"
 #include <GLFW/glfw3.h>
 #include "GLWindow.h"
 #include "segashared\CheckedMemory.h"
@@ -32,11 +31,6 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
    glfwGetFramebufferSize(window, &actualSize.x, &actualSize.y);
    glfwMakeContextCurrent(window);
-
-   if(glewInit() != GLEW_OK) {
-      glfwTerminate();
-      return NULL;
-   }
 
    r = checkedCalloc(1, sizeof(GLWindow));
    r->window = window;

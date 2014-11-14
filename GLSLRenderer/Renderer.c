@@ -1,5 +1,4 @@
 #include "GL/glew.h"
-#include <GLFW/glfw3.h>
 
 #include "Renderer.h"
 #include "segashared\CheckedMemory.h"

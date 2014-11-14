@@ -10,11 +10,11 @@
 #define WINDOW_HEIGHT 480
 #define FULLSCREEN 0
 
-struct BTGame_t{
+typedef struct {
    VirtualApp vApp;
    AppData data;
 
-};
+} BTGame;
 
 #pragma region App_Things
 
@@ -52,7 +52,7 @@ AppData _getData(BTGame *self) {
 
 #pragma endregion
 
-BTGame *btCreate() {
+VirtualApp *btCreate() {
    BTGame *r = checkedCalloc(1, sizeof(BTGame));
    r->vApp.vTable = getVtable();
    r->data = createData(); 
@@ -60,7 +60,7 @@ BTGame *btCreate() {
    //Other constructor shit goes here
 
 
-   return r;
+   return (VirtualApp*)r;
 }
 
 void _destroy(BTGame *self){
