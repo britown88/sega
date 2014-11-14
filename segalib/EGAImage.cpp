@@ -10,7 +10,7 @@
 #include "EGA.h"
 #include "ColorMath.hpp"
 #include "EGAImage.hpp"
-#include "BitTwiddling.h"
+#include "bt-utils\BitTwiddling.h"
 
 #define MAX_PALETTE_SIZE 16
 

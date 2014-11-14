@@ -2,9 +2,9 @@
 
 #include <malloc.h>
 #include <string.h>
-#include "CheckedMemory.h"
-#include "BitBuffer.h"
-#include "BitTwiddling.h"
+#include "bt-utils\CheckedMemory.h"
+#include "bt-utils\BitBuffer.h"
+#include "bt-utils\BitTwiddling.h"
 
 typedef struct {
    ImageScanLine vsl;

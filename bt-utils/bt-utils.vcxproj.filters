@@ -7,56 +7,53 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\ScanLines">
-      <UniqueIdentifier>{87984f3e-0516-41df-a3f4-2992235c22ac}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EGA.h">
+    <ClInclude Include="BitBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImageTools.hpp">
+    <ClInclude Include="BitTwiddling.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ColorMath.hpp">
+    <ClInclude Include="CheckedMemory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EGAImage.hpp">
+    <ClInclude Include="extern_c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DLLBullshit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HashTable_Create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Preprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Strings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Image.c">
+    <ClCompile Include="BitBuffer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EGA.c">
+    <ClCompile Include="BitTwiddling.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ColorMath.cpp">
+    <ClCompile Include="CheckedMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PNGData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EGAImage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UncompressedScanLine.c">
-      <Filter>Source Files\ScanLines</Filter>
-    </ClCompile>
-    <ClCompile Include="RLEScanLine.c">
-      <Filter>Source Files\ScanLines</Filter>
-    </ClCompile>
-    <ClCompile Include="SolidScanLine.c">
-      <Filter>Source Files\ScanLines</Filter>
-    </ClCompile>
-    <ClCompile Include="FontFactory.c">
+    <ClCompile Include="Strings.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

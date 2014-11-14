@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3DE6287E-1249-41C4-A0F2-378BA3B0DD5A}</ProjectGuid>
-    <RootNamespace>SEGA</RootNamespace>
+    <ProjectGuid>{8917FDBE-CA46-4D6A-93E4-57A0FFD0DF08}</ProjectGuid>
+    <RootNamespace>GLSLRenderer</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -44,15 +44,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <CompileAs>CompileAsC</CompileAs>
-      <AdditionalIncludeDirectories>..\;..\include;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -62,50 +59,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\;..\include;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="App.c" />
-    <ClCompile Include="EGADisplay.c" />
-    <ClCompile Include="EGAPalette.c" />
-    <ClCompile Include="FBO.c" />
-    <ClCompile Include="GLSLRenderer.c" />
-    <ClCompile Include="GLWindow.c" />
-    <ClCompile Include="IRenderer.c" />
-    <ClCompile Include="Matrix.c" />
-    <ClCompile Include="PaletteTable.c" />
-    <ClCompile Include="Renderer.c" />
-    <ClCompile Include="Shader.c" />
-    <ClCompile Include="VBO.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="App.h" />
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="EGADisplay.h" />
-    <ClInclude Include="EGAPalette.h" />
-    <ClInclude Include="FBO.h" />
-    <ClInclude Include="GLSLRenderer.h" />
-    <ClInclude Include="GLWindow.h" />
-    <ClInclude Include="IRenderer.h" />
-    <ClInclude Include="Matrix.h" />
-    <ClInclude Include="PaletteTable.h" />
-    <ClInclude Include="Rect.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="VBO.h" />
-    <ClInclude Include="Vector.h" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\bt-utils\bt-utils.vcxproj">
       <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>

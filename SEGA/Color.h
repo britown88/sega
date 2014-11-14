@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Defs.h"
+#include "bt-utils\Defs.h"
 
 typedef struct {
    byte r, g, b, a;

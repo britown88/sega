@@ -8,7 +8,7 @@
 ************************************/
 #include "SEGA\App.h"
 #include "BT.h"
-#include "segalib\CheckedMemory.h"
+#include "bt-utils\CheckedMemory.h"
 
 int main()
 {

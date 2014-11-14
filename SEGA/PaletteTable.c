@@ -1,6 +1,6 @@
 #include "PaletteTable.h"
 #include "segalib\EGA.h"
-#include "segalib\CheckedMemory.h"
+#include "bt-utils\CheckedMemory.h"
 
 #include <string.h>
 
@@ -10,7 +10,7 @@ typedef struct {
 } pEntry;
 
 #define T pEntry
-#include "HashTable_Create.h"
+#include "bt-utils\HashTable_Create.h"
 
 static int _pEntryCompare(pEntry *e1, pEntry *e2){
    return !memcmp(e1->key.colors, e2->key.colors, EGA_PALETTE_COLORS);

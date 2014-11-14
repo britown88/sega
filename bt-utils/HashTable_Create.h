@@ -1,5 +1,5 @@
 #include "Preprocessor.h"
-#include "segalib\CheckedMemory.h"
+#include "CheckedMemory.h"
 #define HT_NAME CONCAT(ht_, T)
 #define HT_BUCKET CONCAT(htbucket_, T)
 

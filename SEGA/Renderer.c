@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Renderer.h"
-#include "segalib\CheckedMemory.h"
+#include "bt-utils\CheckedMemory.h"
 
 #include <malloc.h>
 

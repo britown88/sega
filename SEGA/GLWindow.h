@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vector.h"
-#include "Strings.h"
+#include "bt-utils\Strings.h"
 
 typedef struct GLWindow_T GLWindow;
 typedef struct GLFWmonitor GLFWmonitor;

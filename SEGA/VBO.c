@@ -1,7 +1,7 @@
 #include "GL/glew.h"
 #include <GLFW/glfw3.h>
 #include "VBO.h"
-#include "segalib\CheckedMemory.h"
+#include "bt-utils\CheckedMemory.h"
 
 #include <malloc.h>
 #include <string.h>

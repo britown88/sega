@@ -4,6 +4,8 @@
 
 #include <string.h>
 
+#define MAX_BUFFER_WIDTH 1024
+
 int minByteCount(int bitCount) {
    return bitCount/8 + !!(bitCount%8);
 }
@@ -92,7 +94,7 @@ int compressBitsRLE(const byte *in, const int inBitCount, byte *out) {
 void decompressRLE(byte *src, int compressedBitCount, byte *dest){
    BitBuffer *srcBuff = bitBufferCreate(src, 0);
    BitBuffer *destBuff = bitBufferCreate(dest, 0);
-   byte lineOutput[MAX_IMAGE_WIDTH] = {0};
+   byte lineOutput[MAX_BUFFER_WIDTH] = { 0 };
 
    while(bitBufferGetPosition(srcBuff) + 9 <= compressedBitCount) {
       byte count = 0, value = 0;

@@ -1,11 +1,11 @@
 #include "GL/glew.h"
 #include <GLFW/glfw3.h>
 #include "Shader.h"
-#include "Defs.h"
-#include "Strings.h"
+#include "bt-utils\Defs.h"
+#include "bt-utils\Strings.h"
 
-#include "segalib\CheckedMemory.h"
-#include "segalib\BitBuffer.h"
+#include "bt-utils\CheckedMemory.h"
+#include "bt-utils\BitBuffer.h"
 
 #include <stdio.h>
 #include <stdlib.h>

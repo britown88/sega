@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "segalib\CheckedMemory.h"
+#include "CheckedMemory.h"
  
 #define NAME_BUCKET_EXPONENT 16
  

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Strings.h"
+#include "bt-utils\Strings.h"
 #include "Matrix.h"
 
 typedef enum {

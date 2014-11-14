@@ -60,10 +60,13 @@
     <ClCompile Include="Matrix.c">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Strings.c">
-      <Filter>Source Files\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="PaletteTable.c">
+      <Filter>Source Files\Graphical</Filter>
+    </ClCompile>
+    <ClCompile Include="GLSLRenderer.c">
+      <Filter>Source Files\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="IRenderer.c">
       <Filter>Source Files\Graphical</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,16 +98,7 @@
     <ClInclude Include="GLWindow.h">
       <Filter>Header Files\Application</Filter>
     </ClInclude>
-    <ClInclude Include="SegaApp.h">
-      <Filter>Header Files\Application</Filter>
-    </ClInclude>
-    <ClInclude Include="Strings.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Vector.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Defs.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Matrix.h">
@@ -113,17 +107,14 @@
     <ClInclude Include="Rect.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="DLLBullshit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Preprocessor.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="HashTable_Create.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="PaletteTable.h">
       <Filter>Header Files\Graphical</Filter>
+    </ClInclude>
+    <ClInclude Include="IRenderer.h">
+      <Filter>Header Files\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="GLSLRenderer.h">
+      <Filter>Header Files\Application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

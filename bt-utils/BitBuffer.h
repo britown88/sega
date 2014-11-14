@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EGA.h"
+typedef unsigned char byte;
 
 typedef struct BitBuffer_t BitBuffer;
 

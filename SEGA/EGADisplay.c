@@ -1,17 +1,17 @@
 #include "GL/glew.h"
 #include <GLFW/glfw3.h>
 
-#include "segalib\CheckedMemory.h"
+#include "bt-utils\CheckedMemory.h"
 #include "segalib\EGA.h"
 #include "EGADisplay.h"
 #include "EGAPalette.h"
-#include "Defs.h"
+#include "bt-utils\Defs.h"
 #include "VBO.h"
 #include "Vector.h"
 #include "Renderer.h"
 #include "Shader.h"
 
-#include "Strings.h"
+#include "bt-utils\Strings.h"
 
 #include <malloc.h>
 #include <string.h>

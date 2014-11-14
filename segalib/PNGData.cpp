@@ -1,6 +1,6 @@
 #include "EGA.h"
 #include "EGAImage.hpp"
-#include "CheckedMemory.h"
+#include "bt-utils\CheckedMemory.h"
 
 #include <malloc.h>
 

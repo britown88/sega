@@ -1,8 +1,8 @@
 #include "EGA.h"
-#include "BitBuffer.h"
+#include "bt-utils\BitBuffer.h"
 #include <malloc.h>
-#include "CheckedMemory.h"
-#include "BitTwiddling.h"
+#include "bt-utils\CheckedMemory.h"
+#include "bt-utils\BitTwiddling.h"
 
 #include <stdint.h>
 #include <stdio.h>

@@ -4,20 +4,19 @@
 #include <unistd.h>
 #endif
 
-#include "GL/glew.h"
-#include <GLFW/glfw3.h>
+
 #include <malloc.h>
 #include <stddef.h>
 
-#include "Defs.h"
+#include "bt-utils\Defs.h"
 #include "App.h"
 #include "GLWindow.h"
-#include "Renderer.h"
-#include "EGADisplay.h"
-#include "EGAPalette.h"
-#include "segalib\CheckedMemory.h"
-#include "FBO.h"
-#include "PaletteTable.h"
+#include "Rect.h"
+
+#include "bt-utils\CheckedMemory.h"
+#include "GLSLRenderer.h"
+#include <GLFW/glfw3.h>
+
 
 struct App_t {
    VirtualApp *subclass;
@@ -25,12 +24,9 @@ struct App_t {
    double frameRate;
    double lastUpdated;
 
-   GLWindow *window;
-   Renderer *renderer;
-   EGADisplay *egaDisplay;
-   FBO *egaFrameBuffer;
-   PaletteTable *pTable;
+   GLWindow *window;   
    Rectf viewport;
+   IRenderer *renderer;
 };
 
 App *g_app;
@@ -57,38 +53,6 @@ Rectf _buildProportionalViewport(int width, int height)
    return vp;
 }
 
-static Rectf egaBounds = {0.0f, 0.0f, (float)EGA_RES_WIDTH, (float)EGA_RES_HEIGHT};
-
-static void _preRender(App *self) {
-   byte *p = self->subclass->currentPalette.colors;
-   EGAPalette *ep = paletteTableGetPalette(self->pTable, p);
-
-   egaDisplaySetPalette(self->egaDisplay, ep);
-
-   egaDisplayRenderFrame(self->egaDisplay, self->subclass->currentFrame);
-
-}
-
-static void _render(App *self) {
-   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   //render to ogl fbo
-   fboBind(self->egaFrameBuffer);
-   rendererPushViewport(self->renderer, egaBounds);
-   egaDisplayRender(self->egaDisplay, self->renderer);
-   rendererPopViewport(self->renderer); 
-
-   //render to screen
-   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-   rendererPushViewport(self->renderer, self->viewport);
-   fboRender(self->egaFrameBuffer, self->renderer);
-   rendererPopViewport(self->renderer);
-
-   //swap
-   glWindowSwapBuffers(self->window);
-}
-
 static void _step(App *self) {
    //dt
    double time = appGetTime(self);
@@ -102,8 +66,13 @@ static void _step(App *self) {
 
       virtualAppOnStep(self->subclass);
 
-      _preRender(self);
-      _render(self);      
+      iRendererRenderFrame(self->renderer,
+         self->subclass->currentFrame,
+         self->subclass->currentPalette.colors,
+         &self->viewport);
+
+      //swap
+      glWindowSwapBuffers(self->window);
       
       glWindowPollEvents(self->window);
 
@@ -139,12 +108,11 @@ void runApp(VirtualApp *subclass) {
    r->frameRate = data.frameRate;
 
    r->window = window;
-   r->renderer = rendererCreate();
-
-   r->egaDisplay = egaDisplayCreate();
    r->viewport = _buildProportionalViewport(data.defaultWindowSize.x, data.defaultWindowSize.y);
-   r->egaFrameBuffer = fboCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
-   r->pTable = paletteTableCreate();
+
+   r->renderer = createGLSLRenderer();
+   iRendererInit(r->renderer);
+   
 
    r->subclass->currentFrame = frameCreate();
    memset(&r->subclass->currentPalette.colors, 0, EGA_PALETTE_COLORS);
@@ -157,11 +125,8 @@ void runApp(VirtualApp *subclass) {
       _step(r);
    }
 
-   paletteTableDestroy(r->pTable);
-   egaDisplayDestroy(r->egaDisplay);
-   fboDestroy(r->egaFrameBuffer);
-   rendererDestroy(r->renderer);
-
+   
+   iRendererDestroy(r->renderer);
    glWindowDestroy(r->window);
    virtualAppDestroy(r->subclass);
    checkedFree(r);

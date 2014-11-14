@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Shader.h"
-#include "Defs.h"
+#include "bt-utils\Defs.h"
 
 typedef struct VBO_t VBO;
 

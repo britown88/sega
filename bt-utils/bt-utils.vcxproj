@@ -10,9 +10,29 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BitBuffer.h" />
+    <ClInclude Include="BitTwiddling.h" />
+    <ClInclude Include="CheckedMemory.h" />
+    <ClInclude Include="Defs.h" />
+    <ClInclude Include="DLLBullshit.h" />
+    <ClInclude Include="extern_c.h" />
+    <ClInclude Include="HashTable_Create.h" />
+    <ClInclude Include="Preprocessor.h" />
+    <ClInclude Include="Strings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BitBuffer.c" />
+    <ClCompile Include="BitTwiddling.c" />
+    <ClCompile Include="CheckedMemory.cpp">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="Strings.c" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3DE6287E-1249-41C4-A0F2-378BA3B0DD5A}</ProjectGuid>
-    <RootNamespace>SEGA</RootNamespace>
+    <ProjectGuid>{C928A7B6-88D1-4697-9E1D-771FA8A06C55}</ProjectGuid>
+    <RootNamespace>btutils</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -45,14 +65,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <CompileAs>CompileAsC</CompileAs>
-      <AdditionalIncludeDirectories>..\;..\include;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -62,58 +80,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\;..\include;</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>glew32s.lib;glfw3.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="App.c" />
-    <ClCompile Include="EGADisplay.c" />
-    <ClCompile Include="EGAPalette.c" />
-    <ClCompile Include="FBO.c" />
-    <ClCompile Include="GLSLRenderer.c" />
-    <ClCompile Include="GLWindow.c" />
-    <ClCompile Include="IRenderer.c" />
-    <ClCompile Include="Matrix.c" />
-    <ClCompile Include="PaletteTable.c" />
-    <ClCompile Include="Renderer.c" />
-    <ClCompile Include="Shader.c" />
-    <ClCompile Include="VBO.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="App.h" />
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="EGADisplay.h" />
-    <ClInclude Include="EGAPalette.h" />
-    <ClInclude Include="FBO.h" />
-    <ClInclude Include="GLSLRenderer.h" />
-    <ClInclude Include="GLWindow.h" />
-    <ClInclude Include="IRenderer.h" />
-    <ClInclude Include="Matrix.h" />
-    <ClInclude Include="PaletteTable.h" />
-    <ClInclude Include="Rect.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="VBO.h" />
-    <ClInclude Include="Vector.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\bt-utils\bt-utils.vcxproj">
-      <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\segalib\segalib.vcxproj">
-      <Project>{57b143e8-2941-478d-9873-8fd793813fa2}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
