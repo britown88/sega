@@ -14,7 +14,7 @@
 #include "segautils\Rect.h"
 
 #include "segashared\CheckedMemory.h"
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 
 struct App_t {

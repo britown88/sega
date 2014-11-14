@@ -1,4 +1,4 @@
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 #include "GLWindow.h"
 #include "segashared\CheckedMemory.h"
 
