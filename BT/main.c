@@ -7,7 +7,7 @@
    COPYRIGHT TODAY
 ************************************/
 #include "SEGA\App.h"
-#include "BT.h"
+#include "BTGame\BT.h"
 #include "segashared\CheckedMemory.h"
 #include "GLSLRenderer\GLSLRenderer.h"
 

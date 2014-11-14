@@ -24,6 +24,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLSLRenderer", "GLSLRendere
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "segashared", "segashared\segashared.vcxproj", "{768A8F37-D636-4881-95EA-6AD34E95DC7D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BTGame", "BTGame\BTGame.vcxproj", "{81713CA5-BCEC-450C-9D78-EDAC6C7B71D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -58,6 +60,10 @@ Global
 		{768A8F37-D636-4881-95EA-6AD34E95DC7D}.Debug|Win32.Build.0 = Debug|Win32
 		{768A8F37-D636-4881-95EA-6AD34E95DC7D}.Release|Win32.ActiveCfg = Release|Win32
 		{768A8F37-D636-4881-95EA-6AD34E95DC7D}.Release|Win32.Build.0 = Release|Win32
+		{81713CA5-BCEC-450C-9D78-EDAC6C7B71D1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{81713CA5-BCEC-450C-9D78-EDAC6C7B71D1}.Debug|Win32.Build.0 = Debug|Win32
+		{81713CA5-BCEC-450C-9D78-EDAC6C7B71D1}.Release|Win32.ActiveCfg = Release|Win32
+		{81713CA5-BCEC-450C-9D78-EDAC6C7B71D1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
