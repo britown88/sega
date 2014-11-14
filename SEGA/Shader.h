@@ -1,7 +1,7 @@
 #pragma once
 
-#include "bt-utils\Strings.h"
-#include "Matrix.h"
+#include "segashared\Strings.h"
+#include "segautils\Matrix.h"
 
 typedef enum {
    saPosition, 

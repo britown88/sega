@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include "GLSLRenderer.h"
-#include "bt-utils\CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 
 #include "Renderer.h"
 #include "EGADisplay.h"

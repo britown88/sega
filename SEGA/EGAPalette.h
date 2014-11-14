@@ -1,6 +1,6 @@
 #pragma once
 
-#include "bt-utils\Defs.h"
+#include "segautils\Defs.h"
 typedef struct EGAPalette_t EGAPalette;
 
 //16 colors!

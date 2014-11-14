@@ -1,7 +1,7 @@
 #include "GL/glew.h"
 #include <GLFW/glfw3.h>
 #include "GLWindow.h"
-#include "bt-utils\CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 
 #include <malloc.h>
 #include <stddef.h>

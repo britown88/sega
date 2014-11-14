@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Rect.h"
-#include "Matrix.h"
+#include "segautils\Rect.h"
+#include "segautils\Matrix.h"
 
 typedef struct Renderer_t Renderer;
 

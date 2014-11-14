@@ -1,7 +1,7 @@
 #pragma once
 
 #include "segalib\EGA.h"
-#include "Rect.h"
+#include "segautils\Rect.h"
 
 typedef struct IRenderer_t IRenderer;
 

@@ -1,6 +1,6 @@
 #include "EGA.h"
-#include "bt-utils\CheckedMemory.h"
-#include "bt-utils\BitTwiddling.h"
+#include "segashared\CheckedMemory.h"
+#include "segautils\BitTwiddling.h"
 #include <string.h>
 
 #define FONT_FILE_WIDTH 256

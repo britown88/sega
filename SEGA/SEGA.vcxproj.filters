@@ -57,9 +57,6 @@
     <ClCompile Include="VBO.c">
       <Filter>Source Files\Graphical</Filter>
     </ClCompile>
-    <ClCompile Include="Matrix.c">
-      <Filter>Source Files\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="PaletteTable.c">
       <Filter>Source Files\Graphical</Filter>
     </ClCompile>
@@ -97,15 +94,6 @@
     </ClInclude>
     <ClInclude Include="GLWindow.h">
       <Filter>Header Files\Application</Filter>
-    </ClInclude>
-    <ClInclude Include="Vector.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Rect.h">
-      <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="PaletteTable.h">
       <Filter>Header Files\Graphical</Filter>

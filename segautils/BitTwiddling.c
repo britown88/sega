@@ -1,6 +1,6 @@
 #include "BitTwiddling.h"
 #include "BitBuffer.h"
-#include "CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 
 #include <string.h>
 

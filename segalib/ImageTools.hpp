@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../libpng/png.h"
-#include "bt-utils\CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 
 #include <string>
 #include <memory>

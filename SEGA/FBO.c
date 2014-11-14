@@ -1,12 +1,12 @@
 #include "GL/glew.h"
 #include <GLFW/glfw3.h>
-#include "bt-utils\CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 
 #include "FBO.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "VBO.h"
-#include "Vector.h"
+#include "segautils\Vector.h"
 
 #include <malloc.h>
 

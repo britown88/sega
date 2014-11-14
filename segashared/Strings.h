@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Defs.h"
-#include "DLLBullshit.h"
+#include "segautils\Defs.h"
+#include "segautils\DLLBullshit.h"
 
 typedef const char* StringView;
 typedef char* MutableStringView;

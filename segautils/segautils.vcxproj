@@ -13,22 +13,19 @@
   <ItemGroup>
     <ClInclude Include="BitBuffer.h" />
     <ClInclude Include="BitTwiddling.h" />
-    <ClInclude Include="CheckedMemory.h" />
     <ClInclude Include="Defs.h" />
     <ClInclude Include="DLLBullshit.h" />
     <ClInclude Include="extern_c.h" />
     <ClInclude Include="HashTable_Create.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="Preprocessor.h" />
-    <ClInclude Include="Strings.h" />
+    <ClInclude Include="Rect.h" />
+    <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BitBuffer.c" />
     <ClCompile Include="BitTwiddling.c" />
-    <ClCompile Include="CheckedMemory.cpp">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
-    </ClCompile>
-    <ClCompile Include="Strings.c" />
+    <ClCompile Include="Matrix.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C928A7B6-88D1-4697-9E1D-771FA8A06C55}</ProjectGuid>
@@ -36,13 +33,13 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>

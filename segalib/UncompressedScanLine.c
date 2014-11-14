@@ -2,9 +2,9 @@
 
 #include <malloc.h>
 #include <string.h>
-#include "bt-utils\CheckedMemory.h"
-#include "bt-utils\BitBuffer.h"
-#include "bt-utils\BitTwiddling.h"
+#include "segashared\CheckedMemory.h"
+#include "segautils\BitBuffer.h"
+#include "segautils\BitTwiddling.h"
 #include <stdint.h>
 
 typedef struct {

@@ -168,11 +168,11 @@
     <ClCompile Include="UncompressedScanLine.c" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\bt-utils\bt-utils.vcxproj">
-      <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\libpng\libpng.vcxproj">
       <Project>{9fc3c5bb-1685-4c31-91a5-b98fe8903d9f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\segautils\segautils.vcxproj">
+      <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

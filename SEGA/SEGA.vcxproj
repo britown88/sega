@@ -83,7 +83,6 @@
     <ClCompile Include="GLSLRenderer.c" />
     <ClCompile Include="GLWindow.c" />
     <ClCompile Include="IRenderer.c" />
-    <ClCompile Include="Matrix.c" />
     <ClCompile Include="PaletteTable.c" />
     <ClCompile Include="Renderer.c" />
     <ClCompile Include="Shader.c" />
@@ -98,20 +97,20 @@
     <ClInclude Include="GLSLRenderer.h" />
     <ClInclude Include="GLWindow.h" />
     <ClInclude Include="IRenderer.h" />
-    <ClInclude Include="Matrix.h" />
     <ClInclude Include="PaletteTable.h" />
-    <ClInclude Include="Rect.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="VBO.h" />
-    <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\bt-utils\bt-utils.vcxproj">
-      <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\segalib\segalib.vcxproj">
       <Project>{57b143e8-2941-478d-9873-8fd793813fa2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\segashared\segashared.vcxproj">
+      <Project>{768a8f37-d636-4881-95ea-6ad34e95dc7d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\segautils\segautils.vcxproj">
+      <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

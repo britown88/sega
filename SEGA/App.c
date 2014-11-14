@@ -8,12 +8,12 @@
 #include <malloc.h>
 #include <stddef.h>
 
-#include "bt-utils\Defs.h"
+#include "segautils\Defs.h"
 #include "App.h"
 #include "GLWindow.h"
-#include "Rect.h"
+#include "segautils\Rect.h"
 
-#include "bt-utils\CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 #include "GLSLRenderer.h"
 #include <GLFW/glfw3.h>
 

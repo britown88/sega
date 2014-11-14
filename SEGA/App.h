@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vector.h"
-#include "bt-utils\Strings.h"
-#include "bt-utils\DLLBullshit.h"
+#include "segautils\Vector.h"
+#include "segashared\Strings.h"
+#include "segautils\DLLBullshit.h"
 #include "segalib\EGA.h"
 
 typedef struct GLFWmonitor GLFWmonitor;

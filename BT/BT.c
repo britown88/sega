@@ -1,6 +1,6 @@
 #include "BT.h"
 #include "SEGA\App.h"
-#include "bt-utils\CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD

@@ -1,14 +1,15 @@
 #pragma once
 
 #include <malloc.h>
-#include "extern_c.h"
+#include "segautils\extern_c.h"
+#include "segautils\DLLBullshit.h"
 
 SEXTERN_C
 
-void* checkedMallocImpl(size_t sz, char* file, size_t line);
-void* checkedCallocImpl(size_t count, size_t sz, char* file, size_t line);
-void checkedFreeImpl(void* mem);
-void printMemoryLeaks();
+DLL_PUBLIC void* checkedMallocImpl(size_t sz, char* file, size_t line);
+DLL_PUBLIC void* checkedCallocImpl(size_t count, size_t sz, char* file, size_t line);
+DLL_PUBLIC void checkedFreeImpl(void* mem);
+DLL_PUBLIC void printMemoryLeaks();
 
 END_SEXTERN_C
  

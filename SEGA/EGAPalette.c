@@ -3,9 +3,9 @@
 
 #include "EGAPalette.h"
 #include "Color.h"
-#include "bt-utils\Strings.h"
+#include "segashared\Strings.h"
 #include "segalib\EGA.h"
-#include "bt-utils\CheckedMemory.h"
+#include "segashared\CheckedMemory.h"
 
 #include <malloc.h>
 #include <string.h>
