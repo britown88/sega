@@ -9,11 +9,11 @@
 #include "SEGA\App.h"
 #include "BTGame\BT.h"
 #include "segashared\CheckedMemory.h"
-#include "GLSLRenderer\GLSLRenderer.h"
+#include "OGLRenderer\OGLRenderer.h"
 
 int main()
 {
-   runApp(btCreate(), createGLSLRenderer());
+   runApp(btCreate(), createOGLRenderer());
    printMemoryLeaks();
 
    return 0;
