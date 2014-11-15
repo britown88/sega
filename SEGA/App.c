@@ -127,6 +127,7 @@ void runApp(VirtualApp *subclass, IRenderer *renderer) {
    
    iRendererDestroy(r->renderer);
    glWindowDestroy(r->window);
+	frameDestroy(r->subclass->currentFrame);
    virtualAppDestroy(r->subclass);
    checkedFree(r);
    return;

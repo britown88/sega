@@ -1,0 +1,5 @@
+libpng
+Debug
+Release
+cloc-ignore.txt
+segalib/ImageTools.hpp
