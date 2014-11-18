@@ -78,6 +78,9 @@
     <ClCompile Include="BT.c" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Entities\Entities.vcxproj">
+      <Project>{c01298c5-f64b-4e7d-ad46-f6bcdf59c4a9}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\segalib\segalib.vcxproj">
       <Project>{57b143e8-2941-478d-9873-8fd793813fa2}</Project>
     </ProjectReference>

@@ -78,6 +78,9 @@
   <ItemGroup>
     <ClInclude Include="Entities.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EntitySystem.c" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

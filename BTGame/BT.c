@@ -1,7 +1,7 @@
 #include "BT.h"
 #include "SEGA\App.h"
 #include "segashared\CheckedMemory.h"
-#include "segautils\IntrusiveHeap.h"
+#include "Entities\Entities.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
@@ -69,40 +69,31 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
-typedef struct{
-   int ID;
-   QueueNode node;
-}Thing;
-
-static Thing *thingMinCompare(Thing *t1, Thing *t2){
-   return t1->ID < t2->ID ? t1 : t2;
-}
 
 void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
    Image *testImg;
    PNGData *png = pngDataCreate("assets/img/test.png");
-   PriorityQueue *pq = priorityQueueCreate(offsetof(Thing, node), (PQCompareFunc)&thingMinCompare);
+   EntitySystem *es = entitySystemCreate();
+
    int i;
-   int iterations = 100000;//ONE MIIIIILLIIIIOOOOOOON iterations
-   Thing *things = checkedCalloc(iterations, sizeof(Thing));
+   int iterations = 100;
+   Entity *entities = checkedCalloc(iterations, sizeof(Entity));
 
    for (i = 0; i < iterations; ++i){
-      Thing *thing = things + i;
-      thing->ID = rand();     
-
-      priorityQueuePush(pq, thing); 
+      entities[i] = entitySystemCreateEntity(es);
    }
 
-   for (i = 0; i < iterations; ++i){
-      Thing *thing = priorityQueuePop(pq);
-
-      int id = thing->ID;
-      
+   for (i = 0; i < iterations/2; ++i){
+      entitySystemDestroyEntity(es, i * 2);
    }
 
-   checkedFree(things);
-   priorityQueueDestroy(pq);
+   for (i = 0; i < iterations / 2; ++i){
+      entities[i*2] = entitySystemCreateEntity(es);
+   }
+
+   checkedFree(entities);
+   entitySystemDestroy(es);
 
 
    pngDataRender(png, paletteCreatePartial(defPal, 0, 0, 16).colors);
