@@ -4,55 +4,56 @@
 #include "segautils\Defs.h"
 
 #define MAX_ENTITIES (1024 * 128)
-typedef struct { 
+typedef struct Entity_t{ 
    QueueNode node;
    int ID;
    unsigned char loaded;
-}EntityNode;
+   EntitySystem *system;
+};
 
 struct EntitySystem_t {
-   EntityNode *nodePool;
+   Entity *entityPool;
    PriorityQueue *eQueue;
    int eCount;
 };
 
-EntityNode *_eNodeCompareFunc(EntityNode *n1, EntityNode *n2){
+Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
    return n1->ID < n2->ID ? n1 : n2;
 }
 
 EntitySystem *entitySystemCreate(){
    EntitySystem *out = checkedCalloc(1, sizeof(EntitySystem));
-   out->eQueue = priorityQueueCreate(offsetof(EntityNode, node), (PQCompareFunc)&_eNodeCompareFunc);
-   out->nodePool = checkedCalloc(MAX_ENTITIES, sizeof(EntityNode));
+   out->eQueue = priorityQueueCreate(offsetof(Entity, node), (PQCompareFunc)&_eNodeCompareFunc);
+   out->entityPool = checkedCalloc(MAX_ENTITIES, sizeof(Entity));
 
    return out;
 }
 void entitySystemDestroy(EntitySystem *self){   
    priorityQueueDestroy(self->eQueue);
-   checkedFree(self->nodePool);
+   checkedFree(self->entityPool);
    checkedFree(self);
 }
 
-static Entity _esLoadEntity(EntitySystem *self, int ID){
-   Entity out = { ID, self };
-   (self->nodePool + ID)->loaded = true;
+static Entity *_esLoadEntity(EntitySystem *self, int ID){
+   Entity *out = self->entityPool + ID;
+   out->system = self;
+   out->ID = ID;
+   out->loaded = true;
 
    return out;
 }
 
-Entity entitySystemCreateEntity(EntitySystem *self){
-   if (priorityQueueIsEmpty(self->eQueue)){
-      return _esLoadEntity(self, self->eCount++);
+Entity *entityCreate(EntitySystem *system){
+   if (priorityQueueIsEmpty(system->eQueue)){
+      return _esLoadEntity(system, system->eCount++);
    }
    else {
-      EntityNode *popped = priorityQueuePop(self->eQueue);
-      return _esLoadEntity(self, popped->ID);
+      Entity *popped = priorityQueuePop(system->eQueue);
+      return _esLoadEntity(system, popped->ID);
    }
 }
-void entitySystemDestroyEntity(EntitySystem *self, int entityID){
-   EntityNode *node = self->nodePool + entityID;
-   node->loaded = false;
-   node->ID = entityID;
 
-   priorityQueuePush(self->eQueue, node);
+void entityDestroy(Entity *self){
+   self->loaded = false;
+   priorityQueuePush(self->system->eQueue, self);
 }

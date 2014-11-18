@@ -78,18 +78,18 @@ void _onStart(BTGame *self){
 
    int i;
    int iterations = 100;
-   Entity *entities = checkedCalloc(iterations, sizeof(Entity));
+   Entity **entities = checkedCalloc(iterations, sizeof(Entity*));
 
    for (i = 0; i < iterations; ++i){
-      entities[i] = entitySystemCreateEntity(es);
+      entities[i] = entityCreate(es);
    }
 
    for (i = 0; i < iterations/2; ++i){
-      entitySystemDestroyEntity(es, i * 2);
+      entityDestroy(entities[i * 2]);
    }
 
    for (i = 0; i < iterations / 2; ++i){
-      entities[i*2] = entitySystemCreateEntity(es);
+      entities[i * 2] = entityCreate(es);
    }
 
    checkedFree(entities);
