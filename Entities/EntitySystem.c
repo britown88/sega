@@ -34,23 +34,23 @@ void entitySystemDestroy(EntitySystem *self){
    checkedFree(self);
 }
 
-static Entity *_esLoadEntity(EntitySystem *self, int ID){
-   Entity *out = self->entityPool + ID;
-   out->system = self;
-   out->ID = ID;
-   out->loaded = true;
-
-   return out;
-}
-
 Entity *entityCreate(EntitySystem *system){
+   Entity *out;
+
    if (priorityQueueIsEmpty(system->eQueue)){
-      return _esLoadEntity(system, system->eCount++);
+      int ID = system->eCount++;
+      
+      out = system->entityPool + ID;
+      out->system = system;      
+      out->ID = ID;
    }
    else {
-      Entity *popped = priorityQueuePop(system->eQueue);
-      return _esLoadEntity(system, popped->ID);
+      int ID = ((Entity*)priorityQueuePop(system->eQueue))->ID;
+      out = system->entityPool + ID;
    }
+   
+   out->loaded = true;
+   return out;
 }
 
 void entityDestroy(Entity *self){
