@@ -4,17 +4,18 @@
 #include "segautils\Defs.h"
 
 #define MAX_ENTITIES (1024 * 128)
+
 typedef struct Entity_t{ 
    QueueNode node;
-   int ID;
-   unsigned char loaded;
+   unsigned int ID;
+   byte loaded;
    EntitySystem *system;
 };
 
 struct EntitySystem_t {
    Entity *entityPool;
    PriorityQueue *eQueue;
-   int eCount;
+   unsigned int eCount;
 };
 
 Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
@@ -38,14 +39,14 @@ Entity *entityCreate(EntitySystem *system){
    Entity *out;
 
    if (priorityQueueIsEmpty(system->eQueue)){
-      int ID = system->eCount++;
+      unsigned int ID = system->eCount++;
       
       out = system->entityPool + ID;
       out->system = system;      
       out->ID = ID;
    }
    else {
-      int ID = ((Entity*)priorityQueuePop(system->eQueue))->ID;
+      unsigned int ID = ((Entity*)priorityQueuePop(system->eQueue))->ID;
       out = system->entityPool + ID;
    }
    

@@ -1,6 +1,7 @@
 #include "BT.h"
 #include "SEGA\App.h"
 #include "segashared\CheckedMemory.h"
+#include "segashared\RTTI.h"
 #include "Entities\Entities.h"
 
 #include <malloc.h>
@@ -69,6 +70,8 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
+ImplRTTI(FOO);
+
 
 void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
@@ -79,6 +82,7 @@ void _onStart(BTGame *self){
    int i;
    int iterations = 100;
    Entity **entities = checkedCalloc(iterations, sizeof(Entity*));
+   Type *estype = GetRTTI(FOO)();
 
    for (i = 0; i < iterations; ++i){
       entities[i] = entityCreate(es);

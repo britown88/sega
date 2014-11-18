@@ -76,10 +76,12 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="RTTI.c" />
     <ClCompile Include="Strings.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CheckedMemory.h" />
+    <ClInclude Include="RTTI.h" />
     <ClInclude Include="Strings.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
