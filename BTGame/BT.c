@@ -1,10 +1,12 @@
 #include "BT.h"
 #include "SEGA\App.h"
 #include "segashared\CheckedMemory.h"
+#include "segautils\IntrusiveHeap.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
 #include <string.h>
+#include <stdlib.h>
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
@@ -67,11 +69,42 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
-void _onStart(BTGame *self){ 
+typedef struct{
+   int ID;
+   QueueNode node;
+}Thing;
 
+static Thing *thingMinCompare(Thing *t1, Thing *t2){
+   return t1->ID < t2->ID ? t1 : t2;
+}
+
+void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
    Image *testImg;
    PNGData *png = pngDataCreate("assets/img/test.png");
+   PriorityQueue *pq = priorityQueueCreate(offsetof(Thing, node), (PQCompareFunc)&thingMinCompare);
+   int i;
+   int iterations = 100000;//ONE MIIIIILLIIIIOOOOOOON iterations
+   Thing *things = checkedCalloc(iterations, sizeof(Thing));
+
+   for (i = 0; i < iterations; ++i){
+      Thing *thing = things + i;
+      thing->ID = rand();     
+
+      priorityQueuePush(pq, thing); 
+   }
+
+   for (i = 0; i < iterations; ++i){
+      Thing *thing = priorityQueuePop(pq);
+
+      int id = thing->ID;
+      
+   }
+
+   checkedFree(things);
+   priorityQueueDestroy(pq);
+
+
    pngDataRender(png, paletteCreatePartial(defPal, 0, 0, 16).colors);
    memcpy(self->vApp.currentPalette.colors, pngDataGetPalette(png), EGA_PALETTE_COLORS);
    testImg = pngDataCreateImage(png);
