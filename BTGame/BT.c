@@ -72,17 +72,26 @@ void _destroy(BTGame *self){
 
 ImplRTTI(FOO);
 
+#define T int
+#include "segautils\Vector_Create.h"
+
 
 void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
    Image *testImg;
    PNGData *png = pngDataCreate("assets/img/test.png");
    EntitySystem *es = entitySystemCreate();
-
+   vec(int) *vi = vecCreate(int)(NULL);
    int i;
+   
    int iterations = 100;
    Entity **entities = checkedCalloc(iterations, sizeof(Entity*));
    Type *estype = GetRTTI(FOO)();
+
+   for (i = 0; i < iterations; ++i){
+      vecPushBack(int)(vi, &i);
+   }
+
 
    for (i = 0; i < iterations; ++i){
       entities[i] = entityCreate(es);

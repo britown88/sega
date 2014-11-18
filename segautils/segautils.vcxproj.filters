@@ -48,6 +48,9 @@
     <ClInclude Include="IntrusiveHeap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Vector_Create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
