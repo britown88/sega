@@ -119,3 +119,20 @@ byte arrayIsSolid(byte *src, int bitCount){
    }
    return 1;
 }
+
+#ifdef __GNUC__
+   #include <stdlib.h>
+   unsigned long BSR32(unsigned long value){
+      return __builtin_clzl(value);
+   } 
+#elif _MSC_VER
+   #include <intrin.h>
+   #pragma intrinsic(_BitScanReverse)
+   unsigned long BSR32(unsigned long value){
+      unsigned long out = 0;
+      _BitScanReverse(&out, value);
+      return out;
+   }
+#endif
+
+

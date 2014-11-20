@@ -18,4 +18,6 @@ void decompressRLE(byte *src, int compressedBitCount, byte *dest);
 
 byte arrayIsSolid(byte *src, int bitCount);
 
+unsigned long BSR32(unsigned long value);
+
 END_SEXTERN_C

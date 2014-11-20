@@ -12,6 +12,11 @@ typedef struct Entity_t{
    EntitySystem *system;
 };
 
+//typedef void *CompListData;
+//typedef struct {
+//
+//} CompListVTable;
+
 struct EntitySystem_t {
    Entity *entityPool;
    PriorityQueue *eQueue;

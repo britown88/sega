@@ -1,4 +1,6 @@
 #include "Preprocessor.h"
+#include "BitTwiddling.h"
+#include "Defs.h"
 #include "segashared\CheckedMemory.h"
 #define VEC_NAME CONCAT(vec_, T)
 
@@ -50,17 +52,24 @@ static void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue){
 
          if (!self->data) {//list is empty
             //init
-            self->power = 5;
-            while ((size_t)(1 << self->power) < size){ ++self->power; }
+            size_t smallestPower = BSR32(size) + 1;
+
+            self->power = MAX(5, smallestPower);
             self->data = checkedCalloc(1, sizeof(T) * (1 << self->power));
 
          }
          else if (size > (size_t)((1 << (self->power - 1)) + (1 << (self->power - 2)))) {
             //list over 75% full
             T *newList;
-            
-            while ((size_t)(1 << self->power) < size){ ++self->power; }
-            
+            size_t smallestPower = BSR32(size) + 1;
+
+            if (self->power == smallestPower){
+               ++self->power;//just increment it
+            }
+            else {
+               self->power = smallestPower;//set new power
+            }
+
             newList = checkedCalloc(1, sizeof(T) * (1 << self->power));
             memcpy(newList, self->data, sizeof(T) * self->count);
             checkedFree(self->data);
