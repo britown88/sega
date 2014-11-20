@@ -23,8 +23,7 @@ typedef struct {
    //number of items in the table
    size_t count;
 
-   //has 2^power buckets allocated
-   size_t power;
+   size_t alloc;
 } VEC_NAME;
 
 static VEC_NAME *vecCreate(T)(void(*destroy)(T*)){
@@ -54,23 +53,17 @@ static void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue){
             //init
             size_t smallestPower = BSR32(size) + 1;
 
-            self->power = MAX(5, smallestPower);
-            self->data = checkedCalloc(1, sizeof(T) * (1 << self->power));
+            self->alloc = MAX(8, 1 << smallestPower);
+            self->data = checkedCalloc(1, sizeof(T) * self->alloc);
 
          }
-         else if (size > (size_t)((1 << (self->power - 1)) + (1 << (self->power - 2)))) {
+         else if (size >= self->alloc) {
             //list over 75% full
             T *newList;
             size_t smallestPower = BSR32(size) + 1;
+            self->alloc = MAX(self->alloc * 2, 1 << smallestPower);
 
-            if (self->power == smallestPower){
-               ++self->power;//just increment it
-            }
-            else {
-               self->power = smallestPower;//set new power
-            }
-
-            newList = checkedCalloc(1, sizeof(T) * (1 << self->power));
+            newList = checkedCalloc(1, sizeof(T) * self->alloc);
             memcpy(newList, self->data, sizeof(T) * self->count);
             checkedFree(self->data);
             self->data = newList;
