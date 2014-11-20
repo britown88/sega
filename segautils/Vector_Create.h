@@ -51,17 +51,14 @@ static void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue){
 
          if (!self->data) {//list is empty
             //init
-            size_t smallestPower = BSR32(size) + 1;
-
-            self->alloc = MAX(8, 1 << smallestPower);
+            self->alloc = 1 << (BSR32(size) + 1);
             self->data = checkedCalloc(1, sizeof(T) * self->alloc);
 
          }
          else if (size >= self->alloc) {
             //list over 75% full
             T *newList;
-            size_t smallestPower = BSR32(size) + 1;
-            self->alloc = MAX(self->alloc * 2, 1 << smallestPower);
+            self->alloc = 1 << (BSR32(size) + 1);
 
             newList = checkedCalloc(1, sizeof(T) * self->alloc);
             memcpy(newList, self->data, sizeof(T) * self->count);
