@@ -3,24 +3,17 @@
 #include "segashared\CheckedMemory.h"
 #include "segautils\Defs.h"
 
-#define MAX_ENTITIES (1024 * 128)
-
 typedef struct Entity_t{ 
    QueueNode node;
-   unsigned int ID;
+   int ID;
    byte loaded;
    EntitySystem *system;
 };
 
-//typedef void *CompListData;
-//typedef struct {
-//
-//} CompListVTable;
-
 struct EntitySystem_t {
    Entity *entityPool;
    PriorityQueue *eQueue;
-   unsigned int eCount;
+   size_t eCount;
 };
 
 Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
@@ -44,14 +37,14 @@ Entity *entityCreate(EntitySystem *system){
    Entity *out;
 
    if (priorityQueueIsEmpty(system->eQueue)){
-      unsigned int ID = system->eCount++;
+      int ID = system->eCount++;
       
       out = system->entityPool + ID;
       out->system = system;      
       out->ID = ID;
    }
    else {
-      unsigned int ID = ((Entity*)priorityQueuePop(system->eQueue))->ID;
+      int ID = ((Entity*)priorityQueuePop(system->eQueue))->ID;
       out = system->entityPool + ID;
    }
    
@@ -62,4 +55,11 @@ Entity *entityCreate(EntitySystem *system){
 void entityDestroy(Entity *self){
    self->loaded = false;
    priorityQueuePush(self->system->eQueue, self);
+}
+
+int entityGetID(Entity *self){
+   return self->ID;
+}
+EntitySystem *entityGetSystem(Entity *self){
+   return self->system;
 }

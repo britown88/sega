@@ -1,16 +1,14 @@
 #include "BT.h"
 #include "SEGA\App.h"
 #include "segashared\CheckedMemory.h"
-#include "segashared\RTTI.h"
-#include "Entities\Entities.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
 #include <string.h>
 #include <stdlib.h>
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 #define FULLSCREEN 0
 
 typedef struct {
@@ -70,44 +68,11 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
-ImplRTTI(FOO);
-
-#define T int
-#include "segautils\Vector_Create.h"
-
 
 void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
    Image *testImg;
-   PNGData *png = pngDataCreate("assets/img/test.png");
-   EntitySystem *es = entitySystemCreate();
-   vec(int) *vi = vecCreate(int)(NULL);
-   int i;
-   
-   int iterations = 100;
-   Entity **entities = checkedCalloc(iterations, sizeof(Entity*));
-   Type *estype = GetRTTI(FOO)();
-
-   for (i = 0; i < iterations; ++i){
-      vecPushBack(int)(vi, &i);
-   }
-
-
-   for (i = 0; i < iterations; ++i){
-      entities[i] = entityCreate(es);
-   }
-
-   for (i = 0; i < iterations/2; ++i){
-      entityDestroy(entities[i * 2]);
-   }
-
-   for (i = 0; i < iterations / 2; ++i){
-      entities[i * 2] = entityCreate(es);
-   }
-
-   checkedFree(entities);
-   entitySystemDestroy(es);
-
+   PNGData *png = pngDataCreate("assets/img/font.png");
 
    pngDataRender(png, paletteCreatePartial(defPal, 0, 0, 16).colors);
    memcpy(self->vApp.currentPalette.colors, pngDataGetPalette(png), EGA_PALETTE_COLORS);

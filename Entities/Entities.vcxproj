@@ -76,9 +76,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Components.h" />
     <ClInclude Include="Entities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ComponentSystem.c" />
     <ClCompile Include="EntitySystem.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

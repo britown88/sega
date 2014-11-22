@@ -125,6 +125,13 @@ byte arrayIsSolid(byte *src, int bitCount){
    unsigned long BSR32(unsigned long value){
       return __builtin_clzl(value);
    } 
+   void STOSD(unsigned long *dest, unsigned long val, size_t count){
+      //TODO: figure out how to do this the ASM way
+      size_t i;
+      for(i = 0; i < count; ++i){
+         dest[i] = val;
+      }
+   }
 #elif _MSC_VER
    #include <intrin.h>
    #pragma intrinsic(_BitScanReverse)
@@ -132,6 +139,10 @@ byte arrayIsSolid(byte *src, int bitCount){
       unsigned long out = 0;
       _BitScanReverse(&out, value);
       return out;
+   }
+   #pragma intrinsic(__stosd)
+   void STOSD(unsigned long *dest, unsigned long val, size_t count){
+      __stosd(dest, val, count);
    }
 #endif
 

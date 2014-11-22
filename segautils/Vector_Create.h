@@ -2,6 +2,7 @@
 #include "BitTwiddling.h"
 #include "Defs.h"
 #include "segashared\CheckedMemory.h"
+#include <string.h>
 #define VEC_NAME CONCAT(vec_, T)
 
 #ifndef vec
@@ -10,8 +11,10 @@
 #define vecDestroy(TYPE) CONCAT(vecDestroy_, TYPE)
 #define vecResize(TYPE) CONCAT(vecResize_, TYPE)
 #define vecPushBack(TYPE) CONCAT(vecPushBack_, TYPE)
+#define vecPopBack(TYPE) CONCAT(vecPopBack_, TYPE)
 #define vecAt(TYPE) CONCAT(vecAt_, TYPE)
 #define vecIsEmpty(TYPE) CONCAT(vecIsEmpty_, TYPE)
+#define vecSize(TYPE) CONCAT(vecSize_, TYPE)
 #define vecClear(TYPE) CONCAT(vecClear_, TYPE)
 #endif
 
@@ -56,7 +59,6 @@ static void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue){
 
          }
          else if (size >= self->alloc) {
-            //list over 75% full
             T *newList;
             self->alloc = 1 << (BSR32(size) + 1);
 
@@ -68,9 +70,6 @@ static void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue){
 
          if (initialValue){
             for (i = self->count; i < size; ++i){
-               if (self->destroy && self->data + i){
-                  self->destroy(self->data + i);
-               }
                memcpy(self->data + i, initialValue, sizeof(T));
             }
          }
@@ -92,14 +91,22 @@ static void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue){
 static void vecPushBack(T)(VEC_NAME *self, T *data){
    vecResize(T)(self, self->count + 1, data);
 }
+static void vecPopBack(T)(VEC_NAME *self){
+   if (self->count > 0){
+      vecResize(T)(self, self->count - 1, NULL);
+   }   
+}
 static T *vecAt(T)(VEC_NAME *self, size_t index){
    return self->data + index;
 }
 static int vecIsEmpty(T)(VEC_NAME *self){
    return self->count == 0;
 }
+static size_t vecSize(T)(VEC_NAME *self){
+   return self->count;
+}
 static void vecClear(T)(VEC_NAME *self){
-   vecResize(T)(self, 0, 0);
+   vecResize(T)(self, 0, NULL);
 }
 
 #undef VEC_NAME

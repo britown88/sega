@@ -1,6 +1,7 @@
 #pragma once
 
 #include "extern_c.h"
+#include <stddef.h>
 
 SEXTERN_C
 
@@ -19,5 +20,6 @@ void decompressRLE(byte *src, int compressedBitCount, byte *dest);
 byte arrayIsSolid(byte *src, int bitCount);
 
 unsigned long BSR32(unsigned long value);
+void STOSD(unsigned long *dest, unsigned long val, size_t count);
 
 END_SEXTERN_C
