@@ -110,4 +110,7 @@ static void vecClear(T)(VEC_NAME *self){
 }
 
 #undef VEC_NAME
+
+#ifndef SKIP_T_UNDEF
 #undef T
+#endif

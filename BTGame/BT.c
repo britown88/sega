@@ -68,11 +68,31 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
+#include "Entities\Entities.h"
+
+typedef struct {
+   int x, y;
+}PositionComponent;
+
+#define T PositionComponent
+#include "Entities\ComponentDecl.h"
+
+#define T PositionComponent
+#include "Entities\ComponentImpl.h"
 
 void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
    Image *testImg;
    PNGData *png = pngDataCreate("assets/img/font.png");
+   EntitySystem *es = entitySystemCreate();
+   PositionComponent pc = { 100, 200 };
+   Entity *e = entityCreate(es);
+   PositionComponent *pcOut;
+
+   entityAdd(PositionComponent)(e, &pc);
+   pcOut = entityGet(PositionComponent)(e);
+
+   entitySystemDestroy(es);
 
    pngDataRender(png, paletteCreatePartial(defPal, 0, 0, 16).colors);
    memcpy(self->vApp.currentPalette.colors, pngDataGetPalette(png), EGA_PALETTE_COLORS);

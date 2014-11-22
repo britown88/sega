@@ -2,6 +2,7 @@
 #include "segautils\IntrusiveHeap.h"
 #include "segashared\CheckedMemory.h"
 #include "segautils\Defs.h"
+#include "segautils\BitTwiddling.h"
 
 typedef struct Entity_t{ 
    QueueNode node;
@@ -10,10 +11,40 @@ typedef struct Entity_t{
    EntitySystem *system;
 };
 
+struct ComponentList_t{
+   ComponentVTable *cvt;
+
+   ComponentListData list;
+   int lookup[MAX_ENTITIES];
+};
+
+int *compListGetLookup(ComponentList *self){
+   return self->lookup;
+}
+
+ComponentListData compListGetList(ComponentList *self){
+   return self->list;
+}
+
+ComponentVTable *compListGetVTable(ComponentList *self){
+   return self->cvt;
+}
+
+#define T ComponentList
+#include "segautils\Vector_Create.h"
+
+void _cvtDestroy(ComponentList *self){
+   if (self->cvt->destroy){
+      self->cvt->destroy(self->list);
+   }
+}
+
 struct EntitySystem_t {
    Entity *entityPool;
    PriorityQueue *eQueue;
    size_t eCount;
+
+   vec(ComponentList) *lists;
 };
 
 Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
@@ -24,14 +55,46 @@ EntitySystem *entitySystemCreate(){
    EntitySystem *out = checkedCalloc(1, sizeof(EntitySystem));
    out->eQueue = priorityQueueCreate(offsetof(Entity, node), (PQCompareFunc)&_eNodeCompareFunc);
    out->entityPool = checkedCalloc(MAX_ENTITIES, sizeof(Entity));
+   out->lists = vecCreate(ComponentList)(&_cvtDestroy);
 
    return out;
 }
 void entitySystemDestroy(EntitySystem *self){   
    priorityQueueDestroy(self->eQueue);
    checkedFree(self->entityPool);
+   vecDestroy(ComponentList)(self->lists);
    checkedFree(self);
 }
+
+void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTable *table){
+   ComponentList cl = { 0 };
+   int undef = -1;
+   size_t listCount = vecSize(ComponentList)(self->lists);
+
+   cl.cvt = table;
+   if (table->create){
+      cl.list = table->create();
+   }
+
+   //init to -1
+   STOSD((unsigned long*)cl.lookup, *(unsigned long*)&undef, MAX_ENTITIES);
+
+   if (rtti >= listCount){
+      vecResize(ComponentList)(self->lists, rtti + 1, NULL);
+   }
+
+   //copy component list into the lists vector
+   memcpy(vecAt(ComponentList)(self->lists, rtti), &cl, sizeof(cl));
+}
+ComponentList *entitySystemGetCompList(EntitySystem *self, size_t rtti){
+
+   if (rtti >= vecSize(ComponentList)(self->lists)){
+      return NULL;
+   }
+
+   return vecAt(ComponentList)(self->lists, rtti);
+}
+
 
 Entity *entityCreate(EntitySystem *system){
    Entity *out;

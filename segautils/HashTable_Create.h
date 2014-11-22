@@ -206,4 +206,7 @@ static void htInsert(T)(HT_NAME *self, T *item){
 
 #undef HT_BUCKET
 #undef HT_NAME
+
+#ifndef SKIP_T_UNDEF
 #undef T
+#endif

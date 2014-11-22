@@ -18,15 +18,18 @@
     <ClInclude Include="Entities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Components.h">
+    <ClInclude Include="ComponentImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentDecl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntitySystem.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentSystem.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
