@@ -69,22 +69,59 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
+void _entitiesStress(){
+   EntitySystem *es = entitySystemCreate();
+
+   Entity *entities[100] = { 0 };
+   int iterations = sizeof(entities) / sizeof(Entity*);
+
+
+
+   int i;
+   for (i = 0; i < iterations; ++i){
+      entities[i] = entityCreate(es);
+      PositionComponent pc = { i * 2, i * 3 };
+      entityAdd(PositionComponent)(entities[i], &pc);
+   }
+
+   for (i = 0; i < iterations / 2; ++i){
+      entityRemove(PositionComponent)(entities[i * 2]);
+   }
+
+   for (i = 0; i < iterations; ++i){
+      PositionComponent *pc = entityGet(PositionComponent)(entities[i]);
+      if (pc){
+         int x = pc->x;
+         int y = pc->y;
+
+         Entity *e = componentGetParent(pc, es);
+         entityDestroy(e);
+
+      }
+      else{
+         PositionComponent pc = { -1, -1 };
+         entityAdd(PositionComponent)(entities[i], &pc);
+
+      }
+   }
+
+   for (i = 0; i < iterations; ++i){
+      PositionComponent *pc = entityGet(PositionComponent)(entities[i]);
+      if (pc){
+         entityRemove(PositionComponent)(entities[i]);
+      }
+   }
+
+
+   entitySystemDestroy(es);
+}
+
 void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
    Image *testImg;
-   PNGData *png = pngDataCreate("assets/img/font.png");
-   EntitySystem *es = entitySystemCreate();
-   PositionComponent pc = { 100, 200 };
-   Entity *e = entityCreate(es);
-   PositionComponent *pcOut;
-   int id;
+   PNGData *png = pngDataCreate("assets/img/font.png");   
 
-   entityAdd(PositionComponent)(e, &pc);
-   pcOut = entityGet(PositionComponent)(e);
-
-   id = componentGetParentID(pcOut);
-
-   entitySystemDestroy(es);
+   _entitiesStress();
 
    pngDataRender(png, paletteCreatePartial(defPal, 0, 0, 16).colors);
    memcpy(self->vApp.currentPalette.colors, pngDataGetPalette(png), EGA_PALETTE_COLORS);
