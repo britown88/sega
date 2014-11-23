@@ -30,7 +30,7 @@ ComponentVTable *compListGetVTable(ComponentList *self){
    return self->cvt;
 }
 
-#define T ComponentList
+#define VectorT ComponentList
 #include "segautils\Vector_Create.h"
 
 void _cvtDestroy(ComponentList *self){
@@ -116,8 +116,34 @@ Entity *entityCreate(EntitySystem *system){
 }
 
 void entityDestroy(Entity *self){
+   vec(ComponentList) *v = self->system->lists;
+   size_t compCount = vecSize(ComponentList)(v);
+   size_t i;
+   for (i = 0; i < compCount; ++i){
+      ComponentList *list = vecAt(ComponentList)(v, i);
+      int compIndex = list->lookup[self->ID];
+      Component moved;
+
+      list->lookup[self->ID] = -1;
+
+      list->cvt->remove(list->list, compIndex);
+      moved = list->cvt->getAt(list->list, compIndex);
+      if (moved){
+         int movedEntity = componentGetParentID(moved);
+         list->lookup[movedEntity] = compIndex;
+      }
+
+   }
+
    self->loaded = false;
    priorityQueuePush(self->system->eQueue, self);
+}
+
+Entity *componentGetParent(Component self, EntitySystem *system){
+   return system->entityPool + componentGetParentID(self);
+}
+int componentGetParentID(Component self){
+   return *(int*)((byte *)self - sizeof(int));
 }
 
 int entityGetID(Entity *self){

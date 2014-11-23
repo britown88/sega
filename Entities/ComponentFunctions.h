@@ -13,5 +13,6 @@
 #define compListGetAt(TYPE) CONCAT(compListGetAt_, TYPE)
 #define compListCount(TYPE) CONCAT(compListCount_, TYPE)
 #define compListAddComp(TYPE) CONCAT(compListAddComp_, TYPE)
+#define compListRemoveComp(TYPE) CONCAT(compListRemoveComp_, TYPE)
 
 #endif

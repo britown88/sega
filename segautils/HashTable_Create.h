@@ -1,5 +1,8 @@
 #include "Preprocessor.h"
 #include "segashared\CheckedMemory.h"
+
+#define T HashTableT
+
 #define HT_NAME CONCAT(ht_, T)
 #define HT_BUCKET CONCAT(htbucket_, T)
 
@@ -206,7 +209,5 @@ static void htInsert(T)(HT_NAME *self, T *item){
 
 #undef HT_BUCKET
 #undef HT_NAME
-
-#ifndef SKIP_T_UNDEF
+#undef HashTableT
 #undef T
-#endif

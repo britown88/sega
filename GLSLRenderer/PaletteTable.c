@@ -9,7 +9,7 @@ typedef struct {
    EGAPalette *value;
 } pEntry;
 
-#define T pEntry
+#define HashTableT pEntry
 #include "segautils\HashTable_Create.h"
 
 static int _pEntryCompare(pEntry *e1, pEntry *e2){

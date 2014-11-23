@@ -11,6 +11,9 @@ typedef struct ComponentList_t ComponentList;
 typedef void* ComponentListData;
 typedef void* Component;
 
+Entity *componentGetParent(Component self, EntitySystem *system);
+int componentGetParentID(Component self);
+
 EntitySystem *entitySystemCreate();
 void entitySystemDestroy(EntitySystem *self);
 
@@ -25,6 +28,7 @@ typedef struct {
    Component(*getAt)(ComponentListData, int);
    size_t(*count)(ComponentListData);
    int(*add)(ComponentListData, int/*entity ID*/, Component);
+   void(*remove)(ComponentListData, int/*entity ID*/);
 } ComponentVTable;
 
 void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTable *table);

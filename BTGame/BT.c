@@ -74,10 +74,10 @@ typedef struct {
    int x, y;
 }PositionComponent;
 
-#define T PositionComponent
+#define ComponentT PositionComponent
 #include "Entities\ComponentDecl.h"
 
-#define T PositionComponent
+#define ComponentT PositionComponent
 #include "Entities\ComponentImpl.h"
 
 void _onStart(BTGame *self){ 
@@ -88,9 +88,12 @@ void _onStart(BTGame *self){
    PositionComponent pc = { 100, 200 };
    Entity *e = entityCreate(es);
    PositionComponent *pcOut;
+   int id;
 
    entityAdd(PositionComponent)(e, &pc);
    pcOut = entityGet(PositionComponent)(e);
+
+   id = componentGetParentID(pcOut);
 
    entitySystemDestroy(es);
 

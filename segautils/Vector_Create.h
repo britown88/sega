@@ -3,6 +3,8 @@
 #include "Defs.h"
 #include "segashared\CheckedMemory.h"
 #include <string.h>
+#define T VectorT
+
 #define VEC_NAME CONCAT(vec_, T)
 
 #ifndef vec
@@ -110,7 +112,5 @@ static void vecClear(T)(VEC_NAME *self){
 }
 
 #undef VEC_NAME
-
-#ifndef SKIP_T_UNDEF
+#undef VectorT
 #undef T
-#endif
