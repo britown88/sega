@@ -73,9 +73,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BT.h" />
+    <ClInclude Include="CoreComponents.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c" />
+    <ClCompile Include="CoreComponents.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Entities\Entities.vcxproj">

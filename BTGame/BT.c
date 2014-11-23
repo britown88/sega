@@ -1,6 +1,7 @@
 #include "BT.h"
 #include "SEGA\App.h"
 #include "segashared\CheckedMemory.h"
+#include "CoreComponents.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
@@ -67,18 +68,6 @@ VirtualApp *btCreate() {
 void _destroy(BTGame *self){
    checkedFree(self);
 }
-
-#include "Entities\Entities.h"
-
-typedef struct {
-   int x, y;
-}PositionComponent;
-
-#define ComponentT PositionComponent
-#include "Entities\ComponentDecl.h"
-
-#define ComponentT PositionComponent
-#include "Entities\ComponentImpl.h"
 
 void _onStart(BTGame *self){ 
    byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
