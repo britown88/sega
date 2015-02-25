@@ -95,6 +95,17 @@ void _onStart(BTGame *self){
    //Image *testImg = imageDeserialize("assets/img/test.ega");
    int i;
 
+   {
+      Entity *e = entityCreate(self->entitySystem);
+      PositionComponent pc = { 0, 0 };
+      ImageComponent img = { stringIntern("assets/img/adam.ega") };
+      VelocityComponent vc = {0, 0};
+      entityAdd(PositionComponent)(e, &pc);
+      entityAdd(ImageComponent)(e, &img);
+      entityAdd(VelocityComponent)(e, &vc);
+      entityUpdate(e);
+   }
+
    for (i = 0; i < 10000; ++i){
       Entity *e = entityCreate(self->entitySystem);
       PositionComponent pc = { i * 20, 100 };
@@ -103,6 +114,8 @@ void _onStart(BTGame *self){
       entityAdd(ImageComponent)(e, &img);
       entityUpdate(e);
    }
+
+   
 
    memcpy(self->vApp.currentPalette.colors, defPal.colors, EGA_PALETTE_COLORS);
    //frameRenderImage(self->vApp.currentFrame, 0, 0, testImg);
@@ -114,8 +127,10 @@ void _onStep(BTGame *self){
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
    COMPONENT_QUERY(self->entitySystem, PositionComponent, pc, {
-      pc->x++;
-      pc->y = sin(pc->x*(3.14 / 180.0)) * 175 + 175;
+      if (!entityGet(VelocityComponent)(componentGetParent(pc, self->entitySystem))){
+         pc->x++;
+         pc->y = sin(pc->x*(3.14 / 180.0)) * 175 + 175;
+      }
    });
 }
 
