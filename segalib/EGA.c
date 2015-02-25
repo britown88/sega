@@ -76,6 +76,14 @@ void frameRenderImage(Frame *self, short x, short y, Image *img) {
    }
 }
 
+void frameClear(Frame *self, byte color){
+   int i;
+   for (i = 0; i < EGA_PLANES; ++i) {
+      byte current = getBit(color, i) ? 255 : 0;
+      memset((byte*)(self->planes + i), current, EGA_BYTES);
+   }
+}
+
 byte scanLineGetBit(ScanLine *self, short position) {
    return  getBitFromArray(self->pixels, position);
 }

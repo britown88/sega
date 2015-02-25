@@ -71,7 +71,7 @@ Font *fontFactoryGetFont(FontFactory *self, byte backgroundColor, byte foregroun
       for(y = 0; y < FONT_FILE_HEIGHT; ++y){
          for(x = 0; x < FONT_FILE_WIDTH; ++x) {
             byte textVal = getBitFromArray(self->textPlane.lines[y].pixels, x);
-            byte color = textVal == 0 ? foregroundColor : backgroundColor;
+            byte color = textVal == 0 ? backgroundColor : foregroundColor;
 
             for(i = 0; i < EGA_PLANES; ++i) {
                byte *line = self->fonts[index].planes[i].lines[y].pixels;

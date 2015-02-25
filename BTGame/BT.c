@@ -10,8 +10,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
 
 typedef struct {
@@ -95,9 +95,9 @@ void _onStart(BTGame *self){
    //Image *testImg = imageDeserialize("assets/img/test.ega");
    int i;
 
-   for (i = 0; i < 10; ++i){
+   for (i = 0; i < 10000; ++i){
       Entity *e = entityCreate(self->entitySystem);
-      PositionComponent pc = { i * 40, 100 };
+      PositionComponent pc = { i * 20, 100 };
       ImageComponent img = { stringIntern("assets/img/aramis.ega") };
       entityAdd(PositionComponent)(e, &pc);
       entityAdd(ImageComponent)(e, &img);
@@ -112,6 +112,11 @@ void _onStart(BTGame *self){
 
 void _onStep(BTGame *self){
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
+
+   COMPONENT_QUERY(self->entitySystem, PositionComponent, pc, {
+      pc->x++;
+      pc->y = sin(pc->x*(3.14 / 180.0)) * 175 + 175;
+   });
 }
 
 

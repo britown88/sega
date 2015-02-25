@@ -60,6 +60,7 @@ typedef struct Image_t Image;
 Frame *frameCreate();
 void frameDestroy(Frame *self);
 void frameRenderImage(Frame *self, short x, short y, Image *img);
+void frameClear(Frame *self, byte color);
 
 void scanLineSetBit(ScanLine *self, short position, byte value);
 byte scanLineGetBit(ScanLine *self, short position);

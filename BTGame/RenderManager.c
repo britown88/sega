@@ -24,6 +24,7 @@ void TRenderComponentDestroy(TRenderComponent *self){
 struct RenderManager_t{
    Manager m;
    EntitySystem *system;
+   FontFactory *fontFactory;
 
    
 };
@@ -50,12 +51,17 @@ ManagerVTable *_createVTable(){
 
 RenderManager *createRenderManager(EntitySystem *system){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
+   Image *fontImage = imageDeserialize("assets/img/font.ega");
    out->system = system;
    out->m.vTable = _createVTable();
+   out->fontFactory = fontFactoryCreate(fontImage);
+
+   imageDestroy(fontImage);
    return out;
 }
 
 void renderManagerDestroy(RenderManager *self){
+   fontFactoryDestroy(self->fontFactory);
    checkedFree(self);
 }
 
@@ -92,6 +98,15 @@ void renderManagerOnUpdate(RenderManager *self, Entity *e){
 }
 
 void renderManagerRender(RenderManager *self, Frame *frame){
+   static long frameIndex = 0;
+   byte bgPaletteColor = (frameIndex / 50) % 16;
+   byte txtX = (frameIndex / 10) % EGA_TEXT_RES_WIDTH;
+   byte txtY = (frameIndex / 10) % EGA_TEXT_RES_HEIGHT;
+   ++frameIndex;
+   frameClear(frame, bgPaletteColor);
+
+   frameRenderText(frame, "OBEY", txtX, txtY, fontFactoryGetFont(self->fontFactory, bgPaletteColor, 15));
+   
    COMPONENT_QUERY(self->system, TRenderComponent, trc, {
       Entity *e = componentGetParent(trc, self->system);
       PositionComponent *pc = entityGet(PositionComponent)(e);
