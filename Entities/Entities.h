@@ -65,13 +65,17 @@ size_t componentListGetCount(ComponentList *self);
 { \
    size_t id = GetRTTI(component_type)()->ID; \
    ComponentList *CONCAT(clist__, component_type) = entitySystemGetCompList(es, id); \
-   char* CONCAT(first__, component_type) = componentListGetRaw(CONCAT(clist__, component_type)); \
-   char* CONCAT(last__, component_type) = CONCAT(first__, component_type) + componentListGetCount(CONCAT(clist__, component_type)) * (sizeof(int) + sizeof(component_type)); \
-   while (CONCAT(first__, component_type) != CONCAT(last__, component_type))\
-   {\
+   size_t CONCAT(count__, component_type); \
+   if(CONCAT(clist__, component_type) && (CONCAT(count__, component_type) = componentListGetCount(CONCAT(clist__, component_type)))) \
+   { \
+      char* CONCAT(first__, component_type) = componentListGetRaw(CONCAT(clist__, component_type)); \
+      char* CONCAT(last__, component_type) = CONCAT(first__, component_type) + CONCAT(count__, component_type) * (sizeof(int) + sizeof(component_type)); \
+      while (CONCAT(first__, component_type) != CONCAT(last__, component_type))\
+      {\
       component_type* iterator_name = (component_type*)(CONCAT(first__, component_type) += sizeof(int)); \
       __VA_ARGS__ \
       CONCAT(first__, component_type) += sizeof(component_type); \
+      } \
    } \
 }
 

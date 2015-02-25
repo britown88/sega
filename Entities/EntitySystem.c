@@ -82,7 +82,21 @@ EntitySystem *entitySystemCreate(){
 
    return out;
 }
+
+void _destroyAllEntities(EntitySystem *self){
+   Entity *first = self->entityPool;
+   Entity *last = first + self->eCount;
+   while (first != last){
+      Entity *e = first++;
+      if (e->loaded){
+         entityDestroy(e);
+      }
+   }
+
+}
+
 void entitySystemDestroy(EntitySystem *self){   
+   _destroyAllEntities(self);
    priorityQueueDestroy(self->eQueue);
    checkedFree(self->entityPool);
    vecDestroy(ComponentList)(self->lists);

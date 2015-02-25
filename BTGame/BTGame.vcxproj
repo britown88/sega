@@ -74,11 +74,13 @@
   <ItemGroup>
     <ClInclude Include="BT.h" />
     <ClInclude Include="CoreComponents.h" />
+    <ClInclude Include="ImageManager.h" />
     <ClInclude Include="Managers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />
+    <ClCompile Include="ImageManager.c" />
     <ClCompile Include="RenderManager.c" />
   </ItemGroup>
   <ItemGroup>

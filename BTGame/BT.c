@@ -4,11 +4,13 @@
 #include "segashared\Strings.h"
 #include "CoreComponents.h"
 #include "Managers.h"
+#include "ImageManager.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
@@ -19,6 +21,7 @@ typedef struct {
    AppData data;
    BTManagers managers;
    EntitySystem *entitySystem;
+   ImageManager *imageManager;
 
 } BTGame;
 
@@ -61,7 +64,7 @@ AppData _getData(BTGame *self) {
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
 
-   self->managers.renderManager = createRenderManager(self->entitySystem);
+   self->managers.renderManager = createRenderManager(self->entitySystem, self->imageManager);
    entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.renderManager);
 
 }
@@ -78,6 +81,8 @@ VirtualApp *btCreate() {
    r->data = createData(); 
 
    //Other constructor shit goes here   
+   r->imageManager = imageManagerCreate();
+
    _initEntitySystem(r);
 
    return (VirtualApp*)r;
@@ -85,7 +90,8 @@ VirtualApp *btCreate() {
 
 void _destroy(BTGame *self){
    _destroyEntitySystem(self);
-   
+
+   imageManagerDestroy(self->imageManager);   
    checkedFree(self);
 }
 
@@ -114,8 +120,6 @@ void _onStart(BTGame *self){
       entityAdd(ImageComponent)(e, &img);
       entityUpdate(e);
    }
-
-   
 
    memcpy(self->vApp.currentPalette.colors, defPal.colors, EGA_PALETTE_COLORS);
    //frameRenderImage(self->vApp.currentFrame, 0, 0, testImg);
