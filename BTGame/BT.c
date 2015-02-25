@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 #define FULLSCREEN 0
 
 typedef struct {
