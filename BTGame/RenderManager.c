@@ -100,8 +100,8 @@ void renderManagerOnUpdate(RenderManager *self, Entity *e){
 void renderManagerRender(RenderManager *self, Frame *frame){
    static long frameIndex = 0;
    byte bgPaletteColor = (frameIndex / 50) % 16;
-   byte txtX = (frameIndex / 10) % EGA_TEXT_RES_WIDTH;
-   byte txtY = (frameIndex / 10) % EGA_TEXT_RES_HEIGHT;
+   byte txtX = (frameIndex / 5) % EGA_TEXT_RES_WIDTH;
+   byte txtY = (frameIndex / 5) % EGA_TEXT_RES_HEIGHT;
    ++frameIndex;
    frameClear(frame, bgPaletteColor);
 

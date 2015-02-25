@@ -63,7 +63,7 @@ size_t componentListGetCount(ComponentList *self);
 
 #define COMPONENT_QUERY(es, component_type, iterator_name, ...) \
 { \
-   size_t id = GetRTTI(component_type)()->ID; \
+   size_t id = GetRTTI(component_type)->ID; \
    ComponentList *CONCAT(clist__, component_type) = entitySystemGetCompList(es, id); \
    char* CONCAT(first__, component_type) = componentListGetRaw(CONCAT(clist__, component_type)); \
    char* CONCAT(last__, component_type) = CONCAT(first__, component_type) + componentListGetCount(CONCAT(clist__, component_type)) * (sizeof(int) + sizeof(component_type)); \

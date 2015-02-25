@@ -13,13 +13,13 @@ typedef struct {
 
 DLL_PUBLIC size_t getUniqueRTTIID();
 
-#define GetRTTI(Typename) CONCAT(_getRTTI_, Typename)
+#define GetRTTI(Typename) CONCAT(_getRTTI_, Typename)()
 
 #define DeclRTTI(Typename) \
-   Type *GetRTTI(Typename)();
+   Type *GetRTTI(Typename);
 
 #define ImplRTTI(Typename)\
-   Type *GetRTTI(Typename)() {\
+   Type *GetRTTI(Typename) {\
       static Type out = {0};\
       static int init = 0;\
       if(!init) {\

@@ -85,7 +85,7 @@ ComponentVTable *compGetVTable(T)(){
 }
 
 ComponentList *compList(T)(EntitySystem *system){
-   size_t rtti = GetRTTI(T)()->ID;
+   size_t rtti = GetRTTI(T)->ID;
    ComponentList *out = entitySystemGetCompList(system, rtti);
    if (!out){
       entitySystemRegisterCompList(system, rtti, compGetVTable(T)());
