@@ -1,4 +1,5 @@
 #include "Managers.h"
+#include "ImageManager.h"
 
 #include "Entities\Entities.h"
 
@@ -7,13 +8,13 @@
 #include "segalib\EGA.h"
 
 typedef struct{
-   Image *img;
+   ManagedImage *img;
    StringView filename;
 }TRenderComponent;
 
 void TRenderComponentDestroy(TRenderComponent *self){
    if (self->img){
-      imageDestroy(self->img);
+      managedImageDestroy(self->img);
    }
 }
 
@@ -25,6 +26,7 @@ struct RenderManager_t{
    Manager m;
    EntitySystem *system;
    FontFactory *fontFactory;
+   ImageManager *images;
 
    
 };
@@ -49,12 +51,13 @@ ManagerVTable *_createVTable(){
 
 #pragma endregion
 
-RenderManager *createRenderManager(EntitySystem *system){
+RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
    Image *fontImage = imageDeserialize("assets/img/font.ega");
    out->system = system;
    out->m.vTable = _createVTable();
    out->fontFactory = fontFactoryCreate(fontImage);
+   out->images = imageManager;
 
    imageDestroy(fontImage);
    return out;
@@ -76,16 +79,16 @@ void renderManagerOnUpdate(RenderManager *self, Entity *e){
          //update existing
          if (trc->filename != ic->filename){
             //image has changed
-            imageDestroy(trc->img);
+            managedImageDestroy(trc->img);
             trc->filename = ic->filename;
-            trc->img = imageDeserialize(trc->filename);
+            trc->img = imageManagerGetImage(self->images, trc->filename);
          }
       }
       else {
          //new image
          TRenderComponent newtrc;
          newtrc.filename = ic->filename;
-         newtrc.img = imageDeserialize(newtrc.filename);
+         newtrc.img = imageManagerGetImage(self->images, newtrc.filename);
          entityAdd(TRenderComponent)(e, &newtrc);
       }
    }
@@ -111,12 +114,17 @@ void renderManagerRender(RenderManager *self, Frame *frame){
       Entity *e = componentGetParent(trc, self->system);
       PositionComponent *pc = entityGet(PositionComponent)(e);
       int x = 0, y = 0;
+      Image *img = managedImageGetImage(trc->img);
 
-      if (pc){
-         x = pc->x;
-         y = pc->y;
+      if (img){
+         if (pc){
+            x = pc->x;
+            y = pc->y;
+         }
+
+         frameRenderImage(frame, x, y, img);
       }
 
-      frameRenderImage(frame, x, y, trc->img);   
+       
    });
 }

@@ -4,14 +4,16 @@
 #include "segashared\Strings.h"
 #include "CoreComponents.h"
 #include "Managers.h"
+#include "ImageManager.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 #define FULLSCREEN 0
 
 typedef struct {
@@ -19,6 +21,7 @@ typedef struct {
    AppData data;
    BTManagers managers;
    EntitySystem *entitySystem;
+   ImageManager *imageManager;
 
 } BTGame;
 
@@ -61,7 +64,7 @@ AppData _getData(BTGame *self) {
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
 
-   self->managers.renderManager = createRenderManager(self->entitySystem);
+   self->managers.renderManager = createRenderManager(self->entitySystem, self->imageManager);
    entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.renderManager);
 
 }
@@ -78,6 +81,8 @@ VirtualApp *btCreate() {
    r->data = createData(); 
 
    //Other constructor shit goes here   
+   r->imageManager = imageManagerCreate();
+
    _initEntitySystem(r);
 
    return (VirtualApp*)r;
@@ -85,7 +90,8 @@ VirtualApp *btCreate() {
 
 void _destroy(BTGame *self){
    _destroyEntitySystem(self);
-   
+
+   imageManagerDestroy(self->imageManager);   
    checkedFree(self);
 }
 
@@ -94,6 +100,17 @@ void _onStart(BTGame *self){
    Palette defPal = paletteDeserialize("assets/img/default.pal");
    //Image *testImg = imageDeserialize("assets/img/test.ega");
    int i;
+
+   {
+      Entity *e = entityCreate(self->entitySystem);
+      PositionComponent pc = { 0, 0 };
+      ImageComponent img = { stringIntern("assets/img/adam.ega") };
+      VelocityComponent vc = {0, 0};
+      entityAdd(PositionComponent)(e, &pc);
+      entityAdd(ImageComponent)(e, &img);
+      entityAdd(VelocityComponent)(e, &vc);
+      entityUpdate(e);
+   }
 
    for (i = 0; i < 10000; ++i){
       Entity *e = entityCreate(self->entitySystem);
@@ -114,8 +131,10 @@ void _onStep(BTGame *self){
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
    COMPONENT_QUERY(self->entitySystem, PositionComponent, pc, {
-      pc->x++;
-      pc->y = sin(pc->x*(3.14 / 180.0)) * 175 + 175;
+      if (!entityGet(VelocityComponent)(componentGetParent(pc, self->entitySystem))){
+         pc->x++;
+         pc->y = sin(pc->x*(3.14 / 180.0)) * 175 + 175;
+      }
    });
 }
 
