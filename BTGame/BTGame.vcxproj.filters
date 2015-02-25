@@ -21,12 +21,18 @@
     <ClInclude Include="CoreComponents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Managers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CoreComponents.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

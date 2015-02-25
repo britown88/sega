@@ -2,14 +2,15 @@
 #include "SEGA\App.h"
 #include "segashared\CheckedMemory.h"
 #include "CoreComponents.h"
+#include "Managers.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
 #include <string.h>
 #include <stdlib.h>
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
 #define FULLSCREEN 0
 
 typedef struct {
@@ -70,22 +71,27 @@ void _destroy(BTGame *self){
 }
 
 void _entitiesStress(){
+   BTManagers managers;
    EntitySystem *es = entitySystemCreate();
 
    Entity *entities[100] = { 0 };
    int iterations = sizeof(entities) / sizeof(Entity*);
 
-
-
    int i;
+
+   managers.renderManager = createRenderManager();
+   entitySystemRegisterManager(es, managers.renderManager);
+
    for (i = 0; i < iterations; ++i){
       entities[i] = entityCreate(es);
       PositionComponent pc = { i * 2, i * 3 };
       entityAdd(PositionComponent)(entities[i], &pc);
+      entityUpdate(entities[i]);
    }
 
    for (i = 0; i < iterations / 2; ++i){
       entityRemove(PositionComponent)(entities[i * 2]);
+      entityUpdate(entities[i * 2]);
    }
 
    for (i = 0; i < iterations; ++i){
@@ -101,6 +107,7 @@ void _entitiesStress(){
       else{
          PositionComponent pc = { -1, -1 };
          entityAdd(PositionComponent)(entities[i], &pc);
+         entityUpdate(entities[i]);
 
       }
    }
@@ -109,27 +116,26 @@ void _entitiesStress(){
       PositionComponent *pc = entityGet(PositionComponent)(entities[i]);
       if (pc){
          entityRemove(PositionComponent)(entities[i]);
+         entityUpdate(entities[i]);
       }
    }
 
 
    entitySystemDestroy(es);
+   managerDestroy(managers.renderManager);
 }
 
 void _onStart(BTGame *self){ 
-   byte defPal[] =  {0, 1, 2, 3,  4,  5,  20, 7,  56, 57, 58, 59, 60, 61, 62, 63};
-   Image *testImg;
-   PNGData *png = pngDataCreate("assets/img/font.png");   
+   Palette defPal = paletteDeserialize("assets/img/default.pal");
+   Image *testImg = imageDeserialize("assets/img/test.ega");
+
 
    _entitiesStress();
 
-   pngDataRender(png, paletteCreatePartial(defPal, 0, 0, 16).colors);
-   memcpy(self->vApp.currentPalette.colors, pngDataGetPalette(png), EGA_PALETTE_COLORS);
-   testImg = pngDataCreateImage(png);
+   memcpy(self->vApp.currentPalette.colors, defPal.colors, EGA_PALETTE_COLORS);
    frameRenderImage(self->vApp.currentFrame, 0, 0, testImg);
 
    imageDestroy(testImg);
-   pngDataDestroy(png);
 }
 
 void _onStep(BTGame *self){

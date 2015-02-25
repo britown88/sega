@@ -74,10 +74,12 @@
   <ItemGroup>
     <ClInclude Include="BT.h" />
     <ClInclude Include="CoreComponents.h" />
+    <ClInclude Include="Managers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />
+    <ClCompile Include="RenderManager.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Entities\Entities.vcxproj">

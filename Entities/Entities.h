@@ -14,10 +14,31 @@ typedef void* Component;
 Entity *componentGetParent(Component self, EntitySystem *system);
 int componentGetParentID(Component self);
 
+typedef struct Manager_t Manager;
+
+typedef struct {
+   void(*onDestroy)(Manager*, Entity*);
+   void(*onUpdate)(Manager*, Entity*);
+   void(*destroy)(Manager*);
+} ManagerVTable;
+
+struct Manager_t {
+   ManagerVTable *vTable;
+};
+
+void managerDestroy(Manager *self);
+void managerOnDestroy(Manager *self, Entity *e);
+void managerOnUpdate(Manager *self, Entity *e);
+
 EntitySystem *entitySystemCreate();
 void entitySystemDestroy(EntitySystem *self);
 
+void entitySystemRegisterManager(EntitySystem *self, Manager *manager);
+size_t entitySystemGetManagerCount(EntitySystem *self);
+Manager **entitySystemGetManagers(EntitySystem *self);
+
 Entity *entityCreate(EntitySystem *system);
+void entityUpdate(Entity *self);
 void entityDestroy(Entity *self);
 int entityGetID(Entity *self);
 EntitySystem *entityGetSystem(Entity *self);

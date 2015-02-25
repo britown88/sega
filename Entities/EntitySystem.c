@@ -33,6 +33,10 @@ ComponentVTable *compListGetVTable(ComponentList *self){
 #define VectorT ComponentList
 #include "segautils\Vector_Create.h"
 
+typedef Manager* ManagerPtr;
+#define VectorT ManagerPtr
+#include "segautils\Vector_Create.h"
+
 void _cvtDestroy(ComponentList *self){
    if (self->cvt->destroy){
       self->cvt->destroy(self->list);
@@ -45,10 +49,21 @@ struct EntitySystem_t {
    size_t eCount;
 
    vec(ComponentList) *lists;
+   vec(ManagerPtr) *managers;
 };
 
 Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
    return n1->ID < n2->ID ? n1 : n2;
+}
+
+void managerDestroy(Manager *self){
+   self->vTable->destroy(self);
+}
+void managerOnDestroy(Manager *self, Entity *e){
+   self->vTable->onDestroy(self, e);
+}
+void managerOnUpdate(Manager *self, Entity *e){
+   self->vTable->onUpdate(self, e);
 }
 
 EntitySystem *entitySystemCreate(){
@@ -56,6 +71,7 @@ EntitySystem *entitySystemCreate(){
    out->eQueue = priorityQueueCreate(offsetof(Entity, node), (PQCompareFunc)&_eNodeCompareFunc);
    out->entityPool = checkedCalloc(MAX_ENTITIES, sizeof(Entity));
    out->lists = vecCreate(ComponentList)(&_cvtDestroy);
+   out->managers = vecCreate(ManagerPtr)(NULL);
 
    return out;
 }
@@ -63,7 +79,22 @@ void entitySystemDestroy(EntitySystem *self){
    priorityQueueDestroy(self->eQueue);
    checkedFree(self->entityPool);
    vecDestroy(ComponentList)(self->lists);
+   vecDestroy(ManagerPtr)(self->managers);
    checkedFree(self);
+}
+void entitySystemRegisterManager(EntitySystem *self, Manager *manager){
+   vecPushBack(ManagerPtr)(self->managers, &manager);
+}
+size_t entitySystemGetManagerCount(EntitySystem *self){
+   return vecSize(ManagerPtr)(self->managers);
+}
+Manager **entitySystemGetManagers(EntitySystem *self){
+   if (vecIsEmpty(ManagerPtr)(self->managers)){
+      return NULL;
+   }
+   else {
+      return self->managers->data;
+   }
 }
 
 void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTable *table){
@@ -115,10 +146,27 @@ Entity *entityCreate(EntitySystem *system){
    return out;
 }
 
+void entityUpdate(Entity *self){
+   Manager **first = entitySystemGetManagers(self->system);
+   Manager **last = first + entitySystemGetManagerCount(self->system);
+
+   while (first != last){ managerOnUpdate((*first++), self); }
+}
+
+void _callManagerDestroy(Entity *self){
+   Manager **first = entitySystemGetManagers(self->system);
+   Manager **last = first + entitySystemGetManagerCount(self->system);
+
+   while (first != last){ managerOnDestroy((*first++), self); }
+}
+
 void entityDestroy(Entity *self){
    vec(ComponentList) *v = self->system->lists;
    size_t compCount = vecSize(ComponentList)(v);
    size_t i;
+
+   _callManagerDestroy(self);
+
    for (i = 0; i < compCount; ++i){
       ComponentList *list = vecAt(ComponentList)(v, i);
       int compIndex = list->lookup[self->ID];
