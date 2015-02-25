@@ -43,9 +43,11 @@ typedef struct {
 	ScanLine lines[EGA_RES_HEIGHT];
 } BitPlane;
 
-typedef struct {
+typedef struct Frame_t{
 	BitPlane planes[EGA_PLANES];
 } Frame;
+
+
 
 
 

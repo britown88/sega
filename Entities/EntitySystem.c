@@ -30,6 +30,13 @@ ComponentVTable *compListGetVTable(ComponentList *self){
    return self->cvt;
 }
 
+void *componentListGetRaw(ComponentList *self){
+   return self->cvt->getRaw(self->list);
+}
+size_t componentListGetCount(ComponentList *self){
+   return self->cvt->count(self->list);
+}
+
 #define VectorT ComponentList
 #include "segautils\Vector_Create.h"
 

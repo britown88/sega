@@ -27,6 +27,9 @@
     <ClInclude Include="ComponentFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentDeclTransient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntitySystem.c">

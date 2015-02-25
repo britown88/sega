@@ -14,5 +14,6 @@
 #define compListCount(TYPE) CONCAT(compListCount_, TYPE)
 #define compListAddComp(TYPE) CONCAT(compListAddComp_, TYPE)
 #define compListRemoveComp(TYPE) CONCAT(compListRemoveComp_, TYPE)
+#define compListGetRaw(TYPE) CONCAT(compListGetRaw_, TYPE)
 
 #endif

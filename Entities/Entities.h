@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "segashared\RTTI.h"
 
 #define MAX_ENTITIES (1024 * 128)
 
@@ -50,16 +51,32 @@ typedef struct {
    size_t(*count)(ComponentListData);
    int(*add)(ComponentListData, int/*entity ID*/, Component);
    void(*remove)(ComponentListData, int/*entity ID*/);
+   void*(*getRaw)(ComponentListData);
 } ComponentVTable;
-
-void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTable *table);
-ComponentList *entitySystemGetCompList(EntitySystem *self, size_t rtti);
 
 int *compListGetLookup(ComponentList *self);
 ComponentListData compListGetList(ComponentList *self);
 ComponentVTable *compListGetVTable(ComponentList *self);
 
-//void componentListAddComponent
+void *componentListGetRaw(ComponentList *self);
+size_t componentListGetCount(ComponentList *self);
+
+#define COMPONENT_QUERY(es, component_type, iterator_name, ...) \
+{ \
+   size_t id = GetRTTI(component_type)()->ID; \
+   ComponentList *CONCAT(clist__, component_type) = entitySystemGetCompList(es, id); \
+   char* CONCAT(first__, component_type) = componentListGetRaw(CONCAT(clist__, component_type)); \
+   char* CONCAT(last__, component_type) = CONCAT(first__, component_type) + componentListGetCount(CONCAT(clist__, component_type)) * (sizeof(int) + sizeof(component_type)); \
+   while (CONCAT(first__, component_type) != CONCAT(last__, component_type))\
+   {\
+      component_type* iterator_name = (component_type*)(CONCAT(first__, component_type) += sizeof(int)); \
+      __VA_ARGS__ \
+      CONCAT(first__, component_type) += sizeof(component_type); \
+   } \
+}
+
+void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTable *table);
+ComponentList *entitySystemGetCompList(EntitySystem *self, size_t rtti);
 
 
 

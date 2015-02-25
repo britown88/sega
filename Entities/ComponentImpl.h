@@ -26,7 +26,7 @@ void compListDestroy(T)(ComponentListData data){
    vecDestroy(COMP_NAME)(data);
 }
 
-Component compListGetAt(T)(ComponentListData data, int index){
+Component compListGetAt(T)(ComponentListData data, size_t index){
    if (index >= vecSize(COMP_NAME)(data)){
       return NULL;
    }
@@ -47,8 +47,23 @@ int compListAddComp(T)(ComponentListData data, int entityID, Component comp){
 }
 
 void compListRemoveComp(T)(ComponentListData data, int index){
-   memcpy(vecAt(COMP_NAME)(data, index), vecAt(COMP_NAME)(data, vecSize(COMP_NAME)(data)-1), sizeof(COMP_NAME));
+   int swapIndex = vecSize(COMP_NAME)(data) - 1;
+   COMP_NAME *toDelete = vecAt(COMP_NAME)(data, index);
+   COMP_NAME *last = vecAt(COMP_NAME)(data, swapIndex);
+
+#ifdef COMP_DESTROY_FUNC
+   COMP_DESTROY_FUNC(&toDelete->data);
+   #undef COMP_DESTROY_FUNC
+#endif
+
+   if (swapIndex != index){
+      memcpy(toDelete, last, sizeof(COMP_NAME));
+   }
    vecPopBack(COMP_NAME)(data);
+}
+
+void *compListGetRaw(T)(ComponentListData data){
+   return ((vec(COMP_NAME)*)data)->data;
 }
 
 ComponentVTable *compGetVTable(T)(){
@@ -61,6 +76,7 @@ ComponentVTable *compGetVTable(T)(){
       out.count = (size_t(*)(ComponentListData))&compListCount(T);
       out.add = (int(*)(ComponentListData, int, Component))&compListAddComp(T);
       out.remove = (void(*)(ComponentListData, int))&compListRemoveComp(T);
+      out.getRaw = (void*(*)(ComponentListData))&compListGetRaw(T);
 
       init = 1;
    }

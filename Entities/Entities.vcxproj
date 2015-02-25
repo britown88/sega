@@ -76,6 +76,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ComponentDeclTransient.h" />
     <ClInclude Include="ComponentFunctions.h" />
     <ClInclude Include="ComponentImpl.h" />
     <ClInclude Include="ComponentDecl.h" />
