@@ -116,7 +116,7 @@ static T *vecBegin(T)(VEC_NAME *self){
    return !vecIsEmpty(T)(self) ? vecAt(T)(self, 0) : NULL;
 }
 static T *vecEnd(T)(VEC_NAME *self){
-   return !vecIsEmpty(T)(self) ? vecAt(T)(self, vecSize(T)(self) - 1) : NULL;
+   return !vecIsEmpty(T)(self) ? vecAt(T)(self, vecSize(T)(self)) : NULL;
 }
 
 #undef VEC_NAME
