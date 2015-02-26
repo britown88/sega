@@ -103,23 +103,28 @@ void _onStart(BTGame *self){
 
    {
       Entity *e = entityCreate(self->entitySystem);
-      PositionComponent pc = { 0, 0 };
-      ImageComponent img = { stringIntern("assets/img/adam.ega") };
-      VelocityComponent vc = {0, 0};
-      entityAdd(PositionComponent)(e, &pc);
-      entityAdd(ImageComponent)(e, &img);
-      entityAdd(VelocityComponent)(e, &vc);
+
+      
+      ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
+      ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/adam.ega"));
+      ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);
+      //ADD_NEW_COMPONENT(e, VelocityComponent, 0);
+
       entityUpdate(e);
    }
 
    for (i = 0; i < 10000; ++i){
       Entity *e = entityCreate(self->entitySystem);
-      PositionComponent pc = { i * 20, 100 };
-      ImageComponent img = { stringIntern("assets/img/aramis.ega") };
-      entityAdd(PositionComponent)(e, &pc);
-      entityAdd(ImageComponent)(e, &img);
+
+      ADD_NEW_COMPONENT(e, VelocityComponent, 0);
+      ADD_NEW_COMPONENT(e, PositionComponent, i * 20, 100);
+      ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/aramis.ega"));
+      
+      ADD_NEW_COMPONENT(e, LayerComponent, LayerBackground);
+      
       entityUpdate(e);
    }
+
 
    memcpy(self->vApp.currentPalette.colors, defPal.colors, EGA_PALETTE_COLORS);
    //frameRenderImage(self->vApp.currentFrame, 0, 0, testImg);
@@ -131,7 +136,7 @@ void _onStep(BTGame *self){
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
    COMPONENT_QUERY(self->entitySystem, PositionComponent, pc, {
-      if (!entityGet(VelocityComponent)(componentGetParent(pc, self->entitySystem))){
+      if (entityGet(VelocityComponent)(componentGetParent(pc, self->entitySystem))){
          pc->x++;
          pc->y = sin(pc->x*(3.14 / 180.0)) * 175 + 175;
       }

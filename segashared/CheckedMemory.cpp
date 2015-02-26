@@ -1,6 +1,7 @@
 #include "CheckedMemory.h"
 
 #include <unordered_map>
+#include <assert.h>
 
 
 
@@ -26,6 +27,13 @@ void* checkedCallocImpl(size_t count, size_t sz, char* file, size_t line){
    return a;
 }
 void checkedFreeImpl(void* mem){
+   if (!mem){
+      return;
+   }
+
+   if (_memMap.find(mem) == _memMap.end()){
+      assert(0 && "PICNIC");
+   }
    _memMap.erase(mem);
    free(mem);
 }

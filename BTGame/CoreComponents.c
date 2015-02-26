@@ -10,3 +10,6 @@
 
 #define ComponentT ImageComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT LayerComponent
+#include "Entities\ComponentImpl.h"

@@ -25,3 +25,18 @@ typedef struct{
 
 #define ComponentT ImageComponent
 #include "Entities\ComponentDecl.h"
+
+typedef enum{
+   LayerBackground,
+   LayerTokens,
+   LayerUI,
+   LayerCount
+} Layer;
+
+typedef struct{
+   Layer layer;
+
+}LayerComponent;
+
+#define ComponentT LayerComponent
+#include "Entities\ComponentDecl.h"

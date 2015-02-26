@@ -18,6 +18,8 @@
 #define vecIsEmpty(TYPE) CONCAT(vecIsEmpty_, TYPE)
 #define vecSize(TYPE) CONCAT(vecSize_, TYPE)
 #define vecClear(TYPE) CONCAT(vecClear_, TYPE)
+#define vecBegin(TYPE) CONCAT(vecBegin_, TYPE)
+#define vecEnd(TYPE) CONCAT(vecEnd_, TYPE)
 #endif
 
 typedef struct {
@@ -109,6 +111,12 @@ static size_t vecSize(T)(VEC_NAME *self){
 }
 static void vecClear(T)(VEC_NAME *self){
    vecResize(T)(self, 0, NULL);
+}
+static T *vecBegin(T)(VEC_NAME *self){
+   return !vecIsEmpty(T)(self) ? vecAt(T)(self, 0) : NULL;
+}
+static T *vecEnd(T)(VEC_NAME *self){
+   return !vecIsEmpty(T)(self) ? vecAt(T)(self, vecSize(T)(self) - 1) : NULL;
 }
 
 #undef VEC_NAME

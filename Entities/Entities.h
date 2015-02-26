@@ -61,6 +61,12 @@ ComponentVTable *compListGetVTable(ComponentList *self);
 void *componentListGetRaw(ComponentList *self);
 size_t componentListGetCount(ComponentList *self);
 
+#define ADD_NEW_COMPONENT(entity, component_type, ...) \
+{ \
+   component_type CONCAT(__new_, component_type) = { __VA_ARGS__ }; \
+   entityAdd(component_type)(entity, &CONCAT(__new_, component_type)); \
+}
+
 #define COMPONENT_QUERY(es, component_type, iterator_name, ...) \
 { \
    size_t id = GetRTTI(component_type)->ID; \

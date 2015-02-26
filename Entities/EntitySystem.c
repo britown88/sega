@@ -193,6 +193,11 @@ void entityDestroy(Entity *self){
       int compIndex = list->lookup[self->ID];
       Component moved;
 
+      if (compIndex == -1){
+         //component doesnt fucking exist so dont fucking delete it nerd
+         continue;
+      }
+
       list->lookup[self->ID] = -1;
 
       list->cvt->remove(list->list, compIndex);
