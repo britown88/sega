@@ -117,7 +117,7 @@ void _onStart(BTGame *self){
       Entity *e = entityCreate(self->entitySystem);
 
       ADD_NEW_COMPONENT(e, VelocityComponent, 0);
-      ADD_NEW_COMPONENT(e, PositionComponent, i * 20, 100);
+      ADD_NEW_COMPONENT(e, PositionComponent, i * 10, 100);
       ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/aramis.ega"));
       
       ADD_NEW_COMPONENT(e, LayerComponent, LayerBackground);;
