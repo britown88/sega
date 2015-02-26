@@ -113,14 +113,14 @@ void _onStart(BTGame *self){
       entityUpdate(e);
    }
 
-   for (i = 0; i < 10000; ++i){
+   for (i = 0; i < MAX_ENTITIES - 1; ++i){
       Entity *e = entityCreate(self->entitySystem);
 
       ADD_NEW_COMPONENT(e, VelocityComponent, 0);
       ADD_NEW_COMPONENT(e, PositionComponent, i * 20, 100);
       ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/aramis.ega"));
       
-      ADD_NEW_COMPONENT(e, LayerComponent, LayerBackground);
+      ADD_NEW_COMPONENT(e, LayerComponent, LayerBackground);;
       
       entityUpdate(e);
    }
@@ -138,7 +138,7 @@ void _onStep(BTGame *self){
    COMPONENT_QUERY(self->entitySystem, PositionComponent, pc, {
       if (entityGet(VelocityComponent)(componentGetParent(pc, self->entitySystem))){
          pc->x++;
-         pc->y = sin(pc->x*(3.14 / 180.0)) * 175 + 175;
+         pc->y = (int)(sin(pc->x*(3.14 / 180.0)) * 175) + 175;
       }
    });
 }

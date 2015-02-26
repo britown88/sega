@@ -38,6 +38,7 @@ void checkedFreeImpl(void* mem){
    free(mem);
 }
 void printMemoryLeaks(){
+#ifdef _DEBUG
    FILE *output = fopen("memleak.txt", "wt");
    for(auto &pair : _memMap) {
       auto &data = pair.second;
@@ -45,4 +46,5 @@ void printMemoryLeaks(){
    }
 
    fclose(output);
+#endif
 }
