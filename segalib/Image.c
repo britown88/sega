@@ -2,6 +2,7 @@
 #include "segautils\BitBuffer.h"
 #include <malloc.h>
 #include "segashared\CheckedMemory.h"
+#include "segautils\Defs.h"
 #include "segautils\BitTwiddling.h"
 
 #include <stdint.h>
@@ -51,28 +52,26 @@ Image *imageCreate(short width, short height) {
    return r;
 }
 
-
-Image *imageDeserialize(const char *path) 
-{
-   byte readBuffer[MAX_IMAGE_WIDTH] = {0};
+Image *_imageDeserializeEX(const char*path, int uncompress){
+   byte readBuffer[MAX_IMAGE_WIDTH] = { 0 };
    long size;
    BitBuffer *buffer = bitBufferCreate(readFullFile(path, &size), 1);
    short width, height;
    int y, i;
    Image *img;
-   
+
    width = bitBufferReadShort(buffer);
    height = bitBufferReadShort(buffer);
 
    img = imageCreate(width, height);
 
-   for(i = 0; i < EGA_IMAGE_PLANES; ++i) {
-      for(y = 0; y < height; ++y){
+   for (i = 0; i < EGA_IMAGE_PLANES; ++i) {
+      for (y = 0; y < height; ++y){
          ImageScanLine *scanLine = NULL;
          byte typeID = 0;
          bitBufferReadBits(buffer, &typeID, 2);
 
-         switch(typeID) {
+         switch (typeID) {
          case scanline_SOLID:
             scanLine = createSolidScanLineFromBB(buffer, width);
             break;
@@ -84,12 +83,28 @@ Image *imageDeserialize(const char *path)
             break;
          }
 
+         if (uncompress){
+            imageScanLineRender(scanLine, readBuffer);
+            imageScanLineDestroy(scanLine);
+            scanLine = createUncompressedScanLine(width, readBuffer);
+         }
+
          imageSetScanLine(img, y, i, scanLine);
       }
    }
 
    bitBufferDestroy(buffer);
    return img;
+}
+
+
+Image *imageDeserialize(const char *path) 
+{
+   return _imageDeserializeEX(path, false);
+}
+
+Image *imageDeserializeUncompressed(const char*path){
+   return _imageDeserializeEX(path, true);
 }
 
 void imageSerialize(Image *self, const char *path) {

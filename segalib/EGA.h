@@ -87,7 +87,13 @@ void imageScanLineSerialize(ImageScanLine *self, BitBuffer *dest);
 typedef struct Image_t Image;
 
 Image *imageCreate(short width, short height);
+
+//deserializes an ega file and maintains the file's scanline compression in memory
 Image *imageDeserialize(const char*path);
+
+//expands deserialized image into uncompressed scanlines which takes up mroe memory but renders faster
+Image *imageDeserializeUncompressed(const char*path);
+
 void imageSerialize(Image *self, const char *path);
 void imageDestroy(Image *self);
 

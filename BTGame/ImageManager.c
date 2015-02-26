@@ -67,7 +67,7 @@ ManagedImage *imageManagerGetImage(ImageManager *self, StringView path){
    found = htFind(iEntry)(self->table, &entry);
 
    if (!found){      
-      Image *newImage = imageDeserialize(path);
+      Image *newImage = imageDeserializeUncompressed(path);
       
       if (newImage){
          out = checkedCalloc(1, sizeof(ManagedImage));

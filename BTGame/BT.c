@@ -98,7 +98,7 @@ void _destroy(BTGame *self){
 
 void _onStart(BTGame *self){ 
    Palette defPal = paletteDeserialize("assets/img/default.pal");
-   //Image *testImg = imageDeserialize("assets/img/test.ega");
+
    int i;
 
    {
