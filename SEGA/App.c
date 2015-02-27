@@ -10,7 +10,6 @@
 
 #include "segautils\Defs.h"
 #include "App.h"
-#include "GLWindow.h"
 #include "segautils\Rect.h"
 
 #include "segashared\CheckedMemory.h"

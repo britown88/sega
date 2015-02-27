@@ -76,6 +76,9 @@
     <ProjectReference Include="..\BTGame\BTGame.vcxproj">
       <Project>{81713ca5-bcec-450c-9d78-edac6c7b71d1}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\GLFWContext\GLFWContext.vcxproj">
+      <Project>{ffb94248-0cc7-4f3e-a0f1-165a4dc07fa4}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\OGLRenderer\OGLRenderer.vcxproj">
       <Project>{8c0896e9-2a31-46aa-9ed8-e97e32199648}</Project>
     </ProjectReference>

@@ -34,6 +34,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Entities", "Entities\Entiti
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinGDIContext", "WinGDIContext\WinGDIContext.vcxproj", "{9163EF8F-A9D2-432E-92D1-72C0717639B3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFWContext", "GLFWContext\GLFWContext.vcxproj", "{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -88,6 +90,10 @@ Global
 		{9163EF8F-A9D2-432E-92D1-72C0717639B3}.Debug|Win32.Build.0 = Debug|Win32
 		{9163EF8F-A9D2-432E-92D1-72C0717639B3}.Release|Win32.ActiveCfg = Release|Win32
 		{9163EF8F-A9D2-432E-92D1-72C0717639B3}.Release|Win32.Build.0 = Release|Win32
+		{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}.Debug|Win32.Build.0 = Debug|Win32
+		{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}.Release|Win32.ActiveCfg = Release|Win32
+		{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

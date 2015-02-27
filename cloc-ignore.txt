@@ -5,6 +5,6 @@ cloc-ignore.txt
 segalib/ImageTools.hpp
 GLSLRenderer/GL
 GLSLRenderer/Lib
-SEGA/GLFW
-SEGA/Lib
+GLFWContext/GLFW
+GLFWContext/Lib
 SEGA Studio
