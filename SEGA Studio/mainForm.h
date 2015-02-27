@@ -575,7 +575,7 @@ private:
          Palette getNativePalette(){
             Palette r;
             pin_ptr<byte> pinned = &m_palette[0];
-            memcpy(r.colors, pinned, EGA_PALETTE_COLORS);
+            paletteCopy(&r, (Palette*)pinned);
             return r;
          }
          

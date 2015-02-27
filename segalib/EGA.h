@@ -47,13 +47,11 @@ typedef struct Frame_t{
 	BitPlane planes[EGA_PLANES];
 } Frame;
 
-
-
-
-
 Palette paletteDeserialize(const char *path);
 void paletteSerialize(byte *data, const char *path);
 Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCount);
+
+void paletteCopy(Palette *dest, Palette *src);
 
 typedef struct Image_t Image;
 

@@ -15,7 +15,7 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
-#define FRAME_RATE 200.0
+#define FRAME_RATE 60.0
 
 typedef struct {
    VirtualApp vApp;
@@ -109,38 +109,38 @@ void _onStart(BTGame *self){
       ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
       ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/adam.ega"));
       ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);
-      //ADD_NEW_COMPONENT(e, VelocityComponent, 0);
-
       entityUpdate(e);
    }
 
-   for (i = 0; i < 2500; ++i){
+   for (i = 0; i < 2000; ++i){
       Entity *e = entityCreate(self->entitySystem);
-
-      ADD_NEW_COMPONENT(e, VelocityComponent, 0);
+      
       ADD_NEW_COMPONENT(e, PositionComponent, rand() % EGA_RES_WIDTH, rand() % EGA_RES_HEIGHT);
       ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/aramis.ega"));
+      ADD_NEW_COMPONENT(e, VelocityComponent, ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1), ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1));
       
       ADD_NEW_COMPONENT(e, LayerComponent, LayerBackground);;
       
       entityUpdate(e);
    }
-
-
-   memcpy(self->vApp.currentPalette.colors, defPal.colors, EGA_PALETTE_COLORS);
-   //frameRenderImage(self->vApp.currentFrame, 0, 0, testImg);
-
-   //imageDestroy(testImg);
+   paletteCopy(&self->vApp.currentPalette, &defPal);
 }
 
 void _onStep(BTGame *self){
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
-   COMPONENT_QUERY(self->entitySystem, PositionComponent, pc, {
-      if (entityGet(VelocityComponent)(componentGetParent(pc, self->entitySystem))){
-         pc->x = pc->x++ % EGA_RES_WIDTH;;
-         //pc->y = (int)(sin(pc->x*(3.14 / 180.0)) * 175) + 175;
+   COMPONENT_QUERY(self->entitySystem, VelocityComponent, vc, {
+      PositionComponent *pc = entityGet(PositionComponent)(componentGetParent(vc, self->entitySystem));
+      if (pc){
+         pc->x += vc->x;
+         if (pc->x > EGA_RES_WIDTH){ pc->x = 0; }
+         if (pc->x < 0){ pc->x = EGA_RES_WIDTH; }
+         pc->y += vc->y;
+         if (pc->y > EGA_RES_HEIGHT){ pc->y = 0; }
+         if (pc->y < 0){ pc->y = EGA_RES_HEIGHT; }
       }
+      //pc->y = (int)(sin(pc->x*(3.14 / 180.0)) * 175) + 175;
+
    });
 }
 

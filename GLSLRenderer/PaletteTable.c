@@ -51,7 +51,7 @@ EGAPalette *paletteTableGetPalette(PaletteTable *self, byte *palette){
    pEntry *found = 0;
    EGAPalette *ret = 0;
 
-   memcpy(p.colors, palette, EGA_PALETTE_COLORS);
+   paletteCopy(&p, (Palette*)palette);
    entry.key = p;
 
    found = htFind(pEntry)(self->table, &entry);

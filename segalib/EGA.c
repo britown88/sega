@@ -309,6 +309,10 @@ Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCo
    return r;
 }
 
+void paletteCopy(Palette *dest, Palette *src){
+   memcpy(dest->colors, src->colors, EGA_PALETTE_COLORS);
+}
+
 Frame *buildCheckerboardFrame(int width, byte color1, byte color2) {
    Frame *fb = frameCreate();
    int x, y, j;
