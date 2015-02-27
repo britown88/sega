@@ -13,6 +13,7 @@ typedef struct Renderer_t Renderer;
 typedef struct VirtualApp_t VirtualApp;
 
 typedef struct {
+   double fps;
    double frameRate;
    Int2 defaultWindowSize;
    StringView windowTitle;
@@ -22,7 +23,7 @@ typedef struct {
 typedef struct {
    void (*destroy)(VirtualApp *);
 
-   AppData (*getData)(VirtualApp *);
+   AppData *(*getData)(VirtualApp *);
 
    void (*onStart)(VirtualApp *);
    void (*onStep)(VirtualApp *);
@@ -36,7 +37,7 @@ struct VirtualApp_t {
    Palette currentPalette;
 };
 
-static AppData virtualAppGetData(VirtualApp *self){return self->vTable->getData(self);}
+static AppData *virtualAppGetData(VirtualApp *self){return self->vTable->getData(self);}
 static void virtualAppDestroy(VirtualApp *self){self->vTable->destroy(self);}
 static void virtualAppOnStart(VirtualApp *self){self->vTable->onStart(self);}
 static void virtualAppOnStep(VirtualApp *self){self->vTable->onStep(self);}

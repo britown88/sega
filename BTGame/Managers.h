@@ -9,5 +9,5 @@ typedef struct {
    RenderManager *renderManager;
 }BTManagers;
 
-RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager);
+RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);

@@ -7,6 +7,8 @@
 #include "segashared\CheckedMemory.h"
 #include "segalib\EGA.h"
 
+#include <stdio.h>
+
 typedef struct{
    ManagedImage *img;
    StringView filename;
@@ -31,6 +33,7 @@ struct RenderManager_t{
    EntitySystem *system;
    FontFactory *fontFactory;
    ImageManager *images;
+   double *fps;
 
    vec(RenderPtr) *layers[LayerCount];
 };
@@ -69,13 +72,14 @@ void _destroyLayers(RenderManager *self){
    while (first != last){ vecDestroy(RenderPtr)(*first++); }
 }
 
-RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager){
+RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
    Image *fontImage = imageDeserialize("assets/img/font.ega");
    out->system = system;
    out->m.vTable = _createVTable();
    out->fontFactory = fontFactoryCreate(fontImage);
    out->images = imageManager;
+   out->fps = fps;
    _initLayers(out);
 
    imageDestroy(fontImage);
@@ -170,8 +174,18 @@ void _renderLayers(RenderManager *self, Frame *frame){
    while (first != last){  _renderLayer(self, *first++, frame);  }
 }
 
+void _renderFramerate(Frame *frame, Font *font, double d){
+   static char buffer[256] = { 0 };
+   short y = 0;
+   short x;
+   sprintf(buffer, "FPS: %.2f", d);
+
+   x = EGA_TEXT_RES_WIDTH - strlen(buffer);
+   frameRenderText(frame, buffer, x, y, font);
+}
+
 void renderManagerRender(RenderManager *self, Frame *frame){
-   frameClear(frame, 0);
+   frameClear(frame, 1);
 
    _clearLayers(self);
    
@@ -181,5 +195,9 @@ void renderManagerRender(RenderManager *self, Frame *frame){
    });
 
    _renderLayers(self, frame);
+
+   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15),  *self->fps);
+
+   
 
 }

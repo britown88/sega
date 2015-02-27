@@ -12,9 +12,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
+#define FRAME_RATE 60.0
 
 typedef struct {
    VirtualApp vApp;
@@ -27,7 +28,7 @@ typedef struct {
 
 #pragma region App_Things
 
-static AppData _getData(BTGame *);
+static AppData *_getData(BTGame *);
 static void _destroy(BTGame *);
 static void _onStart(BTGame *);
 static void _onStep(BTGame *);
@@ -37,7 +38,7 @@ static VirtualAppVTable *getVtable()
    static VirtualAppVTable *vtable;
    if(!vtable) {
       vtable = malloc(sizeof(VirtualAppVTable));
-      vtable->getData = (AppData (*)(VirtualApp *))&_getData;
+      vtable->getData = (AppData *(*)(VirtualApp *))&_getData;
       vtable->destroy = (void (*)(VirtualApp *))&_destroy;
       vtable->onStart = (void (*)(VirtualApp *))&_onStart;
       vtable->onStep = (void (*)(VirtualApp *))&_onStep;
@@ -46,17 +47,17 @@ static VirtualAppVTable *getVtable()
    return vtable;
 }
 AppData createData() {
-   AppData data;
-
+   AppData data = { 0 };
+   
    data.defaultWindowSize = int2Create(WINDOW_WIDTH, WINDOW_HEIGHT);
-   data.frameRate = 60.0;
+   data.frameRate = FRAME_RATE;
    data.fullScreen = FULLSCREEN;
    data.windowTitle = stringIntern("sEGA: An elegant weapon for a more civilized age.");
 
    return data;
 }
-AppData _getData(BTGame *self) {
-   return self->data;
+AppData *_getData(BTGame *self) {
+   return &self->data;
 }
 
 #pragma endregion
@@ -64,7 +65,7 @@ AppData _getData(BTGame *self) {
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
 
-   self->managers.renderManager = createRenderManager(self->entitySystem, self->imageManager);
+   self->managers.renderManager = createRenderManager(self->entitySystem, self->imageManager, &self->data.fps);
    entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.renderManager);
 
 }

@@ -52,16 +52,31 @@ Rectf _buildProportionalViewport(int width, int height)
    return vp;
 }
 
+static void _updateFPS(double delta, double *fps){
+   static double time = 0.0;
+   static const double interval = 200.0;
+   time += delta;
+   if (time > interval){
+      *fps = 1000.0 / (delta);
+      time -= interval;
+   }
+
+   //*fps = delta;
+}
+
 static void _step(App *self) {
    //dt
    double time = appGetTime(self);
    double deltaTime = time - self->lastUpdated;
    double dt = deltaTime / appGetFrameTime(self);
 
+   
+
    //update
    if(dt >= 1.0)
    {
       self->lastUpdated = time;
+      _updateFPS(deltaTime, &virtualAppGetData(self->subclass)->fps);
 
       virtualAppOnStep(self->subclass);
 
@@ -83,7 +98,7 @@ static void _step(App *self) {
 }
 
 void runApp(VirtualApp *subclass, IRenderer *renderer) {
-   AppData data;
+   AppData *data;
    GLWindow *window;
    App *r;
 
@@ -93,7 +108,7 @@ void runApp(VirtualApp *subclass, IRenderer *renderer) {
 
    data = virtualAppGetData(subclass);
 
-   window = glWindowCreate(data.defaultWindowSize, data.windowTitle, data.fullScreen ? glfwGetPrimaryMonitor() : NULL);
+   window = glWindowCreate(data->defaultWindowSize, data->windowTitle, data->fullScreen ? glfwGetPrimaryMonitor() : NULL);
    if(!window) {
       virtualAppDestroy(subclass);
       return;
@@ -104,10 +119,10 @@ void runApp(VirtualApp *subclass, IRenderer *renderer) {
    g_app = r;
 
    r->lastUpdated = 0.0;
-   r->frameRate = data.frameRate;
+   r->frameRate = data->frameRate;
 
    r->window = window;
-   r->viewport = _buildProportionalViewport(data.defaultWindowSize.x, data.defaultWindowSize.y);
+   r->viewport = _buildProportionalViewport(data->defaultWindowSize.x, data->defaultWindowSize.y);
 
    r->renderer = renderer;
    iRendererInit(r->renderer);
