@@ -10,9 +10,7 @@ HDC hDC;
 HGLRC hGLRC;
 HPALETTE hPalette;
 
-void
-init(void)
-{
+void init(void) {
    /* set viewing projection */
    glMatrixMode(GL_PROJECTION);
    glFrustum(-0.5F, 0.5F, -0.5F, 0.5F, 1.0F, 3.0F);
@@ -30,9 +28,7 @@ init(void)
    glEnable(GL_LIGHT0);
 }
 
-void
-redraw(void)
-{
+void redraw(void) {
    /* clear color and depth buffers */
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -66,16 +62,12 @@ redraw(void)
    SwapBuffers(hDC);
 }
 
-void
-resize(void)
-{
+void resize(void) {
    /* set viewport to cover the window */
    glViewport(0, 0, winWidth, winHeight);
 }
 
-void
-setupPixelFormat(HDC hDC)
-{
+void setupPixelFormat(HDC hDC) {
    PIXELFORMATDESCRIPTOR pfd = {
       sizeof(PIXELFORMATDESCRIPTOR),  /* size */
       1,                              /* version */
@@ -112,9 +104,7 @@ setupPixelFormat(HDC hDC)
    }
 }
 
-void
-setupPalette(HDC hDC)
-{
+void setupPalette(HDC hDC) {
    int pixelFormat = GetPixelFormat(hDC);
    PIXELFORMATDESCRIPTOR pfd;
    LOGPALETTE* pPal;
@@ -161,13 +151,7 @@ setupPalette(HDC hDC)
    }
 }
 
-LRESULT APIENTRY
-WndProc(
-HWND hWnd,
-UINT message,
-WPARAM wParam,
-LPARAM lParam)
-{
+LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
    switch (message) {
    case WM_CREATE:
       /* initialize OpenGL rendering */
@@ -245,13 +229,7 @@ LPARAM lParam)
    return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-int APIENTRY
-WinMain(
-HINSTANCE hCurrentInst,
-HINSTANCE hPreviousInst,
-LPSTR lpszCmdLine,
-int nCmdShow)
-{
+int APIENTRY WinMain(HINSTANCE hCurrentInst, HINSTANCE hPreviousInst, LPSTR lpszCmdLine, int nCmdShow) {
    WNDCLASS wndClass;
    HWND hWnd;
    MSG msg;

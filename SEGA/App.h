@@ -8,6 +8,9 @@
 #include "IRenderer.h"
 #include "IDeviceContext.h"
 
+//device context flags
+#define DC_FLAG_FULLSCREEN (1 << 0)
+
 typedef struct Renderer_t Renderer;
 
 //app subclassing
@@ -18,7 +21,7 @@ typedef struct {
    double frameRate;
    Int2 defaultWindowSize;
    StringView windowTitle;
-   int fullScreen;
+   int dcFlags; 
 } AppData;
 
 typedef struct {
@@ -57,8 +60,6 @@ double appGetFrameRate(App *self);
 int appRand(App *self, int lower, int upper);
 
 void appSleep(int ms);
-
-extern App *g_app;
 
 
 

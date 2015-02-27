@@ -2,6 +2,7 @@
 
 #include "segautils\Vector.h"
 #include "segashared\Strings.h"
+#include "segautils\DLLBullshit.h"
 
 typedef struct GLWindow_T GLWindow;
 typedef struct GLFWmonitor GLFWmonitor;
@@ -14,3 +15,8 @@ void glWindowSwapBuffers(GLWindow *self);
 int glWindowShouldClose(GLWindow *self);
 
 Int2 glWindowGetSize(GLWindow *self);
+
+
+typedef struct IDeviceContext_t IDeviceContext;
+
+DLL_PUBLIC IDeviceContext *testGLContext();

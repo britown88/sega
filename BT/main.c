@@ -11,10 +11,11 @@
 #include "segashared\CheckedMemory.h"
 #include "OGLRenderer\OGLRenderer.h"
 #include "WinGDIContext\WinGDIContext.h"
+#include "SEGA\GLWindow.h"
 
 int main()
 {
-   runApp(btCreate(), createOGLRenderer(), createWinGDIContext());
+   runApp(btCreate(), createOGLRenderer(), testGLContext());
    printMemoryLeaks();
 
    return 0;

@@ -51,7 +51,11 @@ AppData createData() {
    
    data.defaultWindowSize = int2Create(WINDOW_WIDTH, WINDOW_HEIGHT);
    data.frameRate = FRAME_RATE;
-   data.fullScreen = FULLSCREEN;
+
+   if (FULLSCREEN){
+      data.dcFlags |= DC_FLAG_FULLSCREEN;
+   }
+
    data.windowTitle = stringIntern("sEGA: An elegant weapon for a more civilized age.");
 
    return data;

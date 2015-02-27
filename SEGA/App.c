@@ -14,7 +14,7 @@
 #include "segautils\Rect.h"
 
 #include "segashared\CheckedMemory.h"
-#include "GLFW/glfw3.h"
+#include "IDeviceContext.h"
 
 
 struct App_t {
@@ -22,13 +22,12 @@ struct App_t {
    bool running;
    double frameRate;
    double lastUpdated;
-
-   GLWindow *window;   
+ 
    Rectf viewport;
    IRenderer *renderer;
-};
+   IDeviceContext *context;
 
-App *g_app;
+};
 
 void appSleep(int ms) {
 #ifdef _WIN32
@@ -86,74 +85,78 @@ static void _step(App *self) {
 
       virtualAppOnStep(self->subclass);
 
+      iDeviceContextPreRender(self->context);
+
       iRendererRenderFrame(self->renderer,
          self->subclass->currentFrame,
          self->subclass->currentPalette.colors,
          &self->viewport);
 
       //swap
-      glWindowSwapBuffers(self->window);
-      
-      glWindowPollEvents(self->window);
+      iDeviceContextPostRender(self->context);
 
-      if(glWindowShouldClose(self->window))
+      if(iDeviceContextShouldClose(self->context))
          self->running = false;  
    }
    else
       appSleep(0);
 }
 
+App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *renderer){
+   AppData *data = virtualAppGetData(subclass);
+   App *out = checkedCalloc(1, sizeof(App));
+   Int2 winSize = iDeviceContextWindowSize(context);
+   out->subclass = subclass;
+
+   out->lastUpdated = 0.0;
+   out->frameRate = data->frameRate;
+
+   out->renderer = renderer;
+   out->context = context;
+
+   out->viewport = _buildProportionalViewport(winSize.x, winSize.y);
+
+   out->running = true;
+
+   subclass->currentFrame = frameCreate();
+   iRendererInit(renderer);
+   virtualAppOnStart(subclass);
+
+   return out;
+}
+
+void _destroyApp(App *self){
+   iRendererDestroy(self->renderer);
+   iDeviceContextDestroy(self->context);
+   frameDestroy(self->subclass->currentFrame);
+   virtualAppDestroy(self->subclass);
+   checkedFree(self);
+}
+
 void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) {
-   AppData *data;
-   GLWindow *window;
-   App *r;
+   AppData *data = virtualAppGetData(subclass);
+   Int2 winSize = data->defaultWindowSize;
+   App *app;
+   int result = iDeviceContextInit(context, winSize.x, winSize.y, data->windowTitle, 0);
 
-   if (!glfwInit()){
+   if (result){
       return;
    }
 
-   data = virtualAppGetData(subclass);
+   //update winSize
+   winSize = iDeviceContextWindowSize(context);
 
-   window = glWindowCreate(data->defaultWindowSize, data->windowTitle, data->fullScreen ? glfwGetPrimaryMonitor() : NULL);
-   if(!window) {
-      virtualAppDestroy(subclass);
-      return;
+   app = _createApp(subclass, context, renderer);
+
+   while (app->running) {
+      _step(app);
    }
 
-   r = checkedCalloc(1, sizeof(App));
-   r->subclass = subclass;
-   g_app = r;
-
-   r->lastUpdated = 0.0;
-   r->frameRate = data->frameRate;
-
-   r->window = window;
-   r->viewport = _buildProportionalViewport(data->defaultWindowSize.x, data->defaultWindowSize.y);
-
-   r->renderer = renderer;
-   iRendererInit(r->renderer);
+   _destroyApp(app);   
    
-
-   r->subclass->currentFrame = frameCreate();
-   memset(&r->subclass->currentPalette.colors, 0, EGA_PALETTE_COLORS);
-
-   virtualAppOnStart(r->subclass);
-
-   r->running = true;
-
-   while(r->running) {
-      _step(r);
-   }
-
-   
-   iRendererDestroy(r->renderer);
-   glWindowDestroy(r->window);
-	frameDestroy(r->subclass->currentFrame);
-   virtualAppDestroy(r->subclass);
-   checkedFree(r);
    return;
 }
 
-double appGetTime(App *self){return glfwGetTime() * 1000;}
+double appGetTime(App *self){return iDeviceContextTime(self->context) * 1000;}
 double appGetFrameTime(App *self){return 1000.0 / self->frameRate;}
 double appGetFrameRate(App *self){return self->frameRate;}
