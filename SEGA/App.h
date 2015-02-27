@@ -6,6 +6,7 @@
 #include "segalib\EGA.h"
 
 #include "IRenderer.h"
+#include "IDeviceContext.h"
 
 typedef struct Renderer_t Renderer;
 
@@ -45,7 +46,7 @@ static void virtualAppOnStep(VirtualApp *self){self->vTable->onStep(self);}
 //app and functions
 typedef struct App_t App;
 
-DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer);
+DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context);
 
 Int2 appGetWindowSize();
 

@@ -103,7 +103,7 @@ static void _step(App *self) {
       appSleep(0);
 }
 
-void runApp(VirtualApp *subclass, IRenderer *renderer) {
+void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) {
    AppData *data;
    GLWindow *window;
    App *r;
