@@ -15,7 +15,7 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
-#define FRAME_RATE 60.0
+#define FRAME_RATE 200.0
 
 typedef struct {
    VirtualApp vApp;
@@ -114,11 +114,11 @@ void _onStart(BTGame *self){
       entityUpdate(e);
    }
 
-   for (i = 0; i < MAX_ENTITIES - 1; ++i){
+   for (i = 0; i < 2500; ++i){
       Entity *e = entityCreate(self->entitySystem);
 
       ADD_NEW_COMPONENT(e, VelocityComponent, 0);
-      ADD_NEW_COMPONENT(e, PositionComponent, i * 10, 100);
+      ADD_NEW_COMPONENT(e, PositionComponent, rand() % EGA_RES_WIDTH, rand() % EGA_RES_HEIGHT);
       ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/aramis.ega"));
       
       ADD_NEW_COMPONENT(e, LayerComponent, LayerBackground);;
@@ -138,8 +138,8 @@ void _onStep(BTGame *self){
 
    COMPONENT_QUERY(self->entitySystem, PositionComponent, pc, {
       if (entityGet(VelocityComponent)(componentGetParent(pc, self->entitySystem))){
-         pc->x++;
-         pc->y = (int)(sin(pc->x*(3.14 / 180.0)) * 175) + 175;
+         pc->x = pc->x++ % EGA_RES_WIDTH;;
+         //pc->y = (int)(sin(pc->x*(3.14 / 180.0)) * 175) + 175;
       }
    });
 }

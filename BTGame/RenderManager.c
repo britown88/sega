@@ -185,7 +185,7 @@ void _renderFramerate(Frame *frame, Font *font, double d){
 }
 
 void renderManagerRender(RenderManager *self, Frame *frame){
-   frameClear(frame, 1);
+   frameClear(frame, 0);
 
    _clearLayers(self);
    

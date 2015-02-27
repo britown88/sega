@@ -3,11 +3,17 @@
 #include "segashared\CheckedMemory.h"
 
 #include <string.h>
+#include <stdint.h>
+
 
 #define MAX_BUFFER_WIDTH 1024
 
 int minByteCount(int bitCount) {
    return bitCount/8 + !!(bitCount%8);
+}
+
+int minIntCount(int bitCount) {
+   return bitCount / (sizeof(int32_t) * 8) + !!(bitCount % (sizeof(int32_t) * 8));
 }
 
 void setBit(byte *dest, byte pos/*0-7*/, byte value/*0-1*/){

@@ -3,24 +3,30 @@
 #include "segashared\CheckedMemory.h"
 #include "segautils\BitTwiddling.h"
 
+#define HANDLE_COUNT 8
+
 typedef struct EGATexture_t {
-	GLuint handle;
+   GLuint handle[HANDLE_COUNT];
+   int currentHandle;
 	byte *pixels;
 };
 
 EGATexture *egaTextureCreate(){
-	EGATexture *r = checkedCalloc(1, sizeof(EGATexture));
+   int i;
+   EGATexture *r = checkedCalloc(1, sizeof(EGATexture));
 	r->pixels = checkedCalloc(1, EGA_RES_WIDTH*EGA_RES_HEIGHT * 4);
 
-	glGenTextures(1, &r->handle);
-	glBindTexture(GL_TEXTURE_2D, r->handle);
-	glTexImage2D(
-		GL_TEXTURE_2D, 0, GL_RGBA8,
-		EGA_RES_WIDTH, EGA_RES_HEIGHT,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, r->pixels);
+   glGenTextures(HANDLE_COUNT, r->handle);
+   for (i = 0; i < HANDLE_COUNT; ++i){
+      glBindTexture(GL_TEXTURE_2D, r->handle[i]);
+      glTexImage2D(
+         GL_TEXTURE_2D, 0, GL_RGBA8,
+         EGA_RES_WIDTH, EGA_RES_HEIGHT,
+         0, GL_RGBA, GL_UNSIGNED_BYTE, r->pixels);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+   }
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -28,7 +34,7 @@ EGATexture *egaTextureCreate(){
 }
 void egaTextureDestroy(EGATexture *self) {
 
-	glDeleteTextures(1, &self->handle);
+	glDeleteTextures(HANDLE_COUNT, self->handle);
 	checkedFree(self->pixels);
 	checkedFree(self);
 }
@@ -61,10 +67,14 @@ static void _updatePixels(EGATexture *self, Frame *frame, byte *palette){
 void egaTextureRenderFrame(EGATexture *self, Frame *frame, byte *palette){
 	_updatePixels(self, frame, palette);
 
-	glFinish();
+	//glFinish();
 	glEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, self->handle);
+	glBindTexture(GL_TEXTURE_2D, self->handle[self->currentHandle++]);
+   if (self->currentHandle == HANDLE_COUNT){
+      self->currentHandle = 0;
+   }
+
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, EGA_RES_WIDTH, EGA_RES_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, self->pixels);
 
 	glBegin(GL_QUADS);

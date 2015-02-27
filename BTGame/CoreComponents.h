@@ -6,7 +6,7 @@
 
 
 typedef struct {
-   int x, y;
+   short x, y;
 }PositionComponent;
 
 #define ComponentT PositionComponent

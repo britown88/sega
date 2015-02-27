@@ -54,14 +54,22 @@ Rectf _buildProportionalViewport(int width, int height)
 
 static void _updateFPS(double delta, double *fps){
    static double time = 0.0;
-   static const double interval = 200.0;
+   static const double interval = 1.0;
+   static const int sampleSize = 10;
+   static double sample = 0.0;
+   static int sampleCount = 0;
    time += delta;
-   if (time > interval){
-      *fps = 1000.0 / (delta);
+   if (time > interval){      
       time -= interval;
+
+      sample += 1000.0 / (delta);
+      if (++sampleCount >= sampleSize){
+         *fps = sample / sampleSize;
+         sample = 0.0;
+         sampleCount = 0;
+      }
    }
 
-   //*fps = delta;
 }
 
 static void _step(App *self) {
@@ -69,8 +77,6 @@ static void _step(App *self) {
    double time = appGetTime(self);
    double deltaTime = time - self->lastUpdated;
    double dt = deltaTime / appGetFrameTime(self);
-
-   
 
    //update
    if(dt >= 1.0)

@@ -8,6 +8,7 @@ SEXTERN_C
 typedef unsigned char byte;
 
 int minByteCount(int bitCount);
+int minIntCount(int bitCount);
 void setBit(byte *dest, byte pos/*0-7*/, byte value/*0-1*/);
 void setBitInArray(byte *dest, int pos, byte value/*0-1*/);
 byte getBit(byte dest, byte pos/*0-7*/);

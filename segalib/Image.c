@@ -52,8 +52,7 @@ Image *imageCreate(short width, short height) {
    return r;
 }
 
-Image *_imageDeserializeEX(const char*path, int uncompress){
-   byte readBuffer[MAX_IMAGE_WIDTH] = { 0 };
+Image *_imageDeserializeEX(const char*path, int optimize){
    long size;
    BitBuffer *buffer = bitBufferCreate(readFullFile(path, &size), 1);
    short width, height;
@@ -83,13 +82,49 @@ Image *_imageDeserializeEX(const char*path, int uncompress){
             break;
          }
 
-         if (uncompress){
-            imageScanLineRender(scanLine, readBuffer);
-            imageScanLineDestroy(scanLine);
-            scanLine = createUncompressedScanLine(width, readBuffer);
-         }
+         //if (optimize){
+         //   imageScanLineRender(scanLine, readBuffer);
+         //   imageScanLineDestroy(scanLine);
+         //   scanLine = createUncompressedScanLine(width, readBuffer);
+         //}
 
          imageSetScanLine(img, y, i, scanLine);
+      }
+   }
+
+   //alpha computation postpass
+   if (optimize){
+      int plane, y, x;
+      int intCount = minIntCount(width);
+      int32_t alphaBuffer[MAX_IMAGE_WIDTH / sizeof(int32_t)] = { 0 };
+      int32_t readBuffer[MAX_IMAGE_WIDTH / sizeof(int32_t)] = { 0 };
+
+      for (y = 0; y < height; ++y){
+         ImageScanLine *alpha = imageGetScanLine(img, y, 0);
+         imageScanLineRender(alpha, (byte*)alphaBuffer);
+
+         for (plane = 0; plane < EGA_PLANES; ++plane){
+            ImageScanLine *line = imageGetScanLine(img, y, plane + 1);
+            imageScanLineRender(line, (byte*)readBuffer);
+
+            //pre-bake-in alpha
+            for (x = 0; x < intCount; ++x){
+               readBuffer[x] &= alphaBuffer[x];
+            }
+
+            //replace old scnaline with an uncompressed one from the new buffer
+            line = createUncompressedScanLine(width, (byte*)readBuffer);
+            imageSetScanLine(img, y, plane+1, line);
+         }
+
+         //inverse alpha
+         for (x = 0; x < intCount; ++x){
+            alphaBuffer[x] = ~alphaBuffer[x];
+         }
+
+         //replace  alpha line
+         alpha = createUncompressedScanLine(width, (byte*)alphaBuffer);
+         imageSetScanLine(img, y, 0, alpha);
       }
    }
 
@@ -103,7 +138,7 @@ Image *imageDeserialize(const char *path)
    return _imageDeserializeEX(path, false);
 }
 
-Image *imageDeserializeUncompressed(const char*path){
+Image *imageDeserializeOptimized(const char*path){
    return _imageDeserializeEX(path, true);
 }
 

@@ -27,7 +27,7 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
       glfwTerminate();
       return NULL;
    }
-
+   
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
    glfwGetFramebufferSize(window, &actualSize.x, &actualSize.y);
    glfwMakeContextCurrent(window);

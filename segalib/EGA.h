@@ -92,7 +92,8 @@ Image *imageCreate(short width, short height);
 Image *imageDeserialize(const char*path);
 
 //expands deserialized image into uncompressed scanlines which takes up mroe memory but renders faster
-Image *imageDeserializeUncompressed(const char*path);
+//also precomputes alpha
+Image *imageDeserializeOptimized(const char*path);
 
 void imageSerialize(Image *self, const char *path);
 void imageDestroy(Image *self);
