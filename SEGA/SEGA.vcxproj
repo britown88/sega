@@ -84,7 +84,7 @@
   <ItemGroup>
     <ClCompile Include="App.c" />
     <ClCompile Include="GLWindow.c" />
-    <ClCompile Include="IContext.c" />
+    <ClCompile Include="IDeviceContext.c" />
     <ClCompile Include="IRenderer.c" />
   </ItemGroup>
   <ItemGroup>

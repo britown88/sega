@@ -24,7 +24,7 @@
     <ClCompile Include="GLWindow.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IContext.c">
+    <ClCompile Include="IDeviceContext.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
