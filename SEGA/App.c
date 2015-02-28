@@ -147,7 +147,7 @@ void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) 
    AppData *data = virtualAppGetData(subclass);
    Int2 winSize = data->defaultWindowSize;
    App *app;
-   int result = iDeviceContextInit(context, winSize.x, winSize.y, data->windowTitle, 0);
+   int result = iDeviceContextInit(context, winSize.x, winSize.y, data->windowTitle, data->dcFlags);
 
    if (result){
       return;
