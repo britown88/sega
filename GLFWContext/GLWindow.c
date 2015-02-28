@@ -4,6 +4,7 @@
 
 #include <malloc.h>
 #include <stddef.h>
+#include <Windows.h>
 
 
 struct GLWindow_T {
@@ -28,6 +29,8 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
       glfwTerminate();
       return NULL;
    }
+
+   FreeConsole();
    
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
    glfwGetFramebufferSize(window, &actualSize.x, &actualSize.y);
@@ -56,4 +59,9 @@ int glWindowShouldClose(GLWindow *self){
 }
 Int2 glWindowGetSize(GLWindow *self){
    return self->winSize;
+}
+Float2 glWindowGetMousePos(GLWindow *self){
+   double x, y;
+   glfwGetCursorPos(self->window, &x, &y);
+   return float2Create((float)x, (float)y);
 }

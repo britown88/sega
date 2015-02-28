@@ -7,6 +7,7 @@
 
 #include <malloc.h>
 #include <stddef.h>
+#include <time.h>
 
 #include "segautils\Defs.h"
 #include "App.h"
@@ -15,13 +16,21 @@
 #include "segashared\CheckedMemory.h"
 #include "IDeviceContext.h"
 
+App *g_App;
+
+App *appGet(){
+   return g_App;
+}
+
 
 struct App_t {
    VirtualApp *subclass;
    bool running;
    double frameRate;
    double lastUpdated;
+   float vpScale;
  
+   Int2 winSize;
    Rectf viewport;
    IRenderer *renderer;
    IDeviceContext *context;
@@ -36,15 +45,15 @@ void appSleep(int ms) {
 #endif
 }
 
-Rectf _buildProportionalViewport(int width, int height)
+Rectf _buildProportionalViewport(int width, int height, float *ratio)
 {
    float rw = (float)width;
    float rh = (float)height;
    float cw = EGA_RES_WIDTH * EGA_PIXEL_WIDTH;
    float ch = EGA_RES_HEIGHT * EGA_PIXEL_HEIGHT;
-   float ratio = MIN(rw/cw, rh/ch);
+   *ratio = MIN(rw/cw, rh/ch);
 
-   Rectf vp = {0.0f, 0.0f, cw * ratio, ch * ratio};
+   Rectf vp = {0.0f, 0.0f, cw * (*ratio), ch * (*ratio)};
    rectfOffset(&vp, (rw - rectfWidth(&vp)) / 2.0f, (rh - rectfHeight(&vp)) / 2.0f);
 
    return vp;
@@ -104,7 +113,7 @@ static void _step(App *self) {
 App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *renderer){
    AppData *data = virtualAppGetData(subclass);
    App *out = checkedCalloc(1, sizeof(App));
-   Int2 winSize = iDeviceContextWindowSize(context);
+   out->winSize = iDeviceContextWindowSize(context);
    out->subclass = subclass;
 
    out->lastUpdated = 0.0;
@@ -113,13 +122,15 @@ App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *render
    out->renderer = renderer;
    out->context = context;
 
-   out->viewport = _buildProportionalViewport(winSize.x, winSize.y);
+   out->viewport = _buildProportionalViewport(out->winSize.x, out->winSize.y, &out->vpScale);
 
    out->running = true;
 
    subclass->currentFrame = frameCreate();
    iRendererInit(renderer);
    virtualAppOnStart(subclass);
+
+   g_App = out;
 
    return out;
 }
@@ -142,6 +153,8 @@ void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) 
       return;
    }
 
+   srand(time(NULL));
+
    //update winSize
    winSize = iDeviceContextWindowSize(context);
 
@@ -154,6 +167,24 @@ void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) 
    _destroyApp(app);   
    
    return;
+}
+
+//inclusive lower exclusive upper
+int appRand(App *self, int lower, int upper){
+   return (rand() % (upper - lower)) + lower;
+}
+Int2 appGetPointerPos(App *self){
+   Float2 coords = iDeviceContextPointerPos(self->context);
+   Int2 out = { 0 };
+
+   //now convert the damn coords to vp
+   coords.x -= self->viewport.left;
+   coords.y -= self->viewport.top;
+   
+   out.x = (coords.x / rectfWidth(&self->viewport)) * (float)EGA_RES_WIDTH;
+   out.y = (coords.y / rectfHeight(&self->viewport)) * (float)EGA_RES_HEIGHT;
+
+   return out;
 }
 
 double appGetTime(App *self){return iDeviceContextTime(self->context) * 1000;}

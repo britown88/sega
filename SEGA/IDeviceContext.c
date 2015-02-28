@@ -21,3 +21,9 @@ double iDeviceContextTime(IDeviceContext *self){
 void iDeviceContextDestroy(IDeviceContext *self){
    self->vTable->destroy(self);
 }
+Float2 iDeviceContextPointerPos(IDeviceContext *self){
+   return self->vTable->pointerPos(self);
+}
+int iDeviceContextPointerEnabled(IDeviceContext *self){
+   return self->vTable->pointerEnabled(self);
+}

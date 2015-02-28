@@ -13,6 +13,8 @@ typedef struct {
    void(*postRender)(IDeviceContext*);
    int(*shouldClose)(IDeviceContext*);
    Int2(*windowSize)(IDeviceContext*);
+   Float2(*pointerPos)(IDeviceContext*);
+   int(*pointerEnabled)(IDeviceContext*);
    double(*time)(IDeviceContext*);
    void(*destroy)(IDeviceContext*);
 } IDeviceContextVTable;
@@ -26,5 +28,7 @@ void iDeviceContextPreRender(IDeviceContext *self);
 void iDeviceContextPostRender(IDeviceContext *self);
 int iDeviceContextShouldClose(IDeviceContext *self);
 Int2 iDeviceContextWindowSize(IDeviceContext *self);
+Float2 iDeviceContextPointerPos(IDeviceContext *self);
+int iDeviceContextPointerEnabled(IDeviceContext *self);
 double iDeviceContextTime(IDeviceContext *self);
 void iDeviceContextDestroy(IDeviceContext *self);

@@ -39,11 +39,11 @@ struct RenderManager_t{
 };
 
 #pragma region vtable things
-void renderManagerDestroy(RenderManager*);
-void renderManagerOnDestroy(RenderManager*, Entity*);
-void renderManagerOnUpdate(RenderManager*, Entity*);
+static void renderManagerDestroy(RenderManager*);
+static void renderManagerOnDestroy(RenderManager*, Entity*);
+static void renderManagerOnUpdate(RenderManager*, Entity*);
 
-ManagerVTable *_createVTable(){
+static ManagerVTable *_createVTable(){
    static ManagerVTable *out = NULL;
 
    if (!out){
@@ -196,7 +196,7 @@ void renderManagerRender(RenderManager *self, Frame *frame){
 
    _renderLayers(self, frame);
 
-   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15),  *self->fps);
+   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 5, 0),  *self->fps);
 
    
 

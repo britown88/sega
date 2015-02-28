@@ -72,12 +72,16 @@ void _initEntitySystem(BTGame *self){
    self->managers.renderManager = createRenderManager(self->entitySystem, self->imageManager, &self->data.fps);
    entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.renderManager);
 
+   self->managers.cursorManager = createCursorManager(self->entitySystem);
+   entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.cursorManager);
+
 }
 
 void _destroyEntitySystem(BTGame *self){
    entitySystemDestroy(self->entitySystem);
 
    managerDestroy((Manager*)self->managers.renderManager);
+   managerDestroy((Manager*)self->managers.cursorManager);
 }
 
 VirtualApp *btCreate() {
@@ -102,35 +106,56 @@ void _destroy(BTGame *self){
 
 
 void _onStart(BTGame *self){ 
-   Palette defPal = paletteDeserialize("assets/img/default.pal");
+   Palette defPal = paletteDeserialize("assets/img/boardui.pal");
 
    int i;
+
+   cursorManagerCreateCursor(self->managers.cursorManager);
 
    {
       Entity *e = entityCreate(self->entitySystem);
       
       ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
-      //ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/adam.ega"));
-      ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);
+      ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
+     // ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);
       entityUpdate(e);
    }
 
-   for (i = 0; i < 2500; ++i){
-      Entity *e = entityCreate(self->entitySystem);
+   short gridX = 224;
+   short gridY = 38;
+   short sqx = 12, sqy = 8;
+   short gridSize = 32;
+
+   for (i = 0; i < sqx*sqy; ++i){
+
+      Entity *e;
+
+      appGet();
       
-      ADD_NEW_COMPONENT(e, PositionComponent, rand() % EGA_RES_WIDTH, rand() % EGA_RES_HEIGHT);
-      ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/aramis.ega"));
-      ADD_NEW_COMPONENT(e, VelocityComponent, ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1), ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1));
+      if (appRand(appGet(), 0, 5) == 0){
+         e = entityCreate(self->entitySystem);
+
+         //ADD_NEW_COMPONENT(e, PositionComponent, rand() % EGA_RES_WIDTH, rand() % EGA_RES_HEIGHT);
+
+         ADD_NEW_COMPONENT(e, PositionComponent, gridX + (i%sqx)*gridSize, gridY + (i / sqx)*gridSize);
+         ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/actor.ega"));
+         //ADD_NEW_COMPONENT(e, VelocityComponent, ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1), ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1));
+
+         ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);;
+
+         entityUpdate(e);
+      }
+
       
-      ADD_NEW_COMPONENT(e, LayerComponent, LayerBackground);;
-      
-      entityUpdate(e);
    }
    paletteCopy(&self->vApp.currentPalette, &defPal);
 }
 
 void _onStep(BTGame *self){
+   Int2 mousePos = appGetPointerPos(appGet());
+   cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
+
 
    COMPONENT_QUERY(self->entitySystem, VelocityComponent, vc, {
       PositionComponent *pc = entityGet(PositionComponent)(componentGetParent(vc, self->entitySystem));

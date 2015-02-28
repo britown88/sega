@@ -18,7 +18,9 @@ static int _init(GLFWContext *self, int width, int height, StringView winTitle, 
 static void _preRender(GLFWContext *self);
 static void _postRender(GLFWContext *self);
 static int _shouldClose(GLFWContext *self);
+static int _pointerEnabled(GLFWContext *self);
 static Int2 _windowSize(GLFWContext *self);
+static Float2 _pointerPos(GLFWContext *self);
 static double _time(GLFWContext *self);
 static void _destroy(GLFWContext *self);
 
@@ -30,7 +32,9 @@ static IDeviceContextVTable *_getTable(){
       out->preRender = (void(*)(IDeviceContext*))&_preRender;
       out->postRender = (void(*)(IDeviceContext*))&_postRender;
       out->shouldClose = (int(*)(IDeviceContext*))&_shouldClose;
+      out->pointerEnabled = (int(*)(IDeviceContext*))&_pointerEnabled;
       out->windowSize = (Int2(*)(IDeviceContext*))&_windowSize;
+      out->pointerPos = (Float2(*)(IDeviceContext*))&_pointerPos;
       out->time = (double(*)(IDeviceContext*))&_time;
       out->destroy = (void(*)(IDeviceContext*))&_destroy;
    }
@@ -73,8 +77,14 @@ void _postRender(GLFWContext *self){
 int _shouldClose(GLFWContext *self){
    return glWindowShouldClose(self->window);
 }
+int _pointerEnabled(GLFWContext *self){
+   return true;
+}
 Int2 _windowSize(GLFWContext *self){
    return glWindowGetSize(self->window);
+}
+Float2 _pointerPos(GLFWContext *self){
+   return glWindowGetMousePos(self->window);
 }
 double _time(GLFWContext *self){
    return glfwGetTime();

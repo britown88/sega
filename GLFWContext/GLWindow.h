@@ -14,7 +14,5 @@ void glWindowSwapBuffers(GLWindow *self);
 int glWindowShouldClose(GLWindow *self);
 
 Int2 glWindowGetSize(GLWindow *self);
-
-
-typedef struct IDeviceContext_t IDeviceContext;
+Float2 glWindowGetMousePos(GLWindow *self);
 

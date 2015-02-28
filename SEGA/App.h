@@ -51,15 +51,20 @@ typedef struct App_t App;
 
 DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context);
 
-Int2 appGetWindowSize();
+DLL_PUBLIC int appRand(App *self, int lower, int upper);
+DLL_PUBLIC Int2 appGetPointerPos(App *self);
 
 double appGetTime(App *self);
 double appGetFrameTime(App *self);
 double appGetFrameRate(App *self);
 
-int appRand(App *self, int lower, int upper);
 
-void appSleep(int ms);
+
+
+extern App *g_App;
+
+//returns the global app
+DLL_PUBLIC App *appGet();
 
 
 
