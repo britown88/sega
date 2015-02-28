@@ -20,6 +20,7 @@
 #define vecClear(TYPE) CONCAT(vecClear_, TYPE)
 #define vecBegin(TYPE) CONCAT(vecBegin_, TYPE)
 #define vecEnd(TYPE) CONCAT(vecEnd_, TYPE)
+#define vecReverse(TYPE) CONCAT(vecReverse_, TYPE)
 #endif
 
 typedef struct {
@@ -118,6 +119,18 @@ static T *vecBegin(T)(VEC_NAME *self){
 static T *vecEnd(T)(VEC_NAME *self){
    return !vecIsEmpty(T)(self) ? vecAt(T)(self, vecSize(T)(self)) : NULL;
 }
+
+static void vecReverse(T)(VEC_NAME *self){
+   size_t count = vecSize(T)(self);
+   size_t i;
+   for (i = 0; i < count / 2; ++i){
+      T temp = self->data[i];
+      self->data[i] = self->data[count - i - 1];
+      self->data[count - i - 1] = temp;
+   }
+}
+
+
 
 #undef VEC_NAME
 #undef VectorT

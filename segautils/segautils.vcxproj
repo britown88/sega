@@ -27,6 +27,7 @@
   <ItemGroup>
     <ClCompile Include="BitBuffer.c" />
     <ClCompile Include="BitTwiddling.c" />
+    <ClCompile Include="Dijkstras.c" />
     <ClCompile Include="IntrusiveHeap.c" />
     <ClCompile Include="Matrix.c" />
   </ItemGroup>

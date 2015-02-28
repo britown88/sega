@@ -22,3 +22,27 @@ QueueElem priorityQueuePop(PriorityQueue *self);
 int priorityQueueIsEmpty(PriorityQueue *self); 
 
 void priorityQueueDecreaseKey(PriorityQueue *self, QueueElem data);
+
+//********************
+//dijkstra's
+//********************
+typedef struct Dijkstras_t Dijkstras;
+
+typedef struct {
+   size_t(*getNeighbors)(Dijkstras*, QueueElem, QueueElem**);
+   int(*processNeighbor)(Dijkstras*, QueueElem, QueueElem);
+   int(*processCurrent)(Dijkstras*, QueueElem);
+   void(*destroy)(Dijkstras*);
+}DijkstrasVTable;
+
+struct Dijkstras_t{
+   DijkstrasVTable *vTable;
+   PriorityQueue *queue;
+};
+
+QueueElem dijkstrasRun(Dijkstras *self);
+
+size_t dijkstrasGetNeighbors(Dijkstras *self, QueueElem node, QueueElem **outList);
+int dijkstrasProcessNeighbor(Dijkstras *self, QueueElem current, QueueElem neighbor);
+int dijkstrasProcessCurrent(Dijkstras *self, QueueElem current);
+void dijkstrasDestroy(Dijkstras *self);

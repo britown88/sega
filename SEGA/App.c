@@ -153,7 +153,7 @@ void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) 
       return;
    }
 
-   srand(time(NULL));
+   srand((unsigned int)time(NULL));
 
    //update winSize
    winSize = iDeviceContextWindowSize(context);
@@ -181,8 +181,8 @@ Int2 appGetPointerPos(App *self){
    coords.x -= self->viewport.left;
    coords.y -= self->viewport.top;
    
-   out.x = (coords.x / rectfWidth(&self->viewport)) * (float)EGA_RES_WIDTH;
-   out.y = (coords.y / rectfHeight(&self->viewport)) * (float)EGA_RES_HEIGHT;
+   out.x = (int)((coords.x / rectfWidth(&self->viewport)) * (float)EGA_RES_WIDTH);
+   out.y = (int)((coords.y / rectfHeight(&self->viewport)) * (float)EGA_RES_HEIGHT);
 
    return out;
 }

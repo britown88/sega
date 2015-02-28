@@ -54,7 +54,7 @@ void cursorManagerCreateCursor(CursorManager *self){
 }
 
 
-CursorManager *createCursorManager(EntitySystem *system, ImageManager *imageManager, double *fps){
+CursorManager *createCursorManager(EntitySystem *system){
    CursorManager *out = checkedCalloc(1, sizeof(CursorManager));
    out->system = system;
    out->m.vTable = _createVTable();

@@ -110,7 +110,7 @@ void _onStart(BTGame *self){
 
    int i;
 
-   derpjkstras(2, 2, 11, 7);
+   derpjkstras(11, 7, 2, 2);
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 

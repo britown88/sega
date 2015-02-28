@@ -13,6 +13,9 @@
     <ClCompile Include="IntrusiveHeap.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Dijkstras.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preprocessor.h">
