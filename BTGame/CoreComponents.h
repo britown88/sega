@@ -3,7 +3,12 @@
 #include "Entities\Entities.h"
 #include "segashared\Strings.h"
 
+typedef struct {
+   int x, y;
+}GridComponent;
 
+#define ComponentT GridComponent
+#include "Entities\ComponentDecl.h"
 
 typedef struct {
    int x, y;

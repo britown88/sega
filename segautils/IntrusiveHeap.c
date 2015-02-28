@@ -104,6 +104,10 @@ int priorityQueueIsEmpty(PriorityQueue *self){
    return !self->head;
 }
 
+void queueNodeClear(QueueNode *self){
+   self->child = self->next = self->prev = NULL;
+}
+
 void queueNodeUnlink(QueueNode *self){
    if (self->prev){
       if (self->prev->child == self){

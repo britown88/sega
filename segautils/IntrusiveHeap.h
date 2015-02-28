@@ -11,7 +11,7 @@ typedef QueueElem(*PQCompareFunc)(QueueElem, QueueElem);
 struct QueueNode_t{
    QueueNode *next, *prev, *child;
 };
-
+void queueNodeClear(QueueNode *self);
 void queueNodeUnlink(QueueNode *self);
 
 PriorityQueue *priorityQueueCreate(size_t offset, PQCompareFunc min);

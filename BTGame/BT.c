@@ -11,9 +11,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include "GridManager.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
 #define FULLSCREEN 0
 #define FRAME_RATE 60.0
 
@@ -75,6 +76,9 @@ void _initEntitySystem(BTGame *self){
    self->managers.cursorManager = createCursorManager(self->entitySystem);
    entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.cursorManager);
 
+   self->managers.gridManager = createGridManager(self->entitySystem);
+   entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.gridManager);
+
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -82,6 +86,7 @@ void _destroyEntitySystem(BTGame *self){
 
    managerDestroy((Manager*)self->managers.renderManager);
    managerDestroy((Manager*)self->managers.cursorManager);
+   managerDestroy((Manager*)self->managers.gridManager);
 }
 
 VirtualApp *btCreate() {
@@ -108,9 +113,7 @@ void _destroy(BTGame *self){
 void _onStart(BTGame *self){ 
    Palette defPal = paletteDeserialize("assets/img/boardui.pal");
 
-   int i;
-
-   
+   int i;   
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
@@ -123,12 +126,9 @@ void _onStart(BTGame *self){
       entityUpdate(e);
    }
 
-   short gridX = 224;
-   short gridY = 38;
-   short sqx = 12, sqy = 8;
-   short gridSize = 32;
+   
 
-   for (i = 0; i < sqx*sqy; ++i){
+   for (i = 0; i < CELL_COUNT; ++i){
 
       Entity *e;
 
@@ -137,19 +137,11 @@ void _onStart(BTGame *self){
       if (appRand(appGet(), 0, 5) == 0){
          e = entityCreate(self->entitySystem);
 
-         ADD_NEW_COMPONENT(e, PositionComponent, gridX + (i%sqx)*gridSize, gridY + (i / sqx)*gridSize);
+         ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
          ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/actor.ega"));
 
          ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);;
-
-         entityUpdate(e);
-
-         e = entityCreate(self->entitySystem);
-
-         ADD_NEW_COMPONENT(e, PositionComponent, gridX + (i%sqx)*gridSize, gridY + (i / sqx)*gridSize);
-         ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/select.ega"));
-
-         ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);;
+         ADD_NEW_COMPONENT(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);;
 
          entityUpdate(e);
       }
@@ -163,15 +155,9 @@ void _onStep(BTGame *self){
    
    Int2 mousePos = appGetPointerPos(appGet());
    cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
-   renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
-   
-   {
-      int i;
-      for (i = 0; i < 500; ++i){
-         derpjkstras(11, 7, 0, 0);
-      }
-   }
+   gridManagerUpdate(self->managers.gridManager);
+   renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
    
 }
 

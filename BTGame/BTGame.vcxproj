@@ -74,6 +74,7 @@
   <ItemGroup>
     <ClInclude Include="BT.h" />
     <ClInclude Include="CoreComponents.h" />
+    <ClInclude Include="GridManager.h" />
     <ClInclude Include="ImageManager.h" />
     <ClInclude Include="Managers.h" />
   </ItemGroup>
@@ -82,6 +83,7 @@
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
     <ClCompile Include="Derjpkstras.c" />
+    <ClCompile Include="GridManager.c" />
     <ClCompile Include="ImageManager.c" />
     <ClCompile Include="RenderManager.c" />
   </ItemGroup>

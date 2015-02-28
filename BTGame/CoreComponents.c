@@ -2,6 +2,9 @@
 
 #include "segalib\EGA.h"
 
+#define ComponentT GridComponent
+#include "Entities\ComponentImpl.h"
+
 #define ComponentT PositionComponent
 #include "Entities\ComponentImpl.h"
 
