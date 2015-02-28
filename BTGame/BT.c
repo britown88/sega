@@ -110,7 +110,7 @@ void _onStart(BTGame *self){
 
    int i;
 
-   derpjkstras(11, 7, 2, 2);
+   
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
@@ -160,9 +160,19 @@ void _onStart(BTGame *self){
 }
 
 void _onStep(BTGame *self){
+   
    Int2 mousePos = appGetPointerPos(appGet());
    cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
+
+   
+   {
+      int i;
+      for (i = 0; i < 500; ++i){
+         derpjkstras(11, 7, 0, 0);
+      }
+   }
+   
 }
 
 
