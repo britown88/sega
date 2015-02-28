@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="winmain.c">
+    <ClCompile Include="WinGDIContext.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WinGDIContext.c">
+    <ClCompile Include="winmain.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

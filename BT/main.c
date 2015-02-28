@@ -10,8 +10,8 @@
 #include "BTGame\BT.h"
 #include "segashared\CheckedMemory.h"
 #include "OGLRenderer\OGLRenderer.h"
-#include "WinGDIContext\WinGDIContext.h"
 #include "GLFWContext\GLFWContext.h"
+#include "WinGDIContext\WinGDIContext.h"
 
 int main()
 {

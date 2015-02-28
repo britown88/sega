@@ -52,20 +52,20 @@ Rectf _buildProportionalViewport(int width, int height)
 
 static void _updateFPS(double delta, double *fps){
    static double time = 0.0;
-   static const double interval = 1.0;
-   static const int sampleSize = 10;
+   static const double interval = 500.0;
    static double sample = 0.0;
    static int sampleCount = 0;
+
    time += delta;
+
+   sample += 1000.0 / (delta);
+   ++sampleCount;
+
    if (time > interval){      
       time -= interval;
-
-      sample += 1000.0 / (delta);
-      if (++sampleCount >= sampleSize){
-         *fps = sample / sampleSize;
-         sample = 0.0;
-         sampleCount = 0;
-      }
+      *fps = sample / sampleCount;
+      sample = 0.0;
+      sampleCount = 0;
    }
 
 }

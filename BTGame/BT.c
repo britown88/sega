@@ -108,15 +108,14 @@ void _onStart(BTGame *self){
 
    {
       Entity *e = entityCreate(self->entitySystem);
-
       
       ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
-      ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/adam.ega"));
+      //ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/adam.ega"));
       ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);
       entityUpdate(e);
    }
 
-   for (i = 0; i < 2000; ++i){
+   for (i = 0; i < 2500; ++i){
       Entity *e = entityCreate(self->entitySystem);
       
       ADD_NEW_COMPONENT(e, PositionComponent, rand() % EGA_RES_WIDTH, rand() % EGA_RES_HEIGHT);
@@ -137,11 +136,11 @@ void _onStep(BTGame *self){
       PositionComponent *pc = entityGet(PositionComponent)(componentGetParent(vc, self->entitySystem));
       if (pc){
          pc->x += vc->x;
-         if (pc->x > EGA_RES_WIDTH){ pc->x = 0; }
-         if (pc->x < 0){ pc->x = EGA_RES_WIDTH; }
+         if (pc->x > EGA_RES_WIDTH){ pc->x = -16; }
+         if (pc->x < -16){ pc->x = EGA_RES_WIDTH; }
          pc->y += vc->y;
-         if (pc->y > EGA_RES_HEIGHT){ pc->y = 0; }
-         if (pc->y < 0){ pc->y = EGA_RES_HEIGHT; }
+         if (pc->y > EGA_RES_HEIGHT){ pc->y = -16; }
+         if (pc->y < -16){ pc->y = EGA_RES_HEIGHT; }
       }
       //pc->y = (int)(sin(pc->x*(3.14 / 180.0)) * 175) + 175;
 

@@ -9,24 +9,23 @@
 
 #include <stdio.h>
 
-
 typedef struct {
    IDeviceContext context;
    GLWindow *window;
-}TestGLContext;
+}GLFWContext;
 
-static int _init(TestGLContext *self, int width, int height, StringView winTitle, int flags);
-static void _preRender(TestGLContext *self);
-static void _postRender(TestGLContext *self);
-static int _shouldClose(TestGLContext *self);
-static Int2 _windowSize(TestGLContext *self);
-static double _time(TestGLContext *self);
-static void _destroy(TestGLContext *self);
+static int _init(GLFWContext *self, int width, int height, StringView winTitle, int flags);
+static void _preRender(GLFWContext *self);
+static void _postRender(GLFWContext *self);
+static int _shouldClose(GLFWContext *self);
+static Int2 _windowSize(GLFWContext *self);
+static double _time(GLFWContext *self);
+static void _destroy(GLFWContext *self);
 
 static IDeviceContextVTable *_getTable(){
    static IDeviceContextVTable *out = NULL;
    if (!out){
-      out = checkedCalloc(1, sizeof(IDeviceContextVTable));
+      out = calloc(1, sizeof(IDeviceContextVTable));
       out->init = (int(*)(IDeviceContext*, int, int, StringView, int))&_init;
       out->preRender = (void(*)(IDeviceContext*))&_preRender;
       out->postRender = (void(*)(IDeviceContext*))&_postRender;
@@ -39,12 +38,12 @@ static IDeviceContextVTable *_getTable(){
 }
 
 IDeviceContext *createGLFWContext(){
-   TestGLContext *out = checkedCalloc(1, sizeof(TestGLContext));
+   GLFWContext *out = checkedCalloc(1, sizeof(GLFWContext));
    out->context.vTable = _getTable();
    return (IDeviceContext *)out;
 }
 
-int _init(TestGLContext *self, int width, int height, StringView winTitle, int flags){
+int _init(GLFWContext *self, int width, int height, StringView winTitle, int flags){
    Int2 size = int2Create(width, height);
    GLFWmonitor *monitor = NULL;
 
@@ -64,23 +63,23 @@ int _init(TestGLContext *self, int width, int height, StringView winTitle, int f
 
    return 0;
 }
-void _preRender(TestGLContext *self){
+void _preRender(GLFWContext *self){
 
 }
-void _postRender(TestGLContext *self){
+void _postRender(GLFWContext *self){
    glWindowSwapBuffers(self->window);
    glWindowPollEvents(self->window);
 }
-int _shouldClose(TestGLContext *self){
+int _shouldClose(GLFWContext *self){
    return glWindowShouldClose(self->window);
 }
-Int2 _windowSize(TestGLContext *self){
+Int2 _windowSize(GLFWContext *self){
    return glWindowGetSize(self->window);
 }
-double _time(TestGLContext *self){
+double _time(GLFWContext *self){
    return glfwGetTime();
 }
-void _destroy(TestGLContext *self){
+void _destroy(GLFWContext *self){
    glWindowDestroy(self->window);
    checkedFree(self);
 }
