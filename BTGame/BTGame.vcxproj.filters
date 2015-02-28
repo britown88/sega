@@ -53,5 +53,8 @@
     <ClCompile Include="GridManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InterpolationManager.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

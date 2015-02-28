@@ -13,8 +13,8 @@
 #include <math.h>
 #include "GridManager.h"
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
 #define FRAME_RATE 60.0
 
@@ -79,6 +79,9 @@ void _initEntitySystem(BTGame *self){
    self->managers.gridManager = createGridManager(self->entitySystem);
    entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.gridManager);
 
+   self->managers.interpolationManager = createInterpolationManager(self->entitySystem);
+   entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.interpolationManager);
+
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -87,6 +90,7 @@ void _destroyEntitySystem(BTGame *self){
    managerDestroy((Manager*)self->managers.renderManager);
    managerDestroy((Manager*)self->managers.cursorManager);
    managerDestroy((Manager*)self->managers.gridManager);
+   managerDestroy((Manager*)self->managers.interpolationManager);
 }
 
 VirtualApp *btCreate() {
@@ -124,9 +128,7 @@ void _onStart(BTGame *self){
       ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
      // ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);
       entityUpdate(e);
-   }
-
-   
+   }   
 
    for (i = 0; i < CELL_COUNT; ++i){
 
@@ -134,7 +136,7 @@ void _onStart(BTGame *self){
 
       appGet();
       
-      if (appRand(appGet(), 0, 5) == 0){
+      if (appRand(appGet(), 0, 2) == 0){
          e = entityCreate(self->entitySystem);
 
          ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
@@ -156,6 +158,7 @@ void _onStep(BTGame *self){
    Int2 mousePos = appGetPointerPos(appGet());
    cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
 
+   interpolationManagerUpdate(self->managers.interpolationManager);
    gridManagerUpdate(self->managers.gridManager);
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
    

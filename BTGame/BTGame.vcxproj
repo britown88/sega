@@ -85,6 +85,7 @@
     <ClCompile Include="Derjpkstras.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="ImageManager.c" />
+    <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="RenderManager.c" />
   </ItemGroup>
   <ItemGroup>

@@ -16,3 +16,6 @@
 
 #define ComponentT LayerComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT InterpolationComponent
+#include "Entities\ComponentImpl.h"

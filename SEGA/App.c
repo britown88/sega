@@ -125,12 +125,13 @@ App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *render
    out->viewport = _buildProportionalViewport(out->winSize.x, out->winSize.y, &out->vpScale);
 
    out->running = true;
+   g_App = out;
 
    subclass->currentFrame = frameCreate();
    iRendererInit(renderer);
    virtualAppOnStart(subclass);
 
-   g_App = out;
+   
 
    return out;
 }

@@ -5,12 +5,14 @@ typedef struct CursorManager_t CursorManager;
 typedef struct EntitySystem_t EntitySystem;
 typedef struct ImageManager_t ImageManager;
 typedef struct GridManager_t GridManager;
+typedef struct InterpolationManager_t InterpolationManager;
 typedef struct Frame_t Frame;
 
 typedef struct {
    RenderManager *renderManager;
    CursorManager *cursorManager;
    GridManager *gridManager;
+   InterpolationManager *interpolationManager;
 
 }BTManagers;
 
@@ -23,3 +25,6 @@ void cursorManagerUpdate(CursorManager *self, int x, int y);
 
 GridManager *createGridManager(EntitySystem *system);
 void gridManagerUpdate(GridManager *self);
+
+InterpolationManager *createInterpolationManager(EntitySystem *system);
+void interpolationManagerUpdate(InterpolationManager *self);

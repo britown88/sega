@@ -3,6 +3,8 @@
 #include "Entities\Entities.h"
 #include "segashared\Strings.h"
 
+#pragma pack(push, 1)
+
 typedef struct {
    int x, y;
 }GridComponent;
@@ -45,3 +47,14 @@ typedef struct{
 
 #define ComponentT LayerComponent
 #include "Entities\ComponentDecl.h"
+
+typedef struct {
+   int destX, destY;
+   double time;
+}InterpolationComponent;
+
+#define ComponentT InterpolationComponent
+#include "Entities\ComponentDecl.h"
+
+
+#pragma pack(pop)

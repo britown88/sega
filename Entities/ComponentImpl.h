@@ -99,12 +99,14 @@ T *entityGet(T)(Entity *self){
    ComponentList *list = compList(T)(es);
    int ID = entityGetID(self);
    int compIndex = compListGetLookup(list)[ID];
+   ComponentVTable *cvt = compListGetVTable(list);
+   ComponentListData data = compListGetList(list);
 
    if (compIndex == -1){
       return NULL;
    }
 
-   return compListGetVTable(list)->getAt(compListGetList(list), compIndex);
+   return cvt->getAt(data, compIndex);
 
 }
 void entityAdd(T)(Entity *self, T *comp){

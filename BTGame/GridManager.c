@@ -9,6 +9,7 @@
 #include "segashared\CheckedMemory.h"
 #include "segalib\EGA.h"
 #include "segautils\IntrusiveHeap.h"
+#include "SEGA\App.h"
 #include "GridManager.h"
 
 #include <stdio.h>
@@ -202,9 +203,34 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
 static void _updateEntity(GridManager *self, Entity *e){
    PositionComponent *pc = entityGet(PositionComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
+   InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
+
    if (pc){
-      pc->x = GRID_X_POS + gc->x * GRID_RES_SIZE;
-      pc->y = GRID_Y_POS + gc->y * GRID_RES_SIZE;
+      if (ic){//moving
+
+      }
+      else{//idle
+         size_t dest = INF;
+         pc->x = GRID_X_POS + gc->x * GRID_RES_SIZE;
+         pc->y = GRID_Y_POS + gc->y * GRID_RES_SIZE;
+
+         while (dest == INF){
+            switch (appRand(appGet(), 0, 5)){
+            case 0: dest = _indexFromXY(gc->x + 1, gc->y); break;
+            case 1: dest = _indexFromXY(gc->x, gc->y + 1); break;
+            case 2: dest = _indexFromXY(gc->x - 1, gc->y); break;
+            case 3: dest = _indexFromXY(gc->x, gc->y - 1); break;
+            };
+         }
+
+         _XYFromIndex(dest, &gc->x, &gc->y);
+         ADD_NEW_COMPONENT(e, InterpolationComponent, 
+            .destX = GRID_X_POS + gc->x * GRID_RES_SIZE, 
+            .destY = GRID_Y_POS + gc->y * GRID_RES_SIZE,
+            .time = 0.5);
+
+         entityUpdate(e);
+      }
    }
 }
 

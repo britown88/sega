@@ -54,12 +54,9 @@ DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext
 DLL_PUBLIC int appRand(App *self, int lower, int upper);
 DLL_PUBLIC Int2 appGetPointerPos(App *self);
 
-double appGetTime(App *self);
+DLL_PUBLIC double appGetTime(App *self);
 double appGetFrameTime(App *self);
 double appGetFrameRate(App *self);
-
-
-
 
 extern App *g_App;
 
