@@ -81,6 +81,7 @@
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
+    <ClCompile Include="Derjpkstras.c" />
     <ClCompile Include="ImageManager.c" />
     <ClCompile Include="RenderManager.c" />
   </ItemGroup>

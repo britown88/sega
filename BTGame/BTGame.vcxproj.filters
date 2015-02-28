@@ -44,5 +44,8 @@
     <ClCompile Include="CursorManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Derjpkstras.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

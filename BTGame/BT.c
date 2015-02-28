@@ -110,6 +110,8 @@ void _onStart(BTGame *self){
 
    int i;
 
+   derpjkstras(2, 2, 11, 7);
+
    cursorManagerCreateCursor(self->managers.cursorManager);
 
    {
@@ -135,11 +137,17 @@ void _onStart(BTGame *self){
       if (appRand(appGet(), 0, 5) == 0){
          e = entityCreate(self->entitySystem);
 
-         //ADD_NEW_COMPONENT(e, PositionComponent, rand() % EGA_RES_WIDTH, rand() % EGA_RES_HEIGHT);
-
          ADD_NEW_COMPONENT(e, PositionComponent, gridX + (i%sqx)*gridSize, gridY + (i / sqx)*gridSize);
          ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/actor.ega"));
-         //ADD_NEW_COMPONENT(e, VelocityComponent, ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1), ((rand() % 3) + 1)*(rand() % 2 ? 1 : -1));
+
+         ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);;
+
+         entityUpdate(e);
+
+         e = entityCreate(self->entitySystem);
+
+         ADD_NEW_COMPONENT(e, PositionComponent, gridX + (i%sqx)*gridSize, gridY + (i / sqx)*gridSize);
+         ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/select.ega"));
 
          ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);;
 
@@ -155,21 +163,6 @@ void _onStep(BTGame *self){
    Int2 mousePos = appGetPointerPos(appGet());
    cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
-
-
-   COMPONENT_QUERY(self->entitySystem, VelocityComponent, vc, {
-      PositionComponent *pc = entityGet(PositionComponent)(componentGetParent(vc, self->entitySystem));
-      if (pc){
-         pc->x += vc->x;
-         if (pc->x > EGA_RES_WIDTH){ pc->x = -16; }
-         if (pc->x < -16){ pc->x = EGA_RES_WIDTH; }
-         pc->y += vc->y;
-         if (pc->y > EGA_RES_HEIGHT){ pc->y = -16; }
-         if (pc->y < -16){ pc->y = EGA_RES_HEIGHT; }
-      }
-      //pc->y = (int)(sin(pc->x*(3.14 / 180.0)) * 175) + 175;
-
-   });
 }
 
 

@@ -35,15 +35,9 @@ static void push_front(QueueNode *parent, QueueNode *child){
       parent->child->prev = child;
    }
 
-   if (child->next){
-      child->next->prev = child->prev;
-   }
+   queueNodeUnlink(child);
 
-   if (child->prev){
-      child->prev->next = child->next;
-   }
-
-   child->prev = NULL;
+   child->prev = parent;
    child->next = parent->child;
    parent->child = child;
 }
@@ -77,7 +71,7 @@ static QueueNode *priorityQueueMergePairs(PriorityQueue *self, QueueNode *node){
    } while (node);
 
    prev = out->prev;
-   while (prev){
+   while (prev->child != out){
       out = priorityQueueMerge(self, out, prev);
       prev = out->prev;
    }
@@ -108,4 +102,34 @@ QueueElem priorityQueuePop(PriorityQueue *self){
 
 int priorityQueueIsEmpty(PriorityQueue *self){
    return !self->head;
+}
+
+void queueNodeUnlink(QueueNode *self){
+   if (self->prev){
+      if (self->prev->child == self){
+         //prev is my parent
+         self->prev->child = self->next;
+      }
+      else{
+         self->prev->next = self->next;
+      }
+   }
+
+   if (self->next){
+      self->next->prev = self->prev;
+   }
+}
+
+void priorityQueueDecreaseKey(PriorityQueue *self, QueueElem data){
+   QueueNode *node = priorityQueueGetNode(self, data);
+
+   //already smallest
+   if (node == self->head){
+      return;
+   }
+
+   queueNodeUnlink(node);
+   node->next = node->prev = NULL;
+
+   priorityQueuePush(self, data);
 }
