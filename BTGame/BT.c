@@ -117,7 +117,8 @@ void _destroy(BTGame *self){
 void _onStart(BTGame *self){ 
    Palette defPal = paletteDeserialize("assets/img/boardui.pal");
 
-   int i;   
+   int i; 
+   int foo = 0;
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
@@ -136,11 +137,11 @@ void _onStart(BTGame *self){
 
       appGet();
       
-      if (appRand(appGet(), 0, 2) == 0){
+      if (appRand(appGet(), 0, 4) == 0){
          e = entityCreate(self->entitySystem);
 
          ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
-         ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/actor.ega"));
+         ADD_NEW_COMPONENT(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
 
          ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);;
          ADD_NEW_COMPONENT(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);;

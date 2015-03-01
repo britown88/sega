@@ -143,6 +143,7 @@ static void _clearTable(Node *nodes){
    int i;
    for (i = 0; i < CELL_COUNT; ++i){
       nodes[i].score = INF;
+      nodes[i].visited = false;
       queueNodeClear(&nodes[i].node);
    }
 }
@@ -200,29 +201,59 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
    }
 }
 
+static size_t derpjkstras(GridManager *self, size_t src, size_t dest){
+   int i;
+   PriorityQueue *pq = priorityQueueCreate(offsetof(Node, node), (PQCompareFunc)&_nodeCompareFunc);
+   GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
+   Node *result = NULL;
+
+   _clearTable(self->table);
+   self->table[src].score = 0;
+
+   for (i = 0; i < CELL_COUNT; ++i){
+      priorityQueuePush(pq, self->table + i);
+   }
+
+   dk->inner.vTable = _getVTable();
+   dk->inner.queue = pq;
+   dk->destination = dest;
+
+   result = dijkstrasRun((Dijkstras*)dk);
+
+   while (result && result->parent && result->parent->parent){
+      result = result->parent;
+   }
+
+   dijkstrasDestroy((Dijkstras*)dk);
+
+   return result->ID;
+}
+
 static void _updateEntity(GridManager *self, Entity *e){
    PositionComponent *pc = entityGet(PositionComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
+   TGridComponent *tgc = entityGet(TGridComponent)(e);
 
    if (pc){
       if (ic){//moving
 
       }
       else{//idle
+         size_t pos = _indexFromXY(gc->x, gc->y);
          size_t dest = INF;
          pc->x = GRID_X_POS + gc->x * GRID_RES_SIZE;
          pc->y = GRID_Y_POS + gc->y * GRID_RES_SIZE;
 
-         while (dest == INF){
-            switch (appRand(appGet(), 0, 5)){
-            case 0: dest = _indexFromXY(gc->x + 1, gc->y); break;
-            case 1: dest = _indexFromXY(gc->x, gc->y + 1); break;
-            case 2: dest = _indexFromXY(gc->x - 1, gc->y); break;
-            case 3: dest = _indexFromXY(gc->x, gc->y - 1); break;
-            };
+         if (pos == tgc->targetPos || tgc->targetPos == INF){
+            size_t newDest = pos;
+            while (newDest >= CELL_COUNT || newDest == pos){
+               newDest = _indexFromXY(appRand(appGet(), 0, TABLE_WIDTH), appRand(appGet(), 0, TABLE_HEIGHT));
+            }
+            tgc->targetPos = newDest;
          }
 
+         dest = derpjkstras(self, pos, tgc->targetPos);
          _XYFromIndex(dest, &gc->x, &gc->y);
          ADD_NEW_COMPONENT(e, InterpolationComponent, 
             .destX = GRID_X_POS + gc->x * GRID_RES_SIZE, 
@@ -235,6 +266,7 @@ static void _updateEntity(GridManager *self, Entity *e){
 }
 
 void gridManagerUpdate(GridManager *self){
+   size_t foo = derpjkstras(self, 3, 75);
    COMPONENT_QUERY(self->system, GridComponent, gc, {
       Entity *e = componentGetParent(gc, self->system);
       _updateEntity(self, e);
