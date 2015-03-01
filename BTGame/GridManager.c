@@ -144,6 +144,7 @@ static void _clearTable(Node *nodes){
    for (i = 0; i < CELL_COUNT; ++i){
       nodes[i].score = INF;
       nodes[i].visited = false;
+      nodes[i].parent = NULL;
       queueNodeClear(&nodes[i].node);
    }
 }

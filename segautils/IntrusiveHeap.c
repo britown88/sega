@@ -80,6 +80,12 @@ static QueueNode *priorityQueueMergePairs(PriorityQueue *self, QueueNode *node){
 
 }
 
+void priorityQueueReinsert(PriorityQueue *self, QueueElem data){
+   QueueNode *newNode = priorityQueueGetNode(self, data);
+
+   self->head = priorityQueueMerge(self, self->head, newNode);
+}
+
 void priorityQueuePush(PriorityQueue *self, QueueElem data){
    QueueNode *newNode = priorityQueueGetNode(self, data);
    newNode->next = newNode->prev = newNode->child = NULL;
@@ -135,5 +141,5 @@ void priorityQueueDecreaseKey(PriorityQueue *self, QueueElem data){
    queueNodeUnlink(node);
    node->next = node->prev = NULL;
 
-   priorityQueuePush(self, data);
+   priorityQueueReinsert(self, data);
 }

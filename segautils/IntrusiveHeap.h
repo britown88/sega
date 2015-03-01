@@ -18,6 +18,7 @@ PriorityQueue *priorityQueueCreate(size_t offset, PQCompareFunc min);
 void priorityQueueDestroy(PriorityQueue *self);
 
 void priorityQueuePush(PriorityQueue *self, QueueElem data);
+void priorityQueueReinsert(PriorityQueue *self, QueueElem data);
 QueueElem priorityQueuePop(PriorityQueue *self);
 int priorityQueueIsEmpty(PriorityQueue *self); 
 
