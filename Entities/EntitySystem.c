@@ -11,6 +11,9 @@ typedef struct Entity_t{
    EntitySystem *system;
 };
 
+#define VectorTPart EntityPtr
+#include "segautils/Vector_Impl.h"
+
 struct ComponentList_t{
    ComponentVTable *cvt;
 

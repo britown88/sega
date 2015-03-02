@@ -7,6 +7,10 @@
 
 typedef struct EntitySystem_t EntitySystem;
 typedef struct Entity_t Entity;
+typedef Entity* EntityPtr;
+
+#define VectorTPart EntityPtr
+#include "segautils/Vector_Decl.h"
 
 typedef struct ComponentList_t ComponentList;
 typedef void* ComponentListData;

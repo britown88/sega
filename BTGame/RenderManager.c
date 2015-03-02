@@ -24,9 +24,6 @@ void TRenderComponentDestroy(TRenderComponent *self){
 #define TComponentT TRenderComponent
 #include "Entities\ComponentDeclTransient.h"
 
-typedef Entity* RenderPtr;
-#define VectorT RenderPtr
-#include "segautils\Vector_Create.h"
 
 struct RenderManager_t{
    Manager m;
@@ -35,7 +32,7 @@ struct RenderManager_t{
    ImageManager *images;
    double *fps;
 
-   vec(RenderPtr) *layers[LayerCount];
+   vec(EntityPtr) *layers[LayerCount];
 };
 
 #pragma region vtable things
@@ -59,17 +56,17 @@ static ManagerVTable *_createVTable(){
 #pragma endregion
 
 void _initLayers(RenderManager *self){
-   vec(RenderPtr) **first = self->layers;
-   vec(RenderPtr) **last = first + LayerCount;
+   vec(EntityPtr) **first = self->layers;
+   vec(EntityPtr) **last = first + LayerCount;
 
-   while (first != last){ (*first++) = vecCreate(RenderPtr)(NULL); }
+   while (first != last){ (*first++) = vecCreate(EntityPtr)(NULL); }
 }
 
 void _destroyLayers(RenderManager *self){
-   vec(RenderPtr) **first = self->layers;
-   vec(RenderPtr) **last = first + LayerCount;
+   vec(EntityPtr) **first = self->layers;
+   vec(EntityPtr) **last = first + LayerCount;
 
-   while (first != last){ vecDestroy(RenderPtr)(*first++); }
+   while (first != last){ vecDestroy(EntityPtr)(*first++); }
 }
 
 RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager, double *fps){
@@ -125,10 +122,10 @@ void renderManagerOnUpdate(RenderManager *self, Entity *e){
 }
 
 void _clearLayers(RenderManager *self){
-   vec(RenderPtr) **first = self->layers;
-   vec(RenderPtr) **last = first + LayerCount;
+   vec(EntityPtr) **first = self->layers;
+   vec(EntityPtr) **last = first + LayerCount;
 
-   while (first != last){ vecClear(RenderPtr)(*first++); }
+   while (first != last){ vecClear(EntityPtr)(*first++); }
 }
 
 void _addToLayers(RenderManager *self, Entity* e){
@@ -140,7 +137,7 @@ void _addToLayers(RenderManager *self, Entity* e){
    }
 
    if (layer < LayerCount){
-      vecPushBack(RenderPtr)(self->layers[layer], &e);      
+      vecPushBack(EntityPtr)(self->layers[layer], &e);      
    }
 }
 
@@ -160,16 +157,16 @@ void _renderEntity(Entity *e, Frame *frame){
    }
 }
 
-void _renderLayer(RenderManager *self, vec(RenderPtr) *layer, Frame *frame){
-   RenderPtr *begin = vecBegin(RenderPtr)(layer);
-   RenderPtr *end = vecEnd(RenderPtr)(layer);
+void _renderLayer(RenderManager *self, vec(EntityPtr) *layer, Frame *frame){
+   EntityPtr *begin = vecBegin(EntityPtr)(layer);
+   EntityPtr *end = vecEnd(EntityPtr)(layer);
 
    while (begin != end){ _renderEntity((*begin++), frame); }
 }
 
 void _renderLayers(RenderManager *self, Frame *frame){
-   vec(RenderPtr) **first = self->layers;
-   vec(RenderPtr) **last = first + LayerCount;
+   vec(EntityPtr) **first = self->layers;
+   vec(EntityPtr) **last = first + LayerCount;
 
    while (first != last){  _renderLayer(self, *first++, frame);  }
 }

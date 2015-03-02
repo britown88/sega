@@ -54,6 +54,15 @@
     <ClInclude Include="Vector_Create.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Vector_Decl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector_Impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector_Functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

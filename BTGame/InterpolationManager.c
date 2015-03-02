@@ -22,14 +22,10 @@ typedef struct{
 #define TComponentT TInterpolationComponent
 #include "Entities\ComponentDeclTransient.h"
 
-typedef Entity* RemovePtr;
-#define VectorT RemovePtr
-#include "segautils\Vector_Create.h"
-
 struct InterpolationManager_t{
    Manager m;
    EntitySystem *system;
-   vec(RemovePtr) *removeList;
+   vec(EntityPtr) *removeList;
 };
 
 #pragma region vtable things
@@ -56,12 +52,12 @@ InterpolationManager *createInterpolationManager(EntitySystem *system){
    InterpolationManager *out = checkedCalloc(1, sizeof(InterpolationManager));
    out->system = system;
    out->m.vTable = _createVTable();
-   out->removeList = vecCreate(RemovePtr)(NULL);
+   out->removeList = vecCreate(EntityPtr)(NULL);
    return out;
 }
 
 void InterpolationManagerDestroy(InterpolationManager *self){
-   vecDestroy(RemovePtr)(self->removeList);
+   vecDestroy(EntityPtr)(self->removeList);
    checkedFree(self);
 }
 
@@ -111,7 +107,7 @@ void _updateEntity(InterpolationManager *self, Entity *e, long time){
       double m = (time - tic->startTime) / (ic->time * 1000.0);
       if (m > 1.0){
          m = 1.0;
-         vecPushBack(RemovePtr)(self->removeList, &e);
+         vecPushBack(EntityPtr)(self->removeList, &e);
       }
 
       pc->x = (int)((ic->destX - tic->startX) * m) + tic->startX;
@@ -120,8 +116,8 @@ void _updateEntity(InterpolationManager *self, Entity *e, long time){
 }
 
 void _removeComponents(InterpolationManager *self){
-   RemovePtr *begin = vecBegin(RemovePtr)(self->removeList);
-   RemovePtr *end = vecEnd(RemovePtr)(self->removeList);
+   EntityPtr *begin = vecBegin(EntityPtr)(self->removeList);
+   EntityPtr *end = vecEnd(EntityPtr)(self->removeList);
 
    while (begin != end){
       Entity *e = *begin++;
@@ -129,7 +125,7 @@ void _removeComponents(InterpolationManager *self){
       entityRemove(TInterpolationComponent)(e);
    }
 
-   vecClear(RemovePtr)(self->removeList);
+   vecClear(EntityPtr)(self->removeList);
 }
 
 void interpolationManagerUpdate(InterpolationManager *self){
@@ -140,7 +136,7 @@ void interpolationManagerUpdate(InterpolationManager *self){
       _updateEntity(self, e, time);
    });
 
-   if (!vecIsEmpty(RemovePtr)(self->removeList)){
+   if (!vecIsEmpty(EntityPtr)(self->removeList)){
       _removeComponents(self);
    }
 }

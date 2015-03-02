@@ -23,6 +23,9 @@
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector_Create.h" />
+    <ClInclude Include="Vector_Decl.h" />
+    <ClInclude Include="Vector_Functions.h" />
+    <ClInclude Include="Vector_Impl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BitBuffer.c" />
