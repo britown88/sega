@@ -4,6 +4,39 @@
 #include "segautils\Defs.h"
 #include "segautils\BitTwiddling.h"
 
+#define ClosureTPart \
+    CLOSURE_RET(void) \
+    CLOSURE_NAME(ComponentUpdate) \
+    CLOSURE_ARGS(Entity*, Component)
+#include "segautils\Closure_Impl.h"
+
+#define VectorT ComponentUpdate
+#include "segautils/Vector_Create.h"
+
+typedef struct {
+   size_t key;
+   vec(ComponentUpdate) *value;
+} cudEntry;
+
+#define HashTableT cudEntry
+#include "segautils\HashTable_Create.h"
+
+static int _cudEntryCompare(cudEntry *e1, cudEntry *e2){
+   return e1->key == e2->key;
+}
+
+static size_t _cudEntryHash(cudEntry *p){
+   return p->key;
+}
+
+static void _cudEntryDestroy(cudEntry *p){
+   vecDestroy(ComponentUpdate)(p->value);
+}
+
+static void _compUpdateDestroy(ComponentUpdate *self){
+   closureDestroy(ComponentUpdate)(self);
+}
+
 typedef struct Entity_t{ 
    QueueNode node;
    int ID;
@@ -60,6 +93,7 @@ struct EntitySystem_t {
 
    vec(ComponentList) *lists;
    vec(ManagerPtr) *managers;
+   ht(cudEntry) *updateDelegates;
 };
 
 Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
@@ -82,6 +116,7 @@ EntitySystem *entitySystemCreate(){
    out->entityPool = checkedCalloc(MAX_ENTITIES, sizeof(Entity));
    out->lists = vecCreate(ComponentList)(&_cvtDestroy);
    out->managers = vecCreate(ManagerPtr)(NULL);
+   out->updateDelegates = htCreate(cudEntry)(&_cudEntryCompare, &_cudEntryHash, &_cudEntryDestroy);
 
    return out;
 }
@@ -104,6 +139,7 @@ void entitySystemDestroy(EntitySystem *self){
    checkedFree(self->entityPool);
    vecDestroy(ComponentList)(self->lists);
    vecDestroy(ManagerPtr)(self->managers);
+   htDestroy(cudEntry)(self->updateDelegates);
    checkedFree(self);
 }
 void entitySystemRegisterManager(EntitySystem *self, Manager *manager){
@@ -119,6 +155,32 @@ Manager **entitySystemGetManagers(EntitySystem *self){
    else {
       return self->managers->data;
    }
+}
+
+void entitySystemUpdateComponent(EntitySystem *self, size_t compRtti, Entity *e, Component oldComponent){
+   cudEntry entry = { compRtti, NULL };
+   cudEntry *found = htFind(cudEntry)(self->updateDelegates, &entry);
+   if (found){
+      vecForEach(ComponentUpdate, cud, found->value, {
+         closureCall(cud, e, oldComponent);
+      });
+   }
+}
+void entitySystemRegisterComponentUpdate(EntitySystem *self, size_t compRtti, ComponentUpdate del){
+   cudEntry entry = { compRtti, NULL };
+   cudEntry *found = htFind(cudEntry)(self->updateDelegates, &entry);
+   vec(ComponentUpdate) *delegateList = NULL;
+   if (!found){
+      //add a new list
+      delegateList = vecCreate(ComponentUpdate)(&_compUpdateDestroy);
+      entry.value = delegateList;
+      htInsert(cudEntry)(self->updateDelegates, &entry);
+   }
+   else{
+      delegateList = found->value;
+   }
+
+   vecPushBack(ComponentUpdate)(delegateList, &del);
 }
 
 void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTable *table){
@@ -186,13 +248,10 @@ void _callManagerDestroy(Entity *self){
 
 void entityDestroy(Entity *self){
    vec(ComponentList) *v = self->system->lists;
-   size_t compCount = vecSize(ComponentList)(v);
-   size_t i;
 
    _callManagerDestroy(self);
 
-   for (i = 0; i < compCount; ++i){
-      ComponentList *list = vecAt(ComponentList)(v, i);
+   vecForEach(ComponentList, list, v, {
       int compIndex = list->lookup[self->ID];
       Component moved;
 
@@ -209,8 +268,7 @@ void entityDestroy(Entity *self){
          int movedEntity = componentGetParentID(moved);
          list->lookup[movedEntity] = compIndex;
       }
-
-   }
+   });
 
    self->loaded = false;
    priorityQueuePush(self->system->eQueue, self);

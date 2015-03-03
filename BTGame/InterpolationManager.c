@@ -82,7 +82,7 @@ void InterpolationManagerOnUpdate(InterpolationManager *self, Entity *e){
          }
          else{
             //new grid entry
-            ADD_NEW_COMPONENT(e, TInterpolationComponent, .startTime = (long)appGetTime(appGet()), 
+            COMPONENT_ADD(e, TInterpolationComponent, .startTime = (long)appGetTime(appGet()), 
                                                           .startX = pc->x, 
                                                           .startY = pc->y,
                                                           .destX = ic->destX,
@@ -116,14 +116,11 @@ void _updateEntity(InterpolationManager *self, Entity *e, long time){
 }
 
 void _removeComponents(InterpolationManager *self){
-   EntityPtr *begin = vecBegin(EntityPtr)(self->removeList);
-   EntityPtr *end = vecEnd(EntityPtr)(self->removeList);
 
-   while (begin != end){
-      Entity *e = *begin++;
-      entityRemove(InterpolationComponent)(e);
-      entityRemove(TInterpolationComponent)(e);
-   }
+   vecForEach(EntityPtr, e, self->removeList, {
+      entityRemove(InterpolationComponent)(*e);
+      entityRemove(TInterpolationComponent)(*e);
+   });
 
    vecClear(EntityPtr)(self->removeList);
 }

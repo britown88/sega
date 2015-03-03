@@ -145,6 +145,14 @@ void entityRemove(T)(Entity *self){
    }
 }
 
+void compBroadcastUpdate(T)(EntitySystem *system, Entity *e, T *oldComponent){
+   entitySystemUpdateComponent(system, GetRTTI(T)->ID, e, oldComponent);
+}
+void compRegisterUpdateDelegate(T)(EntitySystem *system, ComponentUpdate del){
+   compList(T)(system);//ensure component gets registered for RTTI to line up correctly
+   entitySystemRegisterComponentUpdate(system, GetRTTI(T)->ID, del);
+}
+
 #undef COMP_NAME
 #undef ComponentT
 #undef T

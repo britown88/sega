@@ -14,4 +14,14 @@
 #define vecBegin(TYPE) CONCAT(vecBegin_, TYPE)
 #define vecEnd(TYPE) CONCAT(vecEnd_, TYPE)
 #define vecReverse(TYPE) CONCAT(vecReverse_, TYPE)
+#define vecIndexOf(TYPE) CONCAT(vecIndexOf_, TYPE)
+#define vecRemove(TYPE) CONCAT(vecDelete_, TYPE)
+
+#define vecForEach(TYPE, varName, list, ...) \
+if(!vecIsEmpty(TYPE)(list)){\
+   TYPE *varName = vecBegin(TYPE)(list); \
+   TYPE *CONCAT(__end_, TYPE) = vecEnd(TYPE)(list); \
+   for(; varName != CONCAT(__end_, TYPE); ++varName) __VA_ARGS__ \
+}
+
 #endif

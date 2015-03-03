@@ -46,10 +46,10 @@ static ManagerVTable *_createVTable(){
 void cursorManagerCreateCursor(CursorManager *self){
    Entity *e = entityCreate(self->system);
 
-   ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
-   ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/cursor.ega"));
-   ADD_NEW_COMPONENT(e, TCursorComponent, 0);
-   ADD_NEW_COMPONENT(e, LayerComponent, LayerUI);
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/cursor.ega"));
+   COMPONENT_ADD(e, TCursorComponent, 0);
+   COMPONENT_ADD(e, LayerComponent, LayerUI);
    entityUpdate(e);
 }
 

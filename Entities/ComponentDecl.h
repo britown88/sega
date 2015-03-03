@@ -12,5 +12,8 @@ T *entityGet(T)(Entity *self);
 void entityAdd(T)(Entity *self, T *comp);
 void entityRemove(T)(Entity *self);
 
+void compBroadcastUpdate(T)(EntitySystem *system, Entity *e, T *oldComponent);
+void compRegisterUpdateDelegate(T)(EntitySystem *system, ComponentUpdate del);
+
 #undef ComponentT
 #undef T

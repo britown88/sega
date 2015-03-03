@@ -39,8 +39,18 @@ EntitySystem *entitySystemCreate();
 void entitySystemDestroy(EntitySystem *self);
 
 void entitySystemRegisterManager(EntitySystem *self, Manager *manager);
+
 size_t entitySystemGetManagerCount(EntitySystem *self);
 Manager **entitySystemGetManagers(EntitySystem *self);
+
+#define ClosureTPart \
+    CLOSURE_RET(void) \
+    CLOSURE_NAME(ComponentUpdate) \
+    CLOSURE_ARGS(Entity*, Component)
+#include "segautils\Closure_Decl.h"
+
+void entitySystemUpdateComponent(EntitySystem *self, size_t compRtti, Entity *e, Component oldComponent);
+void entitySystemRegisterComponentUpdate(EntitySystem *self, size_t compRtti, ComponentUpdate del);
 
 Entity *entityCreate(EntitySystem *system);
 void entityUpdate(Entity *self);
@@ -65,28 +75,33 @@ ComponentVTable *compListGetVTable(ComponentList *self);
 void *componentListGetRaw(ComponentList *self);
 size_t componentListGetCount(ComponentList *self);
 
-#define ADD_NEW_COMPONENT(entity, component_type, ...) \
-{ \
+#define COMPONENT_ADD(entity, component_type, ...) { \
    component_type CONCAT(__new_, component_type) = { __VA_ARGS__ }; \
    entityAdd(component_type)(entity, &CONCAT(__new_, component_type)); \
 }
 
-#define COMPONENT_QUERY(es, component_type, iterator_name, ...) \
-{ \
+#define COMPONENT_QUERY(es, component_type, iterator_name, ...) { \
    size_t id = GetRTTI(component_type)->ID; \
    ComponentList *CONCAT(clist__, component_type) = entitySystemGetCompList(es, id); \
    size_t CONCAT(count__, component_type); \
-   if(CONCAT(clist__, component_type) && (CONCAT(count__, component_type) = componentListGetCount(CONCAT(clist__, component_type)))) \
-   { \
+   if(CONCAT(clist__, component_type) && (CONCAT(count__, component_type) = componentListGetCount(CONCAT(clist__, component_type)))) { \
       char* CONCAT(first__, component_type) = componentListGetRaw(CONCAT(clist__, component_type)); \
       char* CONCAT(last__, component_type) = CONCAT(first__, component_type) + CONCAT(count__, component_type) * (sizeof(int) + sizeof(component_type)); \
-      while (CONCAT(first__, component_type) != CONCAT(last__, component_type))\
-      {\
+      while (CONCAT(first__, component_type) != CONCAT(last__, component_type)) {\
       component_type* iterator_name = (component_type*)(CONCAT(first__, component_type) += sizeof(int)); \
       __VA_ARGS__ \
       CONCAT(first__, component_type) += sizeof(component_type); \
       } \
    } \
+}
+
+#define COMPONENT_LOCK(Type, varName, entity, ...) {\
+   Type* varName = entityGet(Type)(entity);\
+   if (varName) {\
+      Type CONCAT(OldComp__,Type) = *varName;\
+      __VA_ARGS__\
+      compBroadcastUpdate(Type)(entityGetSystem(entity), entity, &CONCAT(OldComp__,Type));\
+   }\
 }
 
 void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTable *table);

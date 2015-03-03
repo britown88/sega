@@ -14,7 +14,6 @@
 typedef struct GridManager_t GridManager;
 
 GridManager *createGridManager(EntitySystem *system);
-void gridManagerUpdate(GridManager *self);
 
 typedef struct{
    size_t ID;

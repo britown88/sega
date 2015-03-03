@@ -158,10 +158,9 @@ void _renderEntity(Entity *e, Frame *frame){
 }
 
 void _renderLayer(RenderManager *self, vec(EntityPtr) *layer, Frame *frame){
-   EntityPtr *begin = vecBegin(EntityPtr)(layer);
-   EntityPtr *end = vecEnd(EntityPtr)(layer);
-
-   while (begin != end){ _renderEntity((*begin++), frame); }
+   vecForEach(EntityPtr, e, layer, {
+      _renderEntity(*e, frame);
+   });
 }
 
 void _renderLayers(RenderManager *self, Frame *frame){

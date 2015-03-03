@@ -52,7 +52,7 @@ static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
    TDerpComponent *dc = entityGet(TDerpComponent)(e);
 
    if (gc && !dc){
-      ADD_NEW_COMPONENT(e, TDerpComponent, INF);
+      COMPONENT_ADD(e, TDerpComponent, INF);
       dc = entityGet(TDerpComponent)(e);
    }
 
@@ -80,9 +80,11 @@ static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
          if (solution.totalCost > 0 && solution.totalCost < INF){
             dest = vecBegin(GridSolutionNode)(solution.path)->node;
 
+            COMPONENT_LOCK(GridComponent, newgc, e, {
+               gridXYFromIndex(dest, &newgc->x, &newgc->y);
+            });
             
-            gridXYFromIndex(dest, &gc->x, &gc->y);
-            ADD_NEW_COMPONENT(e, InterpolationComponent,
+            COMPONENT_ADD(e, InterpolationComponent,
                .destX = GRID_X_POS + gc->x * GRID_RES_SIZE,
                .destY = GRID_Y_POS + gc->y * GRID_RES_SIZE,
                .time = 0.5);

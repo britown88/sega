@@ -155,13 +155,6 @@ static void _clearTable(GridNode *nodes){
    }
 }
 
-static void _clearTableEntities(GridNode *nodes){
-   int i;
-   for (i = 0; i < CELL_COUNT; ++i){
-      vecClear(EntityPtr)(nodes[i].data.entities);
-   }
-}
-
 #pragma region vtable things
 static void GridManagerDestroy(GridManager*);
 static void GridManagerOnDestroy(GridManager*, Entity*);
@@ -182,6 +175,61 @@ static ManagerVTable *_createVTable(){
 
 #pragma endregion
 
+typedef struct{
+   GridManager *manager;
+}GridUpdateData;
+
+static void _gridAddEntity(GridManager *self, Entity *e, size_t newPos){
+   TGridComponent *tgc = entityGet(TGridComponent)(e);
+   if (newPos < CELL_COUNT){
+      vecPushBack(size_t)(tgc->occupyingNodes, &newPos);
+      vecPushBack(EntityPtr)(gridManagerEntitiesAt(self, newPos), &e);
+   }
+}
+
+static void _gridRemoveEntity(GridManager *self, Entity *e, size_t oldPos){
+   TGridComponent *tgc = entityGet(TGridComponent)(e);
+   if (tgc){
+      vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, oldPos);
+      vec(size_t) *nodes = tgc->occupyingNodes;
+
+      vecRemove(size_t)(nodes, vecIndexOf(size_t)(nodes, &oldPos));
+
+      if (entitiesAtOld){
+         vecRemove(EntityPtr)(entitiesAtOld, vecIndexOf(EntityPtr)(entitiesAtOld, &e));
+      }
+   }
+}
+
+static void _gridMoveEntity(GridManager *self, Entity *e, size_t oldPos, size_t newPos){
+
+   if (oldPos != newPos && newPos < CELL_COUNT){
+      _gridRemoveEntity(self, e, oldPos);
+      _gridAddEntity(self, e, newPos);
+   }
+}
+
+static void _gridUpdateDataDestroy(GridUpdateData *self){
+   checkedFree(self);
+}
+static void _gridComponentUpdate(GridUpdateData *data, Entity *e, GridComponent *oldGC){
+   GridComponent *gc = entityGet(GridComponent)(e);
+   
+   size_t oldPos = gridIndexFromXY(oldGC->x, oldGC->y);
+   size_t newPos = gridIndexFromXY(gc->x, gc->y);
+
+   _gridMoveEntity(data->manager, e, oldPos, newPos);
+}
+
+void _registerUpdateDelegate(GridManager *self, EntitySystem *system){
+   GridUpdateData *data = checkedCalloc(1, sizeof(GridUpdateData));
+   ComponentUpdate update;
+   
+   data->manager = self;
+   closureInit(ComponentUpdate)(&update, data, (ComponentUpdateFunc)&_gridComponentUpdate, &_gridUpdateDataDestroy);
+   compRegisterUpdateDelegate(GridComponent)(system, update);
+}
+
 GridManager *createGridManager(EntitySystem *system){
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
    out->system = system;
@@ -189,6 +237,8 @@ GridManager *createGridManager(EntitySystem *system){
    out->solutionMap = vecCreate(GridSolutionNode)(NULL);
 
    _buildTable(out->table);
+
+   _registerUpdateDelegate(out, system);
 
    return out;
 }
@@ -205,6 +255,12 @@ void GridManagerDestroy(GridManager *self){
 void GridManagerOnDestroy(GridManager *self, Entity *e){
    TGridComponent *tgc = entityGet(TGridComponent)(e);
    if (tgc){
+      vecForEach(size_t, node, tgc->occupyingNodes, {
+         vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, *node);
+         if (entitiesAtOld){
+            vecRemove(EntityPtr)(entitiesAtOld, vecIndexOf(EntityPtr)(entitiesAtOld, &e));
+         }
+      });
       vecDestroy(size_t)(tgc->occupyingNodes);
    }
 }
@@ -215,12 +271,19 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
    if (gc){
       if (!tgc){
          //new grid entry
-         ADD_NEW_COMPONENT(e, TGridComponent, vecCreate(size_t)(NULL));
+         COMPONENT_ADD(e, TGridComponent, vecCreate(size_t)(NULL));
+         _gridAddEntity(self, e, gridIndexFromXY(gc->x, gc->y));
       }
    }
    else{
       if (tgc){
-         //no longer rendered
+         //no longer on grid, remove from occupying nodes
+         vecForEach(size_t, node, tgc->occupyingNodes, {
+            vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, *node);
+            if (entitiesAtOld){
+               vecRemove(EntityPtr)(entitiesAtOld, vecIndexOf(EntityPtr)(entitiesAtOld, &e));
+            }
+         });
          vecDestroy(size_t)(tgc->occupyingNodes);
          entityRemove(TGridComponent)(e);
       }
@@ -282,24 +345,3 @@ vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index){
    }
 }
 
-static void _updateEntity(GridManager *self, Entity *e){
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-   GridComponent *gc = entityGet(GridComponent)(e);
-   if (tgc && gc){
-      size_t pos = gridIndexFromXY(gc->x, gc->y);
-
-      vecClear(size_t)(tgc->occupyingNodes);
-
-      vecPushBack(size_t)(tgc->occupyingNodes, &pos);
-      vecPushBack(EntityPtr)(gridManagerEntitiesAt(self, pos), &e);
-   }
-}
-
-void gridManagerUpdate(GridManager *self){
-   _clearTableEntities(self->table);
-
-   COMPONENT_QUERY(self->system, GridComponent, gc, {
-      Entity *e = componentGetParent(gc, self->system);
-      _updateEntity(self, e);
-   });
-}

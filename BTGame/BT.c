@@ -125,9 +125,9 @@ void _onStart(BTGame *self){
    {
       Entity *e = entityCreate(self->entitySystem);
       
-      ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
-      ADD_NEW_COMPONENT(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
-     // ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);
+      COMPONENT_ADD(e, PositionComponent, 0, 0);
+      COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
+     // COMPONENT_ADD(e, LayerComponent, LayerTokens);
       entityUpdate(e);
    }   
 
@@ -140,11 +140,11 @@ void _onStart(BTGame *self){
       if (appRand(appGet(), 0, 4) == 0){
          e = entityCreate(self->entitySystem);
 
-         ADD_NEW_COMPONENT(e, PositionComponent, 0, 0);
-         ADD_NEW_COMPONENT(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
+         COMPONENT_ADD(e, PositionComponent, 0, 0);
+         COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
 
-         ADD_NEW_COMPONENT(e, LayerComponent, LayerTokens);;
-         ADD_NEW_COMPONENT(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);;
+         COMPONENT_ADD(e, LayerComponent, LayerTokens);;
+         COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);;
 
          entityUpdate(e);
       }
@@ -160,7 +160,6 @@ void _onStep(BTGame *self){
    cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
 
    interpolationManagerUpdate(self->managers.interpolationManager);
-   gridManagerUpdate(self->managers.gridManager);
 
    derjpkstras(self->entitySystem, self->managers.gridManager);
 
