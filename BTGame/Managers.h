@@ -23,8 +23,5 @@ CursorManager *createCursorManager(EntitySystem *system);
 void cursorManagerCreateCursor(CursorManager *self);
 void cursorManagerUpdate(CursorManager *self, int x, int y);
 
-GridManager *createGridManager(EntitySystem *system);
-void gridManagerUpdate(GridManager *self);
-
 InterpolationManager *createInterpolationManager(EntitySystem *system);
 void interpolationManagerUpdate(InterpolationManager *self);

@@ -14,18 +14,19 @@
 
 #include <stdio.h>
 
-typedef struct Node_t Node;
+typedef struct GridNode_t GridNode;
 
-struct Node_t{
+struct GridNode_t{
    QueueNode node;
    byte visited;
    size_t score;
-   int ID;
-   Node *parent;
-   Node *neighbors[4];
+   size_t ID;
+   GridNode *parent;
+   GridNode *neighbors[4];
+   vec(EntityPtr) *entities;
 };
 
-static Node *_nodeCompareFunc(Node *n1, Node *n2){
+static GridNode *_nodeCompareFunc(GridNode *n1, GridNode *n2){
    return n1->score < n2->score ? n1 : n2;
 }
 
@@ -35,9 +36,9 @@ typedef struct {
    size_t destination;
 }GridSolver;
 
-static size_t _getNeighbors(GridSolver *self, Node *node, Node ***outList);
-static int _processNeighbor(GridSolver *self, Node *current, Node *node);
-static int _processCurrent(GridSolver *self, Node *node);
+static size_t _getNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
+static int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node);
+static int _processCurrent(GridSolver *self, GridNode *node);
 static void _destroy(GridSolver *self);
 
 static DijkstrasVTable *_getVTable(){
@@ -52,11 +53,11 @@ static DijkstrasVTable *_getVTable(){
    return out;
 }
 
-size_t _getNeighbors(GridSolver *self, Node *node, Node ***outList){
+size_t _getNeighbors(GridSolver *self, GridNode *node, GridNode ***outList){
    *outList = node->neighbors;
    return 4;
 }
-int _processNeighbor(GridSolver *self, Node *current, Node *node){
+int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node){
    if (node && !node->visited){
       size_t newScore = current->score + 1;
       if (newScore < node->score){
@@ -67,7 +68,7 @@ int _processNeighbor(GridSolver *self, Node *current, Node *node){
    }
    return false;
 }
-int _processCurrent(GridSolver *self, Node *node){
+int _processCurrent(GridSolver *self, GridNode *node){
    node->visited = true;
 
    return node->score == INF || node->ID == self->destination;
@@ -96,7 +97,7 @@ struct GridManager_t{
    Manager m;
    EntitySystem *system;
 
-   Node table[CELL_COUNT];
+   GridNode table[CELL_COUNT];
 };
 
 static size_t _indexFromXY(int x, int y){
@@ -112,10 +113,10 @@ static void _XYFromIndex(size_t index, int*x, int*y){
    *y = index / TABLE_WIDTH;
 }
 
-static void _addNeighbors(Node *nodes, size_t current){
+static void _addNeighbors(GridNode *nodes, size_t current){
    int x, y, i;
    size_t nID[4];
-   Node *node = nodes + current;
+   GridNode *node = nodes + current;
    _XYFromIndex(node->ID, &x, &y);
 
    nID[0] = _indexFromXY(x, y - 1);
@@ -130,8 +131,8 @@ static void _addNeighbors(Node *nodes, size_t current){
    }
 }
 
-static void _buildTable(Node *nodes){
-   int i;
+static void _buildTable(GridNode *nodes){
+   size_t i;
    for (i = 0; i < CELL_COUNT; ++i){
       nodes[i].ID = i;
       nodes[i].score = INF;
@@ -139,7 +140,7 @@ static void _buildTable(Node *nodes){
    }
 }
 
-static void _clearTable(Node *nodes){
+static void _clearTable(GridNode *nodes){
    int i;
    for (i = 0; i < CELL_COUNT; ++i){
       nodes[i].score = INF;
@@ -202,11 +203,50 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
    }
 }
 
+//GridSolution gridManagerSolve(GridManager *self, GridSolveData data, size_t startCell, GridProcessCurrentFunc cFunc, GridProcessNeighborFunc nFunc){
+//   int i;
+//   PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
+//   GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
+//   GridNode *result = NULL;
+//   GridSolution solution = { INF, INF, INF };
+//
+//   if (startCell >= 0 && startCell < CELL_COUNT){
+//      _clearTable(self->table);
+//      self->table[startCell].score = 0;
+//
+//      for (i = 0; i < CELL_COUNT; ++i){
+//         priorityQueuePush(pq, self->table + i);
+//      }
+//
+//      dk->inner.vTable = _getVTable();
+//      dk->inner.queue = pq;
+//      dk->destination = dest;
+//
+//      result = dijkstrasRun((Dijkstras*)dk);
+//
+//      while (result && result->parent && result->parent->parent){
+//         result = result->parent;
+//      }
+//   }
+//
+//   dijkstrasDestroy((Dijkstras*)dk);
+//   return solution;
+//}
+
+vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index){
+   if (index >= 0 && index < CELL_COUNT){
+      return self->table[index].entities;
+   }
+   else {
+      return NULL;
+   }
+}
+
 static size_t derpjkstras(GridManager *self, size_t src, size_t dest){
    int i;
-   PriorityQueue *pq = priorityQueueCreate(offsetof(Node, node), (PQCompareFunc)&_nodeCompareFunc);
+   PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
    GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
-   Node *result = NULL;
+   GridNode *result = NULL;
 
    _clearTable(self->table);
    self->table[src].score = 0;
