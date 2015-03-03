@@ -175,10 +175,6 @@ static ManagerVTable *_createVTable(){
 
 #pragma endregion
 
-typedef struct{
-   GridManager *manager;
-}GridUpdateData;
-
 static void _gridAddEntity(GridManager *self, Entity *e, size_t newPos){
    TGridComponent *tgc = entityGet(TGridComponent)(e);
    if (newPos < CELL_COUNT){
@@ -209,24 +205,19 @@ static void _gridMoveEntity(GridManager *self, Entity *e, size_t oldPos, size_t 
    }
 }
 
-static void _gridUpdateDataDestroy(GridUpdateData *self){
-   checkedFree(self);
-}
-static void _gridComponentUpdate(GridUpdateData *data, Entity *e, GridComponent *oldGC){
+static void _gridComponentUpdate(GridManager *self, Entity *e, GridComponent *oldGC){
    GridComponent *gc = entityGet(GridComponent)(e);
    
    size_t oldPos = gridIndexFromXY(oldGC->x, oldGC->y);
    size_t newPos = gridIndexFromXY(gc->x, gc->y);
 
-   _gridMoveEntity(data->manager, e, oldPos, newPos);
+   _gridMoveEntity(self, e, oldPos, newPos);
 }
 
 void _registerUpdateDelegate(GridManager *self, EntitySystem *system){
-   GridUpdateData *data = checkedCalloc(1, sizeof(GridUpdateData));
    ComponentUpdate update;
    
-   data->manager = self;
-   closureInit(ComponentUpdate)(&update, data, (ComponentUpdateFunc)&_gridComponentUpdate, &_gridUpdateDataDestroy);
+   closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_gridComponentUpdate, NULL);
    compRegisterUpdateDelegate(GridComponent)(system, update);
 }
 
