@@ -13,6 +13,10 @@
   <ItemGroup>
     <ClInclude Include="BitBuffer.h" />
     <ClInclude Include="BitTwiddling.h" />
+    <ClInclude Include="Closure_Create.h" />
+    <ClInclude Include="Closure_Decl.h" />
+    <ClInclude Include="Closure_Functions.h" />
+    <ClInclude Include="Closure_Impl.h" />
     <ClInclude Include="Defs.h" />
     <ClInclude Include="DLLBullshit.h" />
     <ClInclude Include="extern_c.h" />

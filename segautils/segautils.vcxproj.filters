@@ -63,6 +63,18 @@
     <ClInclude Include="Vector_Functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Closure_Impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Closure_Decl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Closure_Functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Closure_Create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

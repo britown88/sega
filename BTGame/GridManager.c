@@ -100,29 +100,16 @@ struct GridManager_t{
    GridNode table[CELL_COUNT];
 };
 
-static size_t _indexFromXY(int x, int y){
-   if (x < 0 || x >= TABLE_WIDTH || y < 0 || y >= TABLE_HEIGHT){
-      return INF;
-   }
-
-   return TABLE_WIDTH * y + x;
-}
-
-static void _XYFromIndex(size_t index, int*x, int*y){
-   *x = index % TABLE_WIDTH;
-   *y = index / TABLE_WIDTH;
-}
-
 static void _addNeighbors(GridNode *nodes, size_t current){
    int x, y, i;
    size_t nID[4];
    GridNode *node = nodes + current;
-   _XYFromIndex(node->ID, &x, &y);
+   gridXYFromIndex(node->ID, &x, &y);
 
-   nID[0] = _indexFromXY(x, y - 1);
-   nID[1] = _indexFromXY(x - 1, y);
-   nID[2] = _indexFromXY(x + 1, y);
-   nID[3] = _indexFromXY(x, y + 1);
+   nID[0] = gridIndexFromXY(x, y - 1);
+   nID[1] = gridIndexFromXY(x - 1, y);
+   nID[2] = gridIndexFromXY(x + 1, y);
+   nID[3] = gridIndexFromXY(x, y + 1);
 
    for (i = 0; i < 4; ++i){
       if (nID[i] < INF){
@@ -281,7 +268,7 @@ static void _updateEntity(GridManager *self, Entity *e){
 
       }
       else{//idle
-         size_t pos = _indexFromXY(gc->x, gc->y);
+         size_t pos = gridIndexFromXY(gc->x, gc->y);
          size_t dest = INF;
          pc->x = GRID_X_POS + gc->x * GRID_RES_SIZE;
          pc->y = GRID_Y_POS + gc->y * GRID_RES_SIZE;
@@ -289,13 +276,13 @@ static void _updateEntity(GridManager *self, Entity *e){
          if (pos == tgc->targetPos || tgc->targetPos == INF){
             size_t newDest = pos;
             while (newDest >= CELL_COUNT || newDest == pos){
-               newDest = _indexFromXY(appRand(appGet(), 0, TABLE_WIDTH), appRand(appGet(), 0, TABLE_HEIGHT));
+               newDest = gridIndexFromXY(appRand(appGet(), 0, TABLE_WIDTH), appRand(appGet(), 0, TABLE_HEIGHT));
             }
             tgc->targetPos = newDest;
          }
 
          dest = derpjkstras(self, pos, tgc->targetPos);
-         _XYFromIndex(dest, &gc->x, &gc->y);
+         gridXYFromIndex(dest, &gc->x, &gc->y);
          ADD_NEW_COMPONENT(e, InterpolationComponent, 
             .destX = GRID_X_POS + gc->x * GRID_RES_SIZE, 
             .destY = GRID_Y_POS + gc->y * GRID_RES_SIZE,

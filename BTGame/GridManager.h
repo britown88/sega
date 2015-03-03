@@ -26,3 +26,16 @@ typedef struct {
 
 GridSolution gridManagerSolve(GridManager *self, GridSolveData data, size_t startCell, GridProcessCurrentFunc cFunc, GridProcessNeighborFunc nFunc);
 vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index);
+
+static size_t gridIndexFromXY(int x, int y){
+   if (x < 0 || x >= TABLE_WIDTH || y < 0 || y >= TABLE_HEIGHT){
+      return INF;
+   }
+
+   return TABLE_WIDTH * y + x;
+}
+
+static void gridXYFromIndex(size_t index, int*x, int*y){
+   *x = index % TABLE_WIDTH;
+   *y = index / TABLE_WIDTH;
+}
