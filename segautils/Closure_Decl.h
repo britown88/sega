@@ -1,7 +1,7 @@
 //#define ClosureTPart \
 //    CLOSURE_RET(int) \
 //    CLOSURE_NAME(SampleClosure) \
-//    CLOSURE_ARGS(ClosureData, int, float)
+//    CLOSURE_ARGS(int, float)
 //#include "Closure_Decl.h"
 //
 //int foo(ClosureData a, int b, float c){
@@ -18,7 +18,7 @@
 //function typdef
 #define CLOSURE_RET(TYPE) TYPE
 #define CLOSURE_NAME(NAME) (*CONCAT(NAME, Func))
-#define CLOSURE_ARGS(...) (__VA_ARGS__)
+#define CLOSURE_ARGS(...) (ClosureData,__VA_ARGS__)
 
 typedef ClosureTPart;
 

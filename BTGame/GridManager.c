@@ -14,17 +14,37 @@
 
 #include <stdio.h>
 
+#define ClosureTPart \
+    CLOSURE_RET(size_t) /*return edge*/\
+    CLOSURE_NAME(GridProcessNeighbor) \
+    CLOSURE_ARGS(GridNodePublic */*current*/, GridNodePublic*/*neighbor*/)
+#include "segautils\Closure_Impl.h"
+
+#define ClosureTPart \
+    CLOSURE_RET(int) /*return true if solved*/ \
+    CLOSURE_NAME(GridProcessCurrent) \
+    CLOSURE_ARGS(GridNodePublic*/*current*/)
+#include "segautils\Closure_Impl.h"
+
+#define VectorTPart GridSolutionNode
+#include "segautils\Vector_Impl.h"
+
 typedef struct GridNode_t GridNode;
 
+
+
 struct GridNode_t{
+   GridNodePublic data;
    QueueNode node;
    byte visited;
-   size_t score;
-   size_t ID;
    GridNode *parent;
    GridNode *neighbors[4];
-   vec(EntityPtr) *entities;
+   size_t score;
 };
+
+size_t gridNodeGetScore(GridNodePublic *self){
+   return ((GridNode*)self)->score;
+}
 
 static GridNode *_nodeCompareFunc(GridNode *n1, GridNode *n2){
    return n1->score < n2->score ? n1 : n2;
@@ -33,7 +53,9 @@ static GridNode *_nodeCompareFunc(GridNode *n1, GridNode *n2){
 #pragma region Dijkstra's'
 typedef struct {
    Dijkstras inner;
-   size_t destination;
+   GridProcessCurrent cFunc;
+   GridProcessNeighbor nFunc;
+   
 }GridSolver;
 
 static size_t _getNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
@@ -59,7 +81,7 @@ size_t _getNeighbors(GridSolver *self, GridNode *node, GridNode ***outList){
 }
 int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node){
    if (node && !node->visited){
-      size_t newScore = current->score + 1;
+      size_t newScore = closureCall(&self->nFunc, &current->data, &node->data);
       if (newScore < node->score){
          node->parent = current;
          node->score = newScore;
@@ -70,8 +92,7 @@ int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node){
 }
 int _processCurrent(GridSolver *self, GridNode *node){
    node->visited = true;
-
-   return node->score == INF || node->ID == self->destination;
+   return closureCall(&self->cFunc, &node->data);
 }
 void _destroy(GridSolver *self){
    priorityQueueDestroy(self->inner.queue);
@@ -80,14 +101,8 @@ void _destroy(GridSolver *self){
 
 #pragma endregion
 
-typedef enum {
-   IDLE=0,
-   MOVING
-}GridAction;
-
 typedef struct{
-   size_t targetPos;
-   GridAction action;
+   int foo;
 }TGridComponent;
 
 #define TComponentT TGridComponent
@@ -98,13 +113,14 @@ struct GridManager_t{
    EntitySystem *system;
 
    GridNode table[CELL_COUNT];
+   vec(GridSolutionNode) *solutionMap;
 };
 
 static void _addNeighbors(GridNode *nodes, size_t current){
    int x, y, i;
    size_t nID[4];
    GridNode *node = nodes + current;
-   gridXYFromIndex(node->ID, &x, &y);
+   gridXYFromIndex(node->data.ID, &x, &y);
 
    nID[0] = gridIndexFromXY(x, y - 1);
    nID[1] = gridIndexFromXY(x - 1, y);
@@ -121,7 +137,7 @@ static void _addNeighbors(GridNode *nodes, size_t current){
 static void _buildTable(GridNode *nodes){
    size_t i;
    for (i = 0; i < CELL_COUNT; ++i){
-      nodes[i].ID = i;
+      nodes[i].data.ID = i;
       nodes[i].score = INF;
       _addNeighbors(nodes, i);
    }
@@ -161,6 +177,7 @@ GridManager *createGridManager(EntitySystem *system){
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
    out->system = system;
    out->m.vTable = _createVTable();
+   out->solutionMap = vecCreate(GridSolutionNode)(NULL);
 
    _buildTable(out->table);
 
@@ -168,6 +185,7 @@ GridManager *createGridManager(EntitySystem *system){
 }
 
 void GridManagerDestroy(GridManager *self){
+   vecDestroy(GridSolutionNode)(self->solutionMap);
    checkedFree(self);
 }
 
@@ -179,7 +197,7 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
    if (gc){
       if (!tgc){
          //new grid entry
-         ADD_NEW_COMPONENT(e, TGridComponent, INF, IDLE);
+         ADD_NEW_COMPONENT(e, TGridComponent, INF);
       }
    }
    else{
@@ -190,111 +208,66 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
    }
 }
 
-//GridSolution gridManagerSolve(GridManager *self, GridSolveData data, size_t startCell, GridProcessCurrentFunc cFunc, GridProcessNeighborFunc nFunc){
-//   int i;
-//   PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
-//   GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
-//   GridNode *result = NULL;
-//   GridSolution solution = { INF, INF, INF };
-//
-//   if (startCell >= 0 && startCell < CELL_COUNT){
-//      _clearTable(self->table);
-//      self->table[startCell].score = 0;
-//
-//      for (i = 0; i < CELL_COUNT; ++i){
-//         priorityQueuePush(pq, self->table + i);
-//      }
-//
-//      dk->inner.vTable = _getVTable();
-//      dk->inner.queue = pq;
-//      dk->destination = dest;
-//
-//      result = dijkstrasRun((Dijkstras*)dk);
-//
-//      while (result && result->parent && result->parent->parent){
-//         result = result->parent;
-//      }
-//   }
-//
-//   dijkstrasDestroy((Dijkstras*)dk);
-//   return solution;
-//}
+GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCurrent cFunc, GridProcessNeighbor nFunc){
+   GridSolution solution = { INF, INF, NULL };
+
+   if (startCell < CELL_COUNT){
+      int i;
+      GridNode *result = NULL;
+      PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
+      GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
+      _clearTable(self->table);
+      self->table[startCell].score = 0;
+
+      for (i = 0; i < CELL_COUNT; ++i){
+         priorityQueuePush(pq, self->table + i);
+      }
+
+      dk->inner.vTable = _getVTable();
+      dk->inner.queue = pq;
+      dk->cFunc = cFunc;
+      dk->nFunc = nFunc;
+
+      result = dijkstrasRun((Dijkstras*)dk);
+
+      if (result){
+         solution.solutionCell = result->data.ID;
+         solution.totalCost = result->score;
+
+         vecClear(GridSolutionNode)(self->solutionMap);
+
+         while (result && result->parent){
+            GridSolutionNode resoluteNode = { .node = result->data.ID };
+            vecPushBack(GridSolutionNode)(self->solutionMap, &resoluteNode);
+            result = result->parent;
+         }
+
+         vecReverse(GridSolutionNode)(self->solutionMap);
+         solution.path = self->solutionMap;
+      }
+      dijkstrasDestroy((Dijkstras*)dk);
+   }
+
+   
+
+   return solution;
+}
+
 
 vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index){
-   if (index >= 0 && index < CELL_COUNT){
-      return self->table[index].entities;
+   if (index < CELL_COUNT){
+      return self->table[index].data.entities;
    }
    else {
       return NULL;
    }
 }
 
-static size_t derpjkstras(GridManager *self, size_t src, size_t dest){
-   int i;
-   PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
-   GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
-   GridNode *result = NULL;
-
-   _clearTable(self->table);
-   self->table[src].score = 0;
-
-   for (i = 0; i < CELL_COUNT; ++i){
-      priorityQueuePush(pq, self->table + i);
-   }
-
-   dk->inner.vTable = _getVTable();
-   dk->inner.queue = pq;
-   dk->destination = dest;
-
-   result = dijkstrasRun((Dijkstras*)dk);
-
-   while (result && result->parent && result->parent->parent){
-      result = result->parent;
-   }
-
-   dijkstrasDestroy((Dijkstras*)dk);
-
-   return result->ID;
-}
-
 static void _updateEntity(GridManager *self, Entity *e){
-   PositionComponent *pc = entityGet(PositionComponent)(e);
-   GridComponent *gc = entityGet(GridComponent)(e);
-   InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-
-   if (pc){
-      if (ic){//moving
-
-      }
-      else{//idle
-         size_t pos = gridIndexFromXY(gc->x, gc->y);
-         size_t dest = INF;
-         pc->x = GRID_X_POS + gc->x * GRID_RES_SIZE;
-         pc->y = GRID_Y_POS + gc->y * GRID_RES_SIZE;
-
-         if (pos == tgc->targetPos || tgc->targetPos == INF){
-            size_t newDest = pos;
-            while (newDest >= CELL_COUNT || newDest == pos){
-               newDest = gridIndexFromXY(appRand(appGet(), 0, TABLE_WIDTH), appRand(appGet(), 0, TABLE_HEIGHT));
-            }
-            tgc->targetPos = newDest;
-         }
-
-         dest = derpjkstras(self, pos, tgc->targetPos);
-         gridXYFromIndex(dest, &gc->x, &gc->y);
-         ADD_NEW_COMPONENT(e, InterpolationComponent, 
-            .destX = GRID_X_POS + gc->x * GRID_RES_SIZE, 
-            .destY = GRID_Y_POS + gc->y * GRID_RES_SIZE,
-            .time = 0.5);
-
-         entityUpdate(e);
-      }
-   }
+   
 }
 
 void gridManagerUpdate(GridManager *self){
-   size_t foo = derpjkstras(self, 3, 75);
    COMPONENT_QUERY(self->system, GridComponent, gc, {
       Entity *e = componentGetParent(gc, self->system);
       _updateEntity(self, e);

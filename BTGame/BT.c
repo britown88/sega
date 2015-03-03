@@ -161,7 +161,12 @@ void _onStep(BTGame *self){
 
    interpolationManagerUpdate(self->managers.interpolationManager);
    gridManagerUpdate(self->managers.gridManager);
+
+   derjpkstras(self->entitySystem, self->managers.gridManager);
+
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
+   
+
    
 }
 

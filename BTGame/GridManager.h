@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Managers.h"
 #include "Entities/Entities.h"
 
@@ -14,17 +16,39 @@ typedef struct GridManager_t GridManager;
 GridManager *createGridManager(EntitySystem *system);
 void gridManagerUpdate(GridManager *self);
 
-typedef void* GridSolveData;
-typedef size_t(*GridProcessNeighborFunc)(GridManager* /*self*/, GridSolveData/*data*/, size_t/*current*/, size_t/*neighbor*/);//return edge
-typedef int(*GridProcessCurrentFunc)(GridManager* /*self*/, GridSolveData/*data*/, size_t/*current*/);//return true if solved
+typedef struct{
+   size_t ID;
+   vec(EntityPtr) *entities;
+}GridNodePublic;
+
+size_t gridNodeGetScore(GridNodePublic *self);
+
+#define ClosureTPart \
+    CLOSURE_RET(size_t) /*return edge*/\
+    CLOSURE_NAME(GridProcessNeighbor) \
+    CLOSURE_ARGS(GridNodePublic */*current*/, GridNodePublic*/*neighbor*/)
+#include "segautils\Closure_Decl.h"
+
+#define ClosureTPart \
+    CLOSURE_RET(int) /*return true if solved*/ \
+    CLOSURE_NAME(GridProcessCurrent) \
+    CLOSURE_ARGS(GridNodePublic*/*current*/)
+#include "segautils\Closure_Decl.h"
+
+typedef struct {
+   size_t node;
+}GridSolutionNode;
+
+#define VectorTPart GridSolutionNode
+#include "segautils\Vector_Decl.h"
 
 typedef struct {
    size_t totalCost;
    size_t solutionCell;
-   size_t nextCell;
+   vec(GridSolutionNode) *path;
 }GridSolution;
 
-GridSolution gridManagerSolve(GridManager *self, GridSolveData data, size_t startCell, GridProcessCurrentFunc cFunc, GridProcessNeighborFunc nFunc);
+GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCurrent cFunc, GridProcessNeighbor nFunc);
 vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index);
 
 static size_t gridIndexFromXY(int x, int y){
