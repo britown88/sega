@@ -11,6 +11,7 @@
 #include "segautils\IntrusiveHeap.h"
 #include "SEGA\App.h"
 #include "GridManager.h"
+#include "segautils\StandardVectors.h"
 
 #include <stdio.h>
 
@@ -30,8 +31,6 @@
 #include "segautils\Vector_Impl.h"
 
 typedef struct GridNode_t GridNode;
-
-
 
 struct GridNode_t{
    GridNodePublic data;
@@ -101,8 +100,9 @@ void _destroy(GridSolver *self){
 
 #pragma endregion
 
+
 typedef struct{
-   int foo;
+   vec(size_t) *occupyingNodes;
 }TGridComponent;
 
 #define TComponentT TGridComponent
@@ -139,7 +139,9 @@ static void _buildTable(GridNode *nodes){
    for (i = 0; i < CELL_COUNT; ++i){
       nodes[i].data.ID = i;
       nodes[i].score = INF;
+      nodes[i].data.entities = vecCreate(EntityPtr)(NULL);
       _addNeighbors(nodes, i);
+
    }
 }
 
@@ -150,6 +152,13 @@ static void _clearTable(GridNode *nodes){
       nodes[i].visited = false;
       nodes[i].parent = NULL;
       queueNodeClear(&nodes[i].node);
+   }
+}
+
+static void _clearTableEntities(GridNode *nodes){
+   int i;
+   for (i = 0; i < CELL_COUNT; ++i){
+      vecClear(EntityPtr)(nodes[i].data.entities);
    }
 }
 
@@ -185,11 +194,20 @@ GridManager *createGridManager(EntitySystem *system){
 }
 
 void GridManagerDestroy(GridManager *self){
+   size_t i;
+   for (i = 0; i < CELL_COUNT; ++i){
+      vecDestroy(EntityPtr)(self->table[i].data.entities);
+   }
    vecDestroy(GridSolutionNode)(self->solutionMap);
    checkedFree(self);
 }
 
-void GridManagerOnDestroy(GridManager *self, Entity *e){}
+void GridManagerOnDestroy(GridManager *self, Entity *e){
+   TGridComponent *tgc = entityGet(TGridComponent)(e);
+   if (tgc){
+      vecDestroy(size_t)(tgc->occupyingNodes);
+   }
+}
 void GridManagerOnUpdate(GridManager *self, Entity *e){
    TGridComponent *tgc = entityGet(TGridComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
@@ -197,12 +215,13 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
    if (gc){
       if (!tgc){
          //new grid entry
-         ADD_NEW_COMPONENT(e, TGridComponent, INF);
+         ADD_NEW_COMPONENT(e, TGridComponent, vecCreate(size_t)(NULL));
       }
    }
    else{
       if (tgc){
          //no longer rendered
+         vecDestroy(size_t)(tgc->occupyingNodes);
          entityRemove(TGridComponent)(e);
       }
    }
@@ -234,6 +253,7 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
          solution.solutionCell = result->data.ID;
          solution.totalCost = result->score;
 
+         //self->solutionMap = vecCreate(GridSolutionNode)(NULL);
          vecClear(GridSolutionNode)(self->solutionMap);
 
          while (result && result->parent){
@@ -253,7 +273,6 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
    return solution;
 }
 
-
 vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index){
    if (index < CELL_COUNT){
       return self->table[index].data.entities;
@@ -264,10 +283,21 @@ vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index){
 }
 
 static void _updateEntity(GridManager *self, Entity *e){
-   
+   TGridComponent *tgc = entityGet(TGridComponent)(e);
+   GridComponent *gc = entityGet(GridComponent)(e);
+   if (tgc && gc){
+      size_t pos = gridIndexFromXY(gc->x, gc->y);
+
+      vecClear(size_t)(tgc->occupyingNodes);
+
+      vecPushBack(size_t)(tgc->occupyingNodes, &pos);
+      vecPushBack(EntityPtr)(gridManagerEntitiesAt(self, pos), &e);
+   }
 }
 
 void gridManagerUpdate(GridManager *self){
+   _clearTableEntities(self->table);
+
    COMPONENT_QUERY(self->system, GridComponent, gc, {
       Entity *e = componentGetParent(gc, self->system);
       _updateEntity(self, e);

@@ -16,11 +16,18 @@ typedef struct{
 }TestData;
 
 size_t _processNeighbor(TestData *data, GridNodePublic *current, GridNodePublic *neighbor){
+
+   vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
+   if (entities && !vecIsEmpty(EntityPtr)(entities)){
+      return INF;
+   }
+
+
    return gridNodeGetScore(current) + 1;
 }
 
 int _processCurrent(TestData *data, GridNodePublic *current){
-   return current->ID == INF || current->ID == data->destination;
+   return gridNodeGetScore(current) == INF || current->ID == data->destination;
 }
 
 GridSolution solve(GridManager *manager, size_t start, size_t destination){
@@ -33,12 +40,7 @@ GridSolution solve(GridManager *manager, size_t start, size_t destination){
    closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
    closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);
 
-   solution = gridManagerSolve(manager, start, cFunc, nFunc);
-
-   closureDestroy(GridProcessCurrent)(&cFunc);
-   closureDestroy(GridProcessNeighbor)(&nFunc);
-
-   return solution;
+   return gridManagerSolve(manager, start, cFunc, nFunc);
 }
 
 
@@ -77,6 +79,8 @@ static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
 
          if (solution.totalCost > 0 && solution.totalCost < INF){
             dest = vecBegin(GridSolutionNode)(solution.path)->node;
+
+            
             gridXYFromIndex(dest, &gc->x, &gc->y);
             ADD_NEW_COMPONENT(e, InterpolationComponent,
                .destX = GRID_X_POS + gc->x * GRID_RES_SIZE,

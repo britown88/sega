@@ -25,6 +25,7 @@
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Preprocessor.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="StandardVectors.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector_Create.h" />
     <ClInclude Include="Vector_Decl.h" />
@@ -37,6 +38,7 @@
     <ClCompile Include="Dijkstras.c" />
     <ClCompile Include="IntrusiveHeap.c" />
     <ClCompile Include="Matrix.c" />
+    <ClCompile Include="StandardVectors.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C928A7B6-88D1-4697-9E1D-771FA8A06C55}</ProjectGuid>

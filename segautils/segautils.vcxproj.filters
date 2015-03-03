@@ -16,6 +16,9 @@
     <ClCompile Include="Dijkstras.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StandardVectors.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preprocessor.h">
@@ -73,6 +76,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Closure_Create.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardVectors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
