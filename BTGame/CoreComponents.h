@@ -56,5 +56,14 @@ typedef struct {
 #define ComponentT InterpolationComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   int foo;
+}WanderComponent;
+
+#define ComponentT WanderComponent
+#include "Entities\ComponentDecl.h"
+
+
+
 
 #pragma pack(pop)

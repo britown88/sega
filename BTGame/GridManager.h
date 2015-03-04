@@ -29,7 +29,7 @@ size_t gridNodeGetScore(GridNodePublic *self);
 #include "segautils\Closure_Decl.h"
 
 #define ClosureTPart \
-    CLOSURE_RET(int) /*return true if solved*/ \
+    CLOSURE_RET(GridNodePublic *) /*return the solution node*/ \
     CLOSURE_NAME(GridProcessCurrent) \
     CLOSURE_ARGS(GridNodePublic*/*current*/)
 #include "segautils\Closure_Decl.h"

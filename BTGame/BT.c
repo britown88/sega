@@ -16,7 +16,7 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
-#define FRAME_RATE 60.0
+#define FRAME_RATE 1000.0
 
 typedef struct {
    VirtualApp vApp;
@@ -131,25 +131,34 @@ void _onStart(BTGame *self){
       entityUpdate(e);
    }   
 
-   for (i = 0; i < CELL_COUNT; ++i){
+   for (i = 0; i < CELL_COUNT - 12; ++i){
 
-      Entity *e;
+      Entity *e = entityCreate(self->entitySystem);
 
-      appGet();
+      COMPONENT_ADD(e, PositionComponent, 0, 0);
+      COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
+
+      COMPONENT_ADD(e, LayerComponent, LayerTokens);;
+      COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);
+      COMPONENT_ADD(e, WanderComponent, 1);
+
+      entityUpdate(e);
       
-      if (appRand(appGet(), 0, 4) == 0){
-         e = entityCreate(self->entitySystem);
+   }
 
-         COMPONENT_ADD(e, PositionComponent, 0, 0);
-         COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
+   {
 
-         COMPONENT_ADD(e, LayerComponent, LayerTokens);;
-         COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);;
+      //Entity *e = entityCreate(self->entitySystem);
 
-         entityUpdate(e);
-      }
+      //COMPONENT_ADD(e, PositionComponent, 0, 0);
+      //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/actor.ega"));
 
-      
+      //COMPONENT_ADD(e, LayerComponent, LayerTokens);
+      //COMPONENT_ADD(e, GridComponent, 0, 0);
+      //COMPONENT_ADD(e, WanderComponent, 1);
+
+      //entityUpdate(e);
+
    }
    paletteCopy(&self->vApp.currentPalette, &defPal);
 }

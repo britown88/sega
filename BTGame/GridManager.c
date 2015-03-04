@@ -22,7 +22,7 @@
 #include "segautils\Closure_Impl.h"
 
 #define ClosureTPart \
-    CLOSURE_RET(int) /*return true if solved*/ \
+    CLOSURE_RET(GridNodePublic *) /*return the solution node*/ \
     CLOSURE_NAME(GridProcessCurrent) \
     CLOSURE_ARGS(GridNodePublic*/*current*/)
 #include "segautils\Closure_Impl.h"
@@ -54,7 +54,7 @@ typedef struct {
    Dijkstras inner;
    GridProcessCurrent cFunc;
    GridProcessNeighbor nFunc;
-   
+   GridNode *solutionNode;
 }GridSolver;
 
 static size_t _getNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
@@ -91,7 +91,13 @@ int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node){
 }
 int _processCurrent(GridSolver *self, GridNode *node){
    node->visited = true;
-   return closureCall(&self->cFunc, &node->data);
+   GridNode *solution = (GridNode*)closureCall(&self->cFunc, &node->data);
+   if (solution){
+      self->solutionNode = solution;
+      return true;
+   }
+
+   return false;
 }
 void _destroy(GridSolver *self){
    priorityQueueDestroy(self->inner.queue);
@@ -261,6 +267,12 @@ void GridManagerOnUpdate(GridManager *self, Entity *e){
 
    if (gc){
       if (!tgc){
+         PositionComponent *pc = entityGet(PositionComponent)(e);
+         if (pc){
+            pc->x = GRID_X_POS + gc->x * GRID_RES_SIZE;
+            pc->y = GRID_Y_POS + gc->y * GRID_RES_SIZE;
+         }
+
          //new grid entry
          COMPONENT_ADD(e, TGridComponent, vecCreate(size_t)(NULL));
          _gridAddEntity(self, e, gridIndexFromXY(gc->x, gc->y));
@@ -301,7 +313,10 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
       dk->cFunc = cFunc;
       dk->nFunc = nFunc;
 
-      result = dijkstrasRun((Dijkstras*)dk);
+      dijkstrasRun((Dijkstras*)dk);
+
+      result = dk->solutionNode;
+
 
       if (result){
          solution.solutionCell = result->data.ID;

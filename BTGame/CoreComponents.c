@@ -19,3 +19,6 @@
 
 #define ComponentT InterpolationComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT WanderComponent
+#include "Entities\ComponentImpl.h"

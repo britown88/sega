@@ -2,6 +2,8 @@
 #include "CoreComponents.h"
 #include "GridManager.h"
 #include "SEGA\App.h"
+#include "segautils\StandardVectors.h"
+#include <math.h>
 
 typedef struct{
    size_t targetPos;
@@ -13,40 +15,69 @@ typedef struct{
 typedef struct{
    GridManager *manager;
    size_t destination;
+
+   size_t lowestHeuristic;
+   GridNodePublic *closestNode;
 }TestData;
 
 size_t _processNeighbor(TestData *data, GridNodePublic *current, GridNodePublic *neighbor){
-
    vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
    if (entities && !vecIsEmpty(EntityPtr)(entities)){
       return INF;
    }
-
-
    return gridNodeGetScore(current) + 1;
 }
 
-int _processCurrent(TestData *data, GridNodePublic *current){
-   return gridNodeGetScore(current) == INF || current->ID == data->destination;
+GridNodePublic *_processCurrent(TestData *data, GridNodePublic *current){
+   size_t currentScore = gridNodeGetScore(current);
+   size_t h;
+   int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+   
+   if (gridNodeGetScore(current) == INF){
+      //cant get to destination, use closest
+      return data->closestNode;
+   }
+
+   if (current->ID == data->destination){
+      //destination found
+      return current;
+   }
+
+   //update heuristic
+   gridXYFromIndex(current->ID, &x1, &y1);
+   gridXYFromIndex(data->destination, &x2, &y2);
+   h = abs(x1 - x2) + abs(y1 - y2);
+   if (h < data->lowestHeuristic){
+      data->lowestHeuristic = h;
+      data->closestNode = current;
+   }
+
+   return  NULL;
 }
 
 GridSolution solve(GridManager *manager, size_t start, size_t destination){
    
    GridProcessCurrent cFunc;
    GridProcessNeighbor nFunc;
-   TestData data = {manager, destination};
-   GridSolution solution;
+   TestData data = {manager, destination, INF, NULL};
 
    closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
    closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);
 
-   return gridManagerSolve(manager, start, cFunc, nFunc);
+   GridSolution solution = gridManagerSolve(manager, start, cFunc, nFunc);
+
+   if (data.lowestHeuristic != solution.totalCost){
+      //update solution
+   }
+
+   return solution;
 }
 
 
-static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
-   size_t ID = gridIndexFromXY(gc->x, gc->y);
+static void _updateEntity(Entity *e, GridManager *manager){
+   
 
+   GridComponent *gc = entityGet(GridComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    TDerpComponent *dc = entityGet(TDerpComponent)(e);
@@ -56,7 +87,7 @@ static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
       dc = entityGet(TDerpComponent)(e);
    }
 
-   if (pc){
+   if (gc && pc){
       if (ic){//moving
 
       }
@@ -75,9 +106,12 @@ static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
             dc->targetPos = newDest;
          }
 
-         solution = solve(manager, ID, dc->targetPos);
+         solution = solve(manager, pos, dc->targetPos);
+         if (solution.totalCost == 0){
+            dc->targetPos = solution.solutionCell;
+         }
 
-         if (solution.totalCost > 0 && solution.totalCost < INF){
+         if (solution.totalCost > 0){
             dest = vecBegin(GridSolutionNode)(solution.path)->node;
 
             COMPONENT_LOCK(GridComponent, newgc, e, {
@@ -87,7 +121,7 @@ static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
             COMPONENT_ADD(e, InterpolationComponent,
                .destX = GRID_X_POS + gc->x * GRID_RES_SIZE,
                .destY = GRID_Y_POS + gc->y * GRID_RES_SIZE,
-               .time = 0.5);
+               .time = 0.50);
 
             entityUpdate(e);
          }
@@ -95,18 +129,12 @@ static void _updateEntity(Entity *e, GridComponent *gc, GridManager *manager){
          
       }
    }
-
-
-
-
-   
-   
 }
 
 void derjpkstras(EntitySystem *system, GridManager *manager){ 
-   COMPONENT_QUERY(system, GridComponent, gc, {
-      Entity *e = componentGetParent(gc, system);
-      _updateEntity(e, gc, manager);
+   COMPONENT_QUERY(system, WanderComponent, c, {
+      Entity *e = componentGetParent(c, system);
+      _updateEntity(e, manager);
    });
 
 }
