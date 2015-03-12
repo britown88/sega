@@ -17,11 +17,12 @@
 #define vecIndexOf(TYPE) CONCAT(vecIndexOf_, TYPE)
 #define vecRemove(TYPE) CONCAT(vecDelete_, TYPE)
 
-#define vecForEach(TYPE, varName, list, ...) \
-if(!vecIsEmpty(TYPE)(list)){\
-   TYPE *varName = vecBegin(TYPE)(list); \
-   TYPE *CONCAT(__end_, TYPE) = vecEnd(TYPE)(list); \
+#define vecForEach(TYPE, varName, list, ...) {\
+vec(TYPE) *CONCAT(__temp_, vec(TYPE)) = list; /*cache the list before use*/ \
+if(!vecIsEmpty(TYPE)(CONCAT(__temp_, vec(TYPE)))){\
+   TYPE *varName = vecBegin(TYPE)(CONCAT(__temp_, vec(TYPE))); \
+   TYPE *CONCAT(__end_, TYPE) = vecEnd(TYPE)(CONCAT(__temp_, vec(TYPE))); \
    for(; varName != CONCAT(__end_, TYPE); ++varName) __VA_ARGS__ \
-}
+}}
 
 #endif

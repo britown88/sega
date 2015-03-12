@@ -9,10 +9,11 @@
 #define htFind(TYPE) CONCAT(htFind_, TYPE)
 #define _htGrow(TYPE) CONCAT(_htGrow_, TYPE)
 
-#define htForEach(TYPE, varName, list, ...) \
-if(list->buckets) { \
-   CONCAT(htbucket_, TYPE) **bucket = list->buckets; \
-   CONCAT(htbucket_, TYPE) **end = bucket + (1 << list->power); \
+#define htForEach(TYPE, varName, hashTable, ...) { \
+ht(TYPE) *CONCAT(__temp_, ht(TYPE)) =  hashTable;\
+if(CONCAT(__temp_, ht(TYPE))->buckets) { \
+   CONCAT(htbucket_, TYPE) **bucket = CONCAT(__temp_, ht(TYPE))->buckets; \
+   CONCAT(htbucket_, TYPE) **end = bucket + (1 << CONCAT(__temp_, ht(TYPE))->power); \
    for (; bucket != end; ++bucket){ \
       CONCAT(htbucket_, TYPE) *iter = *bucket; \
       while (iter){ \
@@ -21,6 +22,6 @@ if(list->buckets) { \
          iter = iter->next; \
       } \
    } \
-}
+}}
 
 #endif

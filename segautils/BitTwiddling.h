@@ -7,6 +7,9 @@ SEXTERN_C
 
 typedef unsigned char byte;
 
+
+size_t hashPtr(void* ptr);
+
 int minByteCount(int bitCount);
 int minIntCount(int bitCount);
 void setBit(byte *dest, byte pos/*0-7*/, byte value/*0-1*/);

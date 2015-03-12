@@ -1,4 +1,5 @@
 #include "Preprocessor.h"
+#include <string.h>
 
 #define T HashTableT
 

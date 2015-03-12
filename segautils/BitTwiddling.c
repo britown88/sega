@@ -8,6 +8,15 @@
 
 #define MAX_BUFFER_WIDTH 1024
 
+size_t hashPtr(void* ptr){
+   size_t out = 5031;
+   int i;
+   for (i = 0; i < sizeof(void*); ++i) {
+      out += (out << 5) + ((char*)&ptr)[i];
+   }
+   return out;
+}
+
 int minByteCount(int bitCount) {
    return bitCount/8 + !!(bitCount%8);
 }

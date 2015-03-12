@@ -37,7 +37,7 @@ static int _iEntryCompare(iEntry *e1, iEntry *e2){
 }
 
 static size_t _iEntryHash(iEntry *p){
-   return (size_t)p->key;
+   return hashPtr(p->key);
 }
 
 static void _iEntryDestroy(iEntry *p){

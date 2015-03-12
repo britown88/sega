@@ -16,7 +16,7 @@
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
-#define FRAME_RATE 1000.0
+#define FRAME_RATE 60.0
 
 typedef struct {
    VirtualApp vApp;
