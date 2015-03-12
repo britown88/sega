@@ -18,10 +18,10 @@
     <ClCompile Include="Strings.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CheckedMemory.cpp">
+    <ClCompile Include="RTTI.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RTTI.c">
+    <ClCompile Include="CheckedMemory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

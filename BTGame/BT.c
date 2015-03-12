@@ -49,7 +49,7 @@ static VirtualAppVTable *getVtable()
 }
 AppData createData() {
    AppData data = { 0 };
-   
+
    data.defaultWindowSize = int2Create(WINDOW_WIDTH, WINDOW_HEIGHT);
    data.frameRate = FRAME_RATE;
 
