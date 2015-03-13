@@ -1,5 +1,6 @@
 #include "Preprocessor.h"
 #include "segashared\CheckedMemory.h"
+#include <string.h>
 
 #define T HashTableT
 
@@ -28,7 +29,13 @@ typedef struct {
 } HT_NAME;
 
 static HT_NAME *htCreate(T)(int (*compare)(T*, T*), size_t (*hash)(T*), void (*destroy)(T*)){
+
+#ifndef UNCHECKED
    HT_NAME *r = checkedCalloc(1, sizeof(HT_NAME));
+#else
+   HT_NAME *r = calloc(1, sizeof(HT_NAME));
+#endif
+
    r->compare = compare;
    r->hash = hash;
    r->destroy = destroy;
@@ -48,15 +55,28 @@ static void htDestroy(T)(HT_NAME *self){
             if(self->destroy){
                self->destroy(&iter->data);
             }
-            checkedFree(iter);         
+#ifndef UNCHECKED
+            checkedFree(iter);  
+#else
+            free(iter);
+#endif
+                   
             iter = next;
          }
       }
-
+#ifndef UNCHECKED
       checkedFree(self->buckets);
+#else
+      free(self->buckets);
+#endif
+      
    }
-   
+#ifndef UNCHECKED
    checkedFree(self);
+#else
+   free(self);
+#endif
+   
 }
 
 static void htErase(T)(HT_NAME *self, T *item){
@@ -81,7 +101,11 @@ static void htErase(T)(HT_NAME *self, T *item){
             if(self->destroy){
                self->destroy(&iter->data);
             }
+#ifndef UNCHECKED
             checkedFree(iter);
+#else
+            free(iter);
+#endif            
             return;
          }
 
@@ -117,8 +141,11 @@ static void _htGrow(T)(HT_NAME *self){
    HT_BUCKET **firstBucket = buckets;
 
    ++self->power;
-
+#ifndef UNCHECKED
    self->buckets = checkedCalloc(1, sizeof(HT_BUCKET*) * (1 << self->power));
+#else
+   self->buckets = calloc(1, sizeof(HT_BUCKET*) * (1 << self->power));
+#endif   
 
    for(;buckets != lastBucket; ++buckets){
       HT_BUCKET *iter = *buckets;
@@ -135,8 +162,12 @@ static void _htGrow(T)(HT_NAME *self){
          iter = next;
       }
    }
-
+#ifndef UNCHECKED
    checkedFree(firstBucket);
+#else
+   free(firstBucket);
+#endif
+   
 }
 
 
@@ -148,7 +179,11 @@ static void htInsert(T)(HT_NAME *self, T *item){
    if(!self->buckets) {
       //init
       self->power = 5;
+#ifndef UNCHECKED
       self->buckets = checkedCalloc(1, sizeof(HT_BUCKET*) * (1 << self->power));
+#else
+      self->buckets = calloc(1, sizeof(HT_BUCKET*) * (1 << self->power));
+#endif
 
    }
    else if(self->count > (size_t)((1 << (self->power - 1)) + (1 << (self->power - 2)))) {
@@ -161,7 +196,11 @@ static void htInsert(T)(HT_NAME *self, T *item){
 
    if(!*bucket){
       //theres no bucket here
+#ifndef UNCHECKED
       HT_BUCKET *newBucket = checkedCalloc(1, sizeof(HT_BUCKET));
+#else
+      HT_BUCKET *newBucket = calloc(1, sizeof(HT_BUCKET));
+#endif      
       memcpy(&newBucket->data, item, sizeof(T));
 
       *bucket = newBucket;
@@ -191,7 +230,11 @@ static void htInsert(T)(HT_NAME *self, T *item){
 
       {
          //doesnt exist in hash table
+#ifndef UNCHECKED
          HT_BUCKET *newBucket = checkedCalloc(1, sizeof(HT_BUCKET));
+#else
+         HT_BUCKET *newBucket = calloc(1, sizeof(HT_BUCKET));
+#endif         
          memcpy(&newBucket->data, item, sizeof(T));
          iter->next = newBucket;
          ++self->count;

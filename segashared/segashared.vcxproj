@@ -84,6 +84,11 @@
     <ClInclude Include="RTTI.h" />
     <ClInclude Include="Strings.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\segautils\segautils.vcxproj">
+      <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

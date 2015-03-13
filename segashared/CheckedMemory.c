@@ -1,18 +1,13 @@
 #include "CheckedMemory.h"
 #include "Strings.h"
 #include "segautils\Defs.h"
-#include "segautils\IntrusiveHeap.h"
 #include <stddef.h>
 #include <stdio.h>
+#include "segautils\BitTwiddling.h"
+#include "segautils\IntrusiveHeap.h"
 
-size_t hashPtr(void* ptr){
-   size_t out = 5031;
-   int i;
-   for (i = 0; i < sizeof(void*); ++i) {
-      out += (out << 5) + ((char*)&ptr)[i];
-   }
-   return out;
-}
+/*this makes our hashtables unchecked*/
+#define UNCHECKED
 
 typedef struct {
    QueueNode node;
@@ -22,12 +17,24 @@ typedef struct {
 } FileEntry;
 
 FileEntry *_fileAllocCompareFunc(FileEntry *n1, FileEntry *n2){
-   return n1->allocCount < n2->allocCount ? n1 : n2;
+   return n1->allocCount > n2->allocCount ? n1 : n2;
 }
-//priorityQueueCreate(offsetof(FileEntry, node), (PQCompareFunc)&_fileAllocCompareFunc);
+
+static PriorityQueue *getAllocPQ(){
+   static PriorityQueue *out = NULL;
+   if (!out){
+      out = priorityQueueCreateUnchecked(offsetof(FileEntry, node), (PQCompareFunc)&_fileAllocCompareFunc);
+   }
+
+   return out;
+}
+
+static void freeAllocPQ(){
+   priorityQueueDestroyUnchecked(getAllocPQ());
+}
 
 #define HashTableT FileEntry
-#include "segautils\HashTable_Create_Unchecked.h"
+#include "segautils\HashTable_Create.h"
 
 static int _fileEntryCompare(FileEntry *e1, FileEntry *e2){
    return e1->file == e1->file && e1->line == e2->line;
@@ -63,7 +70,7 @@ typedef struct {
 } adEntry;
 
 #define HashTableT adEntry
-#include "segautils\HashTable_Create_Unchecked.h"
+#include "segautils\HashTable_Create.h"
 
 static int _adEntryCompare(adEntry *e1, adEntry *e2){
    return e1->key == e2->key;
@@ -125,34 +132,41 @@ void checkedFreeImpl(void* mem){
    htErase(adEntry)(getMemTable(), htFind(adEntry)(getMemTable(), &e));
    free(mem);
 }
-void* uncheckedMallocImpl(size_t sz, char* file, size_t line){
-}
-
-void* uncheckedCallocImpl(size_t count, size_t sz, char* file, size_t line){
-}
 
 void printMemoryLeaks(){
 #ifdef _DEBUG
    FILE *output = NULL;
+   PriorityQueue *allocPQ = getAllocPQ();
+   htForEach(FileEntry, e, getFileTable(), {
+      priorityQueuePush(allocPQ, e);
+   });
 
    output = fopen("allocReport.csv", "wt");
-   fprintf(output, "File,Line,Alloc Count\n");
-   htForEach(FileEntry, e, getFileTable(), {
-      fprintf(output, "%s,%i,%i\n", e->file, e->line, e->allocCount);
-   });
-   fclose(output);
+   if (output){
+      fprintf(output, "File,Line,Alloc Count\n");
+
+      while (!priorityQueueIsEmpty(allocPQ)){
+         FileEntry *entry = priorityQueuePop(allocPQ);
+         fprintf(output, "%s,%i,%i\n", entry->file, entry->line, entry->allocCount);
+      }
+      fclose(output);
+   }   
 
    output = fopen("memleak.txt", "wt");
-   fprintf(output, "MEMORY LEAKS\n");
-   fprintf(output, "-------------START---------------\n");
-   htForEach(adEntry, e, getMemTable(), {
-      AllocData *data = &e->value;
-      fprintf(output, "%i bytes in %s:%i\n", data->bytes, data->file, data->line);
-   });
-   fprintf(output, "-------------END-----------------\n");
+   if (output){
+      fprintf(output, "MEMORY LEAKS\n");
+      fprintf(output, "-------------START---------------\n");
+      htForEach(adEntry, e, getMemTable(), {
+         AllocData *data = &e->value;
+         fprintf(output, "%i bytes in %s:%i\n", data->bytes, data->file, data->line);
+      });
+      fprintf(output, "-------------END-----------------\n");
 
-   fclose(output);
+      fclose(output);
+   }
+   
    freeMemTable();
    freeFileTable();
+   freeAllocPQ();
 #endif
 }

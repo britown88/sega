@@ -1,6 +1,7 @@
 #include "ImageManager.h"
 
 #include "segalib\EGA.h"
+#include "segautils\BitTwiddling.h"
 
 typedef struct {
    StringView key;
@@ -37,7 +38,7 @@ static int _iEntryCompare(iEntry *e1, iEntry *e2){
 }
 
 static size_t _iEntryHash(iEntry *p){
-   return hashPtr(p->key);
+   return hashPtr((void*)p->key);
 }
 
 static void _iEntryDestroy(iEntry *p){

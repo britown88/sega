@@ -19,14 +19,10 @@ END_SEXTERN_C
 #define checkedMalloc(sz) checkedMallocImpl(sz, __FILE__, __LINE__)
 #define checkedCalloc(count, sz) checkedCallocImpl(count, sz, __FILE__, __LINE__)
 #define checkedFree(sz) checkedFreeImpl(sz)
-#define uncheckedMalloc(sz) uncheckedMallocImpl(sz, __FILE__, __LINE__)
-#define uncheckedCalloc(count, sz) uncheckedCallocImpl(count, sz, __FILE__, __LINE__)
 #else
 #define checkedMalloc(sz) malloc(sz)
 #define checkedCalloc(count, sz) calloc(count, sz)
 #define checkedFree(sz) free(sz)
-#define uncheckedMalloc(sz) malloc(sz)
-#define uncheckedCalloc(count, sz) calloc(count, sz)
 #endif
 
 

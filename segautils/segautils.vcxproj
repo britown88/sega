@@ -27,7 +27,6 @@
     <ClInclude Include="Preprocessor.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="StandardVectors.h" />
-    <ClInclude Include="HashTable_Create_Unchecked.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector_Create.h" />
     <ClInclude Include="Vector_Decl.h" />

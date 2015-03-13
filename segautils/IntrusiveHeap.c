@@ -12,14 +12,25 @@ struct PriorityQueue_t{
 
 PriorityQueue *priorityQueueCreate(size_t offset, PQCompareFunc min){
    PriorityQueue *r = checkedCalloc(1, sizeof(PriorityQueue));
+   r->min = min;
+   r->offset = offset;
+
+   return r;   
+}
+void priorityQueueDestroy(PriorityQueue *self){
+   checkedFree(self);
+}
+
+PriorityQueue *priorityQueueCreateUnchecked(size_t offset, PQCompareFunc min){
+   PriorityQueue *r = calloc(1, sizeof(PriorityQueue));
 
    r->min = min;
    r->offset = offset;
 
    return r;
 }
-void priorityQueueDestroy(PriorityQueue *self){
-   checkedFree(self);
+void priorityQueueDestroyUnchecked(PriorityQueue *self){
+   free(self);
 }
 
 static QueueNode *priorityQueueGetNode(PriorityQueue *self, QueueElem data){

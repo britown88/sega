@@ -81,9 +81,6 @@
     <ClInclude Include="StandardVectors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HashTable_Create_Unchecked.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HashTable_Functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>

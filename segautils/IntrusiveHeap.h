@@ -11,11 +11,15 @@ typedef QueueElem(*PQCompareFunc)(QueueElem, QueueElem);
 struct QueueNode_t{
    QueueNode *next, *prev, *child;
 };
+
 void queueNodeClear(QueueNode *self);
 void queueNodeUnlink(QueueNode *self);
 
 PriorityQueue *priorityQueueCreate(size_t offset, PQCompareFunc min);
 void priorityQueueDestroy(PriorityQueue *self);
+
+PriorityQueue *priorityQueueCreateUnchecked(size_t offset, PQCompareFunc min);
+void priorityQueueDestroyUnchecked(PriorityQueue *self);
 
 void priorityQueuePush(PriorityQueue *self, QueueElem data);
 void priorityQueueReinsert(PriorityQueue *self, QueueElem data);
