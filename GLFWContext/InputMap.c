@@ -5,7 +5,7 @@
 #include <string.h>
 
 int getSegaAction(int GLFWAction){
-   static SegaKeyboardEvents actionMap[3];
+   static SegaInputActions actionMap[3];
    static bool mapInit = false;
 
    if (!mapInit){

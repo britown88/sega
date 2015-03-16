@@ -6,7 +6,7 @@
 
 #include "GLFW/glfw3.h"
 #include "segashared/CheckedMemory.h"
-#include "SEGA\Keyboard.h"
+#include "SEGA\Input.h"
 
 #include <stdio.h>
 

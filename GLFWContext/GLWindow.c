@@ -1,7 +1,7 @@
 #include "GLFW/glfw3.h"
 #include "GLWindow.h"
 #include "segashared\CheckedMemory.h"
-#include "SEGA\Keyboard.h"
+#include "SEGA\Input.h"
 
 #include <malloc.h>
 #include <stddef.h>
@@ -35,7 +35,7 @@ static void glWindowKeyFunc(GLFWwindow* win, int key, int scancode, int action, 
    GLWindow *self = getGLWindow(win);
 
    KeyboardEvent e = { 
-      .event = getSegaAction(action), 
+      .action = getSegaAction(action), 
       .key = getSegaKey(key) 
    };
 

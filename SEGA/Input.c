@@ -1,4 +1,4 @@
-#include "Keyboard.h"
+#include "Input.h"
 
 #include "segashared\CheckedMemory.h"
 
@@ -33,10 +33,10 @@ int keyboardPopEvent(Keyboard *self, KeyboardEvent *eventOut){
 
    *eventOut = *vecAt(KeyboardEvent)(self->eventQueue, self->queuePos++);
 
-   if (eventOut->event == SegaKey_Pressed){
+   if (eventOut->action == SegaKey_Pressed){
       self->heldMap[eventOut->key] = true;
    }
-   else if (eventOut->event == SegaKey_Released){
+   else if (eventOut->action == SegaKey_Released){
       self->heldMap[eventOut->key] = false;
    }
 

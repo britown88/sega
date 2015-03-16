@@ -1,10 +1,24 @@
 #pragma once
 
+#include "segautils\DLLBullshit.h"
+
 typedef enum {
    SegaKey_Pressed= 0,
    SegaKey_Released,
    SegaKey_Repeat
-}SegaKeyboardEvents;
+}SegaInputActions;
+
+typedef enum{
+   SegaButton_Left = 0,
+   SegaButton_Right,
+   SegaButton_Middle,
+   SegaButton_4,
+   SegaButton_5,
+   SegaButton_6,
+   SegaButton_7,
+   SegaButton_8,
+   SegaButton_COUNT
+}SegaButtons;
 
 typedef enum{
    SegaKey_Space = 0,
@@ -111,3 +125,24 @@ typedef enum{
    SegaKey_RightAlt,
    SegaKey_COUNT
 }SegaKeys;
+
+/*----Keyboard -------*/
+
+
+/*----Keyboard -------*/
+typedef struct {
+   SegaInputActions action;
+   SegaKeys key;
+}KeyboardEvent;
+
+typedef struct Keyboard_t Keyboard;
+
+DLL_PUBLIC Keyboard *keyboardCreate();
+DLL_PUBLIC void keyboardDestroy(Keyboard *self);
+
+DLL_PUBLIC void keyboardPushEvent(Keyboard *self, KeyboardEvent *event);
+
+//return if succeeded (false if empty)
+DLL_PUBLIC int keyboardPopEvent(Keyboard *self, KeyboardEvent *eventOut);
+DLL_PUBLIC int keyboardIsDown(Keyboard *self, SegaKeys key);
+DLL_PUBLIC void keyboardFlushQueue(Keyboard *self);

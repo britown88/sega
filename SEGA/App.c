@@ -15,7 +15,7 @@
 
 #include "segashared\CheckedMemory.h"
 #include "IDeviceContext.h"
-#include "Keyboard.h"
+#include "Input.h"
 
 App *g_App;
 
