@@ -87,11 +87,14 @@
     <ClCompile Include="App.c" />
     <ClCompile Include="IDeviceContext.c" />
     <ClCompile Include="IRenderer.c" />
+    <ClCompile Include="Keyboard.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="IDeviceContext.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="IRenderer.h" />
+    <ClInclude Include="Keyboard.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\segalib\segalib.vcxproj">
