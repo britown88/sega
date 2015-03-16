@@ -6,6 +6,7 @@
 
 #include "GLFW/glfw3.h"
 #include "segashared/CheckedMemory.h"
+#include "SEGA\Keyboard.h"
 
 #include <stdio.h>
 
@@ -23,6 +24,7 @@ static Int2 _windowSize(GLFWContext *self);
 static Float2 _pointerPos(GLFWContext *self);
 static double _time(GLFWContext *self);
 static void _destroy(GLFWContext *self);
+static Keyboard* _keyboard(GLFWContext *self);
 
 static IDeviceContextVTable *_getTable(){
    static IDeviceContextVTable *out = NULL;
@@ -37,6 +39,7 @@ static IDeviceContextVTable *_getTable(){
       out->pointerPos = (Float2(*)(IDeviceContext*))&_pointerPos;
       out->time = (double(*)(IDeviceContext*))&_time;
       out->destroy = (void(*)(IDeviceContext*))&_destroy;
+      out->keyboard = (Keyboard*(*)(IDeviceContext*))&_keyboard;
    }
    return out;
 }
@@ -92,5 +95,8 @@ double _time(GLFWContext *self){
 void _destroy(GLFWContext *self){
    glWindowDestroy(self->window);
    checkedFree(self);
+}
+Keyboard *_keyboard(GLFWContext *self){
+   return glWindowGetKeyboard(self->window);
 }
 

@@ -34,10 +34,10 @@ int keyboardPopEvent(Keyboard *self, KeyboardEvent *eventOut){
    *eventOut = *vecAt(KeyboardEvent)(self->eventQueue, self->queuePos++);
 
    if (eventOut->event == SegaKey_Pressed){
-      self->heldMap[eventOut->key] == true;
+      self->heldMap[eventOut->key] = true;
    }
    else if (eventOut->event == SegaKey_Released){
-      self->heldMap[eventOut->key] == false;
+      self->heldMap[eventOut->key] = false;
    }
 
    return true;

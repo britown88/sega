@@ -63,6 +63,9 @@ extern App *g_App;
 //returns the global app
 DLL_PUBLIC App *appGet();
 
+typedef struct Keyboard_t Keyboard;
+DLL_PUBLIC Keyboard *appGetKeyboard(App *self);
+
 
 
 

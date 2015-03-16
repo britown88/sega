@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "GridManager.h"
+#include "SEGA\Keyboard.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
@@ -163,6 +164,17 @@ void _onStart(BTGame *self){
    paletteCopy(&self->vApp.currentPalette, &defPal);
 }
 
+static void _testKeyboard(){
+   Keyboard *k = appGetKeyboard(appGet());
+   KeyboardEvent e = { 0 };
+   while (keyboardPopEvent(k, &e)){
+      if (e.key == SegaKey_A && e.event == SegaKey_Released){
+         int i = 5;
+         i += 5;
+      }
+   }
+}
+
 void _onStep(BTGame *self){
    
    Int2 mousePos = appGetPointerPos(appGet());
@@ -172,7 +184,11 @@ void _onStep(BTGame *self){
 
    derjpkstras(self->entitySystem, self->managers.gridManager);
 
+   _testKeyboard();
+
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
+
+
    
 
    

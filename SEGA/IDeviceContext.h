@@ -3,9 +3,7 @@
 #include "segautils/Vector.h"
 
 typedef struct IDeviceContext_t IDeviceContext;
-typedef struct IRenderer_t IRenderer;
-
-
+typedef struct Keyboard_t Keyboard;
 
 typedef struct {
    int(*init)(IDeviceContext*, int /*width*/, int /*height*/, StringView /*winName*/, int /*flags*/);
@@ -16,6 +14,7 @@ typedef struct {
    Float2(*pointerPos)(IDeviceContext*);
    int(*pointerEnabled)(IDeviceContext*);
    double(*time)(IDeviceContext*);
+   Keyboard*(*keyboard)(IDeviceContext*);
    void(*destroy)(IDeviceContext*);
 } IDeviceContextVTable;
 
@@ -31,4 +30,5 @@ Int2 iDeviceContextWindowSize(IDeviceContext *self);
 Float2 iDeviceContextPointerPos(IDeviceContext *self);
 int iDeviceContextPointerEnabled(IDeviceContext *self);
 double iDeviceContextTime(IDeviceContext *self);
+Keyboard *iDeviceContextKeyboard(IDeviceContext *self);
 void iDeviceContextDestroy(IDeviceContext *self);

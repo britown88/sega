@@ -3,7 +3,7 @@
 typedef enum {
    SegaKey_Pressed= 0,
    SegaKey_Released,
-   SegaKeyRepeat
+   SegaKey_Repeat
 }SegaKeyboardEvents;
 
 typedef enum{
@@ -86,19 +86,6 @@ typedef enum{
    SegaKey_F10,
    SegaKey_F11,
    SegaKey_F12,
-   SegaKey_F13,
-   SegaKey_F14,
-   SegaKey_F15,
-   SegaKey_F16,
-   SegaKey_F17,
-   SegaKey_F18,
-   SegaKey_F19,
-   SegaKey_F20,
-   SegaKey_F21,
-   SegaKey_F22,
-   SegaKey_F23,
-   SegaKey_F24,
-   SegaKey_F25,
    SegaKey_Keypad0,
    SegaKey_Keypad1,
    SegaKey_Keypad2,

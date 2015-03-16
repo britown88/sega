@@ -5,6 +5,7 @@
 
 typedef struct GLWindow_T GLWindow;
 typedef struct GLFWmonitor GLFWmonitor;
+typedef struct Keyboard_t Keyboard;
 
 GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monitor);
 void glWindowDestroy(GLWindow *self);
@@ -15,4 +16,7 @@ int glWindowShouldClose(GLWindow *self);
 
 Int2 glWindowGetSize(GLWindow *self);
 Float2 glWindowGetMousePos(GLWindow *self);
+Keyboard *glWindowGetKeyboard(GLWindow *self);
 
+int getSegaKey(int GLFWKey);
+int getSegaAction(int GLFWAction);

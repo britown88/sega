@@ -15,6 +15,7 @@
 
 #include "segashared\CheckedMemory.h"
 #include "IDeviceContext.h"
+#include "Keyboard.h"
 
 App *g_App;
 
@@ -186,6 +187,10 @@ Int2 appGetPointerPos(App *self){
    out.y = (int)((coords.y / rectfHeight(&self->viewport)) * (float)EGA_RES_HEIGHT);
 
    return out;
+}
+
+Keyboard *appGetKeyboard(App *self){
+   return iDeviceContextKeyboard(self->context);
 }
 
 double appGetTime(App *self){return iDeviceContextTime(self->context) * 1000;}
