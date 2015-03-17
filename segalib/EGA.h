@@ -22,6 +22,7 @@ typedef struct BitBuffer_t BitBuffer;
 #define EGA_IMAGE_PLANES (EGA_PLANES + 1)
 
 #define MAX_IMAGE_WIDTH 1024
+#define MAX_IMAGE_HEIGHT 768
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,6 +44,10 @@ typedef struct {
 	ScanLine lines[EGA_RES_HEIGHT];
 } BitPlane;
 
+typedef struct {
+   SuperScanLine lines[MAX_IMAGE_HEIGHT];
+} SuperBitPlane;
+
 typedef struct Frame_t{
 	BitPlane planes[EGA_PLANES];
 } Frame;
@@ -54,6 +59,7 @@ Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCo
 void paletteCopy(Palette *dest, Palette *src);
 
 typedef struct Image_t Image;
+typedef struct FlatImage_t FlatImage;
 
 Frame *frameCreate();
 void frameDestroy(Frame *self);
@@ -85,6 +91,12 @@ void imageScanLineSerialize(ImageScanLine *self, BitBuffer *dest);
 typedef struct Image_t Image;
 
 Image *imageCreate(short width, short height);
+
+FlatImage *imageRenderToFlat(Image *self);
+short flatImageGetWidth(FlatImage *self);
+short flatImageGetHeight(FlatImage *self);
+SuperBitPlane *flatImageGetPlane(FlatImage *self, byte plane);
+void flatImageDestroy(FlatImage *self);
 
 //deserializes an ega file and maintains the file's scanline compression in memory
 Image *imageDeserialize(const char*path);

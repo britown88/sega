@@ -212,7 +212,7 @@ static void drawMuhPixels(Frame *f, TestTriangleData *data, TrianglePoint *p){
    }
 }
 
-static Image *testImg = NULL;
+static FlatImage *testImg = NULL;
 
 typedef struct{
    Int2 texCoords[3];
@@ -222,7 +222,8 @@ static void drawMuhImage(Frame *f, TexData *data, TrianglePoint *p){
    int i = 0;
    float texX = 0.0f, texY = 0.0f;
    int x, y;
-   static byte buff[MAX_IMAGE_WIDTH];
+   //static byte buff[MAX_IMAGE_WIDTH];
+   SuperScanLine *buff = NULL;
 
    if (p->pos.x < 0 || p->pos.x >= EGA_RES_WIDTH ||
       p->pos.y < 0 || p->pos.y >= EGA_RES_HEIGHT){
@@ -234,16 +235,17 @@ static void drawMuhImage(Frame *f, TexData *data, TrianglePoint *p){
       texY += data->texCoords[i].y * p->b[i];
    }
 
-   x = abs((int)texX) % imageGetWidth(testImg);
-   y = abs((int)texY) % imageGetHeight(testImg);
+   x = abs((int)texX) % flatImageGetWidth(testImg);
+   y = abs((int)texY) % flatImageGetHeight(testImg);
 
-   imageScanLineRender(imageGetScanLine(testImg, y, 0), buff);
-   if (!getBitFromArray(buff, x)){
+   //imageScanLineRender(imageGetScanLine(testImg, y, 0), buff);
+
+   buff = flatImageGetPlane(testImg, 0)->lines + y;
+   if (!getBitFromArray(buff->pixels, x)){
       for (i = 0; i < EGA_PLANES; ++i){
-         ImageScanLine *sl = imageGetScanLine(testImg, y, i + 1);
-         imageScanLineRender(sl, buff);
+         buff = flatImageGetPlane(testImg, i + 1)->lines + y;
 
-         setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, getBitFromArray(buff, x));
+         setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, getBitFromArray(buff->pixels, x));
       }
    }
 }
@@ -256,7 +258,9 @@ static void _testTriangle(Frame *f, Int2 mousePos){
       drawTriangle(pix, &(TestTriangleData){12, 15, 5}, mousePos, (Int2){ 100, 200 }, (Int2){ 100, 100 });
 
       if (!testImg){
-         testImg = imageDeserializeOptimized("assets/img/badguy.ega");
+         Image *img = imageDeserializeOptimized("assets/img/badguy.ega");
+         testImg = imageRenderToFlat(img);
+         imageDestroy(img);
       }
 
       closureInit(PixelShader)(&tex, f, (PixelShaderFunc)&drawMuhImage, NULL);
