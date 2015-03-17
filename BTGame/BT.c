@@ -212,11 +212,58 @@ static void drawMuhPixels(Frame *f, TestTriangleData *data, TrianglePoint *p){
    }
 }
 
+static Image *testImg = NULL;
+
+typedef struct{
+   Int2 texCoords[3];
+}TexData;
+
+static void drawMuhImage(Frame *f, TexData *data, TrianglePoint *p){
+   int i = 0;
+   float texX = 0.0f, texY = 0.0f;
+   int x, y;
+   static byte buff[MAX_IMAGE_WIDTH];
+
+   if (p->pos.x < 0 || p->pos.x >= EGA_RES_WIDTH ||
+      p->pos.y < 0 || p->pos.y >= EGA_RES_HEIGHT){
+      return;
+   }
+
+   for (i = 0; i < 3; ++i){
+      texX += data->texCoords[i].x * p->b[i];
+      texY += data->texCoords[i].y * p->b[i];
+   }
+
+   x = abs((int)texX) % imageGetWidth(testImg);
+   y = abs((int)texY) % imageGetHeight(testImg);
+
+   imageScanLineRender(imageGetScanLine(testImg, y, 0), buff);
+   if (!getBitFromArray(buff, x)){
+      for (i = 0; i < EGA_PLANES; ++i){
+         ImageScanLine *sl = imageGetScanLine(testImg, y, i + 1);
+         imageScanLineRender(sl, buff);
+
+         setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, getBitFromArray(buff, x));
+      }
+   }
+}
+
 static void _testTriangle(Frame *f, Int2 mousePos){
 
-      PixelShader pix;
-      closureInit(PixelShader)(&pix, f, (PixelShaderFunc)&drawMuhPixels, NULL);
-      drawTriangle(pix, &(TestTriangleData){5, 10, 12}, (Int2){ 100, 100 }, (Int2){ 200, 200 }, mousePos);
+      PixelShader pix, tex;
+      //closureInit(PixelShader)(&pix, f, (PixelShaderFunc)&drawMuhPixels, NULL);
+      //drawTriangle(pix, &(TestTriangleData){5, 10, 12}, (Int2){ 100, 100 }, (Int2){ 200, 100 }, mousePos);
+      //drawTriangle(pix, &(TestTriangleData){12, 15, 5}, mousePos, (Int2){ 100, 200 }, (Int2){ 100, 100 });
+
+      if (!testImg){
+         testImg = imageDeserializeOptimized("assets/img/badguy.ega");
+      }
+
+      closureInit(PixelShader)(&tex, f, (PixelShaderFunc)&drawMuhImage, NULL);
+      drawTriangle(tex, &(TexData){{{0, 0}, { 31, 0 }, { 31, 31 }}}, (Int2){ 100, 100 }, (Int2){ 200, 100 }, mousePos);
+      drawTriangle(tex, &(TexData){{{31, 31}, { 0, 31 }, { 0, 0 }}}, mousePos, (Int2){ 100, 200 }, (Int2){ 100, 100 });
+
+
 
 }
 
