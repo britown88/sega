@@ -21,12 +21,9 @@ double iDeviceContextTime(IDeviceContext *self){
 void iDeviceContextDestroy(IDeviceContext *self){
    self->vTable->destroy(self);
 }
-Float2 iDeviceContextPointerPos(IDeviceContext *self){
-   return self->vTable->pointerPos(self);
-}
 Keyboard *iDeviceContextKeyboard(IDeviceContext *self){
    return self->vTable->keyboard(self);
 }
-int iDeviceContextPointerEnabled(IDeviceContext *self){
-   return self->vTable->pointerEnabled(self);
+Mouse *iDeviceContextMouse(IDeviceContext *self){
+   return self->vTable->mouse(self);
 }

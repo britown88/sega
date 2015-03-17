@@ -47,6 +47,7 @@
       <CompileAs>CompileAsC</CompileAs>
       <AdditionalIncludeDirectories>..\;</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

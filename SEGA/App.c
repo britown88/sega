@@ -175,14 +175,13 @@ void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) 
 int appRand(App *self, int lower, int upper){
    return (rand() % (upper - lower)) + lower;
 }
-Int2 appGetPointerPos(App *self){
-   Float2 coords = iDeviceContextPointerPos(self->context);
-   Int2 out = { 0 };
+Int2 appWindowToWorld(App *self, Float2 coords){
+   Int2 out = { 0, 0 };
 
    //now convert the damn coords to vp
    coords.x -= self->viewport.left;
    coords.y -= self->viewport.top;
-   
+
    out.x = (int)((coords.x / rectfWidth(&self->viewport)) * (float)EGA_RES_WIDTH);
    out.y = (int)((coords.y / rectfHeight(&self->viewport)) * (float)EGA_RES_HEIGHT);
 
@@ -191,6 +190,10 @@ Int2 appGetPointerPos(App *self){
 
 Keyboard *appGetKeyboard(App *self){
    return iDeviceContextKeyboard(self->context);
+}
+
+Mouse *appGetMouse(App *self){
+   return iDeviceContextMouse(self->context);
 }
 
 double appGetTime(App *self){return iDeviceContextTime(self->context) * 1000;}

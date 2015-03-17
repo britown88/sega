@@ -1,16 +1,19 @@
+#include <Windows.h>
 #include "GLFW/glfw3.h"
 #include "GLWindow.h"
 #include "segashared\CheckedMemory.h"
 #include "SEGA\Input.h"
+#include "SEGA\App.h"
 
 #include <malloc.h>
 #include <stddef.h>
-#include <Windows.h>
+
 
 struct GLWindow_T {
    GLFWwindow* window;
    Int2 winSize;
    Keyboard *keyboard;
+   Mouse *mouse;
 };
 
 static GLWindow *WinList[8] = { 0 };
@@ -42,6 +45,55 @@ static void glWindowKeyFunc(GLFWwindow* win, int key, int scancode, int action, 
    keyboardPushEvent(self->keyboard, &e);
 }
 
+static Int2 _getMousePos(GLFWwindow *win){
+   double x, y;
+   glfwGetCursorPos(win, &x, &y);
+   return appWindowToWorld(appGet(), (Float2){ (float)x, (float)y });
+}
+
+static void glWindowMouseButtonFunc(GLFWwindow *win, int button, int action, int mod){
+   GLWindow *self = getGLWindow(win);
+
+   MouseEvent e = {
+      .action = action == GLFW_PRESS ? SegaMouse_Pressed : SegaMouse_Released,
+      .button = getSegaMouseButton(button),
+      .pos = _getMousePos(win)
+   };
+
+   mousePushEvent(self->mouse, &e);
+}
+
+static void glWindowMouseScrollFunc(GLFWwindow *win, double x, double y){
+   GLWindow *self = getGLWindow(win);
+
+   MouseEvent e = {
+      .action = SegaMouse_Scrolled,
+      .button = 0,
+      {.x = (int)x, .y = (int)y}
+   };
+
+   mousePushEvent(self->mouse, &e);
+}
+
+static void glWindowMouseMoveFunc(GLFWwindow *win, double x, double y){
+   GLWindow *self = getGLWindow(win);
+
+   MouseEvent e = {
+      .action = SegaMouse_Moved,
+      .button = 0,
+      .pos = appWindowToWorld(appGet(), (Float2){ (float)x, (float)y })
+   };
+
+   mousePushEvent(self->mouse, &e);
+}
+
+
+
+static void _glWindowInitMouseClosure(GLWindow *self){
+   MousePos getPos;
+   closureInit(MousePos)(&getPos, self->window, (MousePosFunc)&_getMousePos, NULL);
+   self->mouse = mouseCreate(getPos);
+}
 
 GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monitor){
    GLFWwindow *window;
@@ -67,11 +119,15 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
    glfwGetFramebufferSize(window, &actualSize.x, &actualSize.y);
    glfwMakeContextCurrent(window);
    glfwSetKeyCallback(window, &glWindowKeyFunc);
+   glfwSetMouseButtonCallback(window, &glWindowMouseButtonFunc);
+   glfwSetCursorPosCallback(window, &glWindowMouseMoveFunc);
+   glfwSetScrollCallback(window, &glWindowMouseScrollFunc);
 
    r = checkedCalloc(1, sizeof(GLWindow));
    r->window = window;
    r->winSize = actualSize;   
    r->keyboard = keyboardCreate();
+   _glWindowInitMouseClosure(r);
 
    registerNewWindow(r);
 
@@ -86,6 +142,7 @@ void glWindowDestroy(GLWindow *self){
 
 void glWindowPollEvents(GLWindow *self){
    keyboardFlushQueue(self->keyboard);
+   mouseFlushQueue(self->mouse);
    glfwPollEvents();
 }
 void glWindowSwapBuffers(GLWindow *self){
@@ -97,11 +154,9 @@ int glWindowShouldClose(GLWindow *self){
 Int2 glWindowGetSize(GLWindow *self){
    return self->winSize;
 }
-Float2 glWindowGetMousePos(GLWindow *self){
-   double x, y;
-   glfwGetCursorPos(self->window, &x, &y);
-   return float2Create((float)x, (float)y);
-}
 Keyboard *glWindowGetKeyboard(GLWindow *self){
    return self->keyboard;
+}
+Mouse *glWindowGetMouse(GLWindow *self){
+   return self->mouse;
 }

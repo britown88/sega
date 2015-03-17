@@ -5,13 +5,33 @@
 #include <string.h>
 
 int getSegaAction(int GLFWAction){
-   static SegaInputActions actionMap[3];
+   static SegaKeyActions actionMap[3];
    static bool mapInit = false;
 
    if (!mapInit){
       actionMap[GLFW_PRESS] = SegaKey_Pressed;
       actionMap[GLFW_RELEASE] = SegaKey_Released;
       actionMap[GLFW_REPEAT] = SegaKey_Repeat;
+
+      mapInit = true;
+   }
+
+   return actionMap[GLFWAction];
+}
+
+int getSegaMouseButton(int GLFWAction){
+   static SegaMouseButtons actionMap[GLFW_MOUSE_BUTTON_LAST];
+   static bool mapInit = false;
+
+   if (!mapInit){
+      actionMap[GLFW_MOUSE_BUTTON_1] = SegaMouseBtn_Left;
+      actionMap[GLFW_MOUSE_BUTTON_2] = SegaMouseBtn_Right;
+      actionMap[GLFW_MOUSE_BUTTON_3] = SegaMouseBtn_Middle;
+      actionMap[GLFW_MOUSE_BUTTON_4] = SegaMouseBtn_4;
+      actionMap[GLFW_MOUSE_BUTTON_5] = SegaMouseBtn_5;
+      actionMap[GLFW_MOUSE_BUTTON_6] = SegaMouseBtn_6;
+      actionMap[GLFW_MOUSE_BUTTON_7] = SegaMouseBtn_7;
+      actionMap[GLFW_MOUSE_BUTTON_8] = SegaMouseBtn_8;
 
       mapInit = true;
    }

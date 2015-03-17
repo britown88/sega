@@ -1,24 +1,32 @@
 #pragma once
 
 #include "segautils\DLLBullshit.h"
+#include "segautils\Vector.h"
+
+typedef enum{
+   SegaMouseBtn_Left = 0,
+   SegaMouseBtn_Right,
+   SegaMouseBtn_Middle,
+   SegaMouseBtn_4,
+   SegaMouseBtn_5,
+   SegaMouseBtn_6,
+   SegaMouseBtn_7,
+   SegaMouseBtn_8,
+   SegaMouseBtn_COUNT
+}SegaMouseButtons;
+
+typedef enum{
+   SegaMouse_Pressed = 0,
+   SegaMouse_Released,
+   SegaMouse_Moved,
+   SegaMouse_Scrolled
+}SegaMouseActions;
 
 typedef enum {
    SegaKey_Pressed= 0,
    SegaKey_Released,
    SegaKey_Repeat
-}SegaInputActions;
-
-typedef enum{
-   SegaButton_Left = 0,
-   SegaButton_Right,
-   SegaButton_Middle,
-   SegaButton_4,
-   SegaButton_5,
-   SegaButton_6,
-   SegaButton_7,
-   SegaButton_8,
-   SegaButton_COUNT
-}SegaButtons;
+}SegaKeyActions;
 
 typedef enum{
    SegaKey_Space = 0,
@@ -126,12 +134,36 @@ typedef enum{
    SegaKey_COUNT
 }SegaKeys;
 
-/*----Keyboard -------*/
+/*----Mouse -------*/
+typedef struct {
+   SegaMouseActions action;
+   SegaMouseButtons button;
+   Int2 pos;
+}MouseEvent;
+
+#define ClosureTPart \
+    CLOSURE_RET(Int2) \
+    CLOSURE_NAME(MousePos) \
+    CLOSURE_ARGS()
+#include "segautils\Closure_Decl.h"
+
+typedef struct Mouse_t Mouse;
+
+DLL_PUBLIC Mouse *mouseCreate(MousePos posFunc);
+DLL_PUBLIC void mouseDestroy(Mouse *self);
+
+DLL_PUBLIC void mousePushEvent(Mouse *self, MouseEvent *event);
+DLL_PUBLIC Int2 mouseGetPosition(Mouse *self);
+
+//return if succeeded (false if empty)
+DLL_PUBLIC int mousePopEvent(Mouse *self, MouseEvent *eventOut);
+DLL_PUBLIC int mouseIsDown(Mouse *self, SegaMouseButtons button);
+DLL_PUBLIC void mouseFlushQueue(Mouse *self);
 
 
 /*----Keyboard -------*/
 typedef struct {
-   SegaInputActions action;
+   SegaKeyActions action;
    SegaKeys key;
 }KeyboardEvent;
 

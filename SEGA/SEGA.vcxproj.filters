@@ -24,7 +24,10 @@
     <ClCompile Include="IDeviceContext.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Input.c">
+    <ClCompile Include="Keyboard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

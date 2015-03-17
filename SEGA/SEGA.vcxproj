@@ -48,6 +48,7 @@
       <AdditionalIncludeDirectories>..\;</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -87,7 +88,8 @@
     <ClCompile Include="App.c" />
     <ClCompile Include="IDeviceContext.c" />
     <ClCompile Include="IRenderer.c" />
-    <ClCompile Include="Input.c" />
+    <ClCompile Include="Keyboard.c" />
+    <ClCompile Include="Mouse.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />

@@ -10,6 +10,12 @@
 
 #include <stdio.h>
 
+#define ClosureTPart \
+    CLOSURE_RET(Int2) \
+    CLOSURE_NAME(MousePos) \
+    CLOSURE_ARGS()
+#include "segautils\Closure_Impl.h"
+
 typedef struct {
    IDeviceContext context;
    GLWindow *window;
@@ -19,12 +25,11 @@ static int _init(GLFWContext *self, int width, int height, StringView winTitle, 
 static void _preRender(GLFWContext *self);
 static void _postRender(GLFWContext *self);
 static int _shouldClose(GLFWContext *self);
-static int _pointerEnabled(GLFWContext *self);
 static Int2 _windowSize(GLFWContext *self);
-static Float2 _pointerPos(GLFWContext *self);
 static double _time(GLFWContext *self);
 static void _destroy(GLFWContext *self);
 static Keyboard* _keyboard(GLFWContext *self);
+static Mouse* _mouse(GLFWContext *self);
 
 static IDeviceContextVTable *_getTable(){
    static IDeviceContextVTable *out = NULL;
@@ -34,12 +39,11 @@ static IDeviceContextVTable *_getTable(){
       out->preRender = (void(*)(IDeviceContext*))&_preRender;
       out->postRender = (void(*)(IDeviceContext*))&_postRender;
       out->shouldClose = (int(*)(IDeviceContext*))&_shouldClose;
-      out->pointerEnabled = (int(*)(IDeviceContext*))&_pointerEnabled;
       out->windowSize = (Int2(*)(IDeviceContext*))&_windowSize;
-      out->pointerPos = (Float2(*)(IDeviceContext*))&_pointerPos;
       out->time = (double(*)(IDeviceContext*))&_time;
       out->destroy = (void(*)(IDeviceContext*))&_destroy;
       out->keyboard = (Keyboard*(*)(IDeviceContext*))&_keyboard;
+      out->mouse = (Mouse*(*)(IDeviceContext*))&_mouse;
    }
    return out;
 }
@@ -51,7 +55,7 @@ IDeviceContext *createGLFWContext(){
 }
 
 int _init(GLFWContext *self, int width, int height, StringView winTitle, int flags){
-   Int2 size = int2Create(width, height);
+   Int2 size = { width, height };
    GLFWmonitor *monitor = NULL;
 
    if (!glfwInit()){
@@ -80,14 +84,8 @@ void _postRender(GLFWContext *self){
 int _shouldClose(GLFWContext *self){
    return glWindowShouldClose(self->window);
 }
-int _pointerEnabled(GLFWContext *self){
-   return true;
-}
 Int2 _windowSize(GLFWContext *self){
    return glWindowGetSize(self->window);
-}
-Float2 _pointerPos(GLFWContext *self){
-   return glWindowGetMousePos(self->window);
 }
 double _time(GLFWContext *self){
    return glfwGetTime();
@@ -98,5 +96,8 @@ void _destroy(GLFWContext *self){
 }
 Keyboard *_keyboard(GLFWContext *self){
    return glWindowGetKeyboard(self->window);
+}
+Mouse* _mouse(GLFWContext *self){
+   return glWindowGetMouse(self->window);
 }
 

@@ -52,7 +52,7 @@ typedef struct App_t App;
 DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context);
 
 DLL_PUBLIC int appRand(App *self, int lower, int upper);
-DLL_PUBLIC Int2 appGetPointerPos(App *self);
+DLL_PUBLIC Int2 appWindowToWorld(App *self, Float2 coords);
 
 DLL_PUBLIC double appGetTime(App *self);
 double appGetFrameTime(App *self);
@@ -65,6 +65,9 @@ DLL_PUBLIC App *appGet();
 
 typedef struct Keyboard_t Keyboard;
 DLL_PUBLIC Keyboard *appGetKeyboard(App *self);
+
+typedef struct Mouse_t Mouse;
+DLL_PUBLIC Mouse *appGetMouse(App *self);
 
 
 

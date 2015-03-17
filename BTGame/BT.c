@@ -175,16 +175,31 @@ static void _testKeyboard(){
    }
 }
 
+static void _testMouse(){
+   Mouse *k = appGetMouse(appGet());
+   MouseEvent e = { 0 };
+   while (mousePopEvent(k, &e)){
+      if (e.button == SegaMouseBtn_Left && e.action == SegaMouse_Released){
+         int i = 5;
+         i += 5;
+      }
+   }
+}
+
+
 void _onStep(BTGame *self){
-   
-   Int2 mousePos = appGetPointerPos(appGet());
-   cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
+   Mouse *mouse = appGetMouse(appGet());
+   if (mouse){
+      Int2 mousePos = mouseGetPosition(mouse);
+      cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
+   }
 
    interpolationManagerUpdate(self->managers.interpolationManager);
 
    derjpkstras(self->entitySystem, self->managers.gridManager);
 
    _testKeyboard();
+   _testMouse();
 
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
