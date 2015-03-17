@@ -4,10 +4,7 @@
 #include "segautils\Defs.h"
 #include "segautils\BitTwiddling.h"
 
-#define ClosureTPart \
-    CLOSURE_RET(void) \
-    CLOSURE_NAME(ComponentUpdate) \
-    CLOSURE_ARGS(Entity*, Component)
+#define ClosureTPart CLOSURE_NAME(ComponentUpdate)
 #include "segautils\Closure_Impl.h"
 
 #define VectorT ComponentUpdate

@@ -251,9 +251,9 @@ static void drawMuhImage(Frame *f, TexData *data, TrianglePoint *p){
 static void _testTriangle(Frame *f, Int2 mousePos){
 
       PixelShader pix, tex;
-      //closureInit(PixelShader)(&pix, f, (PixelShaderFunc)&drawMuhPixels, NULL);
-      //drawTriangle(pix, &(TestTriangleData){5, 10, 12}, (Int2){ 100, 100 }, (Int2){ 200, 100 }, mousePos);
-      //drawTriangle(pix, &(TestTriangleData){12, 15, 5}, mousePos, (Int2){ 100, 200 }, (Int2){ 100, 100 });
+      closureInit(PixelShader)(&pix, f, (PixelShaderFunc)&drawMuhPixels, NULL);
+      drawTriangle(pix, &(TestTriangleData){5, 10, 12}, (Int2){ 100, 100 }, (Int2){ 200, 100 }, mousePos);
+      drawTriangle(pix, &(TestTriangleData){12, 15, 5}, mousePos, (Int2){ 100, 200 }, (Int2){ 100, 100 });
 
       if (!testImg){
          testImg = imageDeserializeOptimized("assets/img/badguy.ega");

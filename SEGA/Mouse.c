@@ -5,10 +5,7 @@
 #define VectorT MouseEvent
 #include "segautils\Vector_Create.h"
 
-#define ClosureTPart \
-    CLOSURE_RET(Int2) \
-    CLOSURE_NAME(MousePos) \
-    CLOSURE_ARGS()
+#define ClosureTPart CLOSURE_NAME(MousePos)
 #include "segautils\Closure_Impl.h"
 
 typedef struct Mouse_t {

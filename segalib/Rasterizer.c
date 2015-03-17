@@ -1,9 +1,6 @@
 #include "Rasterizer.h"
 
-#define ClosureTPart \
-    CLOSURE_RET(void) \
-    CLOSURE_NAME(PixelShader) \
-    CLOSURE_ARGS(TrianglePoint*)
+#define ClosureTPart CLOSURE_NAME(PixelShader)
 #include "segautils\Closure_Impl.h"
 
 static void sortTriangles(TrianglePoint p1, TrianglePoint p2, TrianglePoint p3, TrianglePoint *points){

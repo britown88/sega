@@ -15,16 +15,10 @@
 
 #include <stdio.h>
 
-#define ClosureTPart \
-    CLOSURE_RET(size_t) /*return edge*/\
-    CLOSURE_NAME(GridProcessNeighbor) \
-    CLOSURE_ARGS(GridNodePublic */*current*/, GridNodePublic*/*neighbor*/)
+#define ClosureTPart CLOSURE_NAME(GridProcessNeighbor)
 #include "segautils\Closure_Impl.h"
 
-#define ClosureTPart \
-    CLOSURE_RET(GridNodePublic *) /*return the solution node*/ \
-    CLOSURE_NAME(GridProcessCurrent) \
-    CLOSURE_ARGS(GridNodePublic*/*current*/)
+#define ClosureTPart CLOSURE_NAME(GridProcessCurrent)
 #include "segautils\Closure_Impl.h"
 
 #define VectorTPart GridSolutionNode

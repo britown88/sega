@@ -1,7 +1,4 @@
-//#define ClosureTPart \
-//    CLOSURE_RET(int) \
-//    CLOSURE_NAME(SampleClosure) \
-//    CLOSURE_ARGS(int, float)
+//#define ClosureTPart CLOSURE_NAME(SampleClosure)
 //#include "Closure_Impl.h"
 //
 //int foo(ClosureData a, int b, float c){
