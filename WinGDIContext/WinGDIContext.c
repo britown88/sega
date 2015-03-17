@@ -115,7 +115,7 @@
 //   return self->quit;
 //}
 //Int2 _windowSize(WinGDIContext *self){
-//   return int2Create(self->width, self->height);
+//   return (Int2){self->width, self->height};
 //}
 //double _time(WinGDIContext *self){
 //   return (double)GetTickCount() / 1000.0;

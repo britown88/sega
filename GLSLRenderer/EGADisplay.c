@@ -50,7 +50,7 @@ EGADisplay *egaDisplayCreate() {
 
    for(y = 0; y < EGA_RES_HEIGHT; ++y) {
       for(x = 0; x < EGA_RES_WIDTH; ++x) {
-         posData[y * EGA_RES_WIDTH + x] = float2Create((float)x, (float)y);
+         posData[y * EGA_RES_WIDTH + x] = (Float2){ (float)x, (float)y };
       }
    }
 

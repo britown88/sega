@@ -53,7 +53,7 @@ static VirtualAppVTable *getVtable()
 AppData createData() {
    AppData data = { 0 };
 
-   data.defaultWindowSize = int2Create(WINDOW_WIDTH, WINDOW_HEIGHT);
+   data.defaultWindowSize = (Int2){ WINDOW_WIDTH, WINDOW_HEIGHT };
    data.frameRate = FRAME_RATE;
 
    if (FULLSCREEN){
@@ -222,7 +222,6 @@ static void drawMuhImage(Frame *f, TexData *data, TrianglePoint *p){
    int i = 0;
    float texX = 0.0f, texY = 0.0f;
    int x, y;
-   //static byte buff[MAX_IMAGE_WIDTH];
    SuperScanLine *buff = NULL;
 
    if (p->pos.x < 0 || p->pos.x >= EGA_RES_WIDTH ||
@@ -237,8 +236,6 @@ static void drawMuhImage(Frame *f, TexData *data, TrianglePoint *p){
 
    x = abs((int)texX) % flatImageGetWidth(testImg);
    y = abs((int)texY) % flatImageGetHeight(testImg);
-
-   //imageScanLineRender(imageGetScanLine(testImg, y, 0), buff);
 
    buff = flatImageGetPlane(testImg, 0)->lines + y;
    if (!getBitFromArray(buff->pixels, x)){

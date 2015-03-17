@@ -30,6 +30,9 @@
     <ClInclude Include="GridManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TriangleRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InterpolationManager.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TriangleRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
