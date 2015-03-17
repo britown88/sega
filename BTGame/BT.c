@@ -120,34 +120,34 @@ void _destroy(BTGame *self){
 void _onStart(BTGame *self){ 
    Palette defPal = paletteDeserialize("assets/img/boardui.pal");
 
-   //int i; 
+   int i; 
    int foo = 0;
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
-   //{
-   //   Entity *e = entityCreate(self->entitySystem);
-   //   
-   //   COMPONENT_ADD(e, PositionComponent, 0, 0);
-   //   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
-   //  // COMPONENT_ADD(e, LayerComponent, LayerTokens);
-   //   entityUpdate(e);
-   //}   
+   {
+      Entity *e = entityCreate(self->entitySystem);
+      
+      COMPONENT_ADD(e, PositionComponent, 0, 0);
+      COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
+     // COMPONENT_ADD(e, LayerComponent, LayerTokens);
+      entityUpdate(e);
+   }   
 
-   //for (i = 0; i < CELL_COUNT - 12; ++i){
+   for (i = 0; i < CELL_COUNT - 12; ++i){
 
-   //   Entity *e = entityCreate(self->entitySystem);
+      Entity *e = entityCreate(self->entitySystem);
 
-   //   COMPONENT_ADD(e, PositionComponent, 0, 0);
-   //   COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
+      COMPONENT_ADD(e, PositionComponent, 0, 0);
+      COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
 
-   //   COMPONENT_ADD(e, LayerComponent, LayerTokens);;
-   //   COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);
-   //   COMPONENT_ADD(e, WanderComponent, 1);
+      COMPONENT_ADD(e, LayerComponent, LayerTokens);;
+      COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);
+      COMPONENT_ADD(e, WanderComponent, 1);
 
-   //   entityUpdate(e);
-   //   
-   //}
+      entityUpdate(e);
+      
+   }
 
    {
 
@@ -187,21 +187,38 @@ static void _testMouse(){
       }
    }
 }
-static void drawMuhPixels(Frame *f, TrianglePoint *p){
+
+typedef struct{
+   byte colors[3];
+}TestTriangleData;
+
+static void drawMuhPixels(Frame *f, TestTriangleData *data, TrianglePoint *p){
    int i = 0;
+
+   if (p->pos.x < 0 || p->pos.x >= EGA_RES_WIDTH ||
+      p->pos.y < 0 || p->pos.y >= EGA_RES_HEIGHT){
+      return;
+   }
+
+   int closest = 0;
+   for (i = 1; i < 3; ++i){
+      if (p->b[i] > p->b[closest]){
+         closest = i;
+      }
+   }
+
    for (i = 0; i < EGA_PLANES; ++i){
-      setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, 1);
+      byte bit = getBit(data->colors[closest], i);
+      setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, bit);
    }
 }
 
 static void _testTriangle(Frame *f, Int2 mousePos){
 
-   if (mousePos.x >= 0 && mousePos.x < EGA_RES_WIDTH &&
-      mousePos.y >= 0 && mousePos.y < EGA_RES_HEIGHT){
       PixelShader pix;
       closureInit(PixelShader)(&pix, f, (PixelShaderFunc)&drawMuhPixels, NULL);
-      drawTriangle(pix, (Int2){ 100, 100 }, (Int2){ 200, 200 }, mousePos);
-   }
+      drawTriangle(pix, &(TestTriangleData){5, 10, 12}, (Int2){ 100, 100 }, (Int2){ 200, 200 }, mousePos);
+
 }
 
 

@@ -45,7 +45,7 @@ static void sortTriangles(TrianglePoint p1, TrianglePoint p2, TrianglePoint p3, 
    }
 }
 
-static void drawFlatTop(PixelShader shader, TrianglePoint *points){
+static void drawFlatTop(PixelShader shader, TriangleData data, TrianglePoint *points){
    TrianglePoint bottom, left, right;
    float dxLeft = 0.0f, dxRight = 0.0f;
    int i = 0, j = 0, k = 0;
@@ -88,7 +88,7 @@ static void drawFlatTop(PixelShader shader, TrianglePoint *points){
       //draw the fucking scanline
       float b[3] = { bLeft[0], bLeft[1], bLeft[2]};
       for (j = (int)leftSide; j <= (int)rightSide; ++j){
-         closureCall(&shader, &(TrianglePoint){
+         closureCall(&shader, data, &(TrianglePoint){
                .pos = {.x = j, .y = i},
                .b = {b[0], b[1], b[2]}
             });
@@ -108,7 +108,7 @@ static void drawFlatTop(PixelShader shader, TrianglePoint *points){
    }
 }
 
-static void drawFlatBottom(PixelShader shader, TrianglePoint *points){
+static void drawFlatBottom(PixelShader shader, TriangleData data, TrianglePoint *points){
    TrianglePoint top, left, right;
    float dxLeft = 0.0f, dxRight = 0.0f;
    int i = 0, j = 0, k = 0;
@@ -151,7 +151,7 @@ static void drawFlatBottom(PixelShader shader, TrianglePoint *points){
 
       float b[3] = { bLeft[0], bLeft[1], bLeft[2] };
       for (j = (int)leftSide; j <= (int)rightSide; ++j){
-         closureCall(&shader, &(TrianglePoint){
+         closureCall(&shader, data, &(TrianglePoint){
                .pos = { .x = j, .y = i },
                .b = { b[0], b[1], b[2] }
          });
@@ -193,7 +193,7 @@ static TrianglePoint getSplitPoint(TrianglePoint *points){
    return out;
 }
 
-static void drawSplit(PixelShader shader, TrianglePoint *points){
+static void drawSplit(PixelShader shader, TriangleData data, TrianglePoint *points){
    TrianglePoint top[3];
    TrianglePoint bottom[3];
    TrianglePoint splitPoint = getSplitPoint(points);
@@ -206,11 +206,11 @@ static void drawSplit(PixelShader shader, TrianglePoint *points){
    bottom[1] = splitPoint;
    bottom[2] = points[2];
 
-   drawFlatTop(shader, bottom);
-   drawFlatBottom(shader, top);
+   drawFlatTop(shader, data, bottom);
+   drawFlatBottom(shader, data, top);
 }
 
-void drawTriangle(PixelShader shader, Int2 p1, Int2 p2, Int2 p3){
+void drawTriangle(PixelShader shader, TriangleData data, Int2 p1, Int2 p2, Int2 p3){
    TrianglePoint points[3] = {
       { p1, { 1.0f, 0.0f, 0.0f } },
       { p2, { 0.0f, 1.0f, 0.0f } },
@@ -221,13 +221,13 @@ void drawTriangle(PixelShader shader, Int2 p1, Int2 p2, Int2 p3){
 
    if (points[0].pos.y == points[1].pos.y){
       //fat top
-      drawFlatTop(shader, points);
+      drawFlatTop(shader, data, points);
    }
    else if (points[1].pos.y == points[2].pos.y){
       //fat bottom
-      drawFlatBottom(shader, points);
+      drawFlatBottom(shader, data, points);
    }
    else{
-      drawSplit(shader, points);
+      drawSplit(shader, data, points);
    }
 }
