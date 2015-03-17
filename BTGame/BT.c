@@ -170,9 +170,8 @@ static void _testKeyboard(){
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    while (keyboardPopEvent(k, &e)){
-      if (e.key == SegaKey_A && e.action == SegaKey_Released){
-         int i = 5;
-         i += 5;
+      if (e.key == SegaKey_Escape && e.action == SegaKey_Released){
+         appQuit(appGet());
       }
    }
 }

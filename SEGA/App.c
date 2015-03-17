@@ -199,3 +199,7 @@ Mouse *appGetMouse(App *self){
 double appGetTime(App *self){return iDeviceContextTime(self->context) * 1000;}
 double appGetFrameTime(App *self){return 1000.0 / self->frameRate;}
 double appGetFrameRate(App *self){return self->frameRate;}
+
+void appQuit(App *app){
+   app->running = false;
+}
