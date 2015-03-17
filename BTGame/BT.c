@@ -13,6 +13,8 @@
 #include <math.h>
 #include "GridManager.h"
 #include "SEGA\Input.h"
+#include "segalib\Rasterizer.h"
+#include "segautils\BitTwiddling.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
@@ -118,34 +120,34 @@ void _destroy(BTGame *self){
 void _onStart(BTGame *self){ 
    Palette defPal = paletteDeserialize("assets/img/boardui.pal");
 
-   int i; 
+   //int i; 
    int foo = 0;
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
-   {
-      Entity *e = entityCreate(self->entitySystem);
-      
-      COMPONENT_ADD(e, PositionComponent, 0, 0);
-      COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
-     // COMPONENT_ADD(e, LayerComponent, LayerTokens);
-      entityUpdate(e);
-   }   
+   //{
+   //   Entity *e = entityCreate(self->entitySystem);
+   //   
+   //   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   //   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
+   //  // COMPONENT_ADD(e, LayerComponent, LayerTokens);
+   //   entityUpdate(e);
+   //}   
 
-   for (i = 0; i < CELL_COUNT - 12; ++i){
+   //for (i = 0; i < CELL_COUNT - 12; ++i){
 
-      Entity *e = entityCreate(self->entitySystem);
+   //   Entity *e = entityCreate(self->entitySystem);
 
-      COMPONENT_ADD(e, PositionComponent, 0, 0);
-      COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
+   //   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   //   COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
 
-      COMPONENT_ADD(e, LayerComponent, LayerTokens);;
-      COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);
-      COMPONENT_ADD(e, WanderComponent, 1);
+   //   COMPONENT_ADD(e, LayerComponent, LayerTokens);;
+   //   COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);
+   //   COMPONENT_ADD(e, WanderComponent, 1);
 
-      entityUpdate(e);
-      
-   }
+   //   entityUpdate(e);
+   //   
+   //}
 
    {
 
@@ -185,14 +187,29 @@ static void _testMouse(){
       }
    }
 }
+static void drawMuhPixels(Frame *f, TrianglePoint *p){
+   int i = 0;
+   for (i = 0; i < EGA_PLANES; ++i){
+      setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, 1);
+   }
+}
+
+static void _testTriangle(Frame *f, Int2 mousePos){
+
+   if (mousePos.x >= 0 && mousePos.x < EGA_RES_WIDTH &&
+      mousePos.y >= 0 && mousePos.y < EGA_RES_HEIGHT){
+      PixelShader pix;
+      closureInit(PixelShader)(&pix, f, (PixelShaderFunc)&drawMuhPixels, NULL);
+      drawTriangle(pix, (Int2){ 100, 100 }, (Int2){ 200, 200 }, mousePos);
+   }
+}
 
 
 void _onStep(BTGame *self){
    Mouse *mouse = appGetMouse(appGet());
-   if (mouse){
-      Int2 mousePos = mouseGetPosition(mouse);
-      cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
-   }
+   Int2 mousePos = mouseGetPosition(mouse);
+   cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
+
 
    interpolationManagerUpdate(self->managers.interpolationManager);
 
@@ -203,9 +220,7 @@ void _onStep(BTGame *self){
 
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
-
-   
-
+   _testTriangle(self->vApp.currentFrame, mousePos);
    
 }
 

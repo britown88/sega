@@ -30,6 +30,9 @@
     <ClInclude Include="EGAImage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Rasterizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Image.c">
@@ -57,6 +60,9 @@
       <Filter>Source Files\ScanLines</Filter>
     </ClCompile>
     <ClCompile Include="FontFactory.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rasterizer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

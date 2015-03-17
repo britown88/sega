@@ -79,6 +79,7 @@
     <ClInclude Include="EGA.h" />
     <ClInclude Include="EGAImage.hpp" />
     <ClInclude Include="ImageTools.hpp" />
+    <ClInclude Include="Rasterizer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ColorMath.cpp">
@@ -95,6 +96,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="Rasterizer.c" />
     <ClCompile Include="RLEScanLine.c" />
     <ClCompile Include="SolidScanLine.c" />
     <ClCompile Include="FontFactory.c" />
