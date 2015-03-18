@@ -25,3 +25,5 @@ void cursorManagerUpdate(CursorManager *self, int x, int y);
 
 InterpolationManager *createInterpolationManager(EntitySystem *system);
 void interpolationManagerUpdate(InterpolationManager *self);
+void interpolationManagerPause(InterpolationManager *self);
+void interpolationManagerResume(InterpolationManager *self);

@@ -8,6 +8,7 @@
 #include "CoreComponents.h"
 #include "segashared\CheckedMemory.h"
 #include "segalib\EGA.h"
+#include "segautils\Defs.h"
 
 #include "SEGA\App.h"
 
@@ -26,6 +27,8 @@ struct InterpolationManager_t{
    Manager m;
    EntitySystem *system;
    vec(EntityPtr) *removeList;
+   long pausedTime;
+   bool paused;
 };
 
 #pragma region vtable things
@@ -114,6 +117,22 @@ void _updateEntity(InterpolationManager *self, Entity *e, long time){
       pc->y = (int)((ic->destY - tic->startY) * m) + tic->startY;
    }
 }
+void interpolationManagerPause(InterpolationManager *self){
+   if (!self->paused){
+      self->paused = true;
+      self->pausedTime = (long)appGetTime(appGet());
+   }
+}
+void interpolationManagerResume(InterpolationManager *self){
+   if (self->paused){
+      long elapsed = (long)appGetTime(appGet()) - self->pausedTime;
+      self->paused = false;
+
+      COMPONENT_QUERY(self->system, TInterpolationComponent, tic, {
+         tic->startTime += elapsed;
+      });
+   }
+}
 
 void _removeComponents(InterpolationManager *self){
 
@@ -126,14 +145,16 @@ void _removeComponents(InterpolationManager *self){
 }
 
 void interpolationManagerUpdate(InterpolationManager *self){
-   long time = (long)appGetTime(appGet());
+   if (!self->paused){
+      long time = (long)appGetTime(appGet());
 
-   COMPONENT_QUERY(self->system, TInterpolationComponent, ic, {
-      Entity *e = componentGetParent(ic, self->system);
-      _updateEntity(self, e, time);
-   });
+      COMPONENT_QUERY(self->system, TInterpolationComponent, ic, {
+         Entity *e = componentGetParent(ic, self->system);
+         _updateEntity(self, e, time);
+      });
 
-   if (!vecIsEmpty(EntityPtr)(self->removeList)){
-      _removeComponents(self);
+      if (!vecIsEmpty(EntityPtr)(self->removeList)){
+         _removeComponents(self);
+      }
    }
 }

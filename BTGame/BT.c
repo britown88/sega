@@ -33,6 +33,8 @@ typedef struct {
    vec(Vertex) *vbo;
    vec(size_t) *ibo;
 
+   Image *diceTest;
+
 } BTGame;
 
 #pragma region App_Things
@@ -75,6 +77,59 @@ AppData *_getData(BTGame *self) {
 
 #pragma endregion
 
+
+static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
+   int s = 32;
+   //1: 0-3
+
+   vecPushStackArray(Vertex, vbo, {
+      { .coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 0, s * 0 } },
+      { .coords = { 0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 0 } },
+      { .coords = { 0.5f, 0.5f, 0.5f }, .texCoords = { s * 1, s * 1 } },
+      { .coords = { -0.5f, 0.5f, 0.5f }, .texCoords = { s * 0, s * 1 } },
+
+      //2: 4-7
+      { .coords = { 0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 0 } },
+      { .coords = { 0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 0 } },
+      { .coords = { 0.5f, 0.5f, -0.5f }, .texCoords = { s * 2, s * 1 } },
+      { .coords = { 0.5f, 0.5f, 0.5f }, .texCoords = { s * 1, s * 1 } },
+
+      //3: 8-11
+      { .coords = { -0.5f, 0.5f, 0.5f }, .texCoords = { s * 2, s * 0 } },
+      { .coords = { 0.5f, 0.5f, 0.5f }, .texCoords = { s * 3, s * 0 } },
+      { .coords = { 0.5f, 0.5f, -0.5f }, .texCoords = { s * 3, s * 1 } },
+      { .coords = { -0.5f, 0.5f, -0.5f }, .texCoords = { s * 2, s * 1 } },
+
+      //4: 12-15
+      { .coords = { 0.5f, -0.5f, 0.5f }, .texCoords = { s * 0, s * 1 } },
+      { .coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 1 } },
+      { .coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 2 } },
+      { .coords = { 0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 2 } },
+
+      //5: 16-19
+      { .coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 1 } },
+      { .coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 2, s * 1 } },
+      { .coords = { -0.5f, 0.5f, 0.5f }, .texCoords = { s * 2, s * 2 } },
+      { .coords = { -0.5f, 0.5f, -0.5f }, .texCoords = { s * 1, s * 2 } },
+
+      //6: 20-23
+      { .coords = { 0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 1 } },
+      { .coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 3, s * 1 } },
+      { .coords = { -0.5f, 0.5f, -0.5f }, .texCoords = { s * 3, s * 2 } },
+      { .coords = { 0.5f, 0.5f, -0.5f }, .texCoords = { s * 2, s * 2 } }
+   });
+
+
+   vecPushStackArray(size_t, ibo,
+   { 0, 1, 2, 0, 2, 3,
+   4, 5, 6, 4, 6, 7,
+   8, 9, 10, 8, 10, 11,
+   12, 13, 14, 12, 14, 15,
+   16, 17, 18, 16, 18, 19,
+   20, 21, 22, 20, 22, 23 });
+}
+
+
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
 
@@ -112,6 +167,9 @@ VirtualApp *btCreate() {
    r->vbo = vecCreate(Vertex)(NULL);
    r->ibo = vecCreate(size_t)(NULL);
 
+   r->diceTest = imageDeserialize("assets/img/d6.ega");
+   buildDiceBuffers(r->vbo, r->ibo);
+
    _initEntitySystem(r);
 
    return (VirtualApp*)r;
@@ -123,62 +181,12 @@ void _destroy(BTGame *self){
    vecDestroy(Vertex)(self->vbo);
    vecDestroy(size_t)(self->ibo);
 
+   imageDestroy(self->diceTest);
+
    imageManagerDestroy(self->imageManager);   
    checkedFree(self);
 }
 
-static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
-   int s = 32;
-   //1: 0-3
-
-   vecPushStackArray(Vertex, vbo, {
-      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 0, s * 0 }},
-      {.coords = {  0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 0 }},
-      {.coords = {  0.5f,  0.5f, 0.5f }, .texCoords = { s * 1, s * 1 }},
-      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 0, s * 1 }},
-
-      //2: 4-7
-      {.coords = { 0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 0 }},
-      {.coords = { 0.5f, -0.5f,  -0.5f }, .texCoords = { s * 2, s * 0 }},
-      {.coords = { 0.5f,  0.5f,  -0.5f }, .texCoords = { s * 2, s * 1 }},
-      {.coords = { 0.5f,  0.5f, 0.5f }, .texCoords = { s * 1, s * 1 }},
-
-      //3: 8-11
-      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 2, s * 0 }},
-      {.coords = {  0.5f,  0.5f, 0.5f }, .texCoords = { s * 3, s * 0 }},
-      {.coords = {  0.5f,  0.5f,  -0.5f }, .texCoords = { s * 3, s * 1 }},
-      {.coords = {  -0.5f, 0.5f,  -0.5f }, .texCoords = { s * 2, s * 1 }},
-
-      //4: 12-15
-      {.coords = {  0.5f, -0.5f, 0.5f }, .texCoords = { s * 0, s * 1 }},
-      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 1 }},
-      {.coords = { -0.5f, -0.5f,  -0.5f }, .texCoords = { s * 1, s * 2 }},
-      {.coords = {  0.5f, -0.5f,  -0.5f }, .texCoords = { s * 0, s * 2 }},
-
-      //5: 16-19
-      {.coords = { -0.5f, -0.5f,  -0.5f }, .texCoords = { s * 1, s * 1 }},
-      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 2, s * 1 }},
-      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 2, s * 2 }},
-      {.coords = { -0.5f,  0.5f,  -0.5f }, .texCoords = { s * 1, s * 2 }},
-
-      //6: 20-23
-      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 1 }},
-      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 3, s * 1 }},
-      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 3, s * 2 }},
-      {.coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 2 }}
-   });
-
-
-   vecPushStackArray(size_t, ibo,
-   { 0, 1, 2, 0, 2, 3,
-     4, 5, 6, 4, 6, 7, 
-     8, 9, 10,8, 10,11, 
-     12,13,14,12,14,15, 
-     16,17,18,16,18,19, 
-     20,21,22,20,22,23 });
-}
-
-static Image *diceTest;
 static RigidBody die;
 
 static void testDieUpdate(RigidBody *body){
@@ -199,8 +207,7 @@ void _onStart(BTGame *self){
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
-   diceTest = imageDeserialize("assets/img/d6.ega");
-   buildDiceBuffers(self->vbo, self->ibo);
+   
 
    {
       Entity *e = entityCreate(self->entitySystem);
@@ -243,13 +250,33 @@ void _onStart(BTGame *self){
    paletteCopy(&self->vApp.currentPalette, &defPal);
 }
 
-static void _testKeyboard(){
+static bool paused = false;
+
+static void _testKeyboard(BTGame *self){
+   
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    while (keyboardPopEvent(k, &e)){
-      if (e.key == SegaKey_Escape && e.action == SegaKey_Released){
-         appQuit(appGet());
+      switch (e.key){
+      case (SegaKey_Escape):
+         if (e.action == SegaKey_Released){
+            appQuit(appGet());
+         }
+         break;
+      case (SegaKey_Space):
+         if (e.action == SegaKey_Released){
+            if (paused){
+               interpolationManagerResume(self->managers.interpolationManager);
+               paused = false;
+            }
+            else{
+               interpolationManagerPause(self->managers.interpolationManager);
+               paused = true;
+            }
+         }
+         break;
       }
+
    }
 }
 
@@ -265,6 +292,21 @@ static void _testMouse(){
    }
 }
 
+static void _testDice(BTGame *self, Int2 mousePos){
+   //Transform t = { 
+   //   .size = (Int3){ 32, 32, 32 }, 
+   //   .offset = (Int3){ (int)die.translation.x, (int)die.translation.y, (int)die.translation.z },
+   //   .rotation = die.orientation
+   //};
+   float angle = 3.1415926f * (float)(appGetTime(appGet()) / 1000.0f);
+   Transform t = {
+      .size = (Int3){ size, size, size },
+      .offset = (Int3){ mousePos.x, mousePos.y, 0 },
+      .rotation = quaternionFromAxisAngle(vNormalized((Float3){ 1.0f, 1.0f, 1.0f }), angle)
+   };
+   renderMesh(self->vbo, self->ibo, self->diceTest, t, self->vApp.currentFrame);
+}
+
 void _onStep(BTGame *self){
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
@@ -272,33 +314,18 @@ void _onStep(BTGame *self){
 
 
    interpolationManagerUpdate(self->managers.interpolationManager);
+   if (!paused)
+      derjpkstras(self->entitySystem, self->managers.gridManager);
 
-   derjpkstras(self->entitySystem, self->managers.gridManager);
-
-   _testKeyboard();
+   _testKeyboard(self);
    _testMouse();
 
    testDieUpdate(&die);
 
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
-   {
-      //Transform t = { 
-      //   .size = (Int3){ 32, 32, 32 }, 
-      //   .offset = (Int3){ (int)die.translation.x, (int)die.translation.y, (int)die.translation.z },
-      //   .rotation = die.orientation
-      //};
-      float angle = 3.1415926f * (float)(appGetTime(appGet()) / 1000.0f);
-      Transform t = {
-         .size = (Int3){ size, size, size },
-         .offset = (Int3){ mousePos.x, mousePos.y, 0 },
-         .rotation = quaternionFromAxisAngle(vNormalized((Float3){ cosf(angle), sinf(angle), sinf(angle) }), angle)
-      };
-      renderMesh(self->vbo, self->ibo, diceTest, t, self->vApp.currentFrame);
-   }
    
 
-
-   
+   //_testDice(self, mousePos);  
    
 }
 

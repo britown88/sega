@@ -135,6 +135,7 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
 }
 void glWindowDestroy(GLWindow *self){
    keyboardDestroy(self->keyboard);
+   mouseDestroy(self->mouse);
    glfwDestroyWindow(self->window);
    glfwTerminate();
    checkedFree(self);
