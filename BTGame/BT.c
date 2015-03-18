@@ -145,13 +145,13 @@ static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
       {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 0 }},
       {.coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 3, s * 0 }},
       {.coords = {  0.5f,  0.5f,  0.5f }, .texCoords = { s * 3, s * 1 }},
-      {.coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = {  -0.5f, 0.5f,  0.5f }, .texCoords = { s * 2, s * 1 }},
 
       //4: 12-15
-      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 1 }},
-      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
-      {.coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 2 }},
-      {.coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 0, s * 2 }},
+      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 1 }},
+      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 2 }},
+      {.coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 0, s * 2 }},
 
       //5: 16-19
       {.coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 1 }},
@@ -240,13 +240,14 @@ static void _testKeyboard(){
    }
 }
 
+static int size = 32;
+
 static void _testMouse(){
    Mouse *k = appGetMouse(appGet());
    MouseEvent e = { 0 };
    while (mousePopEvent(k, &e)){
-      if (e.button == SegaMouseBtn_Left && e.action == SegaMouse_Released){
-         int i = 5;
-         i += 5;
+      if (e.action == SegaMouse_Scrolled){
+         size += e.pos.y;
       }
    }
 }
@@ -265,8 +266,12 @@ void _onStep(BTGame *self){
    _testMouse();
 
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
+     
+   
+   renderMesh(self->vbo, self->ibo, diceTest, (Transform){ .size = (Int3){ size, size, size }, .offset = (Int3){ mousePos.x, mousePos.y, 0 } }, self->vApp.currentFrame);
 
-   renderMesh(self->vbo, self->ibo, diceTest, (Transform){ .size = (Int3){32, 32, 32}, .offset = (Int3){100, 100, 0} }, self->vApp.currentFrame);
+
+   
    
 }
 

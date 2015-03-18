@@ -4,6 +4,7 @@
 #include "segalib\Rasterizer.h"
 #include "segautils\BitTwiddling.h"
 #include "segautils\Matrix.h"
+#include "segautils\Quaternion.h"
 
 #define VectorTPart Vertex
 #include "segautils\Vector_Impl.h"
@@ -49,18 +50,14 @@ static void textureShader(RenderData *r, TexCoords *data, TrianglePoint *p){
 }
 
 static void buildTransform(Matrix *m, Transform t){
-
    double seconds = appGetTime(appGet()) / 1000.0f;
    double angle = 3.1415926*seconds;
-   double x = cos(angle);
-   double y = sin(angle);
-   Matrix m2 = {
-      (float)x, 0.0f, (float)y, 0.0f,
-      0.0f, 1.0f, 0.0f, 0.0f,
-      (float)-y, 0.0f, (float)x, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f
-   };
 
+   Float3 n = { 1.0f, 1.0f, 1.0f };
+   vNormalize(&n);
+
+   Quaternion q = quaternionFromAxisAngle(n, (float)angle);
+   Matrix m2 = quaternionToMatrix(&q);
 
 
    matrixIdentity(m);

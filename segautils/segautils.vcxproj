@@ -26,6 +26,7 @@
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Preprocessor.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="Quaternion.h" />
     <ClInclude Include="StandardVectors.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector_Create.h" />
@@ -39,6 +40,7 @@
     <ClCompile Include="Dijkstras.c" />
     <ClCompile Include="IntrusiveHeap.c" />
     <ClCompile Include="Matrix.c" />
+    <ClCompile Include="Quaternion.c" />
     <ClCompile Include="StandardVectors.c" />
     <ClCompile Include="Vector.c" />
   </ItemGroup>
