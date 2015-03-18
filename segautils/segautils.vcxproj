@@ -40,6 +40,7 @@
     <ClCompile Include="IntrusiveHeap.c" />
     <ClCompile Include="Matrix.c" />
     <ClCompile Include="StandardVectors.c" />
+    <ClCompile Include="Vector.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C928A7B6-88D1-4697-9E1D-771FA8A06C55}</ProjectGuid>

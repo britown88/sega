@@ -58,7 +58,7 @@ EGADisplay *egaDisplayCreate() {
    r->shader = shaderCreate("assets/shaders/sega.vert", "assets/shaders/sega.frag");
 
    matrixIdentity(&r->model);
-   matrixTranslate(&r->model, 0.0f, 1.0f); //points are all off by one for some reason
+   matrixTranslate(&r->model, (Float3){ 0.0f, 1.0f, 0.0f }); //points are all off by one for some reason
 
    return r;
 }

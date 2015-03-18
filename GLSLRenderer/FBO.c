@@ -60,7 +60,7 @@ FBO *fboCreate(int width, int height) {
    r->shader = shaderCreate("assets/shaders/texture.vert", "assets/shaders/texture.frag");
 
    matrixIdentity(&r->model);
-   matrixScale(&r->model, (float)width, (float)height);
+   matrixScale(&r->model, (Float3){ (float)width, (float)height, 1.0f });
 
    //create the vbo for drawing the texture
    r->vbo = _buildVBO();

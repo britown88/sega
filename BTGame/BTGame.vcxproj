@@ -78,7 +78,7 @@
     <ClInclude Include="GridManager.h" />
     <ClInclude Include="ImageManager.h" />
     <ClInclude Include="Managers.h" />
-    <ClInclude Include="TriangleRenderer.h" />
+    <ClInclude Include="MeshRendering.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c" />
@@ -89,7 +89,7 @@
     <ClCompile Include="ImageManager.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="RenderManager.c" />
-    <ClCompile Include="TriangleRenderer.c" />
+    <ClCompile Include="MeshRendering.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Entities\Entities.vcxproj">

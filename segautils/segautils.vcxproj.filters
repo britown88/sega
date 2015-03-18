@@ -19,6 +19,9 @@
     <ClCompile Include="StandardVectors.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Vector.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preprocessor.h">

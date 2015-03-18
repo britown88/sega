@@ -13,8 +13,8 @@
 #include <math.h>
 #include "GridManager.h"
 #include "SEGA\Input.h"
-#include "segalib\Rasterizer.h"
-#include "segautils\BitTwiddling.h"
+#include "MeshRendering.h"
+
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
@@ -27,6 +27,9 @@ typedef struct {
    BTManagers managers;
    EntitySystem *entitySystem;
    ImageManager *imageManager;
+
+   vec(Vertex) *vbo;
+   vec(size_t) *ibo;
 
 } BTGame;
 
@@ -103,6 +106,9 @@ VirtualApp *btCreate() {
 
    //Other constructor shit goes here   
    r->imageManager = imageManagerCreate();
+   
+   r->vbo = vecCreate(Vertex)(NULL);
+   r->ibo = vecCreate(size_t)(NULL);
 
    _initEntitySystem(r);
 
@@ -112,10 +118,65 @@ VirtualApp *btCreate() {
 void _destroy(BTGame *self){
    _destroyEntitySystem(self);
 
+   vecDestroy(Vertex)(self->vbo);
+   vecDestroy(size_t)(self->ibo);
+
    imageManagerDestroy(self->imageManager);   
    checkedFree(self);
 }
 
+static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
+   int s = 32;
+   //1: 0-3
+
+   vecPushStackArray(Vertex, vbo, {
+      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 0 }},
+      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 0 }},
+      {.coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 0, s * 1 }},
+
+      //2: 4-7
+      {.coords = { 0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 0 }},
+      {.coords = { 0.5f, -0.5f,  0.5f }, .texCoords = { s * 2, s * 0 }},
+      {.coords = { 0.5f,  0.5f,  0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = { 0.5f,  0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
+
+      //3: 8-11
+      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 0 }},
+      {.coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 3, s * 0 }},
+      {.coords = {  0.5f,  0.5f,  0.5f }, .texCoords = { s * 3, s * 1 }},
+      {.coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 2, s * 1 }},
+
+      //4: 12-15
+      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 1 }},
+      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 2 }},
+      {.coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 0, s * 2 }},
+
+      //5: 16-19
+      {.coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 2 }},
+      {.coords = { -0.5f,  0.5f,  0.5f }, .texCoords = { s * 1, s * 2 }},
+
+      //6: 20-23
+      {.coords = {  0.5f, -0.5f, 0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 3, s * 1 }},
+      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 3, s * 2 }},
+      {.coords = {  0.5f,  0.5f, 0.5f }, .texCoords = { s * 2, s * 2 }}
+   });
+
+
+   vecPushStackArray(size_t, ibo,
+   { 0, 1, 2, 0, 2, 3,
+     4, 5, 6, 4, 6, 7, 
+     8, 9, 10,8, 10,11, 
+     12,13,14,12,14,15, 
+     16,17,18,16,18,19, 
+     20,21,22,20,22,23 });
+}
+
+static Image *diceTest;
 
 void _onStart(BTGame *self){ 
    Palette defPal = paletteDeserialize("assets/img/boardui.pal");
@@ -124,6 +185,9 @@ void _onStart(BTGame *self){
    int foo = 0;
 
    cursorManagerCreateCursor(self->managers.cursorManager);
+
+   diceTest = imageDeserialize("assets/img/d6.ega");
+   buildDiceBuffers(self->vbo, self->ibo);
 
    {
       Entity *e = entityCreate(self->entitySystem);
@@ -151,16 +215,16 @@ void _onStart(BTGame *self){
 
    {
 
-      //Entity *e = entityCreate(self->entitySystem);
+      Entity *e = entityCreate(self->entitySystem);
 
-      //COMPONENT_ADD(e, PositionComponent, 0, 0);
-      //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/actor.ega"));
+      COMPONENT_ADD(e, PositionComponent, 0, 0);
+      COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/actor.ega"));
 
-      //COMPONENT_ADD(e, LayerComponent, LayerTokens);
-      //COMPONENT_ADD(e, GridComponent, 0, 0);
-      //COMPONENT_ADD(e, WanderComponent, 1);
+      COMPONENT_ADD(e, LayerComponent, LayerTokens);
+      COMPONENT_ADD(e, GridComponent, 0, 0);
+      COMPONENT_ADD(e, WanderComponent, 1);
 
-      //entityUpdate(e);
+      entityUpdate(e);
 
    }
    paletteCopy(&self->vApp.currentPalette, &defPal);
@@ -187,88 +251,6 @@ static void _testMouse(){
    }
 }
 
-typedef struct{
-   byte colors[3];
-}TestTriangleData;
-
-static void drawMuhPixels(Frame *f, TestTriangleData *data, TrianglePoint *p){
-   int i = 0;
-
-   if (p->pos.x < 0 || p->pos.x >= EGA_RES_WIDTH ||
-      p->pos.y < 0 || p->pos.y >= EGA_RES_HEIGHT){
-      return;
-   }
-
-   int closest = 0;
-   for (i = 1; i < 3; ++i){
-      if (p->b[i] > p->b[closest]){
-         closest = i;
-      }
-   }
-
-   for (i = 0; i < EGA_PLANES; ++i){
-      byte bit = getBit(data->colors[closest], i);
-      setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, bit);
-   }
-}
-
-static FlatImage *testImg = NULL;
-
-typedef struct{
-   Int2 texCoords[3];
-}TexData;
-
-static void drawMuhImage(Frame *f, TexData *data, TrianglePoint *p){
-   int i = 0;
-   float texX = 0.0f, texY = 0.0f;
-   int x, y;
-   SuperScanLine *buff = NULL;
-
-   if (p->pos.x < 0 || p->pos.x >= EGA_RES_WIDTH ||
-      p->pos.y < 0 || p->pos.y >= EGA_RES_HEIGHT){
-      return;
-   }
-
-   for (i = 0; i < 3; ++i){
-      texX += data->texCoords[i].x * p->b[i];
-      texY += data->texCoords[i].y * p->b[i];
-   }
-
-   x = abs((int)texX) % flatImageGetWidth(testImg);
-   y = abs((int)texY) % flatImageGetHeight(testImg);
-
-   buff = flatImageGetPlane(testImg, 0)->lines + y;
-   if (!getBitFromArray(buff->pixels, x)){
-      for (i = 0; i < EGA_PLANES; ++i){
-         buff = flatImageGetPlane(testImg, i + 1)->lines + y;
-
-         setBitInArray(f->planes[i].lines[p->pos.y].pixels, p->pos.x, getBitFromArray(buff->pixels, x));
-      }
-   }
-}
-
-static void _testTriangle(Frame *f, Int2 mousePos){
-
-      PixelShader pix, tex;
-      closureInit(PixelShader)(&pix, f, (PixelShaderFunc)&drawMuhPixels, NULL);
-      drawTriangle(pix, &(TestTriangleData){5, 10, 12}, (Int2){ 100, 100 }, (Int2){ 200, 100 }, mousePos);
-      drawTriangle(pix, &(TestTriangleData){12, 15, 5}, mousePos, (Int2){ 100, 200 }, (Int2){ 100, 100 });
-
-      if (!testImg){
-         Image *img = imageDeserializeOptimized("assets/img/badguy.ega");
-         testImg = imageRenderToFlat(img);
-         imageDestroy(img);
-      }
-
-      closureInit(PixelShader)(&tex, f, (PixelShaderFunc)&drawMuhImage, NULL);
-      drawTriangle(tex, &(TexData){{{0, 0}, { 31, 0 }, { 31, 31 }}}, (Int2){ 100, 100 }, (Int2){ 200, 100 }, mousePos);
-      drawTriangle(tex, &(TexData){{{31, 31}, { 0, 31 }, { 0, 0 }}}, mousePos, (Int2){ 100, 200 }, (Int2){ 100, 100 });
-
-
-
-}
-
-
 void _onStep(BTGame *self){
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
@@ -284,7 +266,7 @@ void _onStep(BTGame *self){
 
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
 
-   _testTriangle(self->vApp.currentFrame, mousePos);
+   renderMesh(self->vbo, self->ibo, diceTest, (Transform){ .size = (Int3){32, 32, 32}, .offset = (Int3){100, 100, 0} }, self->vApp.currentFrame);
    
 }
 

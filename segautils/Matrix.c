@@ -23,6 +23,14 @@ Matrix matrixMultiply(Matrix *lhs, Matrix *rhs) {
    return m;
 }
 
+Float3 matrixMultiplyV(Matrix *lhs, Float3 rhs){
+   return (Float3){
+      lhs->data[0] * rhs.x + lhs->data[4] * rhs.y + lhs->data[8 ] * rhs.z + lhs->data[12],
+      lhs->data[1] * rhs.x + lhs->data[5] * rhs.y + lhs->data[9 ] * rhs.z + lhs->data[13],
+      lhs->data[2] * rhs.x + lhs->data[6] * rhs.y + lhs->data[10] * rhs.z + lhs->data[14]
+   };
+}
+
 void matrixIdentity(Matrix *m) {
    memset((void*)m->data, 0, sizeof(Matrix));
    m->data[0] = 1.0f;
@@ -45,21 +53,21 @@ void matrixOrtho(Matrix *m, float left, float right, float bottom, float top, fl
    m->data[14] = -((far + near) / (far - near));
 }
 
-void matrixScale(Matrix *m, float x, float y) {
+void matrixScale(Matrix *m, Float3 v) {
    Matrix scale;
    matrixIdentity(&scale);
-   scale.data[0] = x;
-   scale.data[5] = y;
-   scale.data[10] = 1.0f;
+   scale.data[0] = v.x;
+   scale.data[5] = v.y;
+   scale.data[10] = v.z;
    *m = matrixMultiply(m, &scale);
 }
 
-void matrixTranslate(Matrix *m, float x, float y) {
+void matrixTranslate(Matrix *m, Float3 v) {
    Matrix trans;
    matrixIdentity(&trans);
-   trans.data[12] = x;
-   trans.data[13] = y;
-   trans.data[14] = 0.0f;
+   trans.data[12] = v.x;
+   trans.data[13] = v.y;
+   trans.data[14] = v.z;
    *m = matrixMultiply(m, &trans);
 
 }
