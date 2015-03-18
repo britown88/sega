@@ -39,3 +39,7 @@ Float3 *vNormalize(Float3 *v){
 
    return v;
 }
+
+Float3 vScale(Float3 v, float s){
+   return (Float3){ v.x*s, v.y*s, v.z*s };
+}

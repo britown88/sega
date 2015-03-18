@@ -24,6 +24,7 @@
     <ClInclude Include="HashTable_Functions.h" />
     <ClInclude Include="IntrusiveHeap.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="Preprocessor.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Quaternion.h" />

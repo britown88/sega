@@ -23,3 +23,4 @@ Float3 vSubtract(Float3 a, Float3 b);
 Float3 vAdd(Float3 a, Float3 b);
 Float3 vNormalized(Float3 v);
 Float3 *vNormalize(Float3 *v);
+Float3 vScale(Float3 v, float s);

@@ -14,6 +14,8 @@
 #include "GridManager.h"
 #include "SEGA\Input.h"
 #include "MeshRendering.h"
+#include "RigidBody.h"
+#include "DiceBox.h"
 
 
 #define WINDOW_WIDTH 1024
@@ -130,40 +132,40 @@ static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
    //1: 0-3
 
    vecPushStackArray(Vertex, vbo, {
-      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 0 }},
-      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 0 }},
-      {.coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
-      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 0, s * 1 }},
+      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 0, s * 0 }},
+      {.coords = {  0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 0 }},
+      {.coords = {  0.5f,  0.5f, 0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 0, s * 1 }},
 
       //2: 4-7
-      {.coords = { 0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 0 }},
-      {.coords = { 0.5f, -0.5f,  0.5f }, .texCoords = { s * 2, s * 0 }},
-      {.coords = { 0.5f,  0.5f,  0.5f }, .texCoords = { s * 2, s * 1 }},
-      {.coords = { 0.5f,  0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = { 0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 0 }},
+      {.coords = { 0.5f, -0.5f,  -0.5f }, .texCoords = { s * 2, s * 0 }},
+      {.coords = { 0.5f,  0.5f,  -0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = { 0.5f,  0.5f, 0.5f }, .texCoords = { s * 1, s * 1 }},
 
       //3: 8-11
-      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 0 }},
-      {.coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 3, s * 0 }},
-      {.coords = {  0.5f,  0.5f,  0.5f }, .texCoords = { s * 3, s * 1 }},
-      {.coords = {  -0.5f, 0.5f,  0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 2, s * 0 }},
+      {.coords = {  0.5f,  0.5f, 0.5f }, .texCoords = { s * 3, s * 0 }},
+      {.coords = {  0.5f,  0.5f,  -0.5f }, .texCoords = { s * 3, s * 1 }},
+      {.coords = {  -0.5f, 0.5f,  -0.5f }, .texCoords = { s * 2, s * 1 }},
 
       //4: 12-15
-      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 1 }},
-      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 1 }},
-      {.coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 2 }},
-      {.coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 0, s * 2 }},
+      {.coords = {  0.5f, -0.5f, 0.5f }, .texCoords = { s * 0, s * 1 }},
+      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = { -0.5f, -0.5f,  -0.5f }, .texCoords = { s * 1, s * 2 }},
+      {.coords = {  0.5f, -0.5f,  -0.5f }, .texCoords = { s * 0, s * 2 }},
 
       //5: 16-19
-      {.coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 1 }},
-      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 1 }},
-      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 2 }},
-      {.coords = { -0.5f,  0.5f,  0.5f }, .texCoords = { s * 1, s * 2 }},
+      {.coords = { -0.5f, -0.5f,  -0.5f }, .texCoords = { s * 1, s * 1 }},
+      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 2, s * 2 }},
+      {.coords = { -0.5f,  0.5f,  -0.5f }, .texCoords = { s * 1, s * 2 }},
 
       //6: 20-23
-      {.coords = {  0.5f, -0.5f, 0.5f }, .texCoords = { s * 2, s * 1 }},
-      {.coords = { -0.5f, -0.5f, 0.5f }, .texCoords = { s * 3, s * 1 }},
-      {.coords = { -0.5f,  0.5f, 0.5f }, .texCoords = { s * 3, s * 2 }},
-      {.coords = {  0.5f,  0.5f, 0.5f }, .texCoords = { s * 2, s * 2 }}
+      {.coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 1 }},
+      {.coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 3, s * 1 }},
+      {.coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 3, s * 2 }},
+      {.coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 2 }}
    });
 
 
@@ -177,12 +179,23 @@ static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
 }
 
 static Image *diceTest;
+static RigidBody die;
+
+static void testDieUpdate(RigidBody *body){
+   body->translation = vAdd(body->translation, body->velocity);
+   //body->orientation
+}
 
 void _onStart(BTGame *self){ 
    Palette defPal = paletteDeserialize("assets/img/boardui.pal");
 
    int i; 
    int foo = 0;
+
+   die = createD6Body(32.0f);
+   die.translation = (Float3){ 50.0f, 50.0f, 100.0f };
+   die.velocity = (Float3){2.0f, 2.0f, -2.0f};
+   die.angularVelocity = (Float3){ 0.01f, 0.0f, 0.0f };
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
@@ -265,10 +278,24 @@ void _onStep(BTGame *self){
    _testKeyboard();
    _testMouse();
 
+   testDieUpdate(&die);
+
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
-     
+   {
+      //Transform t = { 
+      //   .size = (Int3){ 32, 32, 32 }, 
+      //   .offset = (Int3){ (int)die.translation.x, (int)die.translation.y, (int)die.translation.z },
+      //   .rotation = die.orientation
+      //};
+      float angle = 3.1415926f * (float)(appGetTime(appGet()) / 1000.0f);
+      Transform t = {
+         .size = (Int3){ size, size, size },
+         .offset = (Int3){ mousePos.x, mousePos.y, 0 },
+         .rotation = quaternionFromAxisAngle(vNormalized((Float3){ cosf(angle), sinf(angle), sinf(angle) }), angle)
+      };
+      renderMesh(self->vbo, self->ibo, diceTest, t, self->vApp.currentFrame);
+   }
    
-   renderMesh(self->vbo, self->ibo, diceTest, (Transform){ .size = (Int3){ size, size, size }, .offset = (Int3){ mousePos.x, mousePos.y, 0 } }, self->vApp.currentFrame);
 
 
    

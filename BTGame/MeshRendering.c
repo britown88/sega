@@ -50,15 +50,7 @@ static void textureShader(RenderData *r, TexCoords *data, TrianglePoint *p){
 }
 
 static void buildTransform(Matrix *m, Transform t){
-   double seconds = appGetTime(appGet()) / 1000.0f;
-   double angle = 3.1415926*seconds;
-
-   Float3 n = { 1.0f, 1.0f, 1.0f };
-   vNormalize(&n);
-
-   Quaternion q = quaternionFromAxisAngle(n, (float)angle);
-   Matrix m2 = quaternionToMatrix(&q);
-
+   Matrix m2 = quaternionToMatrix(&t.rotation);
 
    matrixIdentity(m);
    //matrixOrtho(m, 0.0f, EGA_RES_WIDTH, EGA_RES_HEIGHT, 0.0f, 1.0f, -1.0f);
@@ -93,7 +85,7 @@ void renderMesh(vec(Vertex) *vbo, vec(size_t) *ibo, Image *tex, Transform t, Fra
       //determine if vertex is facing away from the screen
       n = vCross(vSubtract(vPos[1], vPos[0]), vSubtract(vPos[2], vPos[0]));
 
-      if (n.z > 0.0f){
+      if (n.z < 0.0f){
          //render
          TexCoords data = { .coords = { v[0]->texCoords, v[1]->texCoords, v[2]->texCoords } };
          drawTriangle(shader, &data, (Int2){ (int)vPos[0].x, (int)vPos[0].y },

@@ -14,6 +14,15 @@ Quaternion quaternionFromAxisAngle(Float3 axis, float angle){
    };
 }
 
+Quaternion quaternionFromAngularVelocity(Float3 v){
+   float l = sqrtf(vDot(v, v));
+   return (Quaternion){ {0.0f, 0.0f, 0.0f}, 1.0f };
+}
+
+Quaternion quaternionUnit(){
+   return (Quaternion){ {0.0f, 0.0f, 0.0f}, 1.0f };
+}
+
 Matrix quaternionToMatrix(Quaternion *q){
    float qx = q->xyz.x;
    float qy = q->xyz.y;

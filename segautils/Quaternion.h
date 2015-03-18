@@ -9,4 +9,6 @@ typedef struct Quaternion_t {
 }Quaternion;
 
 Quaternion quaternionFromAxisAngle(Float3 axis, float angle);
+Quaternion quaternionFromAngularVelocity(Float3 v);
+Quaternion quaternionUnit();
 Matrix quaternionToMatrix(Quaternion *q);

@@ -2,6 +2,7 @@
 
 #include "segautils\Vector.h"
 #include "segautils\StandardVectors.h"
+#include "segautils\Quaternion.h"
 
 typedef struct{
    Float3 coords;
@@ -13,6 +14,7 @@ typedef struct{
 
 typedef struct{
    Int3 size, offset;
+   Quaternion rotation;
 } Transform;
 
 typedef struct Image_t Image;
