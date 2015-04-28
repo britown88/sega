@@ -14,6 +14,7 @@
 #define vecClear(TYPE) CONCAT(vecClear_, TYPE)
 #define vecBegin(TYPE) CONCAT(vecBegin_, TYPE)
 #define vecEnd(TYPE) CONCAT(vecEnd_, TYPE)
+#define vecBack(TYPE) CONCAT(vecBack_, TYPE)
 #define vecReverse(TYPE) CONCAT(vecReverse_, TYPE)
 #define vecIndexOf(TYPE) CONCAT(vecIndexOf_, TYPE)
 #define vecRemove(TYPE) CONCAT(vecDelete_, TYPE)

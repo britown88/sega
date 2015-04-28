@@ -20,6 +20,7 @@ size_t vecSize(T)(VEC_NAME *self);
 void vecClear(T)(VEC_NAME *self);
 T *vecBegin(T)(VEC_NAME *self);
 T *vecEnd(T)(VEC_NAME *self);
+T *vecBack(T)(VEC_NAME *self);
 void vecReverse(T)(VEC_NAME *self);
 size_t vecIndexOf(T)(VEC_NAME *self, T*item);
 void vecRemove(T)(VEC_NAME *self, size_t index);

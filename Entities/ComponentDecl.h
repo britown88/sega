@@ -4,6 +4,7 @@
 
 #define T ComponentT
 
+DeclLocalRTTI(COMPONENTS, ComponentT);
 DeclRTTI(ComponentT);
 
 #include "ComponentFunctions.h"

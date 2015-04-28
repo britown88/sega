@@ -110,6 +110,9 @@ T *vecBegin(T)(VEC_NAME *self){
 T *vecEnd(T)(VEC_NAME *self){
    return !vecIsEmpty(T)(self) ? vecAt(T)(self, vecSize(T)(self)) : NULL;
 }
+T *vecBack(T)(VEC_NAME *self){
+   return !vecIsEmpty(T)(self) ? vecAt(T)(self, vecSize(T)(self) - 1) : NULL;
+}
 void vecReverse(T)(VEC_NAME *self){
    size_t count = vecSize(T)(self);
    size_t i;

@@ -4,6 +4,8 @@
 #include "segautils\Defs.h"
 #include "segautils\BitTwiddling.h"
 
+ImplLocalRTTITag(COMPONENTS)
+
 #define ClosureTPart CLOSURE_NAME(ComponentUpdate)
 #include "segautils\Closure_Impl.h"
 

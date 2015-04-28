@@ -16,6 +16,7 @@ typedef struct {
 
 #define T ComponentT
 
+ImplLocalRTTI(COMPONENTS, T);
 ImplRTTI(T);
 
 ComponentListData *compListCreate(T)(){
@@ -85,7 +86,7 @@ ComponentVTable *compGetVTable(T)(){
 }
 
 ComponentList *compList(T)(EntitySystem *system){
-   size_t rtti = GetRTTI(T)->ID;
+   size_t rtti = GetLocalRTTI(COMPONENTS, T)->ID;
    ComponentList *out = entitySystemGetCompList(system, rtti);
    if (!out){
       entitySystemRegisterCompList(system, rtti, compGetVTable(T)());
@@ -146,11 +147,11 @@ void entityRemove(T)(Entity *self){
 }
 
 void compBroadcastUpdate(T)(EntitySystem *system, Entity *e, T *oldComponent){
-   entitySystemUpdateComponent(system, GetRTTI(T)->ID, e, oldComponent);
+   entitySystemUpdateComponent(system, GetLocalRTTI(COMPONENTS, T)->ID, e, oldComponent);
 }
 void compRegisterUpdateDelegate(T)(EntitySystem *system, ComponentUpdate del){
    compList(T)(system);//ensure component gets registered for RTTI to line up correctly
-   entitySystemRegisterComponentUpdate(system, GetRTTI(T)->ID, del);
+   entitySystemRegisterComponentUpdate(system, GetLocalRTTI(COMPONENTS, T)->ID, del);
 }
 
 #undef COMP_NAME

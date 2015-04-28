@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include "segashared\RTTI.h"
 
+DeclLocalRTTITag(COMPONENTS)
+
 #define MAX_ENTITIES (1024 * 128)
 
 typedef struct EntitySystem_t EntitySystem;
@@ -81,7 +83,7 @@ size_t componentListGetCount(ComponentList *self);
 }
 
 #define COMPONENT_QUERY(es, component_type, iterator_name, ...) { \
-   size_t id = GetRTTI(component_type)->ID; \
+   size_t id = GetLocalRTTI(COMPONENTS, component_type)->ID; \
    ComponentList *CONCAT(clist__, component_type) = entitySystemGetCompList(es, id); \
    size_t CONCAT(count__, component_type); \
    if(CONCAT(clist__, component_type) && (CONCAT(count__, component_type) = componentListGetCount(CONCAT(clist__, component_type)))) { \

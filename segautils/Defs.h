@@ -9,3 +9,5 @@ typedef unsigned char byte;
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
+#define EMPTY_STRUCT int UNUSED
+

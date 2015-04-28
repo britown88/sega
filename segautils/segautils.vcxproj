@@ -20,6 +20,7 @@
     <ClInclude Include="Defs.h" />
     <ClInclude Include="DLLBullshit.h" />
     <ClInclude Include="extern_c.h" />
+    <ClInclude Include="FSM.h" />
     <ClInclude Include="HashTable_Create.h" />
     <ClInclude Include="HashTable_Functions.h" />
     <ClInclude Include="IntrusiveHeap.h" />
@@ -39,6 +40,7 @@
     <ClCompile Include="BitBuffer.c" />
     <ClCompile Include="BitTwiddling.c" />
     <ClCompile Include="Dijkstras.c" />
+    <ClCompile Include="FSM.c" />
     <ClCompile Include="IntrusiveHeap.c" />
     <ClCompile Include="Matrix.c" />
     <ClCompile Include="Quaternion.c" />
