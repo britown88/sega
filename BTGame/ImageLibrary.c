@@ -1,4 +1,4 @@
-#include "ImageManager.h"
+#include "ImageLibrary.h"
 
 #include "segalib\EGA.h"
 #include "segautils\BitTwiddling.h"
@@ -46,20 +46,20 @@ static void _iEntryDestroy(iEntry *p){
    checkedFree(p->value);
 }
 
-typedef struct ImageManager_t{
+typedef struct ImageLibrary_t{
    ht(iEntry) *table;
 };
 
-ImageManager *imageManagerCreate(){
-   ImageManager *out = checkedCalloc(1, sizeof(ImageManager));
+ImageLibrary *imageLibraryCreate(){
+   ImageLibrary *out = checkedCalloc(1, sizeof(ImageLibrary));
    out->table = htCreate(iEntry)(&_iEntryCompare, &_iEntryHash, &_iEntryDestroy);
    return out;
 }
-void imageManagerDestroy(ImageManager *self){
+void imageLibraryDestroy(ImageLibrary *self){
    htDestroy(iEntry)(self->table);
    checkedFree(self);
 }
-ManagedImage *imageManagerGetImage(ImageManager *self, StringView path){
+ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView path){
    iEntry entry = { 0 };
    iEntry *found = 0;
    ManagedImage *out = 0;

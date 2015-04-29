@@ -4,7 +4,7 @@
 #include "segashared\Strings.h"
 #include "CoreComponents.h"
 #include "Managers.h"
-#include "ImageManager.h"
+#include "ImageLibrary.h"
 
 #include <malloc.h>
 #include <stddef.h> //for NULL xD
@@ -14,8 +14,6 @@
 #include "GridManager.h"
 #include "SEGA\Input.h"
 #include "MeshRendering.h"
-#include "RigidBody.h"
-#include "DiceBox.h"
 
 
 #define WINDOW_WIDTH 1024
@@ -28,7 +26,7 @@ typedef struct {
    AppData data;
    BTManagers managers;
    EntitySystem *entitySystem;
-   ImageManager *imageManager;
+   ImageLibrary *imageLibrary;
 
    vec(Vertex) *vbo;
    vec(size_t) *ibo;
@@ -132,7 +130,7 @@ static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
 
-   self->managers.renderManager = createRenderManager(self->entitySystem, self->imageManager, &self->data.fps);
+   self->managers.renderManager = createRenderManager(self->entitySystem, self->imageLibrary, &self->data.fps);
    entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.renderManager);
 
    self->managers.cursorManager = createCursorManager(self->entitySystem);
@@ -161,7 +159,7 @@ VirtualApp *btCreate() {
    r->data = createData(); 
 
    //Other constructor shit goes here   
-   r->imageManager = imageManagerCreate();
+   r->imageLibrary = imageLibraryCreate();
    
    r->vbo = vecCreate(Vertex)(NULL);
    r->ibo = vecCreate(size_t)(NULL);
@@ -182,15 +180,8 @@ void _destroy(BTGame *self){
 
    imageDestroy(self->diceTest);
 
-   imageManagerDestroy(self->imageManager);   
+   imageLibraryDestroy(self->imageLibrary);
    checkedFree(self);
-}
-
-static RigidBody die;
-
-static void testDieUpdate(RigidBody *body){
-   body->translation = vAdd(body->translation, body->velocity);
-   //body->orientation
 }
 
 #include "segautils\FSM.h"
@@ -229,11 +220,6 @@ void _onStart(BTGame *self){
 
    int i; 
    int foo = 0;
-
-   die = createD6Body(32.0f);
-   die.translation = (Float3){ 50.0f, 50.0f, 100.0f };
-   die.velocity = (Float3){2.0f, 2.0f, -2.0f};
-   die.angularVelocity = (Float3){ 0.01f, 0.0f, 0.0f };
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
@@ -350,8 +336,6 @@ void _onStep(BTGame *self){
 
    _testKeyboard(self);
    _testMouse();
-
-   testDieUpdate(&die);
 
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
    

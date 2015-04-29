@@ -24,19 +24,16 @@
     <ClInclude Include="Managers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImageManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GridManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MeshRendering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RigidBody.h">
+    <ClInclude Include="WorldView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DiceBox.h">
+    <ClInclude Include="ImageLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,9 +45,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RenderManager.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImageManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CursorManager.c">
@@ -68,10 +62,7 @@
     <ClCompile Include="MeshRendering.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RigidBody.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DiceBox.c">
+    <ClCompile Include="ImageLibrary.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

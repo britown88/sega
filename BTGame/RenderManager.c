@@ -1,5 +1,5 @@
 #include "Managers.h"
-#include "ImageManager.h"
+#include "ImageLibrary.h"
 
 #include "Entities\Entities.h"
 
@@ -29,7 +29,7 @@ struct RenderManager_t{
    Manager m;
    EntitySystem *system;
    FontFactory *fontFactory;
-   ImageManager *images;
+   ImageLibrary *images;
    double *fps;
 
    vec(EntityPtr) *layers[LayerCount];
@@ -69,7 +69,7 @@ void _destroyLayers(RenderManager *self){
    while (first != last){ vecDestroy(EntityPtr)(*first++); }
 }
 
-RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager, double *fps){
+RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
    Image *fontImage = imageDeserialize("assets/img/font.ega");
    out->system = system;
@@ -102,14 +102,14 @@ void renderManagerOnUpdate(RenderManager *self, Entity *e){
             //image has changed
             managedImageDestroy(trc->img);
             trc->filename = ic->filename;
-            trc->img = imageManagerGetImage(self->images, trc->filename);
+            trc->img = imageLibraryGetImage(self->images, trc->filename);
          }
       }
       else {
          //new image
          TRenderComponent newtrc;
          newtrc.filename = ic->filename;
-         newtrc.img = imageManagerGetImage(self->images, newtrc.filename);
+         newtrc.img = imageLibraryGetImage(self->images, newtrc.filename);
          entityAdd(TRenderComponent)(e, &newtrc);
       }
    }

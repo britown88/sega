@@ -3,12 +3,12 @@
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
 typedef struct EntitySystem_t EntitySystem;
-typedef struct ImageManager_t ImageManager;
+typedef struct ImageLibrary_t ImageLibrary;
 typedef struct GridManager_t GridManager;
 typedef struct InterpolationManager_t InterpolationManager;
 typedef struct Frame_t Frame;
 
-typedef struct {
+typedef struct BTManagers_t {
    RenderManager *renderManager;
    CursorManager *cursorManager;
    GridManager *gridManager;
@@ -16,7 +16,7 @@ typedef struct {
 
 }BTManagers;
 
-RenderManager *createRenderManager(EntitySystem *system, ImageManager *imageManager, double *fps);
+RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);
 
 CursorManager *createCursorManager(EntitySystem *system);

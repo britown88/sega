@@ -1,8 +1,7 @@
 #include "Managers.h"
 
 #include "Managers.h"
-#include "ImageManager.h"
-
+#include "ImageLibrary.h"
 #include "Entities\Entities.h"
 
 #include "CoreComponents.h"

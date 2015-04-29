@@ -75,25 +75,22 @@
   <ItemGroup>
     <ClInclude Include="BT.h" />
     <ClInclude Include="CoreComponents.h" />
-    <ClInclude Include="DiceBox.h" />
     <ClInclude Include="GridManager.h" />
-    <ClInclude Include="ImageManager.h" />
+    <ClInclude Include="ImageLibrary.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
-    <ClInclude Include="RigidBody.h" />
+    <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
     <ClCompile Include="Derjpkstras.c" />
-    <ClCompile Include="DiceBox.c" />
     <ClCompile Include="GridManager.c" />
-    <ClCompile Include="ImageManager.c" />
+    <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="RenderManager.c" />
     <ClCompile Include="MeshRendering.c" />
-    <ClCompile Include="RigidBody.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Entities\Entities.vcxproj">
