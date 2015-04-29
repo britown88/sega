@@ -18,6 +18,8 @@ void queueNodeUnlink(QueueNode *self);
 PriorityQueue *priorityQueueCreate(size_t offset, PQCompareFunc min);
 void priorityQueueDestroy(PriorityQueue *self);
 
+void priorityQueueClear(PriorityQueue *self);
+
 PriorityQueue *priorityQueueCreateUnchecked(size_t offset, PQCompareFunc min);
 void priorityQueueDestroyUnchecked(PriorityQueue *self);
 

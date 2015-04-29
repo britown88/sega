@@ -21,6 +21,10 @@ void priorityQueueDestroy(PriorityQueue *self){
    checkedFree(self);
 }
 
+void priorityQueueClear(PriorityQueue *self){
+   self->head = NULL;
+}
+
 PriorityQueue *priorityQueueCreateUnchecked(size_t offset, PQCompareFunc min){
    PriorityQueue *r = calloc(1, sizeof(PriorityQueue));
 

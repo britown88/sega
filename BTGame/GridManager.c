@@ -114,6 +114,9 @@ struct GridManager_t{
 
    GridNode table[CELL_COUNT];
    vec(GridSolutionNode) *solutionMap;
+
+   PriorityQueue *pq;// = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
+   GridSolver *solver;// = checkedCalloc(1, sizeof(GridSolver));
 };
 
 static void _addNeighbors(GridNode *nodes, size_t current){
@@ -227,6 +230,13 @@ GridManager *createGridManager(EntitySystem *system){
    out->m.vTable = _createVTable();
    out->solutionMap = vecCreate(GridSolutionNode)(NULL);
 
+   //destroyed by solver destroy
+   out->pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
+
+   out->solver = checkedCalloc(1, sizeof(GridSolver));
+   out->solver->inner.vTable = _getVTable();
+   out->solver->inner.queue = out->pq;
+
    _buildTable(out->table);
 
    _registerUpdateDelegate(out, system);
@@ -240,6 +250,7 @@ void GridManagerDestroy(GridManager *self){
       vecDestroy(EntityPtr)(self->table[i].data.entities);
    }
    vecDestroy(GridSolutionNode)(self->solutionMap);
+   dijkstrasDestroy((Dijkstras*)self->solver);
    checkedFree(self);
 }
 
@@ -293,23 +304,24 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
    if (startCell < CELL_COUNT){
       int i;
       GridNode *result = NULL;
-      PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
-      GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
+      //PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
+      //GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
       _clearTable(self->table);
       self->table[startCell].score = 0;
 
+      priorityQueueClear(self->pq);
+
       for (i = 0; i < CELL_COUNT; ++i){
-         priorityQueuePush(pq, self->table + i);
+         priorityQueuePush(self->pq, self->table + i);
       }
 
-      dk->inner.vTable = _getVTable();
-      dk->inner.queue = pq;
-      dk->cFunc = cFunc;
-      dk->nFunc = nFunc;
+      
+      self->solver->cFunc = cFunc;
+      self->solver->nFunc = nFunc;
 
-      dijkstrasRun((Dijkstras*)dk);
+      dijkstrasRun((Dijkstras*)self->solver);
 
-      result = dk->solutionNode;
+      result = self->solver->solutionNode;
 
 
       if (result){
@@ -328,7 +340,7 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
          vecReverse(GridSolutionNode)(self->solutionMap);
          solution.path = self->solutionMap;
       }
-      dijkstrasDestroy((Dijkstras*)dk);
+      
    }
 
    
