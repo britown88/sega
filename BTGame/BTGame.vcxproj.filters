@@ -39,6 +39,9 @@
     <ClInclude Include="ImageLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="DiceManager.c">
       <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="GameState.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

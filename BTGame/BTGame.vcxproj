@@ -75,6 +75,7 @@
   <ItemGroup>
     <ClInclude Include="BT.h" />
     <ClInclude Include="CoreComponents.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="GridManager.h" />
     <ClInclude Include="ImageLibrary.h" />
     <ClInclude Include="Managers.h" />
@@ -87,6 +88,7 @@
     <ClCompile Include="CursorManager.c" />
     <ClCompile Include="Derjpkstras.c" />
     <ClCompile Include="DiceManager.c" />
+    <ClCompile Include="GameState.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />

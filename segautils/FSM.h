@@ -22,4 +22,15 @@ bool fsmIsEmpty(FSM *self);
 void fsmClear(FSM *self);
 void fsmSendEx(FSM *self, Type *t, Message m);
 
-#define fsmSend(fsm, TypeName, ...) fsmSendEx(fsm, GetRTTI(TypeName), &(TypeName){ __VA_ARGS__ })
+#define fsmSendData(fsm, TypeName, ...) fsmSendEx(fsm, GetRTTI(TypeName), &(TypeName){ __VA_ARGS__ })
+#define fsmSend(fsm, TypeName) fsmSendEx(fsm, GetRTTI(TypeName), &(TypeName){ 0 })
+
+#define DeclStateMessage(TypeName) \
+   typedef struct { EMPTY_STRUCT; }TypeName; \
+   DeclRTTI(TypeName)
+
+#define DeclStateMessageWithData(TypeName, ...) \
+   typedef struct __VA_ARGS__ TypeName; \
+   DeclRTTI(TypeName)
+
+#define ImpleStateMessage(TypeName) ImplRTTI(TypeName)

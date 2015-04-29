@@ -5,17 +5,9 @@
 #include "CoreComponents.h"
 #include "Managers.h"
 #include "ImageLibrary.h"
-
-#include <malloc.h>
-#include <stddef.h> //for NULL xD
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
 #include "GridManager.h"
-#include "SEGA\Input.h"
-#include "MeshRendering.h"
 #include "WorldView.h"
-
+#include "GameState.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
@@ -28,6 +20,9 @@ typedef struct {
    BTManagers managers;
    EntitySystem *entitySystem;
    ImageLibrary *imageLibrary;
+   FSM *gameState;
+
+   WorldView view;
 
 } BTGame;
 
@@ -71,9 +66,6 @@ AppData *_getData(BTGame *self) {
 
 #pragma endregion
 
-
-
-
 #define RegisterManager(member, funcCall) \
    member = funcCall; \
    entitySystemRegisterManager(self->entitySystem, (Manager*)member);
@@ -105,61 +97,32 @@ VirtualApp *btCreate() {
 
    //Other constructor shit goes here   
    r->imageLibrary = imageLibraryCreate();
-  
-
+   r->gameState = fsmCreate();
    _initEntitySystem(r);
+
+   //build the public view
+   r->view = (WorldView){
+      .managers = &r->managers,
+      .entitySystem = r->entitySystem,
+      .imageLibrary = r->imageLibrary,
+      .gameState = r->gameState
+   };
 
    return (VirtualApp*)r;
 }
 
 void _destroy(BTGame *self){
+   fsmDestroy(self->gameState);
    _destroyEntitySystem(self);
 
    imageLibraryDestroy(self->imageLibrary);
    checkedFree(self);
 }
 
-#include "segautils\FSM.h"
-
-typedef struct {
-   EMPTY_STRUCT;
-}TestMessage;
-
-CreateRTTI(TestMessage);
-
-static void MenuStateUpdate(ClosureData data, TestMessage *msg){
-
-}
-
-static void TestState(ClosureData data, Type *t, Message m){
-   if (t == GetRTTI(TestMessage)){
-      MenuStateUpdate(data, m);
-   }
-}
-
-void createTestFSM(){
-   FSM *fsm = fsmCreate();
-   StateClosure testState;
-
-   closureInit(StateClosure)(&testState, NULL, (StateClosureFunc)&TestState, NULL);
-   fsmPush(fsm, testState);
-
-   fsmSend(fsm, TestMessage, 0);
-
-   fsmDestroy(fsm);
-
-}
-
 void _onStart(BTGame *self){ 
 
    int i; 
    int foo = 0;
-
-   appLoadPalette(appGet(), "assets/img/boardui.pal");
-
-   cursorManagerCreateCursor(self->managers.cursorManager);
-
-   
 
    {
       Entity *e = entityCreate(self->entitySystem);
@@ -200,71 +163,20 @@ void _onStart(BTGame *self){
 
    }
 
-   createTestFSM(); 
-}
+   appLoadPalette(appGet(), "assets/img/boardui.pal");
+   cursorManagerCreateCursor(self->managers.cursorManager);
 
-static bool paused = false;
+   //push the opening state
+   fsmPush(self->gameState, gameStateCreateBoard(&self->view));
 
-static void _testKeyboard(BTGame *self){
-   
-   Keyboard *k = appGetKeyboard(appGet());
-   KeyboardEvent e = { 0 };
-   while (keyboardPopEvent(k, &e)){
-      switch (e.key){
-      case (SegaKey_Escape):
-         if (e.action == SegaKey_Released){
-            appQuit(appGet());
-         }
-         break;
-      case (SegaKey_Space):
-         if (e.action == SegaKey_Released){
-            if (paused){
-               interpolationManagerResume(self->managers.interpolationManager);
-               paused = false;
-            }
-            else{
-               interpolationManagerPause(self->managers.interpolationManager);
-               paused = true;
-            }
-         }
-         break;
-      }
-
-   }
-}
-
-
-
-static void _testMouse(){
-   Mouse *k = appGetMouse(appGet());
-   MouseEvent e = { 0 };
-   while (mousePopEvent(k, &e)){
-      if (e.action == SegaMouse_Scrolled){
-         //size += e.pos.y;
-      }
-   }
 }
 
 
 void _onStep(BTGame *self){
-   Mouse *mouse = appGetMouse(appGet());
-   Int2 mousePos = mouseGetPosition(mouse);
-   cursorManagerUpdate(self->managers.cursorManager, mousePos.x, mousePos.y);
-
-   interpolationManagerUpdate(self->managers.interpolationManager);
-   if (!paused)
-      derjpkstras(self->entitySystem, self->managers.gridManager);
-
-   diceManagerUpdate(self->managers.diceManager);
-
-   _testKeyboard(self);
-   _testMouse();
-
-   renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
-   
-
-
-   
+   fsmSend(self->gameState, GameStateUpdate);
+   fsmSend(self->gameState, GameStateHandleInput);
+   fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);
+         
 }
 
 
