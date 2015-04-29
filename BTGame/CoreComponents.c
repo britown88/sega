@@ -1,7 +1,5 @@
 #include "CoreComponents.h"
 
-#include "segalib\EGA.h"
-
 #define ComponentT GridComponent
 #include "Entities\ComponentImpl.h"
 
@@ -21,4 +19,7 @@
 #include "Entities\ComponentImpl.h"
 
 #define ComponentT WanderComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT MeshComponent
 #include "Entities\ComponentImpl.h"

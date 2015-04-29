@@ -2,6 +2,7 @@
 
 #include "Entities\Entities.h"
 #include "segashared\Strings.h"
+#include "MeshRendering.h"
 
 #pragma pack(push, 1)
 
@@ -56,12 +57,23 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
-   int foo;
+   EMPTY_STRUCT;
 }WanderComponent;
 
 #define ComponentT WanderComponent
 #include "Entities\ComponentDecl.h"
 
+
+typedef struct {
+   vec(Vertex) *vbo;
+   vec(size_t) *ibo;
+   int size;
+   Float3 rotNormal;
+   float angle;
+}MeshComponent;
+
+#define ComponentT MeshComponent
+#include "Entities\ComponentDecl.h"
 
 
 

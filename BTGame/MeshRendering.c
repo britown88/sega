@@ -40,7 +40,7 @@ static void textureShader(RenderData *r, TexCoords *data, TrianglePoint *p){
    y = abs((int)texY) % flatImageGetHeight(r->img);
 
    buff = flatImageGetPlane(r->img, 0)->lines + y;
-   if (getBitFromArray(buff->pixels, x)){
+   if (!getBitFromArray(buff->pixels, x)){
       for (i = 0; i < EGA_PLANES; ++i){
          buff = flatImageGetPlane(r->img, i + 1)->lines + y;
 

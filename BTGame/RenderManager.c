@@ -6,6 +6,7 @@
 #include "CoreComponents.h"
 #include "segashared\CheckedMemory.h"
 #include "segalib\EGA.h"
+#include "MeshRendering.h"
 
 #include <stdio.h>
 
@@ -122,8 +123,18 @@ void _addToLayers(RenderManager *self, Entity* e){
    }
 }
 
+void _renderMeshEntity(Entity *e, Frame *frame, MeshComponent *mc, short x, short y, Image *img){
+   Transform t = {
+      .size = (Int3){ mc->size, mc->size, mc->size },
+      .offset = (Int3){ x, y, 0 },
+      .rotation = quaternionFromAxisAngle(mc->rotNormal, mc->angle)
+   };
+   renderMesh(mc->vbo, mc->ibo, img, t, frame);
+}
+
 void _renderEntity(Entity *e, Frame *frame){
    PositionComponent *pc = entityGet(PositionComponent)(e);
+   MeshComponent *mc = entityGet(MeshComponent)(e);
    TRenderComponent *trc = entityGet(TRenderComponent)(e);
    int x = 0, y = 0;
    Image *img = managedImageGetImage(trc->img);
@@ -134,7 +145,12 @@ void _renderEntity(Entity *e, Frame *frame){
          y = pc->y;
       }
 
-      frameRenderImage(frame, x, y, img);
+      if (mc){
+         _renderMeshEntity(e, frame, mc, x, y, img);
+      }
+      else{
+         frameRenderImage(frame, x, y, img);
+      }
    }
 }
 

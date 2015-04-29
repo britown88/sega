@@ -29,11 +29,6 @@ typedef struct {
    EntitySystem *entitySystem;
    ImageLibrary *imageLibrary;
 
-   vec(Vertex) *vbo;
-   vec(size_t) *ibo;
-
-   Image *diceTest;
-
 } BTGame;
 
 #pragma region App_Things
@@ -77,72 +72,20 @@ AppData *_getData(BTGame *self) {
 #pragma endregion
 
 
-static void buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
-   int s = 32;
 
-   vecPushStackArray(Vertex, vbo, {
-      //1: 0-3
-      { .coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 0, s * 0 } },
-      { .coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 0 } },
-      { .coords = {  0.5f,  0.5f,  0.5f }, .texCoords = { s * 1, s * 1 } },
-      { .coords = { -0.5f,  0.5f,  0.5f }, .texCoords = { s * 0, s * 1 } },
 
-      //2: 4-7
-      { .coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 0 } },
-      { .coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 0 } },
-      { .coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 1 } },
-      { .coords = {  0.5f,  0.5f,  0.5f }, .texCoords = { s * 1, s * 1 } },
-
-      //3: 8-11
-      { .coords = { -0.5f,  0.5f,  0.5f }, .texCoords = { s * 2, s * 0 } },
-      { .coords = {  0.5f,  0.5f,  0.5f }, .texCoords = { s * 3, s * 0 } },
-      { .coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 3, s * 1 } },
-      { .coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 1 } },
-
-      //4: 12-15
-      { .coords = {  0.5f, -0.5f,  0.5f }, .texCoords = { s * 0, s * 1 } },
-      { .coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 1, s * 1 } },
-      { .coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 2 } },
-      { .coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 0, s * 2 } },
-
-      //5: 16-19
-      { .coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 1, s * 1 } },
-      { .coords = { -0.5f, -0.5f,  0.5f }, .texCoords = { s * 2, s * 1 } },
-      { .coords = { -0.5f,  0.5f,  0.5f }, .texCoords = { s * 2, s * 2 } },
-      { .coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 1, s * 2 } },
-
-      //6: 20-23
-      { .coords = {  0.5f, -0.5f, -0.5f }, .texCoords = { s * 2, s * 1 } },
-      { .coords = { -0.5f, -0.5f, -0.5f }, .texCoords = { s * 3, s * 1 } },
-      { .coords = { -0.5f,  0.5f, -0.5f }, .texCoords = { s * 3, s * 2 } },
-      { .coords = {  0.5f,  0.5f, -0.5f }, .texCoords = { s * 2, s * 2 } }
-   });
-
-   vecPushStackArray(size_t, ibo,
-   { 0,  1,  2,  0,  2,  3,
-     4,  5,  6,  4,  6,  7,
-     8,  9,  10, 8,  10, 11,
-     12, 13, 14, 12, 14, 15,
-     16, 17, 18, 16, 18, 19,
-     20, 21, 22, 20, 22, 23 });
-}
-
+#define RegisterManager(member, funcCall) \
+   member = funcCall; \
+   entitySystemRegisterManager(self->entitySystem, (Manager*)member);
 
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
 
-   self->managers.renderManager = createRenderManager(self->entitySystem, self->imageLibrary, &self->data.fps);
-   entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.renderManager);
-
-   self->managers.cursorManager = createCursorManager(self->entitySystem);
-   entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.cursorManager);
-
-   self->managers.gridManager = createGridManager(self->entitySystem);
-   entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.gridManager);
-
-   self->managers.interpolationManager = createInterpolationManager(self->entitySystem);
-   entitySystemRegisterManager(self->entitySystem, (Manager*)self->managers.interpolationManager);
-
+   RegisterManager(self->managers.renderManager, createRenderManager(self->entitySystem, self->imageLibrary, &self->data.fps));
+   RegisterManager(self->managers.cursorManager, createCursorManager(self->entitySystem));
+   RegisterManager(self->managers.gridManager, createGridManager(self->entitySystem));
+   RegisterManager(self->managers.interpolationManager, createInterpolationManager(self->entitySystem));
+   RegisterManager(self->managers.diceManager, createDiceManager(self->entitySystem));
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -152,6 +95,7 @@ void _destroyEntitySystem(BTGame *self){
    managerDestroy((Manager*)self->managers.cursorManager);
    managerDestroy((Manager*)self->managers.gridManager);
    managerDestroy((Manager*)self->managers.interpolationManager);
+   managerDestroy((Manager*)self->managers.diceManager);
 }
 
 VirtualApp *btCreate() {
@@ -161,12 +105,7 @@ VirtualApp *btCreate() {
 
    //Other constructor shit goes here   
    r->imageLibrary = imageLibraryCreate();
-   
-   r->vbo = vecCreate(Vertex)(NULL);
-   r->ibo = vecCreate(size_t)(NULL);
-
-   r->diceTest = imageDeserialize("assets/img/d6.ega");
-   buildDiceBuffers(r->vbo, r->ibo);
+  
 
    _initEntitySystem(r);
 
@@ -175,11 +114,6 @@ VirtualApp *btCreate() {
 
 void _destroy(BTGame *self){
    _destroyEntitySystem(self);
-
-   vecDestroy(Vertex)(self->vbo);
-   vecDestroy(size_t)(self->ibo);
-
-   imageDestroy(self->diceTest);
 
    imageLibraryDestroy(self->imageLibrary);
    checkedFree(self);
@@ -299,32 +233,18 @@ static void _testKeyboard(BTGame *self){
    }
 }
 
-static int size = 32;
+
 
 static void _testMouse(){
    Mouse *k = appGetMouse(appGet());
    MouseEvent e = { 0 };
    while (mousePopEvent(k, &e)){
       if (e.action == SegaMouse_Scrolled){
-         size += e.pos.y;
+         //size += e.pos.y;
       }
    }
 }
 
-static void _testDice(BTGame *self, Int2 mousePos){
-   //Transform t = { 
-   //   .size = (Int3){ 32, 32, 32 }, 
-   //   .offset = (Int3){ (int)die.translation.x, (int)die.translation.y, (int)die.translation.z },
-   //   .rotation = die.orientation
-   //};
-   float angle = 3.1415926f * (float)(appGetTime(appGet()) / 1000.0f);
-   Transform t = {
-      .size = (Int3){ size, size, size },
-      .offset = (Int3){ mousePos.x, mousePos.y, 0 },
-      .rotation = quaternionFromAxisAngle(vNormalized((Float3){ 1.0f, 1.0f, 1.0f }), angle)
-   };
-   renderMesh(self->vbo, self->ibo, self->diceTest, t, self->vApp.currentFrame);
-}
 
 void _onStep(BTGame *self){
    Mouse *mouse = appGetMouse(appGet());
@@ -335,13 +255,15 @@ void _onStep(BTGame *self){
    if (!paused)
       derjpkstras(self->entitySystem, self->managers.gridManager);
 
+   diceManagerUpdate(self->managers.diceManager);
+
    _testKeyboard(self);
    _testMouse();
 
    renderManagerRender(self->managers.renderManager, self->vApp.currentFrame);
    
 
-   //_testDice(self, mousePos);  
+
    
 }
 
