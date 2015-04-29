@@ -24,7 +24,6 @@ void TRenderComponentDestroy(TRenderComponent *self){
 #define TComponentT TRenderComponent
 #include "Entities\ComponentDeclTransient.h"
 
-
 struct RenderManager_t{
    Manager m;
    EntitySystem *system;
@@ -34,26 +33,6 @@ struct RenderManager_t{
 
    vec(EntityPtr) *layers[LayerCount];
 };
-
-#pragma region vtable things
-static void renderManagerDestroy(RenderManager*);
-static void renderManagerOnDestroy(RenderManager*, Entity*);
-static void renderManagerOnUpdate(RenderManager*, Entity*);
-
-static ManagerVTable *_createVTable(){
-   static ManagerVTable *out = NULL;
-
-   if (!out){
-      out = calloc(1, sizeof(ManagerVTable));
-      out->destroy = (void(*)(Manager*))&renderManagerDestroy;
-      out->onDestroy = (void(*)(Manager*, Entity*))&renderManagerOnDestroy;
-      out->onUpdate = (void(*)(Manager*, Entity*))&renderManagerOnUpdate;
-   }
-
-   return out;
-}
-
-#pragma endregion
 
 void _initLayers(RenderManager *self){
    vec(EntityPtr) **first = self->layers;
@@ -69,11 +48,13 @@ void _destroyLayers(RenderManager *self){
    while (first != last){ vecDestroy(EntityPtr)(*first++); }
 }
 
+ImplManagerVTable(RenderManager)
+
 RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
    Image *fontImage = imageDeserialize("assets/img/font.ega");
    out->system = system;
-   out->m.vTable = _createVTable();
+   out->m.vTable = CreateManagerVTable(RenderManager);
    out->fontFactory = fontFactoryCreate(fontImage);
    out->images = imageManager;
    out->fps = fps;
@@ -83,15 +64,15 @@ RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageMana
    return out;
 }
 
-void renderManagerDestroy(RenderManager *self){
+void _destroy(RenderManager *self){
    fontFactoryDestroy(self->fontFactory);
    _destroyLayers(self);
    checkedFree(self);
 }
 
-void renderManagerOnDestroy(RenderManager *self, Entity *e){}
+void _onDestroy(RenderManager *self, Entity *e){}
 
-void renderManagerOnUpdate(RenderManager *self, Entity *e){
+void _onUpdate(RenderManager *self, Entity *e){
    TRenderComponent *trc = entityGet(TRenderComponent)(e);   
    ImageComponent *ic = entityGet(ImageComponent)(e);
 
@@ -193,7 +174,4 @@ void renderManagerRender(RenderManager *self, Frame *frame){
    _renderLayers(self, frame);
 
    _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 5, 0),  *self->fps);
-
-   
-
 }

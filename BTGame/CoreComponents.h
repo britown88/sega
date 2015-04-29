@@ -42,7 +42,6 @@ typedef enum{
 
 typedef struct{
    Layer layer;
-
 }LayerComponent;
 
 #define ComponentT LayerComponent

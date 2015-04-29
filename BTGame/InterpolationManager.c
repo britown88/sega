@@ -31,41 +31,23 @@ struct InterpolationManager_t{
    bool paused;
 };
 
-#pragma region vtable things
-static void InterpolationManagerDestroy(InterpolationManager*);
-static void InterpolationManagerOnDestroy(InterpolationManager*, Entity*);
-static void InterpolationManagerOnUpdate(InterpolationManager*, Entity*);
-
-static ManagerVTable *_createVTable(){
-   static ManagerVTable *out = NULL;
-
-   if (!out){
-      out = calloc(1, sizeof(ManagerVTable));
-      out->destroy = (void(*)(Manager*))&InterpolationManagerDestroy;
-      out->onDestroy = (void(*)(Manager*, Entity*))&InterpolationManagerOnDestroy;
-      out->onUpdate = (void(*)(Manager*, Entity*))&InterpolationManagerOnUpdate;
-   }
-
-   return out;
-}
-
-#pragma endregion
+ImplManagerVTable(InterpolationManager)
 
 InterpolationManager *createInterpolationManager(EntitySystem *system){
    InterpolationManager *out = checkedCalloc(1, sizeof(InterpolationManager));
    out->system = system;
-   out->m.vTable = _createVTable();
+   out->m.vTable = CreateManagerVTable(InterpolationManager);
    out->removeList = vecCreate(EntityPtr)(NULL);
    return out;
 }
 
-void InterpolationManagerDestroy(InterpolationManager *self){
+void _destroy(InterpolationManager *self){
    vecDestroy(EntityPtr)(self->removeList);
    checkedFree(self);
 }
 
-void InterpolationManagerOnDestroy(InterpolationManager *self, Entity *e){}
-void InterpolationManagerOnUpdate(InterpolationManager *self, Entity *e){
+void _onDestroy(InterpolationManager *self, Entity *e){}
+void _onUpdate(InterpolationManager *self, Entity *e){
    TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
@@ -101,22 +83,7 @@ void InterpolationManagerOnUpdate(InterpolationManager *self, Entity *e){
    }
 }
 
-void _updateEntity(InterpolationManager *self, Entity *e, long time){
-   TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
-   InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
-   PositionComponent *pc = entityGet(PositionComponent)(e);
 
-   if (ic && pc){
-      double m = (time - tic->startTime) / (ic->time * 1000.0);
-      if (m > 1.0){
-         m = 1.0;
-         vecPushBack(EntityPtr)(self->removeList, &e);
-      }
-
-      pc->x = (int)((ic->destX - tic->startX) * m) + tic->startX;
-      pc->y = (int)((ic->destY - tic->startY) * m) + tic->startY;
-   }
-}
 void interpolationManagerPause(InterpolationManager *self){
    if (!self->paused){
       self->paused = true;
@@ -131,6 +98,23 @@ void interpolationManagerResume(InterpolationManager *self){
       COMPONENT_QUERY(self->system, TInterpolationComponent, tic, {
          tic->startTime += elapsed;
       });
+   }
+}
+
+void _updateEntity(InterpolationManager *self, Entity *e, long time){
+   TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
+   InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
+   PositionComponent *pc = entityGet(PositionComponent)(e);
+
+   if (ic && pc){
+      double m = (time - tic->startTime) / (ic->time * 1000.0);
+      if (m > 1.0){
+         m = 1.0;
+         vecPushBack(EntityPtr)(self->removeList, &e);
+      }
+
+      pc->x = (int)((ic->destX - tic->startX) * m) + tic->startX;
+      pc->y = (int)((ic->destY - tic->startY) * m) + tic->startY;
    }
 }
 

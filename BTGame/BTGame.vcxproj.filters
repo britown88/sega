@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Managers">
+      <UniqueIdentifier>{9b0ef319-8d2b-497c-b663-95700cf49e60}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
@@ -44,19 +47,7 @@
     <ClCompile Include="CoreComponents.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RenderManager.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CursorManager.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Derjpkstras.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GridManager.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InterpolationManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MeshRendering.c">
@@ -64,6 +55,21 @@
     </ClCompile>
     <ClCompile Include="ImageLibrary.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CursorManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="InterpolationManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="GridManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="DiceManager.c">
+      <Filter>Source Files\Managers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -71,6 +71,10 @@ DLL_PUBLIC Keyboard *appGetKeyboard(App *self);
 typedef struct Mouse_t Mouse;
 DLL_PUBLIC Mouse *appGetMouse(App *self);
 
+DLL_PUBLIC Palette *appGetPalette(App *self);
+DLL_PUBLIC void appLoadPalette(App *self, const char *palFile);
+DLL_PUBLIC void appSetPalette(App *self, Palette *p);
+
 
 
 

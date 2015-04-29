@@ -14,6 +14,7 @@
 #include "GridManager.h"
 #include "SEGA\Input.h"
 #include "MeshRendering.h"
+#include "WorldView.h"
 
 
 #define WINDOW_WIDTH 1024
@@ -216,10 +217,11 @@ void createTestFSM(){
 }
 
 void _onStart(BTGame *self){ 
-   Palette defPal = paletteDeserialize("assets/img/boardui.pal");
 
    int i; 
    int foo = 0;
+
+   appLoadPalette(appGet(), "assets/img/boardui.pal");
 
    cursorManagerCreateCursor(self->managers.cursorManager);
 
@@ -263,7 +265,6 @@ void _onStart(BTGame *self){
       entityUpdate(e);
 
    }
-   paletteCopy(&self->vApp.currentPalette, &defPal);
 
    createTestFSM(); 
 }

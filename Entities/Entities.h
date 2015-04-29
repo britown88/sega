@@ -37,6 +37,46 @@ void managerDestroy(Manager *self);
 void managerOnDestroy(Manager *self, Entity *e);
 void managerOnUpdate(Manager *self, Entity *e);
 
+#define CreateManagerVTable(ManagerName) CONCAT(_createVTable_, ManagerName)()
+
+#define ImplManagerVTable(ManagerName) \
+   static void _destroy(ManagerName*); \
+   static void _onDestroy(ManagerName*, Entity*); \
+   static void _onUpdate(ManagerName*, Entity*); \
+   static ManagerVTable *CreateManagerVTable(ManagerName){   \
+      static ManagerVTable *out = NULL; \
+      if (!out){ \
+         out = calloc(1, sizeof(ManagerVTable)); \
+         out->destroy = (void(*)(Manager*))&_destroy; \
+         out->onDestroy = (void(*)(Manager*, Entity*))&_onDestroy; \
+         out->onUpdate = (void(*)(Manager*, Entity*))&_onUpdate; \
+      } \
+      return out; \
+   }
+
+/*
+Usage:
+
+struct MyTestManager_t{
+   Manager m;
+   EntitySystem *system;
+};
+
+ImplManagerVTable(MyTestManager)
+
+MyTestManager *createMyTestManager(EntitySystem *system){
+   MyTestManager *out = checkedCalloc(1, sizeof(CursorManager));
+   out->system = system;
+   out->m.vTable = CreateManagerVTable(MyTestManager);
+   return out;
+}
+
+void _destroy(MyTestManager *self){}
+void _onDestroy(MyTestManager *self, Entity *e){}
+void _onUpdate(MyTestManager *self, Entity *e){}
+
+*/
+
 EntitySystem *entitySystemCreate();
 void entitySystemDestroy(EntitySystem *self);
 

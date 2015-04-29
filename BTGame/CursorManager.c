@@ -22,25 +22,20 @@ struct CursorManager_t{
    EntitySystem *system;
 };
 
-#pragma region vtable things
-static void CursorManagerDestroy(CursorManager*);
-static void CursorManagerOnDestroy(CursorManager*, Entity*);
-static void CursorManagerOnUpdate(CursorManager*, Entity*);
+ImplManagerVTable(CursorManager)
 
-static ManagerVTable *_createVTable(){
-   static ManagerVTable *out = NULL;
-
-   if (!out){
-      out = calloc(1, sizeof(ManagerVTable));
-      out->destroy = (void(*)(Manager*))&CursorManagerDestroy;
-      out->onDestroy = (void(*)(Manager*, Entity*))&CursorManagerOnDestroy;
-      out->onUpdate = (void(*)(Manager*, Entity*))&CursorManagerOnUpdate;
-   }
-
+CursorManager *createCursorManager(EntitySystem *system){
+   CursorManager *out = checkedCalloc(1, sizeof(CursorManager));
+   out->system = system;
+   out->m.vTable = CreateManagerVTable(CursorManager);
    return out;
 }
 
-#pragma endregion
+void _destroy(CursorManager *self){
+   checkedFree(self);
+}
+void _onDestroy(CursorManager *self, Entity *e){}
+void _onUpdate(CursorManager *self, Entity *e){}
 
 void cursorManagerCreateCursor(CursorManager *self){
    Entity *e = entityCreate(self->system);
@@ -51,21 +46,6 @@ void cursorManagerCreateCursor(CursorManager *self){
    COMPONENT_ADD(e, LayerComponent, LayerUI);
    entityUpdate(e);
 }
-
-
-CursorManager *createCursorManager(EntitySystem *system){
-   CursorManager *out = checkedCalloc(1, sizeof(CursorManager));
-   out->system = system;
-   out->m.vTable = _createVTable();
-   return out;
-}
-
-void CursorManagerDestroy(CursorManager *self){
-   checkedFree(self);
-}
-
-void CursorManagerOnDestroy(CursorManager *self, Entity *e){}
-void CursorManagerOnUpdate(CursorManager *self, Entity *e){}
 
 void cursorManagerUpdate(CursorManager *self, int x, int y){
    COMPONENT_QUERY(self->system, TCursorComponent, tc, {

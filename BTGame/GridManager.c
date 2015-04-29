@@ -51,28 +51,28 @@ typedef struct {
    GridNode *solutionNode;
 }GridSolver;
 
-static size_t _getNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
-static int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node);
-static int _processCurrent(GridSolver *self, GridNode *node);
-static void _destroy(GridSolver *self);
+static size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
+static int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node);
+static int _solverProcessCurrent(GridSolver *self, GridNode *node);
+static void _solverDestroy(GridSolver *self);
 
 static DijkstrasVTable *_getVTable(){
    DijkstrasVTable *out = NULL;
    if (!out){
       out = calloc(1, sizeof(DijkstrasVTable));
-      out->getNeighbors = (size_t(*)(Dijkstras*, QueueElem, QueueElem**))&_getNeighbors;
-      out->processNeighbor = (int(*)(Dijkstras*, QueueElem, QueueElem))&_processNeighbor;
-      out->processCurrent = (int(*)(Dijkstras*, QueueElem))&_processCurrent;
-      out->destroy = (void(*)(Dijkstras*))&_destroy;
+      out->getNeighbors = (size_t(*)(Dijkstras*, QueueElem, QueueElem**))&_solverGetNeighbors;
+      out->processNeighbor = (int(*)(Dijkstras*, QueueElem, QueueElem))&_solverProcessNeighbor;
+      out->processCurrent = (int(*)(Dijkstras*, QueueElem))&_solverProcessCurrent;
+      out->destroy = (void(*)(Dijkstras*))&_solverDestroy;
    }
    return out;
 }
 
-size_t _getNeighbors(GridSolver *self, GridNode *node, GridNode ***outList){
+size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList){
    *outList = node->neighbors;
    return 4;
 }
-int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node){
+int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node){
    if (node && !node->visited){
       size_t newScore = closureCall(&self->nFunc, &current->data, &node->data);
       if (newScore < node->score){
@@ -83,7 +83,7 @@ int _processNeighbor(GridSolver *self, GridNode *current, GridNode *node){
    }
    return false;
 }
-int _processCurrent(GridSolver *self, GridNode *node){
+int _solverProcessCurrent(GridSolver *self, GridNode *node){
    node->visited = true;
    GridNode *solution = (GridNode*)closureCall(&self->cFunc, &node->data);
    if (solution){
@@ -93,7 +93,7 @@ int _processCurrent(GridSolver *self, GridNode *node){
 
    return false;
 }
-void _destroy(GridSolver *self){
+void _solverDestroy(GridSolver *self){
    priorityQueueDestroy(self->inner.queue);
    checkedFree(self);
 }
@@ -158,26 +158,6 @@ static void _clearTable(GridNode *nodes){
    }
 }
 
-#pragma region vtable things
-static void GridManagerDestroy(GridManager*);
-static void GridManagerOnDestroy(GridManager*, Entity*);
-static void GridManagerOnUpdate(GridManager*, Entity*);
-
-static ManagerVTable *_createVTable(){
-   static ManagerVTable *out = NULL;
-
-   if (!out){
-      out = calloc(1, sizeof(ManagerVTable));
-      out->destroy = (void(*)(Manager*))&GridManagerDestroy;
-      out->onDestroy = (void(*)(Manager*, Entity*))&GridManagerOnDestroy;
-      out->onUpdate = (void(*)(Manager*, Entity*))&GridManagerOnUpdate;
-   }
-
-   return out;
-}
-
-#pragma endregion
-
 static void _gridAddEntity(GridManager *self, Entity *e, size_t newPos){
    TGridComponent *tgc = entityGet(TGridComponent)(e);
    if (newPos < CELL_COUNT){
@@ -217,17 +197,19 @@ static void _gridComponentUpdate(GridManager *self, Entity *e, GridComponent *ol
    _gridMoveEntity(self, e, oldPos, newPos);
 }
 
-void _registerUpdateDelegate(GridManager *self, EntitySystem *system){
+static void _registerUpdateDelegate(GridManager *self, EntitySystem *system){
    ComponentUpdate update;
    
    closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_gridComponentUpdate, NULL);
    compRegisterUpdateDelegate(GridComponent)(system, update);
 }
 
+ImplManagerVTable(GridManager)
+
 GridManager *createGridManager(EntitySystem *system){
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
    out->system = system;
-   out->m.vTable = _createVTable();
+   out->m.vTable = CreateManagerVTable(GridManager);
    out->solutionMap = vecCreate(GridSolutionNode)(NULL);
 
    //destroyed by solver destroy
@@ -244,7 +226,7 @@ GridManager *createGridManager(EntitySystem *system){
    return out;
 }
 
-void GridManagerDestroy(GridManager *self){
+void _destroy(GridManager *self){
    size_t i;
    for (i = 0; i < CELL_COUNT; ++i){
       vecDestroy(EntityPtr)(self->table[i].data.entities);
@@ -254,7 +236,7 @@ void GridManagerDestroy(GridManager *self){
    checkedFree(self);
 }
 
-void GridManagerOnDestroy(GridManager *self, Entity *e){
+void _onDestroy(GridManager *self, Entity *e){
    TGridComponent *tgc = entityGet(TGridComponent)(e);
    if (tgc){
       vecForEach(size_t, node, tgc->occupyingNodes, {
@@ -266,7 +248,7 @@ void GridManagerOnDestroy(GridManager *self, Entity *e){
       vecDestroy(size_t)(tgc->occupyingNodes);
    }
 }
-void GridManagerOnUpdate(GridManager *self, Entity *e){
+void _onUpdate(GridManager *self, Entity *e){
    TGridComponent *tgc = entityGet(TGridComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
 

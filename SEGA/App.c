@@ -203,3 +203,14 @@ double appGetFrameRate(App *self){return self->frameRate;}
 void appQuit(App *app){
    app->running = false;
 }
+
+Palette *appGetPalette(App *self){
+   return &self->subclass->currentPalette;
+}
+void appLoadPalette(App *self, const char *palFile){
+   Palette pal = paletteDeserialize(palFile);
+   paletteCopy(&self->subclass->currentPalette, &pal);
+}
+void appSetPalette(App *self, Palette *p){
+   paletteCopy(&self->subclass->currentPalette, p);
+}
