@@ -94,6 +94,7 @@ DiceManager *createDiceManager(EntitySystem *system){
 void _destroy(DiceManager *self){
    vecDestroy(Vertex)(self->vbo);
    vecDestroy(size_t)(self->ibo);
+   checkedFree(self);
 }
 void _onDestroy(DiceManager *self, Entity *e){}
 void _onUpdate(DiceManager *self, Entity *e){}
