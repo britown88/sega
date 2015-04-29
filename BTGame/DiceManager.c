@@ -66,10 +66,10 @@ static void _buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
 }
 static void _createDie(DiceManager *self){
    Entity *e = entityCreate(self->system);
-   COMPONENT_ADD(e, PositionComponent, 100, 100);
+   COMPONENT_ADD(e, PositionComponent, 100, 275);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/d6.ega"));
    COMPONENT_ADD(e, LayerComponent, LayerUI);
-   COMPONENT_ADD(e, MeshComponent, self->vbo, self->ibo, 25, vNormalized((Float3){ 1.0f, 1.0f, 1.0f }), 0.0f);
+   COMPONENT_ADD(e, MeshComponent, self->vbo, self->ibo, 32, vNormalized((Float3){ 1.0f, 1.0f, 1.0f }), 0.0f);
 
    entityUpdate(e);
    self->die = e;
@@ -102,11 +102,11 @@ void diceManagerUpdate(DiceManager *self){
    MeshComponent *mc = entityGet(MeshComponent)(self->die);
    PositionComponent  *pc = entityGet(PositionComponent)(self->die);
    Mouse *mouse = appGetMouse(appGet());
-   Int2 mousePos = mouseGetPosition(mouse);
+   //Int2 mousePos = mouseGetPosition(mouse);
 
    mc->angle = 3.1415926f * (float)(appGetTime(appGet()) / 1000.0f);
-   pc->x = mousePos.x;
-   pc->y = mousePos.y;
+   //pc->x = mousePos.x;
+   //pc->y = mousePos.y;
 
    // float angle = 
 }

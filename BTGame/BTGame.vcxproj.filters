@@ -16,6 +16,9 @@
     <Filter Include="Source Files\Managers">
       <UniqueIdentifier>{9b0ef319-8d2b-497c-b663-95700cf49e60}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GameStates">
+      <UniqueIdentifier>{e67b7ef8-3602-4c4f-be8a-a28b645e92e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
@@ -76,6 +79,12 @@
     </ClCompile>
     <ClCompile Include="GameState.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardState.c">
+      <Filter>Source Files\GameStates</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardPausedState.cpp">
+      <Filter>Source Files\GameStates</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
