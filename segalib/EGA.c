@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 
 Frame *frameCreate() {
    return checkedCalloc(1, sizeof(Frame));
@@ -169,6 +170,60 @@ void frameRenderImage(Frame *self, short x, short y, Image *img) {
 
          _scanLineRenderImageScanLine(&self->planes[i].lines[j+y+ignoreOffsetY], x + ignoreOffsetX, 
             colorBuffer, alphaBuffer, ignoreOffsetX, clipSizeX);
+      }
+   }
+}
+
+void frameRenderPoint(Frame *self, short x, short y, byte color){
+   if (x >= 0 && x < EGA_RES_WIDTH && y >= 0 && y < EGA_RES_HEIGHT){
+      int j;
+      for (j = 0; j < EGA_PLANES; ++j) {
+         scanLineSetBit(&self->planes[j].lines[y], x, getBitFromArray(&color, j));
+      }
+   }
+}
+
+void switchToOctantZeroFrom(byte octant, short *x, short *y){
+   short ox, oy;
+   switch (octant){
+   case 0: ox = *y; oy = *x; break;
+   case 1: ox = *y; oy = *x; break;
+   case 2: ox = -*y; oy = *x; break;
+   case 3: ox = -*x; oy = *y; break;
+   case 4: ox = -*x; oy = -*y; break;
+   case 5: ox = -*y; oy = -*x; break;
+   case 6: ox = *y; oy = -*x; break;
+   case 7: ox = *x; oy = -*y; break;
+   }
+
+   *x = ox;
+   *y = oy;
+}
+
+void _convertPointsToOctant0(short *x0, short *y0, short *x1, short *y1){
+
+}
+
+void frameRenderLine(Frame *self, short x0, short y0, short x1, short y1, byte color){
+   short dx, dy, x, y;
+   int D;
+
+   dx = x1 - x0;
+   dy = y1 - y0;
+   
+   D = 2 * dy - dx;
+   frameRenderPoint(self, x0, y0, color);
+   y = y0;
+
+   for (x = x0 + 1; x <= x1; ++x){
+      if (D > 0){
+         ++y;
+         frameRenderPoint(self, x, y, color);
+         D += (2 * dy - 2 * dx);
+      }
+      else{
+         frameRenderPoint(self, x, y, color);
+         D += (2 * dy);
       }
    }
 }
