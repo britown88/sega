@@ -53,7 +53,7 @@ ImplManagerVTable(RenderManager)
 
 RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
-   Image *fontImage = imageDeserialize("assets/img/font.ega");
+   Image *fontImage = imageDeserializeOptimized("assets/img/font.ega");
    out->system = system;
    out->m.vTable = CreateManagerVTable(RenderManager);
    out->fontFactory = fontFactoryCreate(fontImage);

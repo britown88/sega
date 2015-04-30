@@ -2,6 +2,7 @@
 #include "segautils\BitBuffer.h"
 #include "segashared\CheckedMemory.h"
 #include "segautils\BitTwiddling.h"
+#include "segautils\Defs.h"
 
 #include <malloc.h>
 #include <string.h>
@@ -15,87 +16,68 @@ void frameDestroy(Frame *self) {
    checkedFree(self);
 }
 
-void _scanLineRenderImageScanLine(ScanLine *sl, short screenPos, byte *colorBuffer, byte *alphaBuffer, short bitOffset, short width) {
-   int i, intRun, byteRun, alignRun, frac;
-   int imgX = bitOffset;
-   int x = screenPos;
-   int last = x + width;
+void _scanLineRenderBit(ScanLine *sl, byte *colorBuffer, byte *alphaBuffer, int *imgX, int *x){
+   //setbits...
+   byte t = scanLineGetBit((ScanLine*)alphaBuffer, *imgX);//trans
+   byte c = scanLineGetBit((ScanLine*)colorBuffer, *imgX);//c
+   byte s = scanLineGetBit(sl, *x);//screen
 
-   int intBits = sizeof(uint32_t) * 8;
-   int alignedBits = x % 8;
-   uint32_t *screenArr, *imgArr, *alphaArr;
+   //if alpha, use color, else use screen
+   scanLineSetBit(sl, *x, ((s & t) | c));
 
-   if (alignedBits){
-      while (x < last && alignedBits++ < 8) {
-         //setbits...
-         byte t = scanLineGetBit((ScanLine*)alphaBuffer, imgX);//trans
-         byte c = scanLineGetBit((ScanLine*)colorBuffer, imgX);//c
-         byte s = scanLineGetBit(sl, x);//screen
+   ++(*x);
+   ++(*imgX);
+}
 
-         //if alpha, use color, else use screen
-         scanLineSetBit(sl, x, ((s & t) | c));
+void _scanLineRender8Bits(ScanLine *sl, byte *colorBuffer, byte *alphaBuffer, int *imgX, int *x, int byteRun){
+   int i;
+   int frac = (*imgX) % 8;  //how far we are into the image 
 
-         ++x;
-         ++imgX;
-      }
-   }
-
-   if (x == last)  {
-      return;
-   }
-
-   byteRun = (last - x ) / 8;
-   alignRun = (4 - ((x % intBits) / 8)) % 4;
-   if (alignRun < byteRun){
-      byteRun = alignRun;
-   }
-
-
-   frac = imgX % 8;  //how far we are into the image 
-   {
-      //1 << 3 == 8
-      uint8_t *screenArr = ((uint8_t*)sl->pixels) + (x >> 3);
-      uint8_t *imgArr = ((uint8_t*)colorBuffer) + (imgX >> 3);
-      uint8_t *alphaArr = ((uint8_t*)alphaBuffer) + (imgX >> 3);
-
-      if (!frac) { //fast path!
-         for (i = 0; i < byteRun; ++i, x += 8, imgX += 8) {
-            //simply aligned, do regular int operations
-            *screenArr &= *alphaArr++;
-            *screenArr++ |= *imgArr++;
-         }
-      }
-      else {//slow path...
-         for (i = 0; i < byteRun; ++i, x += 8, imgX += 8) {
-            //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
-            *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (8 - frac));
-            *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
-
-            ++imgArr;
-            ++screenArr;
-            ++alphaArr;
-         }
-      }
-
-   }
-
-   intRun = (last - x) / intBits;
-   frac = imgX % intBits;  //how far we are into the image 
-
-   //1 << 5 == 32
-   screenArr = ((uint32_t*)sl->pixels) + (x >> 5);
-   imgArr = ((uint32_t*)colorBuffer) + (imgX >> 5);
-   alphaArr = ((uint32_t*)alphaBuffer) + (imgX >> 5);
+   //1 << 3 == 8
+   uint8_t *screenArr = ((uint8_t*)sl->pixels) + ((*x) >> 3);
+   uint8_t *imgArr = ((uint8_t*)colorBuffer) + ((*imgX) >> 3);
+   uint8_t *alphaArr = ((uint8_t*)alphaBuffer) + ((*imgX) >> 3);
 
    if (!frac) { //fast path!
-      for (i = 0; i < intRun; ++i, x += intBits, imgX += intBits) {
+      for (i = 0; i < byteRun; ++i, (*x) += 8, (*imgX) += 8) {
          //simply aligned, do regular int operations
          *screenArr &= *alphaArr++;
-         *screenArr++ |= *imgArr++;        
+         *screenArr++ |= *imgArr++;
       }
    }
    else {//slow path...
-      for (i = 0; i < intRun; ++i, x += intBits, imgX += intBits) {
+      for (i = 0; i < byteRun; ++i, (*x) += 8, (*imgX) += 8) {
+         //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
+         *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (8 - frac));
+         *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
+
+         ++imgArr;
+         ++screenArr;
+         ++alphaArr;
+      }
+   }
+
+}
+
+void _scanLineRender32Bits(ScanLine *sl, byte *colorBuffer, byte *alphaBuffer, int *imgX, int *x, int intRun){
+   int i;
+   int intBits = sizeof(uint32_t) * 8;
+   int frac = *imgX % intBits;  //how far we are into the image 
+   
+   //1 << 5 == 32
+   uint32_t *screenArr = ((uint32_t*)sl->pixels) + (*x >> 5);
+   uint32_t *imgArr = ((uint32_t*)colorBuffer) + (*imgX >> 5);
+   uint32_t *alphaArr = ((uint32_t*)alphaBuffer) + (*imgX >> 5);   
+
+   if (!frac) { //fast path!
+      for (i = 0; i < intRun; ++i, *x += intBits, *imgX += intBits) {
+         //simply aligned, do regular int operations
+         *screenArr &= *alphaArr++;
+         *screenArr++ |= *imgArr++;
+      }
+   }
+   else {//slow path...
+      for (i = 0; i < intRun; ++i, *x += intBits, *imgX += intBits) {
          //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
          *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (intBits - frac));
          *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (intBits - frac));
@@ -105,48 +87,39 @@ void _scanLineRenderImageScanLine(ScanLine *sl, short screenPos, byte *colorBuff
          ++alphaArr;
       }
    }
+}
 
-   byteRun = (last - x) / 8;
+void _scanLineRenderImageScanLine(ScanLine *sl, short screenPos, byte *colorBuffer, byte *alphaBuffer, short bitOffset, short width) {
+   int intRun, byteRun, alignRun;
+   int imgX = bitOffset;
+   int x = screenPos;
+   int last = x + width;
 
-   frac = imgX % 8;  //how far we are into the image 
-   {
-      //1 << 3 == 8
-      uint8_t *screenArr = ((uint8_t*)sl->pixels) + (x >> 3);
-      uint8_t *imgArr = ((uint8_t*)colorBuffer) + (imgX >> 3);
-      uint8_t *alphaArr = ((uint8_t*)alphaBuffer) + (imgX >> 3);
+   int intBits = sizeof(uint32_t) * 8;
+   int alignedBits = x % 8;
 
-      if (!frac) { //fast path!
-         for (i = 0; i < byteRun; ++i, x += 8, imgX += 8) {
-            //simply aligned, do regular int operations
-            *screenArr &= *alphaArr++;
-            *screenArr++ |= *imgArr++;
-         }
+   if (alignedBits){
+      while (x < last && alignedBits++ < 8) {
+         _scanLineRenderBit(sl, colorBuffer, alphaBuffer, &imgX, &x);
       }
-      else {//slow path...
-         for (i = 0; i < byteRun; ++i, x += 8, imgX += 8) {
-            //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
-            *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (8 - frac));
-            *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
-
-            ++imgArr;
-            ++screenArr;
-            ++alphaArr;
-         }
-      }
-
    }
 
+   if (x == last)  {
+      return;
+   }
+
+   byteRun = (last - x ) / 8;
+   alignRun = (4 - ((x % intBits) / 8)) % 4;
+   _scanLineRender8Bits(sl, colorBuffer, alphaBuffer, &imgX, &x, MIN(alignRun, byteRun));
+   
+   intRun = (last - x) / intBits;
+   _scanLineRender32Bits(sl, colorBuffer, alphaBuffer, &imgX, &x, intRun);   
+
+   byteRun = (last - x) / 8;
+   _scanLineRender8Bits(sl, colorBuffer, alphaBuffer, &imgX, &x, byteRun);
 
    while (x < last) {
-      //setbits...
-      byte t = scanLineGetBit((ScanLine*)alphaBuffer, imgX);//trans
-      byte c = scanLineGetBit((ScanLine*)colorBuffer, imgX);//c
-      byte s = scanLineGetBit(sl, x);//screen
-
-      //if alpha, use color, else use screen
-      scanLineSetBit(sl, x, ((s & t) | c));
-      ++x;
-      ++imgX;
+      _scanLineRenderBit(sl, colorBuffer, alphaBuffer, &imgX, &x);
    }
 
 }

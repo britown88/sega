@@ -115,12 +115,6 @@ Image *_imageDeserializeEX(const char*path, int optimize){
             break;
          }
 
-         //if (optimize){
-         //   imageScanLineRender(scanLine, readBuffer);
-         //   imageScanLineDestroy(scanLine);
-         //   scanLine = createUncompressedScanLine(width, readBuffer);
-         //}
-
          imageSetScanLine(img, y, i, scanLine);
       }
    }
@@ -165,12 +159,13 @@ Image *_imageDeserializeEX(const char*path, int optimize){
    return img;
 }
 
-
+//DO NOT USE IF RENDERING TO A FRAME
 Image *imageDeserialize(const char *path) 
 {
    return _imageDeserializeEX(path, false);
 }
 
+//optimized for rendering to a frame
 Image *imageDeserializeOptimized(const char*path){
    return _imageDeserializeEX(path, true);
 }
