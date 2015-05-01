@@ -64,6 +64,7 @@ typedef struct FlatImage_t FlatImage;
 Frame *frameCreate();
 void frameDestroy(Frame *self);
 void frameRenderImage(Frame *self, short x, short y, Image *img);
+void frameRenderPoint(Frame *self, short x, short y, byte color);
 void frameRenderLine(Frame *self, short x1, short y1, short x2, short y2, byte color);
 void frameClear(Frame *self, byte color);
 

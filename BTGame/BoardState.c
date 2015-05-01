@@ -73,7 +73,7 @@ void _boardRender(WorldView *view, GameStateRender *m){
 
    renderManagerRender(view->managers->renderManager, m->frame);
 
-   frameRenderLine(m->frame, 320, 175, mousePos.x, mousePos.y, 0);
+   frameRenderLine(m->frame, 320, 175, mousePos.x, mousePos.y, 15);
 }
 
 StateClosure gameStateCreateBoard(WorldView *view){

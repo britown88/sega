@@ -49,6 +49,15 @@ static void textureShader(RenderData *r, TexCoords *data, TrianglePoint *p){
    }
 }
 
+static void pixelShader(RenderData *r, TexCoords *data, TrianglePoint *p){
+   if (p->pos.x < 0 || p->pos.x >= EGA_RES_WIDTH ||
+      p->pos.y < 0 || p->pos.y >= EGA_RES_HEIGHT){
+      return;
+   }
+
+   frameRenderPoint(r->frame, p->pos.x, p->pos.y, 0);
+}
+
 static void buildTransform(Matrix *m, Transform t){
    Matrix m2 = quaternionToMatrix(&t.rotation);
 

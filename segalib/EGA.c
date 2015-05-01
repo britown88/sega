@@ -183,48 +183,63 @@ void frameRenderPoint(Frame *self, short x, short y, byte color){
    }
 }
 
-void switchToOctantZeroFrom(byte octant, short *x, short *y){
-   short ox, oy;
-   switch (octant){
-   case 0: ox = *y; oy = *x; break;
-   case 1: ox = *y; oy = *x; break;
-   case 2: ox = -*y; oy = *x; break;
-   case 3: ox = -*x; oy = *y; break;
-   case 4: ox = -*x; oy = -*y; break;
-   case 5: ox = -*y; oy = -*x; break;
-   case 6: ox = *y; oy = -*x; break;
-   case 7: ox = *x; oy = -*y; break;
+void frameRenderLine(Frame *self, short _x0, short _y0, short _x1, short _y1, byte color){
+   short dx = abs(_x1 - _x0);
+   short dy = abs(_y1 - _y0);
+   short x0, x1, y0, y1;
+   float x, y, slope;
+
+   //len=0
+   if (!dx && !dy){
+      return;
    }
 
-   *x = ox;
-   *y = oy;
-}
-
-void _convertPointsToOctant0(short *x0, short *y0, short *x1, short *y1){
-
-}
-
-void frameRenderLine(Frame *self, short x0, short y0, short x1, short y1, byte color){
-   short dx, dy, x, y;
-   int D;
-
-   dx = x1 - x0;
-   dy = y1 - y0;
-   
-   D = 2 * dy - dx;
-   frameRenderPoint(self, x0, y0, color);
-   y = y0;
-
-   for (x = x0 + 1; x <= x1; ++x){
-      if (D > 0){
-         ++y;
-         frameRenderPoint(self, x, y, color);
-         D += (2 * dy - 2 * dx);
+   if (dx > dy){
+      if (_x0 > _x1){//flip
+         x0 = _x1; y0 = _y1;
+         x1 = _x0; y1 = _y0;
       }
       else{
-         frameRenderPoint(self, x, y, color);
-         D += (2 * dy);
+         x0 = _x0; y0 = _y0;
+         x1 = _x1; y1 = _y1;
       }
+
+      x = x0;
+      y = y0;
+      slope = (float)(y1 - y0) / (float)(x1 - x0);
+      
+      while (x < x1){
+         frameRenderPoint(self, (short)x, (short)y, color);
+
+         x += 1.0f;
+         y += slope;
+      }
+
+      frameRenderPoint(self, (short)x1, (short)y1, color);
+   }
+   else{
+      if (_y0 > _y1){//flip
+         x0 = _x1; y0 = _y1;
+         x1 = _x0; y1 = _y0;
+      }
+      else{
+         x0 = _x0; y0 = _y0;
+         x1 = _x1; y1 = _y1;
+      }
+
+      x = x0;
+      y = y0;
+      slope = (float)(x1 - x0) / (float)(y1 - y);
+
+      while (y < y1){
+
+         frameRenderPoint(self, (short)x, (short)y, color);
+
+         y += 1.0f;
+         x += slope;
+      }
+
+      frameRenderPoint(self, (short)x1, (short)y1, color);
    }
 }
 

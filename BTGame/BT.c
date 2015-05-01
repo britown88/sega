@@ -9,8 +9,8 @@
 #include "WorldView.h"
 #include "GameState.h"
 
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 #define FULLSCREEN 0
 #define FRAME_RATE 60.0
 
@@ -148,20 +148,6 @@ void _onStart(BTGame *self){
       
    }
 
-   {
-
-      Entity *e = entityCreate(self->entitySystem);
-
-      COMPONENT_ADD(e, PositionComponent, 0, 0);
-      COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/actor.ega"));
-
-      COMPONENT_ADD(e, LayerComponent, LayerTokens);
-      COMPONENT_ADD(e, GridComponent, 0, 0);
-      COMPONENT_ADD(e, WanderComponent, 1);
-
-      entityUpdate(e);
-
-   }
 
    appLoadPalette(appGet(), "assets/img/boardui.pal");
    cursorManagerCreateCursor(self->managers.cursorManager);

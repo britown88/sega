@@ -75,6 +75,12 @@ typedef struct {
 #define ComponentT MeshComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   vec(Int2) *pList;
+   byte color;
+}PolygonComponent;
 
+#define ComponentT PolygonComponent
+#include "Entities\ComponentDecl.h"
 
 #pragma pack(pop)

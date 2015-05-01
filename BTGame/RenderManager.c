@@ -132,9 +132,30 @@ void _renderMeshEntity(Entity *e, Frame *frame, MeshComponent *mc, short x, shor
    renderMesh(mc->vbo, mc->ibo, img, t, frame);
 }
 
+void _renderPolygon(Frame *frame, vec(Int2) *pList, byte color){
+   if (!vecIsEmpty(Int2)(pList)){
+      Int2 *begin = vecBegin(Int2)(pList);
+      Int2 *end = vecEnd(Int2)(pList);
+      while (begin != end - 1){
+         Int2 p0 = *begin++;
+         Int2 p1 = *begin;
+
+         frameRenderLine(frame, p0.x, p0.y, p1.x, p1.y, color);
+      }
+
+      {
+         Int2 p0 = *vecBack(Int2)(pList);
+         Int2 p1 = *vecBegin(Int2)(pList);
+
+         frameRenderLine(frame, p0.x, p0.y, p1.x, p1.y, color);
+      }
+   }   
+}
+
 void _renderEntity(Entity *e, Frame *frame){
    PositionComponent *pc = entityGet(PositionComponent)(e);
    MeshComponent *mc = entityGet(MeshComponent)(e);
+   PolygonComponent *polyc = entityGet(PolygonComponent)(e);
    TRenderComponent *trc = entityGet(TRenderComponent)(e);
    int x = 0, y = 0;
    Image *img = managedImageGetImage(trc->img);
@@ -151,6 +172,10 @@ void _renderEntity(Entity *e, Frame *frame){
       else{
          frameRenderImage(frame, x, y, img);
       }
+   }
+
+   if (polyc){
+      _renderPolygon(frame, polyc->pList, polyc->color);
    }
 }
 

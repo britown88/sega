@@ -23,3 +23,6 @@
 
 #define ComponentT MeshComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT PolygonComponent
+#include "Entities\ComponentImpl.h"
