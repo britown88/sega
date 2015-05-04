@@ -116,6 +116,7 @@ void _updateEntity(InterpolationManager *self, Entity *e, long time){
       pc->x = (int)((ic->destX - tic->startX) * m) + tic->startX;
       pc->y = (int)((ic->destY - tic->startY) * m) + tic->startY;
    }
+
 }
 
 void _removeComponents(InterpolationManager *self){
@@ -141,4 +142,14 @@ void interpolationManagerUpdate(InterpolationManager *self){
          _removeComponents(self);
       }
    }
+
+   COMPONENT_QUERY(self->system, LockedPositionComponent, lpc, {
+      Entity *e = componentGetParent(lpc, self->system);
+      PositionComponent *pc = entityGet(PositionComponent)(e);
+      PositionComponent *opc = entityGet(PositionComponent)(lpc->parent);
+      if (opc){
+         pc->x = opc->x;
+         pc->y = opc->y;
+      }
+   });
 }

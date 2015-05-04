@@ -3,7 +3,16 @@
 #define ComponentT GridComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT SizeComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT TeamComponent
+#include "Entities\ComponentImpl.h"
+
 #define ComponentT PositionComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT LockedPositionComponent
 #include "Entities\ComponentImpl.h"
 
 #define ComponentT VelocityComponent

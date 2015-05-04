@@ -10,6 +10,7 @@ typedef struct ImageLibrary_t ImageLibrary;
 typedef struct GridManager_t GridManager;
 typedef struct InterpolationManager_t InterpolationManager;
 typedef struct DiceManager_t DiceManager;
+typedef struct SelectionManager_t SelectionManager;
 typedef struct Frame_t Frame;
 
 typedef struct BTManagers_t {
@@ -18,6 +19,7 @@ typedef struct BTManagers_t {
    GridManager *gridManager;
    InterpolationManager *interpolationManager;
    DiceManager *diceManager;
+   SelectionManager *selectionManager;
 }BTManagers;
 
 RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps);
@@ -36,3 +38,6 @@ void interpolationManagerResume(InterpolationManager *self);
 
 DiceManager *createDiceManager(EntitySystem *system);
 void diceManagerUpdate(DiceManager *self);
+
+SelectionManager *createSelectionManager(EntitySystem *system);
+void selectionManagerSelect(SelectionManager *self, Recti box);

@@ -1,4 +1,5 @@
 #pragma once
+#include "Defs.h"
 
 typedef struct {
    float left, top, right, bottom;
@@ -28,4 +29,12 @@ typedef struct {
 static Recti rectiCreate(int left, int top, int right, int bottom) {
    Recti r = {left, top, right, bottom};
    return r;
+}
+
+static bool rectiIntersects(Recti a, Recti b){
+   if (a.left >= b.right ||
+      a.top >= b.bottom ||
+      b.left >= a.right ||
+      b.top >= a.bottom) return false;
+   return true;
 }

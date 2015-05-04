@@ -78,6 +78,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.gridManager, createGridManager(self->entitySystem));
    RegisterManager(self->managers.interpolationManager, createInterpolationManager(self->entitySystem));
    RegisterManager(self->managers.diceManager, createDiceManager(self->entitySystem));
+   RegisterManager(self->managers.selectionManager, createSelectionManager(self->entitySystem));
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -88,6 +89,7 @@ void _destroyEntitySystem(BTGame *self){
    managerDestroy((Manager*)self->managers.gridManager);
    managerDestroy((Manager*)self->managers.interpolationManager);
    managerDestroy((Manager*)self->managers.diceManager);
+   managerDestroy((Manager*)self->managers.selectionManager);
 }
 
 VirtualApp *btCreate() {
@@ -119,11 +121,8 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
-void _onStart(BTGame *self){ 
-
+void _onStart(BTGame *self){
    int i; 
-   int foo = 0;
-
    {
       Entity *e = entityCreate(self->entitySystem);
       
@@ -137,16 +136,16 @@ void _onStart(BTGame *self){
       Entity *e = entityCreate(self->entitySystem);
 
       COMPONENT_ADD(e, PositionComponent, 0, 0);
-      COMPONENT_ADD(e, ImageComponent, stringIntern(foo++ % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
+      COMPONENT_ADD(e, ImageComponent, stringIntern(i % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
 
       COMPONENT_ADD(e, LayerComponent, LayerTokens);;
-      COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);
+      COMPONENT_ADD(e, GridComponent, i % TABLE_WIDTH, i/TABLE_WIDTH);
+      COMPONENT_ADD(e, SizeComponent, 32, 32);
+      COMPONENT_ADD(e, TeamComponent, i%2);
       //COMPONENT_ADD(e, WanderComponent, 1);
 
       entityUpdate(e);
-      
    }
-
 
    appLoadPalette(appGet(), "assets/img/boardui.pal");
    cursorManagerCreateCursor(self->managers.cursorManager);

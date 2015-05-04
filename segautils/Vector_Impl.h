@@ -69,8 +69,8 @@ void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue){
          //size has decreased
          size_t i;
          for (i = self->count; i > size; --i){
-            if (self->data + i){
-               self->destroy(self->data + i);
+            if (self->data + (i - 1)){
+               self->destroy(self->data + (i - 1));
             }
          }
       }

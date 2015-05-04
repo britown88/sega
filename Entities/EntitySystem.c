@@ -247,6 +247,10 @@ void _callManagerDestroy(Entity *self){
    while (first != last){ managerOnDestroy((*first++), self); }
 }
 
+void entityVectorDestroy(EntityPtr *self){
+   entityDestroy(*self);  
+}
+
 void entityDestroy(Entity *self){
    vec(ComponentList) *v = self->system->lists;
 

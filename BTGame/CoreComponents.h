@@ -15,9 +15,32 @@ typedef struct {
 
 typedef struct {
    int x, y;
+}SizeComponent;
+
+#define ComponentT SizeComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   int teamID;
+}TeamComponent;
+
+#define ComponentT TeamComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   int x, y;
 }PositionComponent;
 
 #define ComponentT PositionComponent
+#include "Entities\ComponentDecl.h"
+
+//used to lock an entity's position to another's
+//updated in interpolation manager
+typedef struct {
+   Entity *parent;
+}LockedPositionComponent;
+
+#define ComponentT LockedPositionComponent
 #include "Entities\ComponentDecl.h"
 
 typedef struct{
@@ -78,6 +101,7 @@ typedef struct {
 typedef struct {
    vec(Int2) *pList;
    byte color;
+   byte open;
 }PolygonComponent;
 
 #define ComponentT PolygonComponent

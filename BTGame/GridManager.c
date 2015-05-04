@@ -286,8 +286,6 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
    if (startCell < CELL_COUNT){
       int i;
       GridNode *result = NULL;
-      //PriorityQueue *pq = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
-      //GridSolver *dk = checkedCalloc(1, sizeof(GridSolver));
       _clearTable(self->table);
       self->table[startCell].score = 0;
 
@@ -296,7 +294,6 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
       for (i = 0; i < CELL_COUNT; ++i){
          priorityQueuePush(self->pq, self->table + i);
       }
-
       
       self->solver->cFunc = cFunc;
       self->solver->nFunc = nFunc;
@@ -305,12 +302,10 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
 
       result = self->solver->solutionNode;
 
-
       if (result){
          solution.solutionCell = result->data.ID;
          solution.totalCost = result->score;
 
-         //self->solutionMap = vecCreate(GridSolutionNode)(NULL);
          vecClear(GridSolutionNode)(self->solutionMap);
 
          while (result && result->parent){
@@ -322,10 +317,7 @@ GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCu
          vecReverse(GridSolutionNode)(self->solutionMap);
          solution.path = self->solutionMap;
       }
-      
    }
-
-   
 
    return solution;
 }

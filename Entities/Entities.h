@@ -97,6 +97,7 @@ void entitySystemRegisterComponentUpdate(EntitySystem *self, size_t compRtti, Co
 Entity *entityCreate(EntitySystem *system);
 void entityUpdate(Entity *self);
 void entityDestroy(Entity *self);
+void entityVectorDestroy(EntityPtr *self);//for use with vector destructor
 int entityGetID(Entity *self);
 EntitySystem *entityGetSystem(Entity *self);
 

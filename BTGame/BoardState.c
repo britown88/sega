@@ -84,7 +84,8 @@ static void _handleMouse(BoardState *state){
          break;
       case SegaMouse_Released:
          if (e.button == SegaMouseBtn_Left){
-            cursorManagerEndDrag(state->view->managers->cursorManager, e.pos.x, e.pos.y);
+            Recti box = cursorManagerEndDrag(state->view->managers->cursorManager, e.pos.x, e.pos.y);
+            selectionManagerSelect(state->view->managers->selectionManager, box);
          }
          
          break;
