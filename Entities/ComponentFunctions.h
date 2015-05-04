@@ -7,6 +7,7 @@
 #define entityAdd(TYPE) CONCAT(entityAdd_, TYPE)
 #define entityGet(TYPE) CONCAT(entityGet_, TYPE)
 #define entityRemove(TYPE) CONCAT(entityRemove_, TYPE)
+#define compVerify(TYPE) CONCAT(compVerify_, TYPE)
 #define compBroadcastUpdate(TYPE) CONCAT(compBroadcastUpdate_, TYPE)
 #define compRegisterUpdateDelegate(TYPE) CONCAT(compRegisterUpdateDelegate_, TYPE)
 

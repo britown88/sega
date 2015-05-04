@@ -203,12 +203,14 @@ void entitySystemRegisterCompList(EntitySystem *self, size_t rtti, ComponentVTab
    memcpy(vecAt(ComponentList)(self->lists, rtti), &cl, sizeof(cl));
 }
 ComponentList *entitySystemGetCompList(EntitySystem *self, size_t rtti){
-
+   ComponentList *out = NULL;
    if (rtti >= vecSize(ComponentList)(self->lists)){
       return NULL;
    }
 
-   return vecAt(ComponentList)(self->lists, rtti);
+   out = vecAt(ComponentList)(self->lists, rtti);
+
+   return out;
 }
 
 

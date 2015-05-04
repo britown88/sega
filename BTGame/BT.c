@@ -129,7 +129,6 @@ void _onStart(BTGame *self){
       
       COMPONENT_ADD(e, PositionComponent, 0, 0);
       COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
-     // COMPONENT_ADD(e, LayerComponent, LayerTokens);
       entityUpdate(e);
    }   
 
@@ -142,7 +141,7 @@ void _onStart(BTGame *self){
 
       COMPONENT_ADD(e, LayerComponent, LayerTokens);;
       COMPONENT_ADD(e, GridComponent, i%TABLE_WIDTH, i/TABLE_WIDTH);
-      COMPONENT_ADD(e, WanderComponent, 1);
+      //COMPONENT_ADD(e, WanderComponent, 1);
 
       entityUpdate(e);
       

@@ -13,6 +13,10 @@ T *entityGet(T)(Entity *self);
 void entityAdd(T)(Entity *self, T *comp);
 void entityRemove(T)(Entity *self);
 
+//allows the entity system to ensure proper component registration
+//no use outside of entities.lib
+void compVerify(T)(EntitySystem *system);
+
 void compBroadcastUpdate(T)(EntitySystem *system, Entity *e, T *oldComponent);
 void compRegisterUpdateDelegate(T)(EntitySystem *system, ComponentUpdate del);
 

@@ -153,6 +153,9 @@ void compRegisterUpdateDelegate(T)(EntitySystem *system, ComponentUpdate del){
    compList(T)(system);//ensure component gets registered for RTTI to line up correctly
    entitySystemRegisterComponentUpdate(system, GetLocalRTTI(COMPONENTS, T)->ID, del);
 }
+void compVerify(T)(EntitySystem *system){
+   compList(T)(system);
+}
 
 #undef COMP_NAME
 #undef ComponentT
