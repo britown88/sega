@@ -7,30 +7,42 @@
 #include "GameState.h"
 #include "SEGA\Input.h"
 #include "SEGA\App.h"
+#include "segashared\CheckedMemory.h"
 #include "BT.h"
 
-static void _boardUpdate(WorldView*, GameStateUpdate*);
-static void _boardHandleInput(WorldView*, GameStateHandleInput*);
-static void _boardRender(WorldView*, GameStateRender*);
+typedef struct {
+   WorldView *view;
+   bool paused;
+}BoardState;
 
-static void _board(WorldView *view, Type *t, Message m){
-   if (t == GetRTTI(GameStateUpdate)){ _boardUpdate(view, m); }
-   else if (t == GetRTTI(GameStateHandleInput)){ _boardHandleInput(view, m); }
-   else if (t == GetRTTI(GameStateRender)){ _boardRender(view, m); }
+static void _boardStateDestroy(BoardState *self){
+   checkedFree(self);
 }
 
-void _boardUpdate(WorldView *view, GameStateUpdate *m){
+static void _boardUpdate(BoardState*, GameStateUpdate*);
+static void _boardHandleInput(BoardState*, GameStateHandleInput*);
+static void _boardRender(BoardState*, GameStateRender*);
+
+static void _board(BoardState *state, Type *t, Message m){
+   if (t == GetRTTI(GameStateUpdate)){ _boardUpdate(state, m); }
+   else if (t == GetRTTI(GameStateHandleInput)){ _boardHandleInput(state, m); }
+   else if (t == GetRTTI(GameStateRender)){ _boardRender(state, m); }
+}
+
+void _boardUpdate(BoardState *state, GameStateUpdate *m){
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
-   cursorManagerUpdate(view->managers->cursorManager, mousePos.x, mousePos.y);
+   cursorManagerUpdate(state->view->managers->cursorManager, mousePos.x, mousePos.y);
 
-   interpolationManagerUpdate(view->managers->interpolationManager);
-   derjpkstras(view->entitySystem, view->managers->gridManager);
+   interpolationManagerUpdate(state->view->managers->interpolationManager);
+   if (!state->paused){
+      derjpkstras(state->view->entitySystem, state->view->managers->gridManager);
+   }   
 
-   diceManagerUpdate(view->managers->diceManager);
+   diceManagerUpdate(state->view->managers->diceManager);
 }
 
-static void _handleKeyboard(WorldView *view){
+static void _handleKeyboard(BoardState *state){
 
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
@@ -43,8 +55,14 @@ static void _handleKeyboard(WorldView *view){
          break;
       case (SegaKey_Space) :
          if (e.action == SegaKey_Released){
-            interpolationManagerPause(view->managers->interpolationManager);
-            fsmPush(view->gameState, gameStateCreateBoardPaused(view));
+            if (state->paused){
+               state->paused = false;
+               interpolationManagerResume(state->view->managers->interpolationManager);
+            }
+            else{
+               state->paused = true;
+               interpolationManagerPause(state->view->managers->interpolationManager);
+            }
          }
          break;
       }
@@ -52,32 +70,51 @@ static void _handleKeyboard(WorldView *view){
    }
 }
 
-static void _handleMouse(){
+static void _handleMouse(BoardState *state){
    Mouse *k = appGetMouse(appGet());
    MouseEvent e = { 0 };
    while (mousePopEvent(k, &e)){
+
+      switch (e.action){
+      case SegaMouse_Pressed:
+         if (e.button == SegaMouseBtn_Left){
+            cursorManagerStartDrag(state->view->managers->cursorManager, e.pos.x, e.pos.y);
+         }
+         
+         break;
+      case SegaMouse_Released:
+         if (e.button == SegaMouseBtn_Left){
+            cursorManagerEndDrag(state->view->managers->cursorManager, e.pos.x, e.pos.y);
+         }
+         
+         break;
+      }
+
       if (e.action == SegaMouse_Scrolled){
          //size += e.pos.y;
       }
+
    }
 }
 
-void _boardHandleInput(WorldView *view, GameStateHandleInput *m){
-   _handleKeyboard(view);
-   _handleMouse();
+void _boardHandleInput(BoardState *state, GameStateHandleInput *m){
+   _handleKeyboard(state);
+   _handleMouse(state);
 }
 
-void _boardRender(WorldView *view, GameStateRender *m){
-   Mouse *mouse = appGetMouse(appGet());
-   Int2 mousePos = mouseGetPosition(mouse);
+void _boardRender(BoardState *state, GameStateRender *m){
+   //Mouse *mouse = appGetMouse(appGet());
+   //Int2 mousePos = mouseGetPosition(mouse);
 
-   renderManagerRender(view->managers->renderManager, m->frame);
-
-   frameRenderLine(m->frame, 320, 175, mousePos.x, mousePos.y, 15);
+   renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
 StateClosure gameStateCreateBoard(WorldView *view){
    StateClosure out;
-   closureInit(StateClosure)(&out, view, (StateClosureFunc)&_board, NULL);
+   BoardState *state = checkedCalloc(1, sizeof(BoardState));
+   state->view = view;
+   state->paused = false;
+
+   closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);
    return out;
 }

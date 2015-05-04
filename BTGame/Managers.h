@@ -1,6 +1,7 @@
 #pragma once
 
 #include "segautils\Preprocessor.h"
+#include "segautils\Rect.h"
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
@@ -24,6 +25,8 @@ void renderManagerRender(RenderManager *self, Frame *frame);
 
 CursorManager *createCursorManager(EntitySystem *system);
 void cursorManagerCreateCursor(CursorManager *self);
+void cursorManagerStartDrag(CursorManager *self, int x, int y);
+Recti cursorManagerEndDrag(CursorManager *self, int x, int y);
 void cursorManagerUpdate(CursorManager *self, int x, int y);
 
 InterpolationManager *createInterpolationManager(EntitySystem *system);

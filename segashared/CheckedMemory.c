@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "segautils\BitTwiddling.h"
 #include "segautils\IntrusiveHeap.h"
+#include <assert.h>
 
 /*this makes our hashtables unchecked*/
 #define UNCHECKED
@@ -135,8 +136,10 @@ void checkedFreeImpl(void* mem){
 
 void printMemoryLeaks(){
 #ifdef _DEBUG
+   int leaks = 0;
    FILE *output = NULL;
    PriorityQueue *allocPQ = getAllocPQ();
+
    htForEach(FileEntry, e, getFileTable(), {
       priorityQueuePush(allocPQ, e);
    });
@@ -159,14 +162,20 @@ void printMemoryLeaks(){
       htForEach(adEntry, e, getMemTable(), {
          AllocData *data = &e->value;
          fprintf(output, "%i bytes in %s:%i\n", data->bytes, data->file, data->line);
+         ++leaks;
       });
       fprintf(output, "-------------END-----------------\n");
 
       fclose(output);
    }
+
+   assert(!leaks);
    
    freeMemTable();
    freeFileTable();
    freeAllocPQ();
+
+   
+   
 #endif
 }
