@@ -23,7 +23,8 @@ T *vecEnd(T)(VEC_NAME *self);
 T *vecBack(T)(VEC_NAME *self);
 void vecReverse(T)(VEC_NAME *self);
 size_t vecIndexOf(T)(VEC_NAME *self, T*item);
-void vecRemove(T)(VEC_NAME *self, size_t index);
+void vecRemoveAt(T)(VEC_NAME *self, size_t index);
+void vecRemove(T)(VEC_NAME *self, T*item);
 
 #undef VEC_NAME
 #undef VectorTPart

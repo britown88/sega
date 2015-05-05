@@ -122,23 +122,32 @@ void vecReverse(T)(VEC_NAME *self){
       self->data[count - i - 1] = temp;
    }
 }
+
 size_t vecIndexOf(T)(VEC_NAME *self, T*item){
-   size_t i = 0;
+   size_t i = 0, out = INF;
    vecForEach(T, iter, self, {
       if (!memcmp(iter, item, sizeof(T))){
+         out = i;
          break;
       }
       ++i;
    });
 
-   return i;
+   return out;
 }
-void vecRemove(T)(VEC_NAME *self, size_t index){
+
+void vecRemove(T)(VEC_NAME *self, T*item){
+   size_t i = vecIndexOf(T)(self, item);
+   if (i < INF){
+      vecRemoveAt(T)(self, i);
+   }
+}
+
+void vecRemoveAt(T)(VEC_NAME *self, size_t index){
    if (index < self->count){
       memcpy(self->data + index,
          self->data + index + 1,
-         sizeof(T) * (self->count-- - 1 - index));
-      
+         sizeof(T) * (self->count-- - 1 - index));      
    }
 }
 

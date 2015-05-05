@@ -172,10 +172,10 @@ static void _gridRemoveEntity(GridManager *self, Entity *e, size_t oldPos){
       vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, oldPos);
       vec(size_t) *nodes = tgc->occupyingNodes;
 
-      vecRemove(size_t)(nodes, vecIndexOf(size_t)(nodes, &oldPos));
+      vecRemove(size_t)(nodes, &oldPos);
 
       if (entitiesAtOld){
-         vecRemove(EntityPtr)(entitiesAtOld, vecIndexOf(EntityPtr)(entitiesAtOld, &e));
+         vecRemove(EntityPtr)(entitiesAtOld, &e);
       }
    }
 }
@@ -242,7 +242,7 @@ void _onDestroy(GridManager *self, Entity *e){
       vecForEach(size_t, node, tgc->occupyingNodes, {
          vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, *node);
          if (entitiesAtOld){
-            vecRemove(EntityPtr)(entitiesAtOld, vecIndexOf(EntityPtr)(entitiesAtOld, &e));
+            vecRemove(EntityPtr)(entitiesAtOld, &e);
          }
       });
       vecDestroy(size_t)(tgc->occupyingNodes);
@@ -271,7 +271,7 @@ void _onUpdate(GridManager *self, Entity *e){
          vecForEach(size_t, node, tgc->occupyingNodes, {
             vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, *node);
             if (entitiesAtOld){
-               vecRemove(EntityPtr)(entitiesAtOld, vecIndexOf(EntityPtr)(entitiesAtOld, &e));
+               vecRemove(EntityPtr)(entitiesAtOld, &e);
             }
          });
          vecDestroy(size_t)(tgc->occupyingNodes);

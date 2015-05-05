@@ -18,6 +18,7 @@
 #define vecReverse(TYPE) CONCAT(vecReverse_, TYPE)
 #define vecIndexOf(TYPE) CONCAT(vecIndexOf_, TYPE)
 #define vecRemove(TYPE) CONCAT(vecDelete_, TYPE)
+#define vecRemoveAt(TYPE) CONCAT(vecDeleteAt_, TYPE)
 
 #define vecPushStackArray(TYPE, list, ...) vecPushArray(TYPE)(list, (TYPE[])__VA_ARGS__, sizeof((TYPE[])__VA_ARGS__) / sizeof(TYPE))
 

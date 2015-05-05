@@ -6,10 +6,17 @@
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
 
+typedef struct{
+   EMPTY_STRUCT;
+}TSelectedComponent;
+
+#define TComponentT TSelectedComponent
+#include "Entities\ComponentDeclTransient.h"
+
 struct SelectionManager_t{
    Manager m;
    EntitySystem *system;
-   vec(EntityPtr) *cursors, *selectList;
+   vec(EntityPtr) *selectList;
 };
 
 ImplManagerVTable(SelectionManager)
@@ -19,13 +26,11 @@ SelectionManager *createSelectionManager(EntitySystem *system){
    out->system = system;
    out->m.vTable = CreateManagerVTable(SelectionManager);
 
-   out->cursors = vecCreate(EntityPtr)(&entityVectorDestroy);
    out->selectList = vecCreate(EntityPtr)(NULL);
    return out;
 }
 
 void _destroy(SelectionManager *self){
-   vecDestroy(EntityPtr)(self->cursors);
    vecDestroy(EntityPtr)(self->selectList);
    checkedFree(self);
 }
@@ -45,9 +50,19 @@ static void _checkSelection(SelectionManager *self, Recti box, Entity *e){
    }
 }
 
-void selectionManagerSelect(SelectionManager *self, Recti box){
-   vecClear(EntityPtr)(self->cursors);
+static void _clearLists(SelectionManager *self){
+
+   COMPONENT_QUERY(self->system, TSelectedComponent, cc, {
+      Entity *e = componentGetParent(cc, self->system);
+      entityDestroy(e);
+   });
+
    vecClear(EntityPtr)(self->selectList);
+}
+
+void selectionManagerSelect(SelectionManager *self, Recti box){
+   
+   _clearLists(self);
 
    COMPONENT_QUERY(self->system, TeamComponent, tc, {
       Entity *e = componentGetParent(tc, self->system);
@@ -63,9 +78,9 @@ void selectionManagerSelect(SelectionManager *self, Recti box){
       COMPONENT_ADD(cursor, LayerComponent, LayerTokens);;
       COMPONENT_ADD(cursor, SizeComponent, 32, 32);
       COMPONENT_ADD(cursor, LockedPositionComponent, *selected);
+      COMPONENT_ADD(cursor, TSelectedComponent, 0);
 
       entityUpdate(cursor);
-      vecPushBack(EntityPtr)(self->cursors, &cursor);
    });
 
 }

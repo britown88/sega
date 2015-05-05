@@ -9,7 +9,6 @@
 #define GRID_X_POS 224
 #define GRID_Y_POS 38
 #define GRID_RES_SIZE 32
-#define INF ((size_t)-1)
 
 typedef struct GridManager_t GridManager;
 
