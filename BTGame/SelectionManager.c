@@ -51,12 +51,15 @@ void _onDestroy(SelectionManager *self, Entity *e){
          entityGet(TSelectedCursorComponent)(sc->cursor)->parent = NULL;
          entityDestroy(sc->cursor);
       }
+
+      vecRemove(EntityPtr)(self->selectList, &e);
    }
 
    //remove selection from parent
    if (scc){
       if (scc->parent){
          entityRemove(TSelectedComponent)(scc->parent);
+         vecRemove(EntityPtr)(self->selectList, &scc->parent);
       }
    }
 }
