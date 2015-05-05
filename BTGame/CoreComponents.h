@@ -21,7 +21,7 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
-   int teamID;
+   size_t teamID;
 }TeamComponent;
 
 #define ComponentT TeamComponent

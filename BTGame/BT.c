@@ -6,6 +6,7 @@
 #include "Managers.h"
 #include "ImageLibrary.h"
 #include "GridManager.h"
+#include "SelectionManager.h"
 #include "WorldView.h"
 #include "GameState.h"
 

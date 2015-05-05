@@ -80,6 +80,7 @@
     <ClInclude Include="ImageLibrary.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
+    <ClInclude Include="SelectionManager.h" />
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>

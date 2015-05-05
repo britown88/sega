@@ -39,5 +39,4 @@ void interpolationManagerResume(InterpolationManager *self);
 DiceManager *createDiceManager(EntitySystem *system);
 void diceManagerUpdate(DiceManager *self);
 
-SelectionManager *createSelectionManager(EntitySystem *system);
-void selectionManagerSelect(SelectionManager *self, Recti box);
+

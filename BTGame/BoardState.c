@@ -1,5 +1,6 @@
 #include "WorldView.h"
 #include "Managers.h"
+#include "SelectionManager.h"
 #include "Entities\Entities.h"
 #include "ImageLibrary.h"
 #include "segalib\EGA.h"
@@ -71,6 +72,7 @@ static void _handleKeyboard(BoardState *state){
 }
 
 static void _handleMouse(BoardState *state){
+   BTManagers *managers = state->view->managers;
    Mouse *k = appGetMouse(appGet());
    MouseEvent e = { 0 };
    while (mousePopEvent(k, &e)){
@@ -78,14 +80,19 @@ static void _handleMouse(BoardState *state){
       switch (e.action){
       case SegaMouse_Pressed:
          if (e.button == SegaMouseBtn_Left){
-            cursorManagerStartDrag(state->view->managers->cursorManager, e.pos.x, e.pos.y);
+            cursorManagerStartDrag(managers->cursorManager, e.pos.x, e.pos.y);
          }
          
          break;
       case SegaMouse_Released:
          if (e.button == SegaMouseBtn_Left){
-            Recti box = cursorManagerEndDrag(state->view->managers->cursorManager, e.pos.x, e.pos.y);
-            selectionManagerSelect(state->view->managers->selectionManager, box);
+            SelectDataAreaTeam selectData;
+            SelectionCriteria criteria = selectAreaByTeam(&selectData);
+
+            selectData.box = cursorManagerEndDrag(managers->cursorManager, e.pos.x, e.pos.y);
+            selectData.teamID = 0;
+
+            selectionManagerSelect(managers->selectionManager, criteria);
          }
          
          break;

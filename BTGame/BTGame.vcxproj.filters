@@ -19,18 +19,15 @@
     <Filter Include="Source Files\GameStates">
       <UniqueIdentifier>{e67b7ef8-3602-4c4f-be8a-a28b645e92e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Managers">
+      <UniqueIdentifier>{f2bba4c6-6f0b-4243-8ca8-8e199896e249}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CoreComponents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Managers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GridManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MeshRendering.h">
@@ -44,6 +41,15 @@
     </ClInclude>
     <ClInclude Include="GameState.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectionManager.h">
+      <Filter>Header Files\Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
