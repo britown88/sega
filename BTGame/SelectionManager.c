@@ -6,9 +6,6 @@
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
 
-#define ClosureTPart CLOSURE_NAME(SelectionCriteria)
-#include "segautils\Closure_Impl.h"
-
 typedef struct{
    Entity *cursor;
 }TSelectedComponent;
@@ -77,13 +74,51 @@ static void _clearLists(SelectionManager *self){
    vecClear(EntityPtr)(self->selectList);
 }
 
-void selectionManagerSelect(SelectionManager *self, SelectionCriteria criteria){
+static bool _select(SelectionManager *self, Entity *e, SelectCriteria *filters, size_t filterCount){   
+   size_t i = 0;
+
+   for (i = 0; i < filterCount; ++i){
+      SelectCriteria *f = filters + i;
+      switch (f->type){
+      case scArea:
+      {
+         PositionComponent *pc = entityGet(PositionComponent)(e);
+         SizeComponent *sc = entityGet(SizeComponent)(e);
+         if (pc && sc){
+            Recti ebox = { pc->x, pc->y, pc->x + sc->x, pc->y + sc->y };
+            if (rectiIntersects(ebox, f->box)){
+               continue;
+            }
+         }
+      }
+         break;
+      case scTeam:
+      {
+         TeamComponent *tc = entityGet(TeamComponent)(e);
+         if (tc){
+            if (tc->teamID == f->teamID){
+               continue;
+            }
+         }
+      }
+         break;
+      }
+
+      //didnt hit a continue, so we failed
+      return false;
+   }
+
+   //made it through the loop
+   return true;
+}
+
+void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, size_t filterCount){
    
    _clearLists(self);
 
    COMPONENT_QUERY(self->system, GridComponent, tc, {
       Entity *e = componentGetParent(tc, self->system);
-      if (closureCall(&criteria, self->system, e)){
+      if (_select(self, e, filters, filterCount)){
          vecPushBack(EntityPtr)(self->selectList, &e);
       }
    });
@@ -105,25 +140,4 @@ void selectionManagerSelect(SelectionManager *self, SelectionCriteria criteria){
 
       entityUpdate(cursor);
    });
-}
-
-static bool _selectDataAreaTeam(SelectDataAreaTeam *data, EntitySystem *system, Entity *e){
-   PositionComponent *pc = entityGet(PositionComponent)(e);
-   TeamComponent *tc = entityGet(TeamComponent)(e);
-   SizeComponent *sc = entityGet(SizeComponent)(e);
-
-   if (pc && tc && sc){
-      Recti ebox = { pc->x, pc->y, pc->x + sc->x, pc->y + sc->y };
-      
-      return   tc->teamID == data->teamID &&
-         rectiIntersects(data->box, ebox);
-   }
-
-   return false;
-}
-
-SelectionCriteria selectAreaByTeam(SelectDataAreaTeam *data){
-   SelectionCriteria out;
-   closureInit(SelectionCriteria)(&out, data, (SelectionCriteriaFunc)&_selectDataAreaTeam, NULL);
-   return out;
 }

@@ -86,13 +86,12 @@ static void _handleMouse(BoardState *state){
          break;
       case SegaMouse_Released:
          if (e.button == SegaMouseBtn_Left){
-            SelectDataAreaTeam selectData;
-            SelectionCriteria criteria = selectAreaByTeam(&selectData);
+            Recti mouseArea = cursorManagerEndDrag(managers->cursorManager, e.pos.x, e.pos.y);
 
-            selectData.box = cursorManagerEndDrag(managers->cursorManager, e.pos.x, e.pos.y);
-            selectData.teamID = 0;
-
-            selectionManagerSelect(managers->selectionManager, criteria);
+            selectionManagerSelect(managers->selectionManager, 
+               { scArea, .box = mouseArea }, 
+               { scTeam, .teamID = 1 });
+            
          }
          
          break;

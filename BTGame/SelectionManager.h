@@ -7,17 +7,28 @@
 typedef struct EntitySystem_t EntitySystem;
 typedef struct SelectionManager_t SelectionManager;
 
-#define ClosureTPart \
-    CLOSURE_RET(bool) /*return whether or not to select*/\
-    CLOSURE_NAME(SelectionCriteria) \
-    CLOSURE_ARGS(EntitySystem *, Entity *)
-#include "segautils\Closure_Decl.h"
+typedef enum {
+   scTeam,
+   scArea
+} SelectCriteriaType;
 
 typedef struct {
-   Recti box;
-   size_t teamID;
-}SelectDataAreaTeam;
-SelectionCriteria selectAreaByTeam(SelectDataAreaTeam *data);
+   SelectCriteriaType type;
+
+   union {
+      Recti box;
+      size_t teamID;
+   };
+}SelectCriteria;
 
 SelectionManager *createSelectionManager(EntitySystem *system);
-void selectionManagerSelect(SelectionManager *self, SelectionCriteria criteria);
+void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, size_t filterCount);
+
+#define selectionManagerSelect(__selManager, ...) {\
+      SelectCriteria __filerList[] = { __VA_ARGS__ }; \
+      selectionManagerSelectEx(__selManager, __filerList, sizeof(__filerList)/sizeof(__filerList[0])); \
+   }
+
+#define selectionManagerSelectAll(__selManager) {\
+      selectionManagerSelectEx(__selManager, NULL, 0); \
+   }
