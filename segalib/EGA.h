@@ -59,7 +59,6 @@ Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCo
 void paletteCopy(Palette *dest, Palette *src);
 
 typedef struct Image_t Image;
-typedef struct FlatImage_t FlatImage;
 
 Frame *frameCreate();
 void frameDestroy(Frame *self);
@@ -95,11 +94,12 @@ typedef struct Image_t Image;
 
 Image *imageCreate(short width, short height);
 
-FlatImage *imageRenderToFlat(Image *self);
-short flatImageGetWidth(FlatImage *self);
-short flatImageGetHeight(FlatImage *self);
-SuperBitPlane *flatImageGetPlane(FlatImage *self, byte plane);
-void flatImageDestroy(FlatImage *self);
+typedef struct FlatImage_t{
+   short width, height;
+   SuperBitPlane planes[EGA_IMAGE_PLANES];
+}FlatImage;
+
+void imageRenderToFlat(Image *self, FlatImage *dest);
 
 //deserializes an ega file and maintains the file's scanline compression in memory
 Image *imageDeserialize(const char*path);

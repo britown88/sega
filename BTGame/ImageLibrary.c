@@ -75,7 +75,7 @@ ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView path){
          out->image = newImage;
          out->map = self->table;
          out->path = path;
-         out->useCount = 1;
+         out->useCount = 2;
 
          entry.value = out;
          htInsert(iEntry)(self->table, &entry);

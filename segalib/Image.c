@@ -37,38 +37,18 @@ struct Image_t {
    ImageScanLineArray planes[EGA_PLANES + 1];
 };
 
-struct FlatImage_t{
-   short width, height;
-   SuperBitPlane planes[EGA_IMAGE_PLANES];
-};
-
-FlatImage *imageRenderToFlat(Image *self){
-   FlatImage *out = checkedCalloc(1, sizeof(FlatImage));
+void imageRenderToFlat(Image *self, FlatImage *dest){
    byte i = 0;
    short y = 0;
 
-   out->width = self->width;
-   out->height = self->height;
+   dest->width = self->width;
+   dest->height = self->height;
 
    for (i = 0; i < EGA_IMAGE_PLANES; ++i){
       for (y = 0; y < self->height; ++y){
-         imageScanLineRender(imageGetScanLine(self, y, i), out->planes[i].lines[y].pixels);
+         imageScanLineRender(imageGetScanLine(self, y, i), dest->planes[i].lines[y].pixels);
       }
    }
-
-   return out;
-}
-short flatImageGetWidth(FlatImage *self){
-   return self->width;
-}
-short flatImageGetHeight(FlatImage *self){
-   return self->height;
-}
-SuperBitPlane *flatImageGetPlane(FlatImage *self, byte plane){
-   return self->planes + plane;
-}
-void flatImageDestroy(FlatImage *self){
-   checkedFree(self);
 }
 
 Image *imageCreate(short width, short height) {

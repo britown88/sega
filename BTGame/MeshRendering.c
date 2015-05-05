@@ -11,6 +11,8 @@
 #include "SEGA\App.h"
 #include <math.h>
 
+static FlatImage g_flatImage = { 0 };
+
 typedef struct{
    FlatImage *img;
    Frame *frame;
@@ -36,13 +38,13 @@ static void textureShader(RenderData *r, TexCoords *data, TrianglePoint *p){
       texY += data->coords[i].y * p->b[i];
    }
 
-   x = abs((int)texX) % flatImageGetWidth(r->img);
-   y = abs((int)texY) % flatImageGetHeight(r->img);
+   x = abs((int)texX) % r->img->width;
+   y = abs((int)texY) % r->img->height;
 
-   buff = flatImageGetPlane(r->img, 0)->lines + y;
+   buff = r->img->planes[0].lines + y;
    if (!getBitFromArray(buff->pixels, x)){
       for (i = 0; i < EGA_PLANES; ++i){
-         buff = flatImageGetPlane(r->img, i + 1)->lines + y;
+         buff = r->img->planes[i + 1].lines + y;
 
          setBitInArray(r->frame->planes[i].lines[p->pos.y].pixels, p->pos.x, getBitFromArray(buff->pixels, x));
       }
@@ -72,13 +74,15 @@ static void buildTransform(Matrix *m, Transform t){
 }
 
 void renderMesh(vec(Vertex) *vbo, vec(size_t) *ibo, Image *tex, Transform t, Frame *frame){
-   RenderData r = { .img = imageRenderToFlat(tex) , .frame = frame};
+   RenderData r = { .img = &g_flatImage, .frame = frame };
    size_t iCount = vecSize(size_t)(ibo);
    size_t i = 0, j = 0;
    PixelShader shader = { 0 };
    Vertex *v[3] = { 0 };
    Float3 vPos[3] = { 0 };
    Matrix m;
+
+   imageRenderToFlat(tex, r.img);
 
    buildTransform(&m, t);
    closureInit(PixelShader)(&shader, &r, (PixelShaderFunc)&textureShader, NULL);
@@ -102,6 +106,4 @@ void renderMesh(vec(Vertex) *vbo, vec(size_t) *ibo, Image *tex, Transform t, Fra
                                      (Int2){ (int)vPos[2].x, (int)vPos[2].y });
       }
    }
-
-   flatImageDestroy(r.img);
 }
