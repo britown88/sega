@@ -174,6 +174,43 @@ void frameRenderImage(Frame *self, short x, short y, Image *img) {
    }
 }
 
+void frameRenderRect(Frame *self, short left, short top, short right, short bottom, byte color){
+   short width = right - left;
+   short height = bottom - top;
+   short x = left;
+   short y = top;
+
+   short clipSizeX, clipSizeY, ignoreOffsetX, ignoreOffsetY;
+   int j, i;
+   byte colorBuffer[MAX_IMAGE_WIDTH] = { 0 };
+   byte alphaBuffer[MAX_IMAGE_WIDTH] = { 0 };
+
+   ignoreOffsetX = x < 0 ? -x : 0;
+   ignoreOffsetY = y < 0 ? -y : 0;
+
+   clipSizeX = width;
+   clipSizeY = height;
+   if (clipSizeX + x > EGA_RES_WIDTH) clipSizeX = EGA_RES_WIDTH - x;
+   if (clipSizeY + y > EGA_RES_HEIGHT) clipSizeY = EGA_RES_HEIGHT - y;
+
+   clipSizeX -= ignoreOffsetX;
+   clipSizeY -= ignoreOffsetY;
+
+   if (clipSizeX <= 0 || clipSizeY <= 0) {
+      return;
+   }
+
+   for (j = 0; j < clipSizeY; ++j) {
+      for (i = 0; i < EGA_PLANES; ++i) {
+         byte bit = getBitFromArray(&color, i) ? 255 : 0;
+         memset(colorBuffer, bit, sizeof(colorBuffer));
+
+         _scanLineRenderImageScanLine(&self->planes[i].lines[j + y + ignoreOffsetY], x + ignoreOffsetX,
+            colorBuffer, alphaBuffer, ignoreOffsetX, clipSizeX);
+      }
+   }
+}
+
 void frameRenderPoint(Frame *self, short x, short y, byte color){
    if (x >= 0 && x < EGA_RES_WIDTH && y >= 0 && y < EGA_RES_HEIGHT){
       int j;

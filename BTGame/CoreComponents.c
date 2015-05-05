@@ -35,3 +35,6 @@
 
 #define ComponentT PolygonComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT RectangleComponent
+#include "Entities\ComponentImpl.h"

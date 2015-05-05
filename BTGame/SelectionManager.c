@@ -74,8 +74,9 @@ void selectionManagerSelect(SelectionManager *self, Recti box){
 
       COMPONENT_ADD(cursor, PositionComponent, 0, 0);
       COMPONENT_ADD(cursor, ImageComponent, stringIntern("assets/img/select.ega"));
+      COMPONENT_ADD(cursor, RectangleComponent, 15);
 
-      COMPONENT_ADD(cursor, LayerComponent, LayerTokens);;
+      COMPONENT_ADD(cursor, LayerComponent, LayerSubToken0);;
       COMPONENT_ADD(cursor, SizeComponent, 32, 32);
       COMPONENT_ADD(cursor, LockedPositionComponent, *selected);
       COMPONENT_ADD(cursor, TSelectedComponent, 0);

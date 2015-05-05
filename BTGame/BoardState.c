@@ -104,10 +104,9 @@ void _boardHandleInput(BoardState *state, GameStateHandleInput *m){
 }
 
 void _boardRender(BoardState *state, GameStateRender *m){
-   //Mouse *mouse = appGetMouse(appGet());
-   //Int2 mousePos = mouseGetPosition(mouse);
 
    renderManagerRender(state->view->managers->renderManager, m->frame);
+   
 }
 
 StateClosure gameStateCreateBoard(WorldView *view){

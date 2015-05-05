@@ -142,7 +142,7 @@ void _onStart(BTGame *self){
       COMPONENT_ADD(e, GridComponent, i % TABLE_WIDTH, i/TABLE_WIDTH);
       COMPONENT_ADD(e, SizeComponent, 32, 32);
       COMPONENT_ADD(e, TeamComponent, i%2);
-      //COMPONENT_ADD(e, WanderComponent, 1);
+      COMPONENT_ADD(e, WanderComponent, 1);
 
       entityUpdate(e);
    }

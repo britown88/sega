@@ -154,18 +154,24 @@ void _renderPolygon(Frame *frame, vec(Int2) *pList, byte color){
 
 void _renderEntity(Entity *e, Frame *frame){
    PositionComponent *pc = entityGet(PositionComponent)(e);
+   SizeComponent *sc = entityGet(SizeComponent)(e);
+   RectangleComponent *rc = entityGet(RectangleComponent)(e);
    MeshComponent *mc = entityGet(MeshComponent)(e);
    PolygonComponent *polyc = entityGet(PolygonComponent)(e);
    TRenderComponent *trc = entityGet(TRenderComponent)(e);
    int x = 0, y = 0;
    Image *img = managedImageGetImage(trc->img);
 
-   if (img){
-      if (pc){
-         x = pc->x;
-         y = pc->y;
-      }
+   if (pc){
+      x = pc->x;
+      y = pc->y;
+   }
 
+   if (sc && rc){
+      frameRenderRect(frame, x, y, x + sc->x, y + sc->y, rc->color);
+   }
+
+   if (img){
       if (mc){
          _renderMeshEntity(e, frame, mc, x, y, img);
       }

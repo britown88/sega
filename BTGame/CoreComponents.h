@@ -59,6 +59,7 @@ typedef struct{
 
 typedef enum{
    LayerBackground,
+   LayerSubToken0,
    LayerTokens,
    LayerUI,
    LayerCount
@@ -105,6 +106,13 @@ typedef struct {
 }PolygonComponent;
 
 #define ComponentT PolygonComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   byte color;
+}RectangleComponent;
+
+#define ComponentT RectangleComponent
 #include "Entities\ComponentDecl.h"
 
 #pragma pack(pop)

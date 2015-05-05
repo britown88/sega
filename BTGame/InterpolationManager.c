@@ -51,8 +51,19 @@ void _onUpdate(InterpolationManager *self, Entity *e){
    TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
+   LockedPositionComponent *lpc = entityGet(LockedPositionComponent)(e);
 
    if (pc){
+      if (lpc){
+         Entity *e = componentGetParent(lpc, self->system);
+         PositionComponent *pc = entityGet(PositionComponent)(e);
+         PositionComponent *opc = entityGet(PositionComponent)(lpc->parent);
+         if (opc){
+            pc->x = opc->x;
+            pc->y = opc->y;
+         }
+      }
+
       if (ic){
          if (tic){
             //already has one
