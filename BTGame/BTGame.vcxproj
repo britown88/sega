@@ -93,7 +93,7 @@
     <ClCompile Include="DiceManager.c" />
     <ClCompile Include="GameState.c" />
     <ClCompile Include="GridManager.c" />
-    <ClCompile Include="GridTraversalManager.c" />
+    <ClCompile Include="CommandManager.c" />
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="RenderManager.c" />

@@ -8,7 +8,7 @@ typedef struct CursorManager_t CursorManager;
 typedef struct EntitySystem_t EntitySystem;
 typedef struct ImageLibrary_t ImageLibrary;
 typedef struct GridManager_t GridManager;
-typedef struct GridTraversalManager_t GridTraversalManager;
+typedef struct CommandManager_t CommandManager;
 typedef struct InterpolationManager_t InterpolationManager;
 typedef struct DiceManager_t DiceManager;
 typedef struct SelectionManager_t SelectionManager;
@@ -18,7 +18,7 @@ typedef struct BTManagers_t {
    RenderManager *renderManager;
    CursorManager *cursorManager;
    GridManager *gridManager;
-   GridTraversalManager *gridTraversalManager;
+   CommandManager *commandManager;
    InterpolationManager *interpolationManager;
    DiceManager *diceManager;
    SelectionManager *selectionManager;
@@ -27,8 +27,8 @@ typedef struct BTManagers_t {
 RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);
 
-GridTraversalManager *createGridTraversalManager(EntitySystem *system, GridManager *grid);
-void gridTraversalManagerUpdate(GridTraversalManager *self);
+CommandManager *createCommandManager(EntitySystem *system, GridManager *grid);
+void commandManagerUpdate(CommandManager *self);
 
 CursorManager *createCursorManager(EntitySystem *system);
 void cursorManagerCreateCursor(CursorManager *self);

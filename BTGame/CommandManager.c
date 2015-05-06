@@ -132,29 +132,29 @@ static void derjpkstras(EntitySystem *system, GridManager *manager){
 }
 
 
-struct GridTraversalManager_t{
+struct CommandManager_t{
    Manager m;
    EntitySystem *system;
 
    GridManager *grid;
 };
 
-ImplManagerVTable(GridTraversalManager)
+ImplManagerVTable(CommandManager)
 
-GridTraversalManager *createGridTraversalManager(EntitySystem *system, GridManager *grid){
-   GridTraversalManager *out = checkedCalloc(1, sizeof(GridTraversalManager));
+CommandManager *createCommandManager(EntitySystem *system, GridManager *grid){
+   CommandManager *out = checkedCalloc(1, sizeof(CommandManager));
    out->system = system;
-   out->m.vTable = CreateManagerVTable(GridTraversalManager);
+   out->m.vTable = CreateManagerVTable(CommandManager);
    out->grid = grid;
 
    return out;
 }
 
-void _destroy(GridTraversalManager *self){
+void _destroy(CommandManager *self){
    checkedFree(self);
 }
-void _onDestroy(GridTraversalManager *self, Entity *e){}
-void _onUpdate(GridTraversalManager *self, Entity *e){}
+void _onDestroy(CommandManager *self, Entity *e){}
+void _onUpdate(CommandManager *self, Entity *e){}
 
-void gridTraversalManagerUpdate(GridTraversalManager *self){
+void commandManagerUpdate(CommandManager *self){
 }
