@@ -16,5 +16,7 @@ typedef enum{
 #define VectorTPart Coroutine
 #include "Vector_Decl.h"
 
+void coroutineDestroy(Coroutine *self);
+
 Coroutine createSynchronizedList(vec(Coroutine) **listOut);
 Coroutine createExecutionList(vec(Coroutine) **listOut);

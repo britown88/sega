@@ -2,6 +2,8 @@
 
 #include "segautils\Preprocessor.h"
 #include "segautils\Rect.h"
+#include "segautils\Coroutine.h"
+#include "Entities\Entities.h"
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
@@ -27,8 +29,11 @@ typedef struct BTManagers_t {
 RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);
 
-CommandManager *createCommandManager(EntitySystem *system, GridManager *grid);
+CommandManager *createCommandManager(EntitySystem *system);
 void commandManagerUpdate(CommandManager *self);
+void entityPushCommand(Entity *e, Coroutine cmd);
+void entityCancelCommands(Entity *e);
+void entityClearCommands(Entity *e);
 
 CursorManager *createCursorManager(EntitySystem *system);
 void cursorManagerCreateCursor(CursorManager *self);

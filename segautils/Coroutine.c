@@ -6,7 +6,7 @@
 #define VectorTPart Coroutine
 #include "Vector_Impl.h"
 
-static void _coroutineDestroy(Coroutine *self){
+void coroutineDestroy(Coroutine *self){
    closureDestroy(Coroutine)(self);
 }
 
@@ -19,7 +19,7 @@ static CoroutineStatus _synchronized(vec(Coroutine) *list, bool cancel){
    CoroutineStatus status = Finished;
 
    vecForEach(Coroutine, /*Coroutine* */c, list, {
-      CoroutineStatus status = closureCall(c, cancel);
+      status = closureCall(c, cancel);
 
       if (status == Finished){
          if (!deleteList){
@@ -50,7 +50,7 @@ static CoroutineStatus _synchronized(vec(Coroutine) *list, bool cancel){
 
 Coroutine createSynchronizedList(vec(Coroutine) **listOut){
    Coroutine out;
-   vec(Coroutine) *list = vecCreate(Coroutine)(&_coroutineDestroy);
+   vec(Coroutine) *list = vecCreate(Coroutine)(&coroutineDestroy);
    *listOut = list;
    closureInit(Coroutine)(&out, list, (CoroutineFunc)&_synchronized, &_coroutineVectorDestroy);
    return out;
@@ -63,7 +63,7 @@ typedef struct {
 
 static ExecutionListData *_executionDataCreate(){
    ExecutionListData *out = checkedCalloc(1, sizeof(ExecutionListData));
-   out->list = vecCreate(Coroutine)(&_coroutineDestroy);
+   out->list = vecCreate(Coroutine)(&coroutineDestroy);
    out->iter = 0;
    return out;
 }
@@ -79,6 +79,11 @@ static CoroutineStatus _execution(ExecutionListData *data, bool cancel){
    //sanity check to see if we're done before we start
    if (data->iter >= count){
       return Finished;
+   }
+
+   //remove everything after the current if cancelling
+   if (cancel && count > data->iter + 1){
+      vecResize(Coroutine)(data->list, data->iter + 1, &(Coroutine){0});
    }
 
    if (closureCall(vecAt(Coroutine)(data->list, data->iter), cancel) == Finished){
