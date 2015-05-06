@@ -15,9 +15,6 @@
 #define ComponentT LockedPositionComponent
 #include "Entities\ComponentImpl.h"
 
-#define ComponentT VelocityComponent
-#include "Entities\ComponentImpl.h"
-
 #define ComponentT ImageComponent
 #include "Entities\ComponentImpl.h"
 

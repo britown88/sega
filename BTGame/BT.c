@@ -77,6 +77,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.renderManager, createRenderManager(self->entitySystem, self->imageLibrary, &self->data.fps));
    RegisterManager(self->managers.cursorManager, createCursorManager(self->entitySystem));
    RegisterManager(self->managers.gridManager, createGridManager(self->entitySystem));
+   RegisterManager(self->managers.gridTraversalManager, createGridTraversalManager(self->entitySystem, self->managers.gridManager));
    RegisterManager(self->managers.interpolationManager, createInterpolationManager(self->entitySystem));
    RegisterManager(self->managers.diceManager, createDiceManager(self->entitySystem));
    RegisterManager(self->managers.selectionManager, createSelectionManager(self->entitySystem));
@@ -88,6 +89,7 @@ void _destroyEntitySystem(BTGame *self){
    managerDestroy((Manager*)self->managers.renderManager);
    managerDestroy((Manager*)self->managers.cursorManager);
    managerDestroy((Manager*)self->managers.gridManager);
+   managerDestroy((Manager*)self->managers.gridTraversalManager);
    managerDestroy((Manager*)self->managers.interpolationManager);
    managerDestroy((Manager*)self->managers.diceManager);
    managerDestroy((Manager*)self->managers.selectionManager);
@@ -132,7 +134,7 @@ void _onStart(BTGame *self){
       entityUpdate(e);
    }   
 
-   for (i = 0; i < CELL_COUNT - 12; ++i){
+   for (i = 0; i < 2/*CELL_COUNT - 12*/; ++i){
 
       Entity *e = entityCreate(self->entitySystem);
 
@@ -143,7 +145,7 @@ void _onStart(BTGame *self){
       COMPONENT_ADD(e, GridComponent, i % TABLE_WIDTH, i/TABLE_WIDTH);
       COMPONENT_ADD(e, SizeComponent, 32, 32);
       COMPONENT_ADD(e, TeamComponent, i%2);
-      COMPONENT_ADD(e, WanderComponent, 1);
+      //COMPONENT_ADD(e, WanderComponent, 1);
 
       entityUpdate(e);
    }

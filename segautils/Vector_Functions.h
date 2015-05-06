@@ -23,11 +23,16 @@
 #define vecPushStackArray(TYPE, list, ...) vecPushArray(TYPE)(list, (TYPE[])__VA_ARGS__, sizeof((TYPE[])__VA_ARGS__) / sizeof(TYPE))
 
 #define vecForEach(TYPE, varName, list, ...) {\
-vec(TYPE) *CONCAT(__temp_, vec(TYPE)) = list; /*cache the list before use*/ \
-if(!vecIsEmpty(TYPE)(CONCAT(__temp_, vec(TYPE)))){\
-   TYPE *varName = vecBegin(TYPE)(CONCAT(__temp_, vec(TYPE))); \
-   TYPE *CONCAT(__end_, TYPE) = vecEnd(TYPE)(CONCAT(__temp_, vec(TYPE))); \
-   for(; varName != CONCAT(__end_, TYPE); ++varName) __VA_ARGS__ \
-}}
+   vec(TYPE) *CONCAT(__temp_, vec(TYPE)) = list; /*cache the list before use*/ \
+   if(!vecIsEmpty(TYPE)(CONCAT(__temp_, vec(TYPE)))){\
+      TYPE *varName = vecBegin(TYPE)(CONCAT(__temp_, vec(TYPE))); \
+      TYPE *CONCAT(__end_, TYPE) = vecEnd(TYPE)(CONCAT(__temp_, vec(TYPE))); \
+      \
+      for(; varName != CONCAT(__end_, TYPE); ++varName){ \
+         __VA_ARGS__ \
+      }\
+   } \
+}
+
 
 #endif

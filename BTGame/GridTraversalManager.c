@@ -1,15 +1,17 @@
+#include "Managers.h"
+#include "segashared\CheckedMemory.h"
 #include "Entities\Entities.h"
-#include "CoreComponents.h"
 #include "GridManager.h"
 #include "SEGA\App.h"
-#include "segautils\StandardVectors.h"
+#include "SEGA\Input.h"
+#include "CoreComponents.h"
 #include <math.h>
 
 typedef struct{
    size_t targetPos;
-}TDerpComponent;
+}TGridTargetComponent;
 
-#define TComponentT TDerpComponent
+#define TComponentT TGridTargetComponent
 #include "Entities\ComponentDeclTransient.h"
 
 typedef struct{
@@ -20,7 +22,7 @@ typedef struct{
    GridNodePublic *closestNode;
 }TestData;
 
-size_t _processNeighbor(TestData *data, GridNodePublic *current, GridNodePublic *neighbor){
+static size_t _processNeighbor(TestData *data, GridNodePublic *current, GridNodePublic *neighbor){
    vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
    if (entities && !vecIsEmpty(EntityPtr)(entities)){
       return INF;
@@ -28,11 +30,11 @@ size_t _processNeighbor(TestData *data, GridNodePublic *current, GridNodePublic 
    return gridNodeGetScore(current) + 1;
 }
 
-GridNodePublic *_processCurrent(TestData *data, GridNodePublic *current){
+static GridNodePublic *_processCurrent(TestData *data, GridNodePublic *current){
    size_t currentScore = gridNodeGetScore(current);
    size_t h;
    int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-   
+
    if (gridNodeGetScore(current) == INF){
       //cant get to destination, use closest
       return data->closestNode;
@@ -55,36 +57,28 @@ GridNodePublic *_processCurrent(TestData *data, GridNodePublic *current){
    return  NULL;
 }
 
-GridSolution solve(GridManager *manager, size_t start, size_t destination){
-   
+static GridSolution solve(GridManager *manager, size_t start, size_t destination){
+
    GridProcessCurrent cFunc;
    GridProcessNeighbor nFunc;
-   TestData data = {manager, destination, INF, NULL};
+   TestData data = { manager, destination, INF, NULL };
 
    closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
    closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);
 
-   GridSolution solution = gridManagerSolve(manager, start, cFunc, nFunc);
-
-   if (data.lowestHeuristic != solution.totalCost){
-      //update solution
-   }
-
-   return solution;
+   return gridManagerSolve(manager, start, cFunc, nFunc);
 }
 
 
 static void _updateEntity(Entity *e, GridManager *manager){
-   
-
    GridComponent *gc = entityGet(GridComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
-   TDerpComponent *dc = entityGet(TDerpComponent)(e);
+   TGridTargetComponent *dc = entityGet(TGridTargetComponent)(e);
 
    if (gc && !dc){
-      COMPONENT_ADD(e, TDerpComponent, INF);
-      dc = entityGet(TDerpComponent)(e);
+      COMPONENT_ADD(e, TGridTargetComponent, INF);
+      dc = entityGet(TGridTargetComponent)(e);
    }
 
    if (gc && pc){
@@ -95,8 +89,6 @@ static void _updateEntity(Entity *e, GridManager *manager){
          GridSolution solution;
          size_t pos = gridIndexFromXY(gc->x, gc->y);
          size_t dest = INF;
-         //pc->x = GRID_X_POS + gc->x * GRID_RES_SIZE;
-         //pc->y = GRID_Y_POS + gc->y * GRID_RES_SIZE;
 
          if (pos == dc->targetPos || dc->targetPos == INF){
             size_t newDest = pos;
@@ -117,7 +109,7 @@ static void _updateEntity(Entity *e, GridManager *manager){
             COMPONENT_LOCK(GridComponent, newgc, e, {
                gridXYFromIndex(dest, &newgc->x, &newgc->y);
             });
-            
+
             COMPONENT_ADD(e, InterpolationComponent,
                .destX = GRID_X_POS + gc->x * GRID_RES_SIZE,
                .destY = GRID_Y_POS + gc->y * GRID_RES_SIZE,
@@ -126,15 +118,43 @@ static void _updateEntity(Entity *e, GridManager *manager){
             entityUpdate(e);
          }
 
-         
+
       }
    }
 }
 
-void derjpkstras(EntitySystem *system, GridManager *manager){ 
+static void derjpkstras(EntitySystem *system, GridManager *manager){
    COMPONENT_QUERY(system, WanderComponent, c, {
       Entity *e = componentGetParent(c, system);
       _updateEntity(e, manager);
    });
 
+}
+
+
+struct GridTraversalManager_t{
+   Manager m;
+   EntitySystem *system;
+
+   GridManager *grid;
+};
+
+ImplManagerVTable(GridTraversalManager)
+
+GridTraversalManager *createGridTraversalManager(EntitySystem *system, GridManager *grid){
+   GridTraversalManager *out = checkedCalloc(1, sizeof(GridTraversalManager));
+   out->system = system;
+   out->m.vTable = CreateManagerVTable(GridTraversalManager);
+   out->grid = grid;
+
+   return out;
+}
+
+void _destroy(GridTraversalManager *self){
+   checkedFree(self);
+}
+void _onDestroy(GridTraversalManager *self, Entity *e){}
+void _onUpdate(GridTraversalManager *self, Entity *e){}
+
+void gridTraversalManagerUpdate(GridTraversalManager *self){
 }

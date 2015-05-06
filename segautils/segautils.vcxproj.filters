@@ -28,6 +28,9 @@
     <ClCompile Include="FSM.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Coroutine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preprocessor.h">
@@ -100,6 +103,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FSM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Coroutine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

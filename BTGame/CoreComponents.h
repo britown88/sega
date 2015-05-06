@@ -44,13 +44,6 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct{
-   int x, y;
-}VelocityComponent;
-
-#define ComponentT VelocityComponent
-#include "Entities\ComponentDecl.h"
-
-typedef struct{
    StringView filename;
 }ImageComponent;
 
@@ -86,7 +79,6 @@ typedef struct {
 
 #define ComponentT WanderComponent
 #include "Entities\ComponentDecl.h"
-
 
 typedef struct {
    vec(Vertex) *vbo;

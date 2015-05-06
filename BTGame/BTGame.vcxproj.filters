@@ -95,5 +95,8 @@
     <ClCompile Include="SelectionManager.c">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="GridTraversalManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
