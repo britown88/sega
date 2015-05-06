@@ -22,6 +22,9 @@
     <Filter Include="Header Files\Managers">
       <UniqueIdentifier>{f2bba4c6-6f0b-4243-8ca8-8e199896e249}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Commands">
+      <UniqueIdentifier>{a9ca7d73-333f-431c-9822-81d70be7e6c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
@@ -51,15 +54,15 @@
     <ClInclude Include="SelectionManager.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
+    <ClInclude Include="Commands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CoreComponents.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Derjpkstras.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MeshRendering.c">
@@ -97,6 +100,9 @@
     </ClCompile>
     <ClCompile Include="CommandManager.c">
       <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="GridMove.c">
+      <Filter>Source Files\Commands</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

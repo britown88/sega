@@ -74,6 +74,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BT.h" />
+    <ClInclude Include="Commands.h" />
     <ClInclude Include="CoreComponents.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GridManager.h" />
@@ -89,9 +90,9 @@
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
-    <ClCompile Include="Derjpkstras.c" />
     <ClCompile Include="DiceManager.c" />
     <ClCompile Include="GameState.c" />
+    <ClCompile Include="GridMove.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="CommandManager.c" />
     <ClCompile Include="ImageLibrary.c" />

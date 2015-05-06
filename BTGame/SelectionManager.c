@@ -144,3 +144,7 @@ void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, s
       entityUpdate(cursor);
    });
 }
+
+vec(EntityPtr) *selectionManagerGetSelected(SelectionManager *self){
+   return self->selectList;
+}

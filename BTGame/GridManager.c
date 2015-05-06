@@ -331,3 +331,38 @@ vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index){
    }
 }
 
+size_t gridIndexFromScreenXY(int x, int y){
+   return gridIndexFromXY(
+      (x - GRID_X_POS) / GRID_RES_SIZE,
+      (y - GRID_Y_POS) / GRID_RES_SIZE);
+}
+
+void gridXYFromScreenXY(int x, int y, int *gx, int *gy){
+   gridXYFromIndex(gridIndexFromScreenXY(x, y), gx, gy);
+}
+
+size_t gridIndexFromXY(int x, int y){
+   if (x < 0 || x >= TABLE_WIDTH || y < 0 || y >= TABLE_HEIGHT){
+      return INF;
+   }
+
+   return TABLE_WIDTH * y + x;
+}
+
+void gridXYFromIndex(size_t index, int*x, int*y){
+   *x = index % TABLE_WIDTH;
+   *y = index / TABLE_WIDTH;
+}
+
+void screenPosFromGridXY(int gx, int gy, int *x, int *y){
+   *x = GRID_X_POS + gx * GRID_RES_SIZE;
+   *y = GRID_Y_POS + gy * GRID_RES_SIZE;
+}
+
+void screenPosFromGridIndex(size_t index, int *x, int *y){
+   int gx, gy;
+   gridXYFromIndex(index, &gx, &gy);
+   screenPosFromGridXY(gx, gy, x, y);
+}
+
+

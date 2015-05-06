@@ -23,6 +23,7 @@ typedef struct {
 
 SelectionManager *createSelectionManager(EntitySystem *system);
 void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, size_t filterCount);
+vec(EntityPtr) *selectionManagerGetSelected(SelectionManager *self);
 
 #define selectionManagerSelect(__selManager, ...) {\
       SelectCriteria __filerList[] = { __VA_ARGS__ }; \

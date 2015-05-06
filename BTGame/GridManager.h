@@ -49,15 +49,10 @@ typedef struct {
 GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCurrent cFunc, GridProcessNeighbor nFunc);
 vec(EntityPtr) *gridManagerEntitiesAt(GridManager *self, size_t index);
 
-static size_t gridIndexFromXY(int x, int y){
-   if (x < 0 || x >= TABLE_WIDTH || y < 0 || y >= TABLE_HEIGHT){
-      return INF;
-   }
+size_t gridIndexFromScreenXY(int x, int y);
+void gridXYFromScreenXY(int x, int y, int *gx, int *gy);
+size_t gridIndexFromXY(int x, int y);
+void gridXYFromIndex(size_t index, int*x, int*y);
+void screenPosFromGridXY(int gx, int gy, int *x, int *y);
+void screenPosFromGridIndex(size_t index, int *x, int *y);
 
-   return TABLE_WIDTH * y + x;
-}
-
-static void gridXYFromIndex(size_t index, int*x, int*y){
-   *x = index % TABLE_WIDTH;
-   *y = index / TABLE_WIDTH;
-}
