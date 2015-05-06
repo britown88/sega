@@ -8,6 +8,7 @@ typedef struct {
    Entity *e;
    GridManager *manager;
    size_t destination;
+   size_t blockedAttempts;
 } GridMoveData;
 
 static GridMoveData *_gridMoveDataCreate(){
@@ -94,14 +95,17 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    pos = gridIndexFromXY(gc->x, gc->y);
 
    if (cancel || pos == data->destination || data->destination == INF){
-      //op was cancelled, we made it, or we cant make it... so we're done
+      //op was cancelled or we made it... so we're done
       return Finished;
    }
 
    //wasnt cancelled and still have a ways to go...continue on...
    solution = solve(data->manager, pos, data->destination);
-   if (solution.totalCost == 0){
+   if (solution.totalCost == 0 && ++data->blockedAttempts > 10){
       data->destination = solution.solutionCell;
+   }
+   else{
+      data->blockedAttempts = 0;
    }
 
    if (solution.totalCost > 0){

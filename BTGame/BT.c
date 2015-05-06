@@ -134,7 +134,7 @@ void _onStart(BTGame *self){
       entityUpdate(e);
    }   
 
-   for (i = 0; i < 2/*CELL_COUNT - 12*/; ++i){
+   for (i = 0; i < 24/*CELL_COUNT - 12*/; ++i){
 
       Entity *e = entityCreate(self->entitySystem);
 
