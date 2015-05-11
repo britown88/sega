@@ -35,3 +35,6 @@
 
 #define ComponentT RectangleComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT VisibilityComponent
+#include "Entities\ComponentImpl.h"

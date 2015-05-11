@@ -6,18 +6,24 @@
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
 
+//this vector ahs to be created on component add
+//it will be destroyed when an entity with it is destroyed
+//dont remove this component without vecdestroyign its interior!
+//(shouldnt be a problem since this comp is only acessible in this file)
 typedef struct{
-   Entity *cursor;
+   vec(EntityPtr) *transientList;
 }TSelectedComponent;
 
 #define TComponentT TSelectedComponent
 #include "Entities\ComponentDeclTransient.h"
 
+//marks en entity as a transient element 
+//tied to a parent
 typedef struct{
    Entity *parent;
-}TSelectedCursorComponent;
+}TSelectedTransientComponent;
 
-#define TComponentT TSelectedCursorComponent
+#define TComponentT TSelectedTransientComponent
 #include "Entities\ComponentDeclTransient.h"
 
 struct SelectionManager_t{
@@ -43,38 +49,85 @@ void _destroy(SelectionManager *self){
 }
 void _onDestroy(SelectionManager *self, Entity *e){
    TSelectedComponent *sc = entityGet(TSelectedComponent)(e);
-   TSelectedCursorComponent *scc = entityGet(TSelectedCursorComponent)(e);
+   TSelectedTransientComponent *scc = entityGet(TSelectedTransientComponent)(e);
 
-   //delete cursor
+   //selected entity is being deleted, kill its transient selection entities
    if (sc){
-      if (sc->cursor){
-         entityGet(TSelectedCursorComponent)(sc->cursor)->parent = NULL;
-         entityDestroy(sc->cursor);
-      }
+      vecForEach(EntityPtr, te, sc->transientList, {
+         entityGet(TSelectedTransientComponent)(*te)->parent = NULL;
+         entityDestroy(*te);
+      });
 
+      vecDestroy(EntityPtr)(sc->transientList);
       vecRemove(EntityPtr)(self->selectList, &e);
    }
 
-   //remove selection from parent
-   if (scc){
-      if (scc->parent){
-         entityRemove(TSelectedComponent)(scc->parent);
-         vecRemove(EntityPtr)(self->selectList, &scc->parent);
+   //a transient elemnt is being desstroyed, if it still has a parent we need to 
+   //remove it from its parent's list.  
+   if (scc && scc->parent){
+      TSelectedComponent *parentsc = entityGet(TSelectedComponent)(scc->parent);
+      if (parentsc){
+         vecRemove(EntityPtr)(parentsc->transientList, &e);
       }
    }
 }
 void _onUpdate(SelectionManager *self, Entity *e){}
 
-static void _clearLists(SelectionManager *self){
 
-   COMPONENT_QUERY(self->system, TSelectedCursorComponent, cc, {
+//ensure selected entity has a selection list and the primary cursor transient set to shown by default
+static TSelectedComponent *_initSelection(Entity *e){
+   TSelectedComponent *sc = entityGet(TSelectedComponent)(e);
+   if (!sc){
+      Entity *cursor = entityCreate(entityGetSystem(e));
+
+      COMPONENT_ADD(cursor, PositionComponent, 0, 0);
+      COMPONENT_ADD(cursor, ImageComponent, stringIntern("assets/img/select.ega"));
+      COMPONENT_ADD(cursor, RectangleComponent, 15);
+
+      COMPONENT_ADD(cursor, LayerComponent, LayerSubToken0);;
+      COMPONENT_ADD(cursor, SizeComponent, 32, 32);
+      COMPONENT_ADD(cursor, LockedPositionComponent, e);
+      COMPONENT_ADD(cursor, VisibilityComponent, .shown = false);
+      COMPONENT_ADD(cursor, TSelectedTransientComponent, e);
+
+      //add a tracking transient to the selected entity
+      COMPONENT_ADD(e, TSelectedComponent, .transientList = vecCreate(EntityPtr)(NULL));
+
+      entityUpdate(cursor);
+
+      sc = entityGet(TSelectedComponent)(e);
+      vecPushBack(EntityPtr)(sc->transientList, &cursor);
+   }
+
+   return sc;
+}
+
+static void _setVisibility(Entity *e, bool value){
+   VisibilityComponent *vc = entityGet(VisibilityComponent)(e);
+
+   if (!vc){
+      COMPONENT_ADD(e, VisibilityComponent, .shown = value);
+   }
+   else{
+      vc->shown = value;
+   }
+}
+
+static void _hideAllTransients(SelectionManager *self){
+   COMPONENT_QUERY(self->system, TSelectedTransientComponent, cc, {
       Entity *e = componentGetParent(cc, self->system);
-      //destroying this entity auto-calls the ondestroy function from this
-      //manager which removes the tracking component from the parent
-      entityDestroy(e);
+      _setVisibility(e, false);
    });
+}
 
-   vecClear(EntityPtr)(self->selectList);
+
+
+void entityLinkSelectionTransient(Entity *parent, Entity *transient){
+   TSelectedComponent *sc = _initSelection(parent);
+
+   _setVisibility(transient, false);
+   COMPONENT_ADD(transient, TSelectedTransientComponent, parent);
+   vecPushBack(EntityPtr)(sc->transientList, &transient);
 }
 
 static bool _select(SelectionManager *self, Entity *e, SelectCriteria *filters, size_t filterCount){   
@@ -116,8 +169,9 @@ static bool _select(SelectionManager *self, Entity *e, SelectCriteria *filters, 
 }
 
 void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, size_t filterCount){
-   
-   _clearLists(self);
+
+   vecClear(EntityPtr)(self->selectList);
+   _hideAllTransients(self);
 
    COMPONENT_QUERY(self->system, GridComponent, tc, {
       Entity *e = componentGetParent(tc, self->system);
@@ -127,21 +181,10 @@ void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, s
    });
 
    vecForEach(EntityPtr, selected, self->selectList, {
-      Entity *cursor = entityCreate(self->system);
-
-      COMPONENT_ADD(cursor, PositionComponent, 0, 0);
-      COMPONENT_ADD(cursor, ImageComponent, stringIntern("assets/img/select.ega"));
-      COMPONENT_ADD(cursor, RectangleComponent, 15);
-
-      COMPONENT_ADD(cursor, LayerComponent, LayerSubToken0);;
-      COMPONENT_ADD(cursor, SizeComponent, 32, 32);
-      COMPONENT_ADD(cursor, LockedPositionComponent, *selected);
-      COMPONENT_ADD(cursor, TSelectedCursorComponent, *selected);
-
-      //add a tracking transient to the selected entity
-      COMPONENT_ADD(*selected, TSelectedComponent, cursor);
-
-      entityUpdate(cursor);
+      TSelectedComponent *sc = _initSelection(*selected);
+      vecForEach(EntityPtr, t, sc->transientList, {
+         _setVisibility(*t, true);
+      });
    });
 }
 

@@ -94,7 +94,7 @@ typedef struct {
 typedef struct {
    vec(Int2) *pList;
    byte color;
-   byte open;
+   bool open;
 }PolygonComponent;
 
 #define ComponentT PolygonComponent
@@ -105,6 +105,13 @@ typedef struct {
 }RectangleComponent;
 
 #define ComponentT RectangleComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   bool shown;
+}VisibilityComponent;
+
+#define ComponentT VisibilityComponent
 #include "Entities\ComponentDecl.h"
 
 #pragma pack(pop)

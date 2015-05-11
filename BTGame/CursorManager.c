@@ -75,7 +75,7 @@ void cursorManagerCreateCursor(CursorManager *self){
 void cursorManagerStartDrag(CursorManager *self, int x, int y){
    self->dragStart = (Int2){ x, y };
    _updateDragBox(self, x, y);
-   COMPONENT_ADD(self->e, PolygonComponent, .pList = self->dragBox, .color = self->boxColor);
+   COMPONENT_ADD(self->e, PolygonComponent, .pList = self->dragBox, .color = self->boxColor, .open = false);
 }
 
 Recti cursorManagerEndDrag(CursorManager *self, int x, int y){
