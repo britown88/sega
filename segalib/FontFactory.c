@@ -87,9 +87,15 @@ Font *fontFactoryGetFont(FontFactory *self, byte backgroundColor, byte foregroun
 }
 
 void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font){
-   size_t charCount = strlen(text);
+   size_t charCount;
    size_t c;
    int i, iy;
+
+   if (!text){
+      return;
+   }
+
+   charCount = strlen(text);
 
    for(c = 0; c < charCount; ++c) {
       byte uc = *(unsigned char*)&text[c];

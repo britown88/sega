@@ -28,6 +28,7 @@ struct LogManager_t{
 
    vec(EntityPtr) *logLines;
    vec(LogEntry) *log;
+   size_t logPosition;
 };
 
 ImplManagerVTable(LogManager)
@@ -75,9 +76,24 @@ void _onDestroy(LogManager *self, Entity *e){}
 void _onUpdate(LogManager *self, Entity *e){}
 
 void logManagerUpdate(LogManager *self){
+   int size = vecSize(LogEntry)(self->log);
+   if (self->logPosition < size){
+      int i = 0;
+      StringView emptyString = stringIntern("");
+      vecForEach(EntityPtr, e, self->logLines, {
+         entityGet(TextComponent)(*e)->text = emptyString;
+      });
 
+      self->logPosition = size--;
+
+      for (i = LOG_LINE_COUNT - 1; i >= 0 && size >= 0; --i, --size){
+         Entity *e = *vecAt(EntityPtr)(self->logLines, i);
+         TextComponent *tc = entityGet(TextComponent)(e);
+         tc->text = vecAt(LogEntry)(self->log, size)->line;
+      }
+   }
 }
 
 void logManagerPushStringView(LogManager *self, StringView text){
-
+   vecPushBack(LogEntry)(self->log, &(LogEntry){text});
 }

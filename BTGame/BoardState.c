@@ -14,6 +14,7 @@
 #include "Commands.h"
 #include "CoreComponents.h"
 #include "segashared\Strings.h"
+#include "LogManager.h"
 
 typedef struct {
    WorldView *view;
@@ -46,6 +47,8 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
    if (!state->paused){
       commandManagerUpdate(managers->commandManager);      
    }
+
+   logManagerUpdate(managers->logManager);
 }
 
 static void _handleKeyboard(BoardState *state){
@@ -104,6 +107,8 @@ static void _handleMouse(BoardState *state){
             
             size_t gridIndex = gridIndexFromScreenXY(event.pos.x, event.pos.y);
 
+            logManagerPushMessage(managers->logManager, "This is a test %i", gridIndex);
+
             if (gridIndex < INF){
                int gx, gy;
                gridXYFromIndex(gridIndex, &gx, &gy);
@@ -153,11 +158,12 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
 StateClosure gameStateCreateBoard(WorldView *view){
    StateClosure out;
    BoardState *state = checkedCalloc(1, sizeof(BoardState));
+
    state->view = view;
    state->paused = false;
 
    _createTestEntity(view->entitySystem, 0, 0, false);
-   _createTestEntity(view->entitySystem, 11, 7, true);
+   _createTestEntity(view->entitySystem, 11, 7, true);   
 
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);

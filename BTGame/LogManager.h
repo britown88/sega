@@ -13,6 +13,6 @@ void logManagerPushStringView(LogManager *self, StringView text);
 //use this for most pushes, has same syntax as sprintf
 #define logManagerPushMessage(manager, ...) { \
    char __buffer[MAX_LOG_BUFFER_LEN] = {0};\
-   snprintf(__buffer, MAX_LOG_BUFFER_LEN, __VA_ARGS__);\
+   sprintf_s(__buffer, MAX_LOG_BUFFER_LEN, __VA_ARGS__);\
    logManagerPushStringView(manager, stringIntern(__buffer)); \
 }
