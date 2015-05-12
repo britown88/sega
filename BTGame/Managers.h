@@ -14,6 +14,7 @@ typedef struct CommandManager_t CommandManager;
 typedef struct InterpolationManager_t InterpolationManager;
 typedef struct DiceManager_t DiceManager;
 typedef struct SelectionManager_t SelectionManager;
+typedef struct LogManager_t LogManager;
 typedef struct Frame_t Frame;
 
 typedef struct BTManagers_t {
@@ -24,6 +25,7 @@ typedef struct BTManagers_t {
    InterpolationManager *interpolationManager;
    DiceManager *diceManager;
    SelectionManager *selectionManager;
+   LogManager *logManager;
 }BTManagers;
 
 RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps);
@@ -48,5 +50,7 @@ void interpolationManagerResume(InterpolationManager *self);
 
 DiceManager *createDiceManager(EntitySystem *system);
 void diceManagerUpdate(DiceManager *self);
+
+
 
 

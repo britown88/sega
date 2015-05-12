@@ -102,6 +102,9 @@ Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
 void managerDestroy(Manager *self){
    self->vTable->destroy(self);
 }
+static void _managerVDestroy(ManagerPtr *self){
+   managerDestroy(*self);
+}
 void managerOnDestroy(Manager *self, Entity *e){
    self->vTable->onDestroy(self, e);
 }
@@ -114,7 +117,7 @@ EntitySystem *entitySystemCreate(){
    out->eQueue = priorityQueueCreate(offsetof(Entity, node), (PQCompareFunc)&_eNodeCompareFunc);
    out->entityPool = checkedCalloc(MAX_ENTITIES, sizeof(Entity));
    out->lists = vecCreate(ComponentList)(&_cvtDestroy);
-   out->managers = vecCreate(ManagerPtr)(NULL);
+   out->managers = vecCreate(ManagerPtr)(&_managerVDestroy);
    out->updateDelegates = htCreate(cudEntry)(&_cudEntryCompare, &_cudEntryHash, &_cudEntryDestroy);
 
    return out;

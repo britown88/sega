@@ -79,6 +79,7 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GridManager.h" />
     <ClInclude Include="ImageLibrary.h" />
+    <ClInclude Include="LogManager.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="SelectionManager.h" />
@@ -97,6 +98,7 @@
     <ClCompile Include="CommandManager.c" />
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
+    <ClCompile Include="LogManager.c" />
     <ClCompile Include="RenderManager.c" />
     <ClCompile Include="MeshRendering.c" />
     <ClCompile Include="SelectionManager.c" />

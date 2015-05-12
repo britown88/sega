@@ -57,6 +57,9 @@
     <ClInclude Include="Commands.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LogManager.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -103,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="GridMove.c">
       <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="LogManager.c">
+      <Filter>Source Files\Managers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

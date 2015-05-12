@@ -150,14 +150,6 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    entityUpdate(e);
 }
 
-static void _createTextEntity(EntitySystem *system, int x, int y, char *text){
-   Entity *e = entityCreate(system);
-   COMPONENT_ADD(e, LayerComponent, LayerTokens);;
-   COMPONENT_ADD(e, TextComponent, .text =stringIntern(text), .x = x, .y = y, .fg = 0, .bg = 5);
-   entityUpdate(e);
-}
-
-
 StateClosure gameStateCreateBoard(WorldView *view){
    StateClosure out;
    BoardState *state = checkedCalloc(1, sizeof(BoardState));
@@ -167,9 +159,8 @@ StateClosure gameStateCreateBoard(WorldView *view){
    _createTestEntity(view->entitySystem, 0, 0, false);
    _createTestEntity(view->entitySystem, 11, 7, true);
 
-   _createTextEntity(view->entitySystem, 2, 17, "Hullo!");
-   _createTextEntity(view->entitySystem, 2, 18, "World!");
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);
+
    return out;
 }

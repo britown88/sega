@@ -124,7 +124,7 @@ static void _hideAllTransients(SelectionManager *self){
 void entityLinkSelectionTransient(Entity *parent, Entity *transient){
    TSelectedComponent *sc = _initSelection(parent);
 
-   _setVisibility(transient, false);
+   _setVisibility(transient, true);
    COMPONENT_ADD(transient, TSelectedTransientComponent, parent);
    vecPushBack(EntityPtr)(sc->transientList, &transient);
 }

@@ -265,6 +265,7 @@ void _renderLayers(RenderManager *self, Frame *frame){
    while (first != last){  _renderLayer(self, *first++, frame);  }
 }
 
+
 void _renderFramerate(Frame *frame, Font *font, double d){
    static char buffer[256] = { 0 };
    short y = 0;

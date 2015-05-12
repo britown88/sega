@@ -9,6 +9,7 @@
 #include "SelectionManager.h"
 #include "WorldView.h"
 #include "GameState.h"
+#include "LogManager.h"
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -81,18 +82,11 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.interpolationManager, createInterpolationManager(self->entitySystem));
    RegisterManager(self->managers.diceManager, createDiceManager(self->entitySystem));
    RegisterManager(self->managers.selectionManager, createSelectionManager(self->entitySystem));
+   RegisterManager(self->managers.logManager, createLogManager(self->entitySystem));
 }
 
 void _destroyEntitySystem(BTGame *self){
    entitySystemDestroy(self->entitySystem);
-
-   managerDestroy((Manager*)self->managers.renderManager);
-   managerDestroy((Manager*)self->managers.cursorManager);
-   managerDestroy((Manager*)self->managers.gridManager);
-   managerDestroy((Manager*)self->managers.commandManager);
-   managerDestroy((Manager*)self->managers.interpolationManager);
-   managerDestroy((Manager*)self->managers.diceManager);
-   managerDestroy((Manager*)self->managers.selectionManager);
 }
 
 VirtualApp *btCreate() {
@@ -141,8 +135,8 @@ void _onStart(BTGame *self){
 
 
 void _onStep(BTGame *self){
-   fsmSend(self->gameState, GameStateUpdate);
    fsmSend(self->gameState, GameStateHandleInput);
+   fsmSend(self->gameState, GameStateUpdate);   
    fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);         
 }
 
