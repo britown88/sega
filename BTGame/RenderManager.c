@@ -21,13 +21,14 @@ struct RenderManager_t{
 };
 
 typedef struct{
+   bool hasImage;
+   bool hasMesh;
+   bool hasRect;
+   bool hasPolygon;
+   bool hasText;
+
    ManagedImage *img;
    StringView filename;
-
-   RectangleComponent *rect;
-   MeshComponent *mesh;
-   PolygonComponent *polygon;
-   TextComponent *text;
 }TRenderComponent;
 
 static void _updateManagedImage(RenderManager *self, TRenderComponent *trc, ImageComponent *ic){
@@ -48,22 +49,24 @@ static bool _buildTRenderComponent(RenderManager *self, TRenderComponent *trc, E
    bool success = false;
    ImageComponent *ic = entityGet(ImageComponent)(e);
 
+   trc->hasImage = ic != NULL;
+
    if (ic){
       _updateManagedImage(self, trc, ic);
       success = true;
    }
 
-   trc->rect = entityGet(RectangleComponent)(e);
-   if (trc->rect){ success = true; }
+   trc->hasRect = entityGet(RectangleComponent)(e) != NULL;
+   if (trc->hasRect){ success = true; }
 
-   trc->polygon = entityGet(PolygonComponent)(e);
-   if (trc->polygon){ success = true; }
+   trc->hasPolygon = entityGet(PolygonComponent)(e) != NULL;
+   if (trc->hasPolygon){ success = true; }
 
-   trc->text = entityGet(TextComponent)(e);
-   if (trc->text){ success = true; }
+   trc->hasText = entityGet(TextComponent)(e) != NULL;
+   if (trc->hasText){ success = true; }
 
-   trc->mesh = entityGet(MeshComponent)(e);
-   if (trc->mesh){ success = true; }
+   trc->hasMesh = entityGet(MeshComponent)(e) != NULL;
+   if (trc->hasMesh){ success = true; }
 
    return success;
 }
@@ -214,19 +217,21 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    }
 
    //render rect
-   if (trc->rect){
+   if (trc->hasRect){
+      RectangleComponent *rc = entityGet(RectangleComponent)(e);
       SizeComponent *sc = entityGet(SizeComponent)(e);
-      if (sc){
-         frameRenderRect(frame, x, y, x + sc->x, y + sc->y, trc->rect->color);
+      if (rc && sc){
+         frameRenderRect(frame, x, y, x + sc->x, y + sc->y, rc->color);
       }
    }
 
    //render image (or mesh)
-   if (trc->img){      
+   if (trc->hasImage && trc->img){
       Image *img = managedImageGetImage(trc->img);
 
-      if (trc->mesh){
-         _renderMeshEntity(e, frame, trc->mesh, x, y, img);
+      if (trc->hasMesh){
+         MeshComponent *mc = entityGet(MeshComponent)(e);
+         if (mc){ _renderMeshEntity(e, frame, mc, x, y, img); }         
       }
       else{
          frameRenderImage(frame, x, y, img);
@@ -234,14 +239,16 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    }
 
    //polygons
-   if (trc->polygon){
-      _renderPolygon(frame, trc->polygon->pList, trc->polygon->color, trc->polygon->open);
+   if (trc->hasPolygon){
+      PolygonComponent *pc = entityGet(PolygonComponent)(e);
+      _renderPolygon(frame, pc->pList, pc->color, pc->open);
    }
 
    //text
-   if (trc->text){
-      frameRenderText(frame, trc->text->text, trc->text->x, trc->text->y,
-         fontFactoryGetFont(self->fontFactory, trc->text->fg, trc->text->bg));
+   if (trc->hasText){
+      TextComponent *tc = entityGet(TextComponent)(e);
+      frameRenderText(frame, tc->text, tc->x, tc->y,
+         fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg));
    }
 }
 

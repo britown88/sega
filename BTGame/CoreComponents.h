@@ -117,7 +117,7 @@ typedef struct {
 typedef struct {
    byte x, y;
    byte fg, bg;
-   const char *text;
+   StringView text;
 }TextComponent;
 
 #define ComponentT TextComponent
