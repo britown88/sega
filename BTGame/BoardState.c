@@ -12,6 +12,8 @@
 #include "segashared\CheckedMemory.h"
 
 #include "Commands.h"
+#include "CoreComponents.h"
+#include "segashared\Strings.h"
 
 typedef struct {
    WorldView *view;
@@ -94,7 +96,7 @@ static void _handleMouse(BoardState *state){
 
             selectionManagerSelect(managers->selectionManager, 
                { scArea, .box = mouseArea }, 
-               { scTeam, .teamID = 1 });           
+               { scTeam, .teamID = 0 });           
          }
          else if (event.button == SegaMouseBtn_Right){
             bool shift = keyboardIsDown(k, SegaKey_LeftShift) || keyboardIsDown(k, SegaKey_RightShift);
@@ -130,16 +132,33 @@ void _boardHandleInput(BoardState *state, GameStateHandleInput *m){
 }
 
 void _boardRender(BoardState *state, GameStateRender *m){
-
    renderManagerRender(state->view->managers->renderManager, m->frame);
-   
 }
+
+static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
+   Entity *e = entityCreate(system);
+
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, ImageComponent, stringIntern(AI ? "assets/img/badguy.ega" : "assets/img/actor.ega"));
+
+   COMPONENT_ADD(e, LayerComponent, LayerTokens);;
+   COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
+   COMPONENT_ADD(e, SizeComponent, 32, 32);
+   COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
+   //COMPONENT_ADD(e, WanderComponent, 1);
+
+   entityUpdate(e);
+}
+
 
 StateClosure gameStateCreateBoard(WorldView *view){
    StateClosure out;
    BoardState *state = checkedCalloc(1, sizeof(BoardState));
    state->view = view;
    state->paused = false;
+
+   _createTestEntity(view->entitySystem, 0, 0, false);
+   _createTestEntity(view->entitySystem, 11, 7, true);
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);
    return out;

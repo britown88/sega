@@ -38,3 +38,6 @@
 
 #define ComponentT VisibilityComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT TextComponent
+#include "Entities\ComponentImpl.h"

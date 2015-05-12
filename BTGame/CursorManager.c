@@ -76,10 +76,12 @@ void cursorManagerStartDrag(CursorManager *self, int x, int y){
    self->dragStart = (Int2){ x, y };
    _updateDragBox(self, x, y);
    COMPONENT_ADD(self->e, PolygonComponent, .pList = self->dragBox, .color = self->boxColor, .open = false);
+   entityUpdate(self->e);
 }
 
 Recti cursorManagerEndDrag(CursorManager *self, int x, int y){
    entityRemove(PolygonComponent)(self->e);
+   entityUpdate(self->e);
    return (Recti){ 
          MIN(self->dragStart.x, x),
          MIN(self->dragStart.y, y),

@@ -125,30 +125,11 @@ void _destroy(BTGame *self){
 }
 
 void _onStart(BTGame *self){
-   int i; 
-   {
-      Entity *e = entityCreate(self->entitySystem);
-      
-      COMPONENT_ADD(e, PositionComponent, 0, 0);
-      COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
-      entityUpdate(e);
-   }   
 
-   for (i = 0; i < 24/*CELL_COUNT - 12*/; ++i){
-
-      Entity *e = entityCreate(self->entitySystem);
-
-      COMPONENT_ADD(e, PositionComponent, 0, 0);
-      COMPONENT_ADD(e, ImageComponent, stringIntern(i % 2 ? "assets/img/actor.ega" : "assets/img/badguy.ega"));
-
-      COMPONENT_ADD(e, LayerComponent, LayerTokens);;
-      COMPONENT_ADD(e, GridComponent, i % TABLE_WIDTH, i/TABLE_WIDTH);
-      COMPONENT_ADD(e, SizeComponent, 32, 32);
-      COMPONENT_ADD(e, TeamComponent, i%2);
-      //COMPONENT_ADD(e, WanderComponent, 1);
-
-      entityUpdate(e);
-   }
+   Entity *e = entityCreate(self->entitySystem);      
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
+   entityUpdate(e);
 
    appLoadPalette(appGet(), "assets/img/boardui.pal");
    cursorManagerCreateCursor(self->managers.cursorManager);
@@ -162,8 +143,7 @@ void _onStart(BTGame *self){
 void _onStep(BTGame *self){
    fsmSend(self->gameState, GameStateUpdate);
    fsmSend(self->gameState, GameStateHandleInput);
-   fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);
-         
+   fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);         
 }
 
 

@@ -10,21 +10,6 @@
 
 #include <stdio.h>
 
-typedef struct{
-   ManagedImage *img;
-   StringView filename;
-}TRenderComponent;
-
-void TRenderComponentDestroy(TRenderComponent *self){
-   if (self->img){
-      managedImageDestroy(self->img);
-   }
-}
-
-#define COMP_DESTROY_FUNC TRenderComponentDestroy
-#define TComponentT TRenderComponent
-#include "Entities\ComponentDeclTransient.h"
-
 struct RenderManager_t{
    Manager m;
    EntitySystem *system;
@@ -34,6 +19,64 @@ struct RenderManager_t{
 
    vec(EntityPtr) *layers[LayerCount];
 };
+
+typedef struct{
+   ManagedImage *img;
+   StringView filename;
+
+   RectangleComponent *rect;
+   MeshComponent *mesh;
+   PolygonComponent *polygon;
+   TextComponent *text;
+}TRenderComponent;
+
+static void _updateManagedImage(RenderManager *self, TRenderComponent *trc, ImageComponent *ic){
+   if (trc->img && trc->filename != ic->filename){
+      //image has changed
+      managedImageDestroy(trc->img);
+      trc->filename = ic->filename;
+      trc->img = imageLibraryGetImage(self->images, trc->filename);
+   }
+   else {
+      //new image
+      trc->filename = ic->filename;
+      trc->img = imageLibraryGetImage(self->images, trc->filename);
+   }
+}
+
+static bool _buildTRenderComponent(RenderManager *self, TRenderComponent *trc, Entity *e){
+   bool success = false;
+   ImageComponent *ic = entityGet(ImageComponent)(e);
+
+   if (ic){
+      _updateManagedImage(self, trc, ic);
+      success = true;
+   }
+
+   trc->rect = entityGet(RectangleComponent)(e);
+   if (trc->rect){ success = true; }
+
+   trc->polygon = entityGet(PolygonComponent)(e);
+   if (trc->polygon){ success = true; }
+
+   trc->text = entityGet(TextComponent)(e);
+   if (trc->text){ success = true; }
+
+   trc->mesh = entityGet(MeshComponent)(e);
+   if (trc->mesh){ success = true; }
+
+   return success;
+}
+
+static void TRenderComponentDestroy(TRenderComponent *self){
+   if (self->img){
+      managedImageDestroy(self->img);
+   }
+}
+
+#define COMP_DESTROY_FUNC TRenderComponentDestroy
+#define TComponentT TRenderComponent
+#include "Entities\ComponentDeclTransient.h"
 
 void _initLayers(RenderManager *self){
    vec(EntityPtr) **first = self->layers;
@@ -49,6 +92,21 @@ void _destroyLayers(RenderManager *self){
    while (first != last){ vecDestroy(EntityPtr)(*first++); }
 }
 
+static void _imageComponentUpdate(RenderManager *self, Entity *e, ImageComponent *oldIC){
+   ImageComponent *ic = entityGet(ImageComponent)(e);
+   TRenderComponent *trc = entityGet(TRenderComponent)(e);
+   if (trc){
+      _updateManagedImage(self, trc, ic);
+   }
+}
+
+static void _registerUpdateDelegate(RenderManager *self, EntitySystem *system){
+   ComponentUpdate update;
+
+   closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_imageComponentUpdate, NULL);
+   compRegisterUpdateDelegate(ImageComponent)(system, update);
+}
+
 ImplManagerVTable(RenderManager)
 
 RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps){
@@ -60,6 +118,8 @@ RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageMana
    out->images = imageManager;
    out->fps = fps;
    _initLayers(out);
+
+   _registerUpdateDelegate(out, system);
 
    imageDestroy(fontImage);
    return out;
@@ -74,31 +134,17 @@ void _destroy(RenderManager *self){
 void _onDestroy(RenderManager *self, Entity *e){}
 
 void _onUpdate(RenderManager *self, Entity *e){
-   TRenderComponent *trc = entityGet(TRenderComponent)(e);   
-   ImageComponent *ic = entityGet(ImageComponent)(e);
+   TRenderComponent *trc = entityGet(TRenderComponent)(e);  
+   TRenderComponent newtrc = { 0 };
 
-   if (ic){
-      if (trc){
-         //update existing
-         if (trc->filename != ic->filename){
-            //image has changed
-            managedImageDestroy(trc->img);
-            trc->filename = ic->filename;
-            trc->img = imageLibraryGetImage(self->images, trc->filename);
-         }
-      }
-      else {
-         //new image
-         TRenderComponent newtrc;
-         newtrc.filename = ic->filename;
-         newtrc.img = imageLibraryGetImage(self->images, newtrc.filename);
-         entityAdd(TRenderComponent)(e, &newtrc);
+   if (!trc){//no trc
+      if (_buildTRenderComponent(self, &newtrc, e)){//we were able to generate one
+         entityAdd(TRenderComponent)(e, &newtrc);//add it
       }
    }
-   else{
-      if (trc){
-         //no longer rendered
-         entityRemove(TRenderComponent)(e);
+   else{//trc present
+      if (!_buildTRenderComponent(self, trc, e)){//on refresh, its no longer rendered
+         entityRemove(TRenderComponent)(e);//remove it
       }
    }
 }
@@ -152,16 +198,11 @@ void _renderPolygon(Frame *frame, vec(Int2) *pList, byte color, bool open){
    }   
 }
 
-void _renderEntity(Entity *e, Frame *frame){
-   PositionComponent *pc = entityGet(PositionComponent)(e);
-   SizeComponent *sc = entityGet(SizeComponent)(e);
-   RectangleComponent *rc = entityGet(RectangleComponent)(e);
-   MeshComponent *mc = entityGet(MeshComponent)(e);
-   PolygonComponent *polyc = entityGet(PolygonComponent)(e);
+void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    TRenderComponent *trc = entityGet(TRenderComponent)(e);
+   PositionComponent *pc = entityGet(PositionComponent)(e);
    VisibilityComponent *vc = entityGet(VisibilityComponent)(e);
    int x = 0, y = 0;
-   Image *img = managedImageGetImage(trc->img);
 
    if (vc && !vc->shown){
       return;
@@ -172,27 +213,41 @@ void _renderEntity(Entity *e, Frame *frame){
       y = pc->y;
    }
 
-   if (sc && rc){
-      frameRenderRect(frame, x, y, x + sc->x, y + sc->y, rc->color);
+   //render rect
+   if (trc->rect){
+      SizeComponent *sc = entityGet(SizeComponent)(e);
+      if (sc){
+         frameRenderRect(frame, x, y, x + sc->x, y + sc->y, trc->rect->color);
+      }
    }
 
-   if (img){
-      if (mc){
-         _renderMeshEntity(e, frame, mc, x, y, img);
+   //render image (or mesh)
+   if (trc->img){      
+      Image *img = managedImageGetImage(trc->img);
+
+      if (trc->mesh){
+         _renderMeshEntity(e, frame, trc->mesh, x, y, img);
       }
       else{
          frameRenderImage(frame, x, y, img);
       }
    }
 
-   if (polyc){
-      _renderPolygon(frame, polyc->pList, polyc->color, polyc->open);
+   //polygons
+   if (trc->polygon){
+      _renderPolygon(frame, trc->polygon->pList, trc->polygon->color, trc->polygon->open);
+   }
+
+   //text
+   if (trc->text){
+      frameRenderText(frame, trc->text->text, trc->text->x, trc->text->y,
+         fontFactoryGetFont(self->fontFactory, trc->text->fg, trc->text->bg));
    }
 }
 
 void _renderLayer(RenderManager *self, vec(EntityPtr) *layer, Frame *frame){
    vecForEach(EntityPtr, e, layer, {
-      _renderEntity(*e, frame);
+      _renderEntity(self, *e, frame);
    });
 }
 

@@ -114,4 +114,13 @@ typedef struct {
 #define ComponentT VisibilityComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   byte x, y;
+   byte fg, bg;
+   const char *text;
+}TextComponent;
+
+#define ComponentT TextComponent
+#include "Entities\ComponentDecl.h"
+
 #pragma pack(pop)

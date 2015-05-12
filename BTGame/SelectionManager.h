@@ -31,8 +31,8 @@ vec(EntityPtr) *selectionManagerGetSelected(SelectionManager *self);
 void entityLinkSelectionTransient(Entity *parent, Entity *transient);
 
 #define selectionManagerSelect(__selManager, ...) {\
-      SelectCriteria __filerList[] = { __VA_ARGS__ }; \
-      selectionManagerSelectEx(__selManager, __filerList, sizeof(__filerList)/sizeof(__filerList[0])); \
+      SelectCriteria __filterList[] = { __VA_ARGS__ }; \
+      selectionManagerSelectEx(__selManager, __filterList, sizeof(__filterList)/sizeof(__filterList[0])); \
    }
 
 #define selectionManagerSelectAll(__selManager) {\

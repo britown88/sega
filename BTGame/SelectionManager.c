@@ -6,17 +6,6 @@
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
 
-//this vector ahs to be created on component add
-//it will be destroyed when an entity with it is destroyed
-//dont remove this component without vecdestroyign its interior!
-//(shouldnt be a problem since this comp is only acessible in this file)
-typedef struct{
-   vec(EntityPtr) *transientList;
-}TSelectedComponent;
-
-#define TComponentT TSelectedComponent
-#include "Entities\ComponentDeclTransient.h"
-
 //marks en entity as a transient element 
 //tied to a parent
 typedef struct{
@@ -24,6 +13,24 @@ typedef struct{
 }TSelectedTransientComponent;
 
 #define TComponentT TSelectedTransientComponent
+#include "Entities\ComponentDeclTransient.h"
+
+//alloc this vec on creation, it gets killed and cleanup by the destroy func below
+typedef struct{
+   vec(EntityPtr) *transientList;
+}TSelectedComponent;
+
+void TSelectedComponentDestroy(TSelectedComponent *self){
+   vecForEach(EntityPtr, te, self->transientList, {
+      entityGet(TSelectedTransientComponent)(*te)->parent = NULL;
+      entityDestroy(*te);
+   });
+
+   vecDestroy(EntityPtr)(self->transientList);
+}
+
+#define COMP_DESTROY_FUNC TSelectedComponentDestroy
+#define TComponentT TSelectedComponent
 #include "Entities\ComponentDeclTransient.h"
 
 struct SelectionManager_t{
@@ -51,14 +58,8 @@ void _onDestroy(SelectionManager *self, Entity *e){
    TSelectedComponent *sc = entityGet(TSelectedComponent)(e);
    TSelectedTransientComponent *scc = entityGet(TSelectedTransientComponent)(e);
 
-   //selected entity is being deleted, kill its transient selection entities
-   if (sc){
-      vecForEach(EntityPtr, te, sc->transientList, {
-         entityGet(TSelectedTransientComponent)(*te)->parent = NULL;
-         entityDestroy(*te);
-      });
-
-      vecDestroy(EntityPtr)(sc->transientList);
+   //selected entity is being deleted, remove it from our selectList
+   if (sc){      
       vecRemove(EntityPtr)(self->selectList, &e);
    }
 
@@ -119,8 +120,6 @@ static void _hideAllTransients(SelectionManager *self){
       _setVisibility(e, false);
    });
 }
-
-
 
 void entityLinkSelectionTransient(Entity *parent, Entity *transient){
    TSelectedComponent *sc = _initSelection(parent);
