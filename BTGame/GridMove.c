@@ -19,7 +19,10 @@ static GridMoveData *_gridMoveDataCreate(){
 }
 
 static void _gridMoveDataDestroy(GridMoveData *self){
-   entityDestroy(self->dest);
+   if (self->dest){
+      entityDestroy(self->dest);
+   }
+   
    vecDestroy(Int2)(self->pList);
    checkedFree(self);
 }
@@ -110,7 +113,14 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    GridSolution solution;
    size_t pos, dest = INF;
 
-   _updateDestLine(data->e, data->destination, data->pList);
+   if (cancel && data->dest != NULL){
+      entityDestroy(data->dest);
+      data->dest = NULL;
+   }
+
+   if (data->dest){
+      _updateDestLine(data->e, data->destination, data->pList);
+   }
 
    if (!gc || !pc){
       //doesnt have the right components, we're done
