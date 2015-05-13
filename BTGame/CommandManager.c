@@ -7,14 +7,30 @@
 #include "CoreComponents.h"
 #include <math.h>
 #include "segautils\Coroutine.h"
+#include "Actions.h"
+#include "Commands.h"
+
+#define ComponentT UserComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT TargetPositionComponent
+#include "Entities\ComponentImpl.h"
+
+#define VectorTPart ActionPtr
+#include "segautils\Vector_Impl.h"
 
 typedef struct{
-   vec(Coroutine) *list;
-   vec(Coroutine) *postCancel;
-   Coroutine commands;
-   bool cancelled;
+   Coroutine command; 
+   bool commandReady;
 }TCommandComponent;
 
+static void TCommandComponentDestroy(TCommandComponent *self){
+   if (self->commandReady){
+      closureDestroy(Coroutine)(&self->command);
+   }
+}
+
+#define COMP_DESTROY_FUNC TCommandComponentDestroy
 #define TComponentT TCommandComponent
 #include "Entities\ComponentDeclTransient.h"
 
@@ -22,111 +38,135 @@ typedef struct{
 struct CommandManager_t{
    Manager m;
    EntitySystem *system;
+   EntitySystem *actionSystem;
+   GridManager *gridManager;
 };
+
+static Coroutine _updateCommand(CommandManager *self, Action *a){
+   UserComponent *uc = entityGet(UserComponent)(a);
+   TargetPositionComponent *tpc = entityGet(TargetPositionComponent)(a);
+
+   if (tpc){
+      return createCommandGridMove(a, self->gridManager);
+   }
+
+   return (Coroutine){ 0 };
+}
 
 ImplManagerVTable(CommandManager)
 
-CommandManager *createCommandManager(EntitySystem *system){
+CommandManager *createCommandManager(EntitySystem *system, GridManager *gridManager){
    CommandManager *out = checkedCalloc(1, sizeof(CommandManager));
    out->system = system;
    out->m.vTable = CreateManagerVTable(CommandManager);
+   out->actionSystem = entitySystemCreate();
+   out->gridManager = gridManager;
 
    return out;
 }
 
-static void _clearCoroutineList(vec(Coroutine) *list){
-   vecForEach(Coroutine, c, list, {
-      closureDestroy(Coroutine)(c);
-   });
-   
-}
-
-static void _entityAddCommands(Entity *e){
-   TCommandComponent ncc = { 0 };
-   ncc.commands = createExecutionList(&ncc.list);
-   ncc.postCancel = vecCreate(Coroutine)(NULL);
-
-   entityAdd(TCommandComponent)(e, &ncc);
-}
-
-static void _entityDestroyCommands(Entity*e){
-   TCommandComponent *cc = entityGet(TCommandComponent)(e);
-   if (cc){
-      closureDestroy(Coroutine)(&cc->commands);
-      _clearCoroutineList(cc->postCancel);
-      vecDestroy(Coroutine)(cc->postCancel);
-   }
-}
-
-static void _updateEntityCommands(Entity *e, TCommandComponent *cc){
-   CoroutineStatus status = closureCall(&cc->commands, cc->cancelled);
-
-   if (status == Finished){
-      if (cc->cancelled && !vecIsEmpty(Coroutine)(cc->postCancel)){
-         //we cancelled and had more commands queued up... copy them over
-         vecForEach(Coroutine, cmd, cc->postCancel, {
-            vecPushBack(Coroutine)(cc->list, cmd);
-         });
-
-         vecClear(Coroutine)(cc->postCancel);
-         cc->cancelled = false;
-      }
-      else{
-         //we're all done!
-         _entityDestroyCommands(e);
-         entityRemove(TCommandComponent)(e);
-      }
-   }
-}
-
 void _destroy(CommandManager *self){
+   entitySystemDestroy(self->actionSystem);
    checkedFree(self);
 }
 void _onDestroy(CommandManager *self, Entity *e){
-   _entityDestroyCommands(e);
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   if (cc){
+      vecDestroy(ActionPtr)(cc->actions);
+   }
 }
-void _onUpdate(CommandManager *self, Entity *e){}
+void _onUpdate(CommandManager *self, Entity *e){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   TCommandComponent *tcc = entityGet(TCommandComponent)(e);
+
+   if (cc && !tcc){
+      COMPONENT_ADD(e, TCommandComponent, 0);
+   }
+
+   if (tcc && !cc){
+      entityRemove(TCommandComponent)(e);
+   }
+}
+
+Action *commandManagerCreateAction(CommandManager *self){
+   return entityCreate(self->actionSystem);
+}
+
+static bool _coroutineIsGood(Coroutine c){
+   return memcmp(&c, &(Coroutine){ 0 }, sizeof(Coroutine)) != 0;
+}
+
+static void _updateEntity(CommandManager *self, Entity *e){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   TCommandComponent *tcc = entityGet(TCommandComponent)(e);
+
+   if (tcc->commandReady){
+      CoroutineStatus ret = closureCall(&tcc->command, cc->cancelled);
+      if (ret == Finished){
+         tcc->commandReady = false;
+         cc->cancelled = false;
+
+         closureDestroy(Coroutine)(&tcc->command);
+         vecRemoveAt(ActionPtr)(cc->actions, 0);         
+      }
+   }
+   else{//command not ready, keep popping until we find a good one
+      while (!vecIsEmpty(ActionPtr)(cc->actions) && !tcc->commandReady){
+         tcc->command = _updateCommand(self, *vecBegin(ActionPtr)(cc->actions));
+         tcc->commandReady = _coroutineIsGood(tcc->command);
+         if (!tcc->commandReady){
+            vecRemoveAt(ActionPtr)(cc->actions, 0);
+         }
+      }
+   }
+}
 
 void commandManagerUpdate(CommandManager *self){
-   COMPONENT_QUERY(self->system, TCommandComponent, cc, {
-      Entity *e = componentGetParent(cc, self->system);
-      _updateEntityCommands(e, cc);
+   COMPONENT_QUERY(self->system, TCommandComponent, tcc, {
+      Entity *e = componentGetParent(tcc, self->system);
+      _updateEntity(self, e);
    });
 }
 
-void entityPushCommand(Entity *e, Coroutine cmd){
-   TCommandComponent *cc = entityGet(TCommandComponent)(e);
+static void _actionVDestroy(ActionPtr *self){
+   entityDestroy(*self);
+}
+
+static CommandComponent *_addCommandComponent(Entity *e){
+   COMPONENT_ADD(e, CommandComponent, 
+      .actions = vecCreate(ActionPtr)(&_actionVDestroy),
+      .cancelled = false);
+   entityUpdate(e);
+   return entityGet(CommandComponent)(e);
+}
+
+void entityPushCommand(Entity *e, Action *cmd){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
 
    if (!cc){
-      _entityAddCommands(e);
-      cc = entityGet(TCommandComponent)(e);
+      cc = _addCommandComponent(e);      
    }
 
-   if (cc->cancelled){
-      /*command has been canceled but hasnt finished yet and
-       we dont know if an iteration of cancelled routine has been done so
-       we store new routines in a postcancel queue
-       which gets copied over when a cancelled queue finishes*/
-      vecPushBack(Coroutine)(cc->postCancel, &cmd);
-   }
-   else{
-      vecPushBack(Coroutine)(cc->list, &cmd);
-   }
+   COMPONENT_ADD(cmd, UserComponent, e);
+
+   vecPushBack(ActionPtr)(cc->actions, &cmd);
 }
 
 void entityCancelCommands(Entity *e){
-   TCommandComponent *cc = entityGet(TCommandComponent)(e);
-   if (cc){
-      cc->cancelled = true;
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   if (cc){      
+      if (!vecIsEmpty(ActionPtr)(cc->actions)){
+         cc->cancelled = true;
+         vecResize(ActionPtr)(cc->actions, 1, NULL);
+      }
    }
 }
 
 void entityClearCommands(Entity *e){
-   TCommandComponent *cc = entityGet(TCommandComponent)(e);
+   CommandComponent *cc = entityGet(CommandComponent)(e);
    if (cc){
-      _entityDestroyCommands(e);
-      entityRemove(TCommandComponent)(e);
-      _entityAddCommands(e);
+      cc->cancelled = false;
+      vecClear(ActionPtr)(cc->actions);
    }
 }
 

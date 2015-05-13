@@ -78,7 +78,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.renderManager, createRenderManager(self->entitySystem, self->imageLibrary, &self->data.fps));
    RegisterManager(self->managers.cursorManager, createCursorManager(self->entitySystem));
    RegisterManager(self->managers.gridManager, createGridManager(self->entitySystem));
-   RegisterManager(self->managers.commandManager, createCommandManager(self->entitySystem));
+   RegisterManager(self->managers.commandManager, createCommandManager(self->entitySystem, self->managers.gridManager));
    RegisterManager(self->managers.interpolationManager, createInterpolationManager(self->entitySystem));
    RegisterManager(self->managers.diceManager, createDiceManager(self->entitySystem));
    RegisterManager(self->managers.selectionManager, createSelectionManager(self->entitySystem));

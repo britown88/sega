@@ -117,7 +117,7 @@ static void _handleMouse(BoardState *state){
                      entityCancelCommands(*e);
                   }
                   
-                  entityPushCommand(*e, createCommandGridMove(*e, managers->gridManager, gx, gy));
+                  entityPushCommand(*e, createActionGridMove(managers->commandManager, gx, gy));
                });
             }
          }

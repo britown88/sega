@@ -3,27 +3,20 @@
 #include "CoreComponents.h"
 #include "segashared\CheckedMemory.h"
 #include "SelectionManager.h"
+#include "Actions.h"
 #include <math.h>
 
 typedef struct {
-   Entity *e, *dest;
+   Action *a;
    GridManager *manager;
-   size_t destination;
-   vec(Int2) *pList;
 } GridMoveData;
 
 static GridMoveData *_gridMoveDataCreate(){
    GridMoveData *out = checkedCalloc(1, sizeof(GridMoveData));
-   out->pList = vecCreate(Int2)(NULL);
    return out;
 }
 
 static void _gridMoveDataDestroy(GridMoveData *self){
-   if (self->dest){
-      entityDestroy(self->dest);
-   }
-   
-   vecDestroy(Int2)(self->pList);
    checkedFree(self);
 }
 
@@ -81,48 +74,18 @@ static GridSolution solve(GridManager *manager, size_t start, size_t destination
    return gridManagerSolve(manager, start, cFunc, nFunc);
 }
 
-static void _updateDestLine(Entity *e, size_t destination, vec(Int2) *pList){
-   SizeComponent *sc = entityGet(SizeComponent)(e);
-   PositionComponent *pc = entityGet(PositionComponent)(e);
-   int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
-   int halfGridSize = (int)(GRID_RES_SIZE * 0.5f);
-
-   if (pc){
-      x0 = pc->x;
-      y0 = pc->y;
-   }
-
-   if (sc){
-      x0 += (int)(sc->x * 0.5f);
-      y0 += (int)(sc->y * 0.5f);
-   }
-
-   screenPosFromGridIndex(destination, &x1, &y1);
-   x1 += halfGridSize;
-   y1 += halfGridSize;
-
-   *vecAt(Int2)(pList, 0) = (Int2) {x0, y0 };
-   *vecAt(Int2)(pList, 1) = (Int2){ x1, y1 };
-}
-
 static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
-   Entity *e = data->e;
+   UserComponent *user = entityGet(UserComponent)(data->a);
+   TargetPositionComponent *target = entityGet(TargetPositionComponent)(data->a);
+   Entity *e = user->user;
    GridComponent *gc = entityGet(GridComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);   
 
    GridSolution solution;
    size_t pos, dest = INF;
+   size_t destination;
 
-   if (cancel && data->dest != NULL){
-      entityDestroy(data->dest);
-      data->dest = NULL;
-   }
-
-   if (data->dest){
-      _updateDestLine(data->e, data->destination, data->pList);
-   }
-
-   if (!gc || !pc){
+   if (!target || !gc || !pc){
       //doesnt have the right components, we're done
       return Finished;
    }
@@ -132,17 +95,18 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
       return NotFinished;
    }
 
+   destination = gridIndexFromXY(target->x, target->y);
    pos = gridIndexFromXY(gc->x, gc->y);
 
-   if (cancel || pos == data->destination || data->destination == INF){
+   if (cancel || pos == destination || destination == INF){
       //op was cancelled or we made it... so we're done
       return Finished;
    }
 
    //wasnt cancelled and still have a ways to go...continue on...
-   solution = solve(data->manager, pos, data->destination);
+   solution = solve(data->manager, pos, destination);
    if (solution.totalCost == 0){
-      data->destination = solution.solutionCell;
+      gridXYFromIndex(solution.solutionCell, &target->x, &target->y);
    }
 
    if (solution.totalCost > 0){
@@ -162,26 +126,21 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    return NotFinished;
 }
 
-static void _createLineTransient(GridMoveData *data){
-   data->dest = entityCreate(entityGetSystem(data->e));
-   COMPONENT_ADD(data->dest, PolygonComponent, .pList = data->pList, .color = 1, .open = true);
-   entityUpdate(data->dest);
-   entityLinkSelectionTransient(data->e, data->dest);
-
-   vecPushBack(Int2)(data->pList, &(Int2){0, 0});
-   vecPushBack(Int2)(data->pList, &(Int2){0, 0});
-}
-
-Coroutine createCommandGridMove(Entity *e, GridManager *manager, int x, int y){
+Coroutine createCommandGridMove(Action *a, GridManager *manager){
    Coroutine out;
    GridMoveData *data = _gridMoveDataCreate();
 
-   data->e = e;
+   data->a = a;
    data->manager = manager;
-   data->destination = gridIndexFromXY(x, y);
-
-   _createLineTransient(data);
 
    closureInit(Coroutine)(&out, data, (CoroutineFunc)&_gridMove, &_gridMoveDataDestroy);
    return out;
+}
+
+Action *createActionGridMove(CommandManager *self, int x, int y){
+   Action *a = commandManagerCreateAction(self);
+   COMPONENT_ADD(a, TargetPositionComponent, .x = x, .y = y);
+   entityUpdate(a);
+
+   return a;
 }

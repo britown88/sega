@@ -3,6 +3,7 @@
 #include "Entities\Entities.h"
 #include "segashared\Strings.h"
 #include "MeshRendering.h"
+#include "Actions.h"
 
 #pragma pack(push, 1)
 
@@ -121,6 +122,14 @@ typedef struct {
 }TextComponent;
 
 #define ComponentT TextComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   vec(ActionPtr) *actions;
+   bool cancelled;
+}CommandComponent;
+
+#define ComponentT CommandComponent
 #include "Entities\ComponentDecl.h"
 
 #pragma pack(pop)

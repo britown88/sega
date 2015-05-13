@@ -80,7 +80,7 @@ typedef Manager* ManagerPtr;
 #include "segautils\Vector_Create.h"
 
 void _cvtDestroy(ComponentList *self){
-   if (self->cvt->destroy){
+   if (self->cvt && self->cvt->destroy){
       self->cvt->destroy(self->list);
    }
 }
@@ -254,27 +254,33 @@ void entityVectorDestroy(EntityPtr *self){
    entityDestroy(*self);  
 }
 
+static void _destroyComponent(Entity *self, ComponentList *list){
+   int compIndex = list->lookup[self->ID];
+   Component moved;
+
+   if (compIndex == -1){
+      //component doesnt fucking exist so dont fucking delete it nerd
+      return;
+   }
+
+   list->lookup[self->ID] = -1;
+
+   list->cvt->remove(list->list, compIndex);
+   moved = list->cvt->getAt(list->list, compIndex);
+   if (moved){
+      int movedEntity = componentGetParentID(moved);
+      list->lookup[movedEntity] = compIndex;
+   }
+}
+
 void entityDestroy(Entity *self){
    vec(ComponentList) *v = self->system->lists;
 
    _callManagerDestroy(self);
 
    vecForEach(ComponentList, list, v, {
-      int compIndex = list->lookup[self->ID];
-      Component moved;
-
-      if (compIndex == -1){
-         //component doesnt fucking exist so dont fucking delete it nerd
-         continue;
-      }
-
-      list->lookup[self->ID] = -1;
-
-      list->cvt->remove(list->list, compIndex);
-      moved = list->cvt->getAt(list->list, compIndex);
-      if (moved){
-         int movedEntity = componentGetParentID(moved);
-         list->lookup[movedEntity] = compIndex;
+      if (list->list){
+         _destroyComponent(self, list);
       }
    });
 

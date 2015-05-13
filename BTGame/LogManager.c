@@ -77,7 +77,7 @@ void _onUpdate(LogManager *self, Entity *e){}
 
 void logManagerUpdate(LogManager *self){
    int size = vecSize(LogEntry)(self->log);
-   if (self->logPosition < size){
+   if (self->logPosition < (size_t)size){
       int i = 0;
       StringView emptyString = stringIntern("");
       vecForEach(EntityPtr, e, self->logLines, {

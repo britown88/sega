@@ -41,3 +41,6 @@
 
 #define ComponentT TextComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT CommandComponent
+#include "Entities\ComponentImpl.h"
