@@ -19,10 +19,10 @@ typedef struct{
    vec(EntityPtr) *entities;
 }GridNodePublic;
 
-size_t gridNodeGetScore(GridNodePublic *self);
+float gridNodeGetScore(GridNodePublic *self);
 
 #define ClosureTPart \
-    CLOSURE_RET(size_t) /*return edge*/\
+    CLOSURE_RET(float) /*return edge*/\
     CLOSURE_NAME(GridProcessNeighbor) \
     CLOSURE_ARGS(GridNodePublic */*current*/, GridNodePublic*/*neighbor*/)
 #include "segautils\Closure_Decl.h"
@@ -41,7 +41,7 @@ typedef struct {
 #include "segautils\Vector_Decl.h"
 
 typedef struct {
-   size_t totalCost;
+   float totalCost;
    size_t solutionCell;
    vec(GridSolutionNode) *path;
 }GridSolution;

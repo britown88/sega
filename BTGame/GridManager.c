@@ -26,16 +26,18 @@
 
 typedef struct GridNode_t GridNode;
 
+#define NEIGHBOR_COUNT 8
+
 struct GridNode_t{
    GridNodePublic data;
    QueueNode node;
    byte visited;
    GridNode *parent;
-   GridNode *neighbors[4];
-   size_t score;
+   GridNode *neighbors[NEIGHBOR_COUNT];
+   float score;
 };
 
-size_t gridNodeGetScore(GridNodePublic *self){
+float gridNodeGetScore(GridNodePublic *self){
    return ((GridNode*)self)->score;
 }
 
@@ -70,11 +72,11 @@ static DijkstrasVTable *_getVTable(){
 
 size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList){
    *outList = node->neighbors;
-   return 4;
+   return NEIGHBOR_COUNT;
 }
 int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node){
    if (node && !node->visited){
-      size_t newScore = closureCall(&self->nFunc, &current->data, &node->data);
+      float newScore = closureCall(&self->nFunc, &current->data, &node->data);
       if (newScore < node->score){
          node->parent = current;
          node->score = newScore;
@@ -121,7 +123,7 @@ struct GridManager_t{
 
 static void _addNeighbors(GridNode *nodes, size_t current){
    int x, y, i;
-   size_t nID[4];
+   size_t nID[NEIGHBOR_COUNT];
    GridNode *node = nodes + current;
    gridXYFromIndex(node->data.ID, &x, &y);
 
@@ -130,7 +132,12 @@ static void _addNeighbors(GridNode *nodes, size_t current){
    nID[2] = gridIndexFromXY(x + 1, y);
    nID[3] = gridIndexFromXY(x, y + 1);
 
-   for (i = 0; i < 4; ++i){
+   nID[4] = gridIndexFromXY(x - 1, y - 1);
+   nID[5] = gridIndexFromXY(x + 1, y + 1);
+   nID[6] = gridIndexFromXY(x + 1, y - 1);
+   nID[7] = gridIndexFromXY(x - 1, y + 1);
+
+   for (i = 0; i < NEIGHBOR_COUNT; ++i){
       if (nID[i] < INF){
          node->neighbors[i] = nodes + nID[i];
       }
@@ -141,7 +148,7 @@ static void _buildTable(GridNode *nodes){
    size_t i;
    for (i = 0; i < CELL_COUNT; ++i){
       nodes[i].data.ID = i;
-      nodes[i].score = INF;
+      nodes[i].score = (float)INF;
       nodes[i].data.entities = vecCreate(EntityPtr)(NULL);
       _addNeighbors(nodes, i);
 
@@ -151,7 +158,7 @@ static void _buildTable(GridNode *nodes){
 static void _clearTable(GridNode *nodes){
    int i;
    for (i = 0; i < CELL_COUNT; ++i){
-      nodes[i].score = INF;
+      nodes[i].score = (float)INF;
       nodes[i].visited = false;
       nodes[i].parent = NULL;
       queueNodeClear(&nodes[i].node);
@@ -281,7 +288,7 @@ void _onUpdate(GridManager *self, Entity *e){
 }
 
 GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCurrent cFunc, GridProcessNeighbor nFunc){
-   GridSolution solution = { INF, INF, NULL };
+   GridSolution solution = { (float)INF, INF, NULL };
 
    if (startCell < CELL_COUNT){
       int i;

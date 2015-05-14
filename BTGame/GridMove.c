@@ -24,21 +24,32 @@ typedef struct{
    GridManager *manager;
    size_t destination;
 
-   size_t lowestHeuristic;
+   float lowestHeuristic;
    GridNodePublic *closestNode;
 }GridSolvingData;
 
-static size_t _processNeighbor(GridSolvingData *data, GridNodePublic *current, GridNodePublic *neighbor){
+static float _distance(size_t d0, size_t d1){
+   int x0, y0, x1, y1, dist;
+
+   gridXYFromIndex(d0, &x0, &y0);
+   gridXYFromIndex(d1, &x1, &y1);
+
+   dist = abs(x0 - x1) + abs(y0 - y1);
+
+   return dist > 1 ? SQRT2 : dist;
+}
+
+static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, GridNodePublic *neighbor){
    vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
    if (entities && !vecIsEmpty(EntityPtr)(entities)){
-      return INF;
+      return (float)INF;
    }
-   return gridNodeGetScore(current) + 1;
+   return gridNodeGetScore(current) + _distance(current->ID, neighbor->ID);
 }
 
 static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *current){
-   size_t currentScore = gridNodeGetScore(current);
-   size_t h;
+   float currentScore = gridNodeGetScore(current);
+   float h;
    int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
    if (gridNodeGetScore(current) == INF){
@@ -54,7 +65,7 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
    //update heuristic
    gridXYFromIndex(current->ID, &x1, &y1);
    gridXYFromIndex(data->destination, &x2, &y2);
-   h = abs(x1 - x2) + abs(y1 - y2);
+   h = (float)abs(x1 - x2) + (float)abs(y1 - y2);
    if (h < data->lowestHeuristic){
       data->lowestHeuristic = h;
       data->closestNode = current;
@@ -66,7 +77,7 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
 static GridSolution solve(GridManager *manager, size_t start, size_t destination){
    GridProcessCurrent cFunc;
    GridProcessNeighbor nFunc;
-   GridSolvingData data = { manager, destination, INF, NULL };
+   GridSolvingData data = { manager, destination, (float)INF, NULL };
 
    closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
    closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);
@@ -111,6 +122,7 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
 
    if (solution.totalCost > 0){
       int x, y;
+      double timeToMove;
       dest = vecBegin(GridSolutionNode)(solution.path)->node;
 
       COMPONENT_LOCK(GridComponent, newgc, e, {
@@ -118,7 +130,10 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
       });
 
       screenPosFromGridXY(gc->x, gc->y, &x, &y);
-      COMPONENT_ADD(e, InterpolationComponent, .destX = x, .destY = y, .time = 0.25);
+
+      timeToMove = 0.25 * (double)_distance(pos, dest);
+
+      COMPONENT_ADD(e, InterpolationComponent, .destX = x, .destY = y, .time = timeToMove);
 
       entityUpdate(e);
    }
