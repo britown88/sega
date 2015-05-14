@@ -42,7 +42,7 @@ static float _distance(size_t d0, size_t d1){
 static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, GridNodePublic *neighbor){
    vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
    if (entities && !vecIsEmpty(EntityPtr)(entities)){
-      return (float)INF;
+      return INFF;
    }
    return gridNodeGetScore(current) + _distance(current->ID, neighbor->ID);
 }
@@ -77,7 +77,7 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
 static GridSolution solve(GridManager *manager, size_t start, size_t destination){
    GridProcessCurrent cFunc;
    GridProcessNeighbor nFunc;
-   GridSolvingData data = { manager, destination, (float)INF, NULL };
+   GridSolvingData data = { manager, destination, INFF, NULL };
 
    closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
    closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);

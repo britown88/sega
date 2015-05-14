@@ -159,10 +159,16 @@ StateClosure gameStateCreateBoard(WorldView *view){
    StateClosure out;
    BoardState *state = checkedCalloc(1, sizeof(BoardState));
 
+   int i;
+
    state->view = view;
    state->paused = false;
 
-   _createTestEntity(view->entitySystem, 0, 0, false);
+   for (i = 0; i < 12; ++i){
+      _createTestEntity(view->entitySystem, i, 0, false);
+   }
+
+   
    _createTestEntity(view->entitySystem, 11, 7, true);   
 
 

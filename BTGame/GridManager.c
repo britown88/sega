@@ -148,7 +148,7 @@ static void _buildTable(GridNode *nodes){
    size_t i;
    for (i = 0; i < CELL_COUNT; ++i){
       nodes[i].data.ID = i;
-      nodes[i].score = (float)INF;
+      nodes[i].score = INFF;
       nodes[i].data.entities = vecCreate(EntityPtr)(NULL);
       _addNeighbors(nodes, i);
 
@@ -158,7 +158,7 @@ static void _buildTable(GridNode *nodes){
 static void _clearTable(GridNode *nodes){
    int i;
    for (i = 0; i < CELL_COUNT; ++i){
-      nodes[i].score = (float)INF;
+      nodes[i].score = INFF;
       nodes[i].visited = false;
       nodes[i].parent = NULL;
       queueNodeClear(&nodes[i].node);
@@ -288,7 +288,7 @@ void _onUpdate(GridManager *self, Entity *e){
 }
 
 GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCurrent cFunc, GridProcessNeighbor nFunc){
-   GridSolution solution = { (float)INF, INF, NULL };
+   GridSolution solution = { INFF, INF, NULL };
 
    if (startCell < CELL_COUNT){
       int i;

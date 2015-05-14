@@ -30,6 +30,11 @@
 #define ComponentT MeshComponent
 #include "Entities\ComponentImpl.h"
 
+static void PolygonComponentDestroy(PolygonComponent *self){
+   vecDestroy(Int2)(self->pList);
+}
+
+#define COMP_DESTROY_FUNC PolygonComponentDestroy
 #define ComponentT PolygonComponent
 #include "Entities\ComponentImpl.h"
 

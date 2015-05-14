@@ -38,16 +38,12 @@ CursorManager *createCursorManager(EntitySystem *system){
    out->system = system;
    out->m.vTable = CreateManagerVTable(CursorManager);
 
-   out->dragBox = vecCreate(Int2)(NULL);
-   vecResize(Int2)(out->dragBox, 4, &(Int2){0, 0});
-
    out->boxColor = 15;
 
    return out;
 }
 
 void _destroy(CursorManager *self){
-   vecDestroy(Int2)(self->dragBox);
    checkedFree(self);
 }
 void _onDestroy(CursorManager *self, Entity *e){}
@@ -55,10 +51,14 @@ void _onUpdate(CursorManager *self, Entity *e){}
 
 static void _updateDragBox(CursorManager *self, int x, int y){
 
-   *vecAt(Int2)(self->dragBox, 0) = (Int2){ self->dragStart.x, self->dragStart.y };
-   *vecAt(Int2)(self->dragBox, 1) = (Int2){ x, self->dragStart.y };
-   *vecAt(Int2)(self->dragBox, 2) = (Int2){ x, y };
-   *vecAt(Int2)(self->dragBox, 3) = (Int2){ self->dragStart.x, y };
+   if (self->dragBox){
+      *vecAt(Int2)(self->dragBox, 0) = (Int2){ self->dragStart.x, self->dragStart.y };
+      *vecAt(Int2)(self->dragBox, 1) = (Int2){ x, self->dragStart.y };
+      *vecAt(Int2)(self->dragBox, 2) = (Int2){ x, y };
+      *vecAt(Int2)(self->dragBox, 3) = (Int2){ self->dragStart.x, y };
+   }
+
+   
 
 }
 
@@ -73,6 +73,9 @@ void cursorManagerCreateCursor(CursorManager *self){
 }
 
 void cursorManagerStartDrag(CursorManager *self, int x, int y){
+   self->dragBox = vecCreate(Int2)(NULL);
+   vecResize(Int2)(self->dragBox, 4, &(Int2){0, 0});
+
    self->dragStart = (Int2){ x, y };
    _updateDragBox(self, x, y);
    COMPONENT_ADD(self->e, PolygonComponent, .pList = self->dragBox, .color = self->boxColor, .open = false);
@@ -82,6 +85,7 @@ void cursorManagerStartDrag(CursorManager *self, int x, int y){
 Recti cursorManagerEndDrag(CursorManager *self, int x, int y){
    entityRemove(PolygonComponent)(self->e);
    entityUpdate(self->e);
+   self->dragBox = NULL;
    return (Recti){ 
          MIN(self->dragStart.x, x),
          MIN(self->dragStart.y, y),
