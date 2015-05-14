@@ -104,20 +104,32 @@ static void _handleMouse(BoardState *state){
          else if (event.button == SegaMouseBtn_Right){
             bool shift = keyboardIsDown(k, SegaKey_LeftShift) || keyboardIsDown(k, SegaKey_RightShift);
             vec(EntityPtr) *selectedEntities = selectionManagerGetSelected(managers->selectionManager);
-            
+            vec(EntityPtr) *clickedEntities;
             size_t gridIndex = gridIndexFromScreenXY(event.pos.x, event.pos.y);
 
-            logManagerPushMessage(managers->logManager, "This is a test %i", gridIndex);
+            selectionManagerGetEntities(managers->selectionManager, clickedEntities, 
+            { scArea, .box = (Recti){ event.pos.x, event.pos.y, event.pos.x, event.pos.y } }); 
 
-            if (gridIndex < INF){
+            if (!vecIsEmpty(EntityPtr)(clickedEntities)){
+               logManagerPushMessage(managers->logManager, "Clicked an Entity");
+               vecForEach(EntityPtr, e, selectedEntities, {
+                  if (!shift){
+                     entityCancelCommands(*e);
+                  }
+
+                  entityPushCommand(*e, createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0)));
+               });
+            }
+            else if (gridIndex < INF){
                int gx, gy;
+               logManagerPushMessage(managers->logManager, "Clicked a Position");
                gridXYFromIndex(gridIndex, &gx, &gy);
                vecForEach(EntityPtr, e, selectedEntities, {
                   if (!shift){
                      entityCancelCommands(*e);
                   }
                   
-                  entityPushCommand(*e, createActionGridMove(managers->commandManager, gx, gy));
+                  entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
                });
             }
          }

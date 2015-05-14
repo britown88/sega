@@ -23,6 +23,7 @@ static void _gridMoveDataDestroy(GridMoveData *self){
 typedef struct{
    GridManager *manager;
    size_t destination;
+   Action *a;
 
    float lowestHeuristic;
    GridNodePublic *closestNode;
@@ -51,21 +52,24 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
    float currentScore = gridNodeGetScore(current);
    float h;
    int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+   RangeComponent *rc = entityGet(RangeComponent)(data->a);
 
    if (gridNodeGetScore(current) == INF){
       //cant get to destination, use closest
       return data->closestNode;
    }
 
-   if (current->ID == data->destination){
-      //destination found
-      return current;
-   }
-
    //update heuristic
    gridXYFromIndex(current->ID, &x1, &y1);
    gridXYFromIndex(data->destination, &x2, &y2);
    h = (float)abs(x1 - x2) + (float)abs(y1 - y2);
+
+   if (current->ID == data->destination || (rc && h <= rc->range)){
+      //destination found
+      return current;
+   }
+
+   
    if (h < data->lowestHeuristic){
       data->lowestHeuristic = h;
       data->closestNode = current;
@@ -74,10 +78,10 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
    return  NULL;
 }
 
-static GridSolution solve(GridManager *manager, size_t start, size_t destination){
+static GridSolution solve(GridManager *manager, Action *a, size_t start, size_t destination){
    GridProcessCurrent cFunc;
    GridProcessNeighbor nFunc;
-   GridSolvingData data = { manager, destination, INFF, NULL };
+   GridSolvingData data = { manager, destination, a, INFF, NULL };
 
    closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
    closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);
@@ -87,7 +91,8 @@ static GridSolution solve(GridManager *manager, size_t start, size_t destination
 
 static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    UserComponent *user = entityGet(UserComponent)(data->a);
-   TargetPositionComponent *target = entityGet(TargetPositionComponent)(data->a);
+   TargetPositionComponent *targetPos = entityGet(TargetPositionComponent)(data->a);
+   TargetComponent *targetEntity = entityGet(TargetComponent)(data->a);
    Entity *e = user->user;
    GridComponent *gc = entityGet(GridComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);   
@@ -96,8 +101,26 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    size_t pos, dest = INF;
    size_t destination;
 
-   if (!target || !gc || !pc){
+   if (!gc || !pc){
       //doesnt have the right components, we're done
+      return Finished;
+   }   
+
+   if (targetPos){
+      destination = gridIndexFromXY(targetPos->x, targetPos->y);
+   }
+   else if(targetEntity){
+      GridComponent *targetGridPos = entityGet(GridComponent)(targetEntity->target);
+      if (targetGridPos){
+         destination = gridIndexFromXY(targetGridPos->x, targetGridPos->y);
+      }
+      else{
+         //target entity isnt on the grid!
+         return Finished;
+      }
+   }
+   else{
+      //doesnt have a target, we're done
       return Finished;
    }
 
@@ -105,8 +128,7 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
       //we're moving, not done, cant be cancelled!
       return NotFinished;
    }
-
-   destination = gridIndexFromXY(target->x, target->y);
+   
    pos = gridIndexFromXY(gc->x, gc->y);
 
    if (cancel || pos == destination || destination == INF){
@@ -115,10 +137,7 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    }
 
    //wasnt cancelled and still have a ways to go...continue on...
-   solution = solve(data->manager, pos, destination);
-   if (solution.totalCost == 0){
-      gridXYFromIndex(solution.solutionCell, &target->x, &target->y);
-   }
+   solution = solve(data->manager, data->a, pos, destination);
 
    if (solution.totalCost > 0){
       int x, y;
@@ -152,9 +171,18 @@ Coroutine createCommandGridMove(Action *a, GridManager *manager){
    return out;
 }
 
-Action *createActionGridMove(CommandManager *self, int x, int y){
+Action *createActionGridPosition(CommandManager *self, int x, int y){
    Action *a = commandManagerCreateAction(self);
    COMPONENT_ADD(a, TargetPositionComponent, .x = x, .y = y);
+   entityUpdate(a);
+
+   return a;
+}
+
+Action *createActionGridTarget(CommandManager *self, Entity *e){
+   Action *a = commandManagerCreateAction(self);
+   COMPONENT_ADD(a, TargetComponent, e);
+   COMPONENT_ADD(a, RangeComponent, 1.0f);
    entityUpdate(a);
 
    return a;

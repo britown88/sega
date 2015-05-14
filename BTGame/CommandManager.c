@@ -13,7 +13,13 @@
 #define ComponentT UserComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT TargetComponent
+#include "Entities\ComponentImpl.h"
+
 #define ComponentT TargetPositionComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT RangeComponent
 #include "Entities\ComponentImpl.h"
 
 #define VectorTPart ActionPtr
@@ -45,8 +51,9 @@ struct CommandManager_t{
 static Coroutine _updateCommand(CommandManager *self, Action *a){
    UserComponent *uc = entityGet(UserComponent)(a);
    TargetPositionComponent *tpc = entityGet(TargetPositionComponent)(a);
+   TargetComponent *tec = entityGet(TargetComponent)(a);
 
-   if (tpc){
+   if (tpc || tec){
       return createCommandGridMove(a, self->gridManager);
    }
 

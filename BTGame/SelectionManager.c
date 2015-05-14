@@ -36,7 +36,7 @@ void TSelectedComponentDestroy(TSelectedComponent *self){
 struct SelectionManager_t{
    Manager m;
    EntitySystem *system;
-   vec(EntityPtr) *selectList;
+   vec(EntityPtr) *selectList, *tempList;
 };
 
 ImplManagerVTable(SelectionManager)
@@ -47,11 +47,13 @@ SelectionManager *createSelectionManager(EntitySystem *system){
    out->m.vTable = CreateManagerVTable(SelectionManager);
 
    out->selectList = vecCreate(EntityPtr)(NULL);
+   out->tempList = vecCreate(EntityPtr)(NULL);
    return out;
 }
 
 void _destroy(SelectionManager *self){
    vecDestroy(EntityPtr)(self->selectList);
+   vecDestroy(EntityPtr)(self->tempList);
    checkedFree(self);
 }
 void _onDestroy(SelectionManager *self, Entity *e){
@@ -189,4 +191,17 @@ void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, s
 
 vec(EntityPtr) *selectionManagerGetSelected(SelectionManager *self){
    return self->selectList;
+}
+
+vec(EntityPtr) *selectionManagerGetEntitiesEX(SelectionManager *self, SelectCriteria *filters, size_t filterCount){
+   vecClear(EntityPtr)(self->tempList);
+
+   COMPONENT_QUERY(self->system, GridComponent, tc, {
+      Entity *e = componentGetParent(tc, self->system);
+      if (_select(self, e, filters, filterCount)){
+         vecPushBack(EntityPtr)(self->tempList, &e);
+      }
+   });
+
+   return self->tempList;
 }

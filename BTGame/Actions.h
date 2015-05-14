@@ -18,11 +18,24 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
+   Entity *target;
+}TargetComponent;
+#define ComponentT TargetComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
    int x, y;
 }TargetPositionComponent;
 #define ComponentT TargetPositionComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   float range;
+}RangeComponent;
+#define ComponentT RangeComponent
+#include "Entities\ComponentDecl.h"
+
 
 //put your action creating function decls here
-Action *createActionGridMove(CommandManager *self, int x, int y);
+Action *createActionGridPosition(CommandManager *self, int x, int y);
+Action *createActionGridTarget(CommandManager *self, Entity *e);
