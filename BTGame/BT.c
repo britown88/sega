@@ -10,6 +10,7 @@
 #include "WorldView.h"
 #include "GameState.h"
 #include "LogManager.h"
+#include "Combat.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
@@ -74,7 +75,7 @@ AppData *_getData(BTGame *self) {
 
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
-   self->view.entitySystem = self->entitySystem;
+   self->view.entitySystem = self->entitySystem;//this is important
 
    RegisterManager(self->managers.renderManager, createRenderManager(&self->view, &self->data.fps));
    RegisterManager(self->managers.cursorManager, createCursorManager(&self->view));
@@ -84,6 +85,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.diceManager, createDiceManager(&self->view));
    RegisterManager(self->managers.selectionManager, createSelectionManager(&self->view));
    RegisterManager(self->managers.logManager, createLogManager(&self->view));
+   RegisterManager(self->managers.combatManager, createCombatManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -99,6 +101,7 @@ VirtualApp *btCreate() {
    r->imageLibrary = imageLibraryCreate();
    r->gameState = fsmCreate();  
 
+   //init the view
    r->view.imageLibrary = r->imageLibrary;
    r->view.gameState = r->gameState;
    r->view.managers = &r->managers;

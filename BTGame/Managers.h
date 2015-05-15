@@ -16,6 +16,7 @@ typedef struct InterpolationManager_t InterpolationManager;
 typedef struct DiceManager_t DiceManager;
 typedef struct SelectionManager_t SelectionManager;
 typedef struct LogManager_t LogManager;
+typedef struct CombatManager_t CombatManager;
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
 
@@ -28,6 +29,7 @@ typedef struct BTManagers_t {
    DiceManager *diceManager;
    SelectionManager *selectionManager;
    LogManager *logManager;
+   CombatManager *combatManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);

@@ -66,6 +66,9 @@
     <ClInclude Include="CombatRoutines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Combat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -124,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="AllCombatRoutines.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CombatManager.c">
+      <Filter>Source Files\Managers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

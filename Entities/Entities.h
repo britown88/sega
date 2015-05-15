@@ -118,6 +118,19 @@ ComponentVTable *compListGetVTable(ComponentList *self);
 void *componentListGetRaw(ComponentList *self);
 size_t componentListGetCount(ComponentList *self);
 
+#define IF_COMPONENT(entity, component_type, varName, ...){\
+   component_type *varName = entityGet(component_type)(entity); \
+   if (varName){ \
+      __VA_ARGS__ \
+   } \
+}
+
+/*
+IF_COMPONENT(e, PositionComponent, pc, {
+   pc->x = 5;
+});
+*/
+
 #define COMPONENT_ADD(entity, component_type, ...) { \
    component_type CONCAT(__new_, component_type) = { __VA_ARGS__ }; \
    entityAdd(component_type)(entity, &CONCAT(__new_, component_type)); \

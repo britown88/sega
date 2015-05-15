@@ -74,6 +74,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BT.h" />
+    <ClInclude Include="Combat.h" />
     <ClInclude Include="CombatRoutines.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="CoreComponents.h" />
@@ -93,6 +94,7 @@
     <ClCompile Include="BoardPausedState.cpp" />
     <ClCompile Include="BoardState.c" />
     <ClCompile Include="BT.c" />
+    <ClCompile Include="CombatManager.c" />
     <ClCompile Include="CombatRoutineLibrary.c" />
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
