@@ -51,8 +51,6 @@ void cursorManagerUpdate(CursorManager *self, int x, int y);
 
 InterpolationManager *createInterpolationManager(WorldView *view);
 void interpolationManagerUpdate(InterpolationManager *self);
-void interpolationManagerPause(InterpolationManager *self);
-void interpolationManagerResume(InterpolationManager *self);
 
 DiceManager *createDiceManager(WorldView *view);
 void diceManagerUpdate(DiceManager *self);

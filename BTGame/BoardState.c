@@ -15,6 +15,7 @@
 #include "CoreComponents.h"
 #include "segashared\Strings.h"
 #include "LogManager.h"
+#include "GameClock.h"
 
 typedef struct {
    WorldView *view;
@@ -66,11 +67,11 @@ static void _handleKeyboard(BoardState *state){
          if (e.action == SegaKey_Released){
             if (state->paused){
                state->paused = false;
-               interpolationManagerResume(managers->interpolationManager);
+               gameClockResume(state->view->gameClock);
             }
             else{
-               state->paused = true;
-               interpolationManagerPause(managers->interpolationManager);
+               state->paused = true; 
+               gameClockPause(state->view->gameClock);
             }
          }
          break;

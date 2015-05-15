@@ -11,6 +11,7 @@
 #include "GameState.h"
 #include "LogManager.h"
 #include "Combat.h"
+#include "GameClock.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
@@ -24,6 +25,7 @@ typedef struct {
    EntitySystem *entitySystem;
    ImageLibrary *imageLibrary;
    FSM *gameState;
+   GameClock *gameClock;
 
    WorldView view;
 
@@ -100,11 +102,13 @@ VirtualApp *btCreate() {
    //Other constructor shit goes here   
    r->imageLibrary = imageLibraryCreate();
    r->gameState = fsmCreate();  
+   r->gameClock = gameClockCreate();
 
    //init the view
    r->view.imageLibrary = r->imageLibrary;
    r->view.gameState = r->gameState;
    r->view.managers = &r->managers;
+   r->view.gameClock = r->gameClock;
 
    _initEntitySystem(r);
    
@@ -117,6 +121,7 @@ void _destroy(BTGame *self){
    _destroyEntitySystem(self);
 
    imageLibraryDestroy(self->imageLibrary);
+   gameClockDestroy(self->gameClock);
    checkedFree(self);
 }
 

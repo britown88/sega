@@ -12,6 +12,7 @@
 
 #include "SEGA\App.h"
 #include "WorldView.h"
+#include "GameClock.h"
 
 #include <stdio.h>
 
@@ -70,7 +71,7 @@ void _onUpdate(InterpolationManager *self, Entity *e){
             //already has one
             if (ic->destX != tic->destX || ic->destY != tic->destY){
                //destination has changed, u0date it
-               tic->startTime = (long)appGetTime(appGet());
+               tic->startTime = gameClockGetTime(self->view->gameClock);
                tic->startX = pc->x;
                tic->startY = pc->y;
                tic->destX = ic->destX;
@@ -79,7 +80,7 @@ void _onUpdate(InterpolationManager *self, Entity *e){
          }
          else{
             //new grid entry
-            COMPONENT_ADD(e, TInterpolationComponent, .startTime = (long)appGetTime(appGet()), 
+            COMPONENT_ADD(e, TInterpolationComponent, .startTime = gameClockGetTime(self->view->gameClock),
                                                           .startX = pc->x, 
                                                           .startY = pc->y,
                                                           .destX = ic->destX,
@@ -92,24 +93,6 @@ void _onUpdate(InterpolationManager *self, Entity *e){
             entityRemove(TInterpolationComponent)(e);
          }
       }
-   }
-}
-
-
-void interpolationManagerPause(InterpolationManager *self){
-   if (!self->paused){
-      self->paused = true;
-      self->pausedTime = (long)appGetTime(appGet());
-   }
-}
-void interpolationManagerResume(InterpolationManager *self){
-   if (self->paused){
-      long elapsed = (long)appGetTime(appGet()) - self->pausedTime;
-      self->paused = false;
-
-      COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, tic, {
-         tic->startTime += elapsed;
-      });
    }
 }
 
@@ -143,7 +126,7 @@ void _removeComponents(InterpolationManager *self){
 
 void interpolationManagerUpdate(InterpolationManager *self){
    if (!self->paused){
-      long time = (long)appGetTime(appGet());
+      long time = gameClockGetTime(self->view->gameClock);
 
       COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, ic, {
          Entity *e = componentGetParent(ic, self->view->entitySystem);

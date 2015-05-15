@@ -10,4 +10,3 @@ DeclStateMessage(GameStateHandleInput);
 DeclStateMessageWithData(GameStateRender, { Frame *frame; });
 
 StateClosure gameStateCreateBoard(WorldView *view);
-StateClosure gameStateCreateBoardPaused(WorldView *view);
