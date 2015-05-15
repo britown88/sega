@@ -29,8 +29,6 @@ struct InterpolationManager_t{
    Manager m;
    WorldView *view;
    vec(EntityPtr) *removeList;
-   long pausedTime;
-   bool paused;
 };
 
 ImplManagerVTable(InterpolationManager)
@@ -79,7 +77,7 @@ void _onUpdate(InterpolationManager *self, Entity *e){
             }
          }
          else{
-            //new grid entry
+            //new entry, add a transient
             COMPONENT_ADD(e, TInterpolationComponent, .startTime = gameClockGetTime(self->view->gameClock),
                                                           .startX = pc->x, 
                                                           .startY = pc->y,
@@ -89,7 +87,7 @@ void _onUpdate(InterpolationManager *self, Entity *e){
       }
       else{
          if (tic){
-            //no longer rendered
+            //interpolation comp was removed somehow, cleanup the transient
             entityRemove(TInterpolationComponent)(e);
          }
       }
@@ -125,17 +123,15 @@ void _removeComponents(InterpolationManager *self){
 }
 
 void interpolationManagerUpdate(InterpolationManager *self){
-   if (!self->paused){
-      long time = gameClockGetTime(self->view->gameClock);
+   long time = gameClockGetTime(self->view->gameClock);
 
-      COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, ic, {
-         Entity *e = componentGetParent(ic, self->view->entitySystem);
-         _updateEntity(self, e, time);
-      });
+   COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, ic, {
+      Entity *e = componentGetParent(ic, self->view->entitySystem);
+      _updateEntity(self, e, time);
+   });
 
-      if (!vecIsEmpty(EntityPtr)(self->removeList)){
-         _removeComponents(self);
-      }
+   if (!vecIsEmpty(EntityPtr)(self->removeList)){
+      _removeComponents(self);
    }
 
    COMPONENT_QUERY(self->view->entitySystem, LockedPositionComponent, lpc, {

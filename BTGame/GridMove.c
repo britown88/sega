@@ -29,7 +29,7 @@ typedef struct{
    GridNodePublic *closestNode;
 }GridSolvingData;
 
-static float _distance(size_t d0, size_t d1){
+static float _singleDistance(size_t d0, size_t d1){
    int x0, y0, x1, y1, dist;
 
    gridXYFromIndex(d0, &x0, &y0);
@@ -40,12 +40,21 @@ static float _distance(size_t d0, size_t d1){
    return dist > 1 ? SQRT2 : dist;
 }
 
+static int _distance(size_t d0, size_t d1){
+   int x0, y0, x1, y1, dist;
+
+   gridXYFromIndex(d0, &x0, &y0);
+   gridXYFromIndex(d1, &x1, &y1);
+
+   return abs(x0 - x1) + abs(y0 - y1);
+}
+
 static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, GridNodePublic *neighbor){
    vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
    if (entities && !vecIsEmpty(EntityPtr)(entities)){
       return INFF;
    }
-   return gridNodeGetScore(current) + _distance(current->ID, neighbor->ID);
+   return gridNodeGetScore(current) + _singleDistance(current->ID, neighbor->ID);
 }
 
 static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *current){
@@ -95,7 +104,9 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    ActionTargetEntityComponent *targetEntity = entityGet(ActionTargetEntityComponent)(data->a);
    Entity *e = user->user;
    GridComponent *gc = entityGet(GridComponent)(e);
-   PositionComponent *pc = entityGet(PositionComponent)(e);   
+   PositionComponent *pc = entityGet(PositionComponent)(e);  
+   ActionRangeComponent *rc = entityGet(ActionRangeComponent)(data->a);
+   float range = 0;
 
    GridSolution solution;
    size_t pos, dest = INF;
@@ -131,18 +142,20 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    
    pos = gridIndexFromXY(gc->x, gc->y);
 
-   if (cancel || pos == destination || destination == INF){
-      //op was cancelled or we made it... so we're done
+   if (rc){
+      range = rc->range;
+   }
+
+   if (cancel || //cancelled
+      _distance(pos, destination) <= range || //at our destination
+      destination == INF){//impossible
+
+      //so we're done
       return Finished;
    }
 
    //wasnt cancelled and still have a ways to go...continue on...
    solution = solve(data->manager, data->a, pos, destination);
-
-   if (solution.totalCost == 0){
-      //we have nowhere to go... probably because we're blocked
-      return Finished;
-   }
 
    if (solution.totalCost > 0){
       int x, y;
@@ -155,7 +168,7 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
 
       screenPosFromGridXY(gc->x, gc->y, &x, &y);
 
-      timeToMove = 0.25 * (double)_distance(pos, dest);
+      timeToMove = 0.25 * (double)_singleDistance(pos, dest);
 
       COMPONENT_ADD(e, InterpolationComponent, .destX = x, .destY = y, .time = timeToMove);
 

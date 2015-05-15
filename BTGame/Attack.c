@@ -13,6 +13,7 @@
 typedef struct {
    WorldView *view;
    Action *a;
+   long startTime;
 }MeleeRoutineData;
 
 static MeleeRoutineData *meleeRoutineDataCreate(){
@@ -40,6 +41,17 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
    if (!uc || !tec || !cc){
       //shouldnt get here but return done if we dont ahve the right components!
       return Finished;
+   }
+
+   
+   if (data->startTime == 0){
+      //we're not currently in an attack
+
+
+
+   }
+   else{
+
    }
 
    e = uc->user;

@@ -129,30 +129,51 @@ Action *commandManagerCreateAction(CommandManager *self){
    return entityCreate(self->actionSystem);
 }
 
+static void _updateEntityCommand(CommandManager *self, Entity *e){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   TCommandComponent *tcc = entityGet(TCommandComponent)(e);
+
+   while (!vecIsEmpty(ActionPtr)(cc->actions) && !tcc->commandReady){
+      tcc->command = _updateCommand(self, *vecBegin(ActionPtr)(cc->actions));
+      tcc->commandReady = !closureIsNull(Coroutine)(&tcc->command);
+      tcc->runningIndex = 0;
+      if (!tcc->commandReady){
+         vecRemoveAt(ActionPtr)(cc->actions, 0);
+      }
+   }
+}
+
 static void _updateEntity(CommandManager *self, Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    TCommandComponent *tcc = entityGet(TCommandComponent)(e);
 
+   //if we got one, run it
    if (tcc->commandReady){
-      CoroutineStatus ret = closureCall(&tcc->command, cc->cancelled);
-      if (ret == Finished){
+      CoroutineStatus ret = closureCall(&tcc->command, cc->cancelled);      
+      
+      //we keep executing coroutines bambam until we're out or utnil one returns not finished
+      //this allows insta-routines to all be in 1 frame
+      while (ret == Finished && !vecIsEmpty(ActionPtr)(cc->actions)){
          tcc->commandReady = false;
          cc->cancelled = false;
 
+         //cleanup the current one
          closureDestroy(Coroutine)(&tcc->command);
-         vecRemoveAt(ActionPtr)(cc->actions, tcc->runningIndex);         
-      }
-   }
-   else{//command not ready, keep popping until we find a good one
-      while (!vecIsEmpty(ActionPtr)(cc->actions) && !tcc->commandReady){
-         tcc->command = _updateCommand(self, *vecBegin(ActionPtr)(cc->actions));
-         tcc->commandReady = !closureIsNull(Coroutine)(&tcc->command);
-         tcc->runningIndex = 0;
-         if (!tcc->commandReady){
-            vecRemoveAt(ActionPtr)(cc->actions, 0);
+         vecRemoveAt(ActionPtr)(cc->actions, tcc->runningIndex);   
+
+         //update to the next one
+         _updateEntityCommand(self, e);
+
+         //if theres one avail, run it
+         if (tcc->commandReady){
+            ret = closureCall(&tcc->command, cc->cancelled);
          }
       }
+   } else{
+      //command not ready, update to try and get a good one
+      _updateEntityCommand(self, e);
    }
+
 }
 
 void commandManagerUpdate(CommandManager *self){
