@@ -14,6 +14,7 @@
 //closureDestroy(SampleClosure)(&c);
 
 #include "Closure_Functions.h"
+#include "Defs.h"
 
 //function typdef
 #define CLOSURE_RET(TYPE) TYPE
@@ -40,6 +41,7 @@ typedef struct{
 //init and destroy
 void CONCAT(ClosureTPart, Init)(ClosureTPart *self, ClosureData data, CONCAT(ClosureTPart, Func) func, void(*destroy)(ClosureData));
 void CONCAT(ClosureTPart, Destroy)(ClosureTPart *self);
+bool CONCAT(ClosureTPart, IsNull)(ClosureTPart *self);
 
 #undef CLOSURE_RET
 #undef CLOSURE_NAME

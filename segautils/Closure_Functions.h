@@ -7,4 +7,6 @@ typedef void* ClosureData;
 #define closureInit(ClosureName) CONCAT(ClosureName, Init)
 #define closureDestroy(ClosureName) CONCAT(ClosureName, Destroy)
 #define closureCall(ClosurePtr, ...) (ClosurePtr)->func((ClosurePtr)->data, __VA_ARGS__)
+#define closureDestroy(ClosureName) CONCAT(ClosureName, Destroy)
+#define closureIsNull(ClosureName) CONCAT(ClosureName, IsNull)
 #endif

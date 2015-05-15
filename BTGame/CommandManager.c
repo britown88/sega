@@ -63,15 +63,15 @@ static Coroutine _updateCommand(CommandManager *self, Action *a){
       ActionUserComponent *uc = entityGet(ActionUserComponent)(a);
       CombatSlotsComponent *csc = entityGet(CombatSlotsComponent)(uc->user);
       if (csc && csc->slots[cc->slot]){
-         Coroutine c = combatRoutineLibraryGet(self->routines, csc->slots[cc->slot]);
-         if (!coroutineIsNull(c)){
+         CombatRoutineGenerator c = combatRoutineLibraryGet(self->routines, csc->slots[cc->slot]);
+         if (!closureIsNull(CombatRoutineGenerator)(&c)){
 
             //...*ahem*
             // action has a slot and a user, that user has combat slots,
             // the slot selected by the action is assigned in the user,
             // that slot name is a valid coroutine
             // so...return it, otherwise drop through so move is default
-            return c;
+            return closureCall(&c, self->view, a);
          }
       }
    }
@@ -83,7 +83,7 @@ static Coroutine _updateCommand(CommandManager *self, Action *a){
    }
 
    //we aint found shit
-   return coroutineNull();
+   return (Coroutine){ 0 };
 }
 
 ImplManagerVTable(CommandManager)
@@ -145,7 +145,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
    else{//command not ready, keep popping until we find a good one
       while (!vecIsEmpty(ActionPtr)(cc->actions) && !tcc->commandReady){
          tcc->command = _updateCommand(self, *vecBegin(ActionPtr)(cc->actions));
-         tcc->commandReady = !coroutineIsNull(tcc->command);
+         tcc->commandReady = !closureIsNull(Coroutine)(&tcc->command);
          if (!tcc->commandReady){
             vecRemoveAt(ActionPtr)(cc->actions, 0);
          }

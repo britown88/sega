@@ -1,9 +1,13 @@
 #include "CombatRoutines.h"
 #include "segautils\BitTwiddling.h"
 
+#define ClosureTPart CLOSURE_NAME(CombatRoutineGenerator)
+#include "segautils\Closure_Impl.h"
+
+
 typedef struct {
    StringView key;
-   Coroutine value;
+   CombatRoutineGenerator value;
 } crEntry;
 
 #define HashTableT crEntry
@@ -22,7 +26,7 @@ static size_t _crEntryHash(crEntry *p){
 }
 
 static void _crEntryDestroy(crEntry *p){
-   closureDestroy(Coroutine)(&p->value);
+   closureDestroy(CombatRoutineGenerator)(&p->value);
 }
 
 CombatRoutineLibrary *combatRoutineLibraryCreate(){
@@ -36,15 +40,15 @@ void combatRoutineLibraryDestroy(CombatRoutineLibrary *self){
    checkedFree(self);
 }
 
-void combatRoutineLibraryAdd(CombatRoutineLibrary *self, StringView name, Coroutine c){
+void combatRoutineLibraryAdd(CombatRoutineLibrary *self, StringView name, CombatRoutineGenerator c){
    crEntry entry = { .key = name, .value = c };
    htInsert(crEntry)(self->table, &entry);
 }
 
-Coroutine combatRoutineLibraryGet(CombatRoutineLibrary *self, StringView name){
+CombatRoutineGenerator combatRoutineLibraryGet(CombatRoutineLibrary *self, StringView name){
    crEntry entry = { 0 };
    crEntry *found = 0;
-   Coroutine out = coroutineNull();
+   CombatRoutineGenerator out = { 0 };
 
    entry.key = name;
    found = htFind(crEntry)(self->table, &entry);

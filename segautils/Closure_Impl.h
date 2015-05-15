@@ -11,6 +11,7 @@
 //closureDestroy(SampleClosure)(&c);
 
 #include "Closure_Functions.h"
+#include <string.h>
 
 //struct
 #define CLOSURE_RET(TYPE)
@@ -28,6 +29,10 @@ void CONCAT(ClosureTPart, Destroy)(ClosureTPart *self){
    if (self->destroy){
       self->destroy(self->data);
    }
+}
+
+bool CONCAT(ClosureTPart, IsNull)(ClosureTPart *self){
+   return memcmp(self, &(ClosureTPart){ 0 }, sizeof(ClosureTPart)) == 0;
 }
 
 #undef CLOSURE_RET
