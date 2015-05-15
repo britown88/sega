@@ -13,29 +13,35 @@ typedef Action *ActionPtr;
 
 typedef struct {
    Entity *user;
-}UserComponent;
-#define ComponentT UserComponent
+}ActionUserComponent;
+#define ComponentT ActionUserComponent
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
    Entity *target;
-}TargetComponent;
-#define ComponentT TargetComponent
+}ActionTargetEntityComponent;
+#define ComponentT ActionTargetEntityComponent
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
    int x, y;
-}TargetPositionComponent;
-#define ComponentT TargetPositionComponent
+}ActionTargetPositionComponent;
+#define ComponentT ActionTargetPositionComponent
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
    float range;
-}RangeComponent;
-#define ComponentT RangeComponent
+}ActionRangeComponent;
+#define ComponentT ActionRangeComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   size_t slot;
+}ActionCombatComponent;
+#define ComponentT ActionCombatComponent
+#include "Entities\ComponentDecl.h"
 
 //put your action creating function decls here
 Action *createActionGridPosition(CommandManager *self, int x, int y);
 Action *createActionGridTarget(CommandManager *self, Entity *e);
+Action *createActionCombat(CommandManager *self, size_t slot, Entity *e);

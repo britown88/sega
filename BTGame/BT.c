@@ -11,8 +11,8 @@
 #include "GameState.h"
 #include "LogManager.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
 #define FRAME_RATE 60.0
 
@@ -74,15 +74,16 @@ AppData *_getData(BTGame *self) {
 
 void _initEntitySystem(BTGame *self){
    self->entitySystem = entitySystemCreate();
+   self->view.entitySystem = self->entitySystem;
 
-   RegisterManager(self->managers.renderManager, createRenderManager(self->entitySystem, self->imageLibrary, &self->data.fps));
-   RegisterManager(self->managers.cursorManager, createCursorManager(self->entitySystem));
-   RegisterManager(self->managers.gridManager, createGridManager(self->entitySystem));
-   RegisterManager(self->managers.commandManager, createCommandManager(self->entitySystem, self->managers.gridManager));
-   RegisterManager(self->managers.interpolationManager, createInterpolationManager(self->entitySystem));
-   RegisterManager(self->managers.diceManager, createDiceManager(self->entitySystem));
-   RegisterManager(self->managers.selectionManager, createSelectionManager(self->entitySystem));
-   RegisterManager(self->managers.logManager, createLogManager(self->entitySystem));
+   RegisterManager(self->managers.renderManager, createRenderManager(&self->view, &self->data.fps));
+   RegisterManager(self->managers.cursorManager, createCursorManager(&self->view));
+   RegisterManager(self->managers.gridManager, createGridManager(&self->view));
+   RegisterManager(self->managers.commandManager, createCommandManager(&self->view));
+   RegisterManager(self->managers.interpolationManager, createInterpolationManager(&self->view));
+   RegisterManager(self->managers.diceManager, createDiceManager(&self->view));
+   RegisterManager(self->managers.selectionManager, createSelectionManager(&self->view));
+   RegisterManager(self->managers.logManager, createLogManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -92,20 +93,18 @@ void _destroyEntitySystem(BTGame *self){
 VirtualApp *btCreate() {
    BTGame *r = checkedCalloc(1, sizeof(BTGame));
    r->vApp.vTable = getVtable();
-   r->data = createData(); 
+   r->data = createData();
 
    //Other constructor shit goes here   
    r->imageLibrary = imageLibraryCreate();
-   r->gameState = fsmCreate();
-   _initEntitySystem(r);
+   r->gameState = fsmCreate();  
 
-   //build the public view
-   r->view = (WorldView){
-      .managers = &r->managers,
-      .entitySystem = r->entitySystem,
-      .imageLibrary = r->imageLibrary,
-      .gameState = r->gameState
-   };
+   r->view.imageLibrary = r->imageLibrary;
+   r->view.gameState = r->gameState;
+   r->view.managers = &r->managers;
+
+   _initEntitySystem(r);
+   
 
    return (VirtualApp*)r;
 }
@@ -125,7 +124,7 @@ void _onStart(BTGame *self){
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
    entityUpdate(e);
 
-   appLoadPalette(appGet(), "assets/img/boardui.pal");
+   appLoadPalette(appGet(), "assets/img/default.pal");
    cursorManagerCreateCursor(self->managers.cursorManager);
 
    //push the opening state

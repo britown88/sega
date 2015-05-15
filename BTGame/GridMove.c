@@ -52,7 +52,7 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
    float currentScore = gridNodeGetScore(current);
    float h;
    int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-   RangeComponent *rc = entityGet(RangeComponent)(data->a);
+   ActionRangeComponent *rc = entityGet(ActionRangeComponent)(data->a);
 
    if (gridNodeGetScore(current) == INF){
       //cant get to destination, use closest
@@ -90,9 +90,9 @@ static GridSolution solve(GridManager *manager, Action *a, size_t start, size_t 
 }
 
 static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
-   UserComponent *user = entityGet(UserComponent)(data->a);
-   TargetPositionComponent *targetPos = entityGet(TargetPositionComponent)(data->a);
-   TargetComponent *targetEntity = entityGet(TargetComponent)(data->a);
+   ActionUserComponent *user = entityGet(ActionUserComponent)(data->a);
+   ActionTargetPositionComponent *targetPos = entityGet(ActionTargetPositionComponent)(data->a);
+   ActionTargetEntityComponent *targetEntity = entityGet(ActionTargetEntityComponent)(data->a);
    Entity *e = user->user;
    GridComponent *gc = entityGet(GridComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);   
@@ -173,7 +173,7 @@ Coroutine createCommandGridMove(Action *a, GridManager *manager){
 
 Action *createActionGridPosition(CommandManager *self, int x, int y){
    Action *a = commandManagerCreateAction(self);
-   COMPONENT_ADD(a, TargetPositionComponent, .x = x, .y = y);
+   COMPONENT_ADD(a, ActionTargetPositionComponent, .x = x, .y = y);
    entityUpdate(a);
 
    return a;
@@ -181,8 +181,8 @@ Action *createActionGridPosition(CommandManager *self, int x, int y){
 
 Action *createActionGridTarget(CommandManager *self, Entity *e){
    Action *a = commandManagerCreateAction(self);
-   COMPONENT_ADD(a, TargetComponent, e);
-   COMPONENT_ADD(a, RangeComponent, 1.0f);
+   COMPONENT_ADD(a, ActionTargetEntityComponent, e);
+   COMPONENT_ADD(a, ActionRangeComponent, 1.0f);
    entityUpdate(a);
 
    return a;

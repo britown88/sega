@@ -74,6 +74,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BT.h" />
+    <ClInclude Include="CombatRoutines.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="CoreComponents.h" />
     <ClInclude Include="GameState.h" />
@@ -87,9 +88,12 @@
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AllCombatRoutines.c" />
+    <ClCompile Include="Attack.c" />
     <ClCompile Include="BoardPausedState.cpp" />
     <ClCompile Include="BoardState.c" />
     <ClCompile Include="BT.c" />
+    <ClCompile Include="CombatRoutineLibrary.c" />
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
     <ClCompile Include="DiceManager.c" />

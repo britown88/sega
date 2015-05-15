@@ -7,13 +7,14 @@
 #include "SEGA\Input.h"
 #include "LogManager.h"
 #include "segashared\Strings.h"
+#include "WorldView.h"
 
 #define LOG_LINE_LEN 20
 #define LOG_LINE_COUNT 6
 #define LOG_X 2
 #define LOG_Y 17
 #define LOG_COLOR_FG 0
-#define LOG_COLOR_BG 5
+#define LOG_COLOR_BG 7
 
 typedef struct {
    StringView line;
@@ -24,7 +25,7 @@ typedef struct {
 
 struct LogManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
 
    vec(EntityPtr) *logLines;
    vec(LogEntry) *log;
@@ -47,14 +48,14 @@ static Entity *_createLine(EntitySystem *system, int line){
 static void _createLines(LogManager *self){
    int i = 0;
    for (i = 0; i < LOG_LINE_COUNT; ++i){
-      Entity *e = _createLine(self->system, i);
+      Entity *e = _createLine(self->view->entitySystem, i);
       vecPushBack(EntityPtr)(self->logLines, &e);
    }
 }
 
-LogManager *createLogManager(EntitySystem *system){
+LogManager *createLogManager(WorldView *view){
    LogManager *out = checkedCalloc(1, sizeof(LogManager));
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(LogManager);
 
    out->logLines = vecCreate(EntityPtr)(NULL);

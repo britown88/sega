@@ -20,3 +20,6 @@ void coroutineDestroy(Coroutine *self);
 
 Coroutine createSynchronizedList(vec(Coroutine) **listOut);
 Coroutine createExecutionList(vec(Coroutine) **listOut);
+
+Coroutine coroutineNull();
+bool coroutineIsNull(Coroutine c);

@@ -11,8 +11,9 @@
 #define GRID_RES_SIZE 32
 
 typedef struct GridManager_t GridManager;
+typedef struct WorldView_t WorldView;
 
-GridManager *createGridManager(EntitySystem *system);
+GridManager *createGridManager(WorldView *view);
 
 typedef struct{
    size_t ID;

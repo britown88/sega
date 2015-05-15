@@ -3,7 +3,9 @@
 #include "Managers.h"
 #include <stdio.h>
 
-LogManager *createLogManager(EntitySystem *system);
+typedef struct WorldView_t WorldView;
+
+LogManager *createLogManager(WorldView *view);
 void logManagerUpdate(LogManager *self);
 
 void logManagerPushStringView(LogManager *self, StringView text);

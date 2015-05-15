@@ -5,6 +5,7 @@
 #include "CoreComponents.h"
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
+#include "WorldView.h"
 
 //marks en entity as a transient element 
 //tied to a parent
@@ -35,15 +36,15 @@ void TSelectedComponentDestroy(TSelectedComponent *self){
 
 struct SelectionManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
    vec(EntityPtr) *selectList, *tempList;
 };
 
 ImplManagerVTable(SelectionManager)
 
-SelectionManager *createSelectionManager(EntitySystem *system){
+SelectionManager *createSelectionManager(WorldView *view){
    SelectionManager *out = checkedCalloc(1, sizeof(SelectionManager));
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(SelectionManager);
 
    out->selectList = vecCreate(EntityPtr)(NULL);
@@ -117,8 +118,8 @@ static void _setVisibility(Entity *e, bool value){
 }
 
 static void _hideAllTransients(SelectionManager *self){
-   COMPONENT_QUERY(self->system, TSelectedTransientComponent, cc, {
-      Entity *e = componentGetParent(cc, self->system);
+   COMPONENT_QUERY(self->view->entitySystem, TSelectedTransientComponent, cc, {
+      Entity *e = componentGetParent(cc, self->view->entitySystem);
       _setVisibility(e, false);
    });
 }
@@ -174,8 +175,8 @@ void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, s
    vecClear(EntityPtr)(self->selectList);
    _hideAllTransients(self);
 
-   COMPONENT_QUERY(self->system, GridComponent, tc, {
-      Entity *e = componentGetParent(tc, self->system);
+   COMPONENT_QUERY(self->view->entitySystem, GridComponent, tc, {
+      Entity *e = componentGetParent(tc, self->view->entitySystem);
       if (_select(self, e, filters, filterCount)){
          vecPushBack(EntityPtr)(self->selectList, &e);
       }
@@ -196,8 +197,8 @@ vec(EntityPtr) *selectionManagerGetSelected(SelectionManager *self){
 vec(EntityPtr) *selectionManagerGetEntitiesEX(SelectionManager *self, SelectCriteria *filters, size_t filterCount){
    vecClear(EntityPtr)(self->tempList);
 
-   COMPONENT_QUERY(self->system, GridComponent, tc, {
-      Entity *e = componentGetParent(tc, self->system);
+   COMPONENT_QUERY(self->view->entitySystem, GridComponent, tc, {
+      Entity *e = componentGetParent(tc, self->view->entitySystem);
       if (_select(self, e, filters, filterCount)){
          vecPushBack(EntityPtr)(self->tempList, &e);
       }

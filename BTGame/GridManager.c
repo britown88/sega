@@ -12,6 +12,7 @@
 #include "SEGA\App.h"
 #include "GridManager.h"
 #include "segautils\StandardVectors.h"
+#include "WorldView.h"
 
 #include <stdio.h>
 
@@ -112,7 +113,7 @@ typedef struct{
 
 struct GridManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
 
    GridNode table[CELL_COUNT];
    vec(GridSolutionNode) *solutionMap;
@@ -213,9 +214,9 @@ static void _registerUpdateDelegate(GridManager *self, EntitySystem *system){
 
 ImplManagerVTable(GridManager)
 
-GridManager *createGridManager(EntitySystem *system){
+GridManager *createGridManager(WorldView *view){
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(GridManager);
    out->solutionMap = vecCreate(GridSolutionNode)(NULL);
 
@@ -228,7 +229,7 @@ GridManager *createGridManager(EntitySystem *system){
 
    _buildTable(out->table);
 
-   _registerUpdateDelegate(out, system);
+   _registerUpdateDelegate(out, view->entitySystem);
 
    return out;
 }

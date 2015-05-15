@@ -11,6 +11,7 @@
 #include "segautils\Defs.h"
 
 #include "SEGA\App.h"
+#include "WorldView.h"
 
 #include <stdio.h>
 
@@ -25,7 +26,7 @@ typedef struct{
 
 struct InterpolationManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
    vec(EntityPtr) *removeList;
    long pausedTime;
    bool paused;
@@ -33,9 +34,9 @@ struct InterpolationManager_t{
 
 ImplManagerVTable(InterpolationManager)
 
-InterpolationManager *createInterpolationManager(EntitySystem *system){
+InterpolationManager *createInterpolationManager(WorldView *view){
    InterpolationManager *out = checkedCalloc(1, sizeof(InterpolationManager));
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(InterpolationManager);
    out->removeList = vecCreate(EntityPtr)(NULL);
    return out;
@@ -55,7 +56,7 @@ void _onUpdate(InterpolationManager *self, Entity *e){
 
    if (pc){
       if (lpc){
-         Entity *e = componentGetParent(lpc, self->system);
+         Entity *e = componentGetParent(lpc, self->view->entitySystem);
          PositionComponent *pc = entityGet(PositionComponent)(e);
          PositionComponent *opc = entityGet(PositionComponent)(lpc->parent);
          if (opc){
@@ -106,7 +107,7 @@ void interpolationManagerResume(InterpolationManager *self){
       long elapsed = (long)appGetTime(appGet()) - self->pausedTime;
       self->paused = false;
 
-      COMPONENT_QUERY(self->system, TInterpolationComponent, tic, {
+      COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, tic, {
          tic->startTime += elapsed;
       });
    }
@@ -144,8 +145,8 @@ void interpolationManagerUpdate(InterpolationManager *self){
    if (!self->paused){
       long time = (long)appGetTime(appGet());
 
-      COMPONENT_QUERY(self->system, TInterpolationComponent, ic, {
-         Entity *e = componentGetParent(ic, self->system);
+      COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, ic, {
+         Entity *e = componentGetParent(ic, self->view->entitySystem);
          _updateEntity(self, e, time);
       });
 
@@ -154,8 +155,8 @@ void interpolationManagerUpdate(InterpolationManager *self){
       }
    }
 
-   COMPONENT_QUERY(self->system, LockedPositionComponent, lpc, {
-      Entity *e = componentGetParent(lpc, self->system);
+   COMPONENT_QUERY(self->view->entitySystem, LockedPositionComponent, lpc, {
+      Entity *e = componentGetParent(lpc, self->view->entitySystem);
       PositionComponent *pc = entityGet(PositionComponent)(e);
       PositionComponent *opc = entityGet(PositionComponent)(lpc->parent);
       if (opc){

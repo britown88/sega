@@ -9,17 +9,22 @@
 #include "segautils\Coroutine.h"
 #include "Actions.h"
 #include "Commands.h"
+#include "WorldView.h"
+#include "CombatRoutines.h"
 
-#define ComponentT UserComponent
+#define ComponentT ActionUserComponent
 #include "Entities\ComponentImpl.h"
 
-#define ComponentT TargetComponent
+#define ComponentT ActionTargetEntityComponent
 #include "Entities\ComponentImpl.h"
 
-#define ComponentT TargetPositionComponent
+#define ComponentT ActionTargetPositionComponent
 #include "Entities\ComponentImpl.h"
 
-#define ComponentT RangeComponent
+#define ComponentT ActionRangeComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT ActionCombatComponent
 #include "Entities\ComponentImpl.h"
 
 #define VectorTPart ActionPtr
@@ -43,37 +48,61 @@ static void TCommandComponentDestroy(TCommandComponent *self){
 
 struct CommandManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
+   CombatRoutineLibrary *routines;
    EntitySystem *actionSystem;
-   GridManager *gridManager;
 };
 
+//determine which coroutine to use from a given action
 static Coroutine _updateCommand(CommandManager *self, Action *a){
-   UserComponent *uc = entityGet(UserComponent)(a);
-   TargetPositionComponent *tpc = entityGet(TargetPositionComponent)(a);
-   TargetComponent *tec = entityGet(TargetComponent)(a);
+   ActionTargetPositionComponent *tpc = entityGet(ActionTargetPositionComponent)(a);
+   ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(a);
+   ActionCombatComponent *cc = entityGet(ActionCombatComponent)(a);
 
-   if (tpc || tec){
-      return createCommandGridMove(a, self->gridManager);
+   if (cc && cc->slot < COMBAT_SLOT_COUNT){
+      ActionUserComponent *uc = entityGet(ActionUserComponent)(a);
+      CombatSlotsComponent *csc = entityGet(CombatSlotsComponent)(uc->user);
+      if (csc && csc->slots[cc->slot]){
+         Coroutine c = combatRoutineLibraryGet(self->routines, csc->slots[cc->slot]);
+         if (!coroutineIsNull(c)){
+
+            //...*ahem*
+            // action has a slot and a user, that user has combat slots,
+            // the slot selected by the action is assigned in the user,
+            // that slot name is a valid coroutine
+            // so...return it, otherwise drop through so move is default
+            return c;
+         }
+      }
    }
 
-   return (Coroutine){ 0 };
+   //we didnt find a coroutine to run so look and see if we 
+   //have movement we can pass to a move command
+   if (tpc || tec){
+      return createCommandGridMove(a, self->view->managers->gridManager);
+   }
+
+   //we aint found shit
+   return coroutineNull();
 }
 
 ImplManagerVTable(CommandManager)
 
-CommandManager *createCommandManager(EntitySystem *system, GridManager *gridManager){
+CommandManager *createCommandManager(WorldView *view){
    CommandManager *out = checkedCalloc(1, sizeof(CommandManager));
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(CommandManager);
    out->actionSystem = entitySystemCreate();
-   out->gridManager = gridManager;
+   out->routines = combatRoutineLibraryCreate();
+
+   buildAllCombatRoutines(out->routines);
 
    return out;
 }
 
 void _destroy(CommandManager *self){
    entitySystemDestroy(self->actionSystem);
+   combatRoutineLibraryDestroy(self->routines);
    checkedFree(self);
 }
 void _onDestroy(CommandManager *self, Entity *e){
@@ -99,10 +128,6 @@ Action *commandManagerCreateAction(CommandManager *self){
    return entityCreate(self->actionSystem);
 }
 
-static bool _coroutineIsGood(Coroutine c){
-   return memcmp(&c, &(Coroutine){ 0 }, sizeof(Coroutine)) != 0;
-}
-
 static void _updateEntity(CommandManager *self, Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    TCommandComponent *tcc = entityGet(TCommandComponent)(e);
@@ -120,7 +145,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
    else{//command not ready, keep popping until we find a good one
       while (!vecIsEmpty(ActionPtr)(cc->actions) && !tcc->commandReady){
          tcc->command = _updateCommand(self, *vecBegin(ActionPtr)(cc->actions));
-         tcc->commandReady = _coroutineIsGood(tcc->command);
+         tcc->commandReady = !coroutineIsNull(tcc->command);
          if (!tcc->commandReady){
             vecRemoveAt(ActionPtr)(cc->actions, 0);
          }
@@ -129,8 +154,8 @@ static void _updateEntity(CommandManager *self, Entity *e){
 }
 
 void commandManagerUpdate(CommandManager *self){
-   COMPONENT_QUERY(self->system, TCommandComponent, tcc, {
-      Entity *e = componentGetParent(tcc, self->system);
+   COMPONENT_QUERY(self->view->entitySystem, TCommandComponent, tcc, {
+      Entity *e = componentGetParent(tcc, self->view->entitySystem);
       _updateEntity(self, e);
    });
 }
@@ -154,7 +179,7 @@ void entityPushCommand(Entity *e, Action *cmd){
       cc = _addCommandComponent(e);      
    }
 
-   COMPONENT_ADD(cmd, UserComponent, e);
+   COMPONENT_ADD(cmd, ActionUserComponent, e);
 
    vecPushBack(ActionPtr)(cc->actions, &cmd);
 }

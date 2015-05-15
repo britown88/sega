@@ -17,6 +17,7 @@ typedef struct DiceManager_t DiceManager;
 typedef struct SelectionManager_t SelectionManager;
 typedef struct LogManager_t LogManager;
 typedef struct Frame_t Frame;
+typedef struct WorldView_t WorldView;
 
 typedef struct BTManagers_t {
    RenderManager *renderManager;
@@ -29,28 +30,28 @@ typedef struct BTManagers_t {
    LogManager *logManager;
 }BTManagers;
 
-RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps);
+RenderManager *createRenderManager(WorldView *view, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);
 
-CommandManager *createCommandManager(EntitySystem *system, GridManager *gridManager);
+CommandManager *createCommandManager(WorldView *view);
 void commandManagerUpdate(CommandManager *self);
 Action *commandManagerCreateAction(CommandManager *self);
 void entityPushCommand(Entity *e, Action *cmd);
 void entityCancelCommands(Entity *e);
 void entityClearCommands(Entity *e);
 
-CursorManager *createCursorManager(EntitySystem *system);
+CursorManager *createCursorManager(WorldView *view);
 void cursorManagerCreateCursor(CursorManager *self);
 void cursorManagerStartDrag(CursorManager *self, int x, int y);
 Recti cursorManagerEndDrag(CursorManager *self, int x, int y);
 void cursorManagerUpdate(CursorManager *self, int x, int y);
 
-InterpolationManager *createInterpolationManager(EntitySystem *system);
+InterpolationManager *createInterpolationManager(WorldView *view);
 void interpolationManagerUpdate(InterpolationManager *self);
 void interpolationManagerPause(InterpolationManager *self);
 void interpolationManagerResume(InterpolationManager *self);
 
-DiceManager *createDiceManager(EntitySystem *system);
+DiceManager *createDiceManager(WorldView *view);
 void diceManagerUpdate(DiceManager *self);
 
 

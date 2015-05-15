@@ -132,4 +132,13 @@ typedef struct {
 #define ComponentT CommandComponent
 #include "Entities\ComponentDecl.h"
 
+#define COMBAT_SLOT_COUNT 2
+
+typedef struct {
+   StringView slots[COMBAT_SLOT_COUNT];
+} CombatSlotsComponent;
+
+#define ComponentT CombatSlotsComponent
+#include "Entities\ComponentDecl.h"
+
 #pragma pack(pop)

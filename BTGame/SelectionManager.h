@@ -6,6 +6,7 @@
 
 typedef struct EntitySystem_t EntitySystem;
 typedef struct SelectionManager_t SelectionManager;
+typedef struct WorldView_t WorldView;
 
 typedef enum {
    scTeam,
@@ -21,7 +22,7 @@ typedef struct {
    };
 }SelectCriteria;
 
-SelectionManager *createSelectionManager(EntitySystem *system);
+SelectionManager *createSelectionManager(WorldView *view);
 void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, size_t filterCount);
 vec(EntityPtr) *selectionManagerGetSelected(SelectionManager *self);
 

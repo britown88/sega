@@ -7,14 +7,14 @@
 #include "segashared\CheckedMemory.h"
 #include "segalib\EGA.h"
 #include "MeshRendering.h"
+#include "WorldView.h"
 
 #include <stdio.h>
 
 struct RenderManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
    FontFactory *fontFactory;
-   ImageLibrary *images;
    double *fps;
 
    vec(EntityPtr) *layers[LayerCount];
@@ -36,12 +36,12 @@ static void _updateManagedImage(RenderManager *self, TRenderComponent *trc, Imag
       //image has changed
       managedImageDestroy(trc->img);
       trc->filename = ic->filename;
-      trc->img = imageLibraryGetImage(self->images, trc->filename);
+      trc->img = imageLibraryGetImage(self->view->imageLibrary, trc->filename);
    }
    else {
       //new image
       trc->filename = ic->filename;
-      trc->img = imageLibraryGetImage(self->images, trc->filename);
+      trc->img = imageLibraryGetImage(self->view->imageLibrary, trc->filename);
    }
 }
 
@@ -112,17 +112,16 @@ static void _registerUpdateDelegate(RenderManager *self, EntitySystem *system){
 
 ImplManagerVTable(RenderManager)
 
-RenderManager *createRenderManager(EntitySystem *system, ImageLibrary *imageManager, double *fps){
+RenderManager *createRenderManager(WorldView *view, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
    Image *fontImage = imageDeserializeOptimized("assets/img/font.ega");
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(RenderManager);
    out->fontFactory = fontFactoryCreate(fontImage);
-   out->images = imageManager;
    out->fps = fps;
    _initLayers(out);
 
-   _registerUpdateDelegate(out, system);
+   _registerUpdateDelegate(out, view->entitySystem);
 
    imageDestroy(fontImage);
    return out;
@@ -281,12 +280,12 @@ void renderManagerRender(RenderManager *self, Frame *frame){
 
    _clearLayers(self);
    
-   COMPONENT_QUERY(self->system, TRenderComponent, trc, {
-      Entity *e = componentGetParent(trc, self->system);
+   COMPONENT_QUERY(self->view->entitySystem, TRenderComponent, trc, {
+      Entity *e = componentGetParent(trc, self->view->entitySystem);
       _addToLayers(self, e);
    });
 
    _renderLayers(self, frame);
 
-   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 5, 0),  *self->fps);
+   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 7, 0),  *self->fps);
 }

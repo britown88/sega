@@ -5,6 +5,7 @@
 #include "Entities\Entities.h"
 
 #include "CoreComponents.h"
+#include "WorldView.h"
 #include "segashared\CheckedMemory.h"
 #include "segalib\EGA.h"
 #include "segautils\Rect.h"
@@ -21,7 +22,7 @@ typedef struct{
 
 struct CursorManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
    Entity *e;
 
    Int2 dragStart;
@@ -33,9 +34,9 @@ struct CursorManager_t{
 
 ImplManagerVTable(CursorManager)
 
-CursorManager *createCursorManager(EntitySystem *system){
+CursorManager *createCursorManager(WorldView *view){
    CursorManager *out = checkedCalloc(1, sizeof(CursorManager));
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(CursorManager);
 
    out->boxColor = 15;
@@ -63,7 +64,7 @@ static void _updateDragBox(CursorManager *self, int x, int y){
 }
 
 void cursorManagerCreateCursor(CursorManager *self){
-   self->e = entityCreate(self->system);
+   self->e = entityCreate(self->view->entitySystem);
 
    COMPONENT_ADD(self->e, PositionComponent, 0, 0);
    COMPONENT_ADD(self->e, ImageComponent, stringIntern("assets/img/cursor.ega"));

@@ -14,6 +14,13 @@ static void _coroutineVectorDestroy(vec(Coroutine) *self){
    vecDestroy(Coroutine)(self);
 }
 
+Coroutine coroutineNull(){
+   return (Coroutine){ 0 };
+}
+bool coroutineIsNull(Coroutine c){
+   return memcmp(&c, &(Coroutine){ 0 }, sizeof(Coroutine)) == 0;
+}
+
 static CoroutineStatus _synchronized(vec(Coroutine) *list, bool cancel){
    vec(Coroutine) *deleteList = NULL;
    CoroutineStatus status = Finished;

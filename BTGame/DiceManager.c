@@ -5,10 +5,11 @@
 #include "CoreComponents.h"
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
+#include "WorldView.h"
 
 struct DiceManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
    Entity *die;
 
    vec(Vertex) *vbo;
@@ -65,7 +66,7 @@ static void _buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
    20, 21, 22, 20, 22, 23 });
 }
 static void _createDie(DiceManager *self){
-   Entity *e = entityCreate(self->system);
+   Entity *e = entityCreate(self->view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 100, 275);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/d6.ega"));
    COMPONENT_ADD(e, LayerComponent, LayerUI);
@@ -77,9 +78,9 @@ static void _createDie(DiceManager *self){
 
 ImplManagerVTable(DiceManager)
 
-DiceManager *createDiceManager(EntitySystem *system){
+DiceManager *createDiceManager(WorldView *view){
    DiceManager *out = checkedCalloc(1, sizeof(DiceManager));
-   out->system = system;
+   out->view = view;
    out->m.vTable = CreateManagerVTable(DiceManager);
 
    out->vbo = vecCreate(Vertex)(NULL);
