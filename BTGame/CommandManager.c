@@ -147,6 +147,11 @@ static void _updateEntity(CommandManager *self, Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    TCommandComponent *tcc = entityGet(TCommandComponent)(e);
 
+   if (!tcc->commandReady){
+      //command not ready, update to try and get a good one
+      _updateEntityCommand(self, e);
+   }
+
    //if we got one, run it
    if (tcc->commandReady){
       CoroutineStatus ret = closureCall(&tcc->command, cc->cancelled);      
@@ -169,11 +174,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
             ret = closureCall(&tcc->command, cc->cancelled);
          }
       }
-   } else{
-      //command not ready, update to try and get a good one
-      _updateEntityCommand(self, e);
    }
-
 }
 
 void commandManagerUpdate(CommandManager *self){
