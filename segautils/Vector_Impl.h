@@ -92,6 +92,15 @@ void vecPopBack(T)(VEC_NAME *self){
       vecResize(T)(self, self->count - 1, NULL);
    }
 }
+void vecInsert(T)(VEC_NAME *self, size_t pos, T*data){
+   if (pos <= self->count){
+      vecResize(T)(self, self->count + 1, NULL);
+      memmove(self->data + pos + 1,
+         self->data + pos,
+         sizeof(T) * (self->count - 1 - pos));
+      memcpy(self->data + pos, data, sizeof(T));
+   }
+}
 T *vecAt(T)(VEC_NAME *self, size_t index){
    return self->data + index;
 }

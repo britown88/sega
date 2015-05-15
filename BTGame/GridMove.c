@@ -139,6 +139,11 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    //wasnt cancelled and still have a ways to go...continue on...
    solution = solve(data->manager, data->a, pos, destination);
 
+   if (solution.totalCost == 0){
+      //we have nowhere to go... probably because we're blocked
+      return Finished;
+   }
+
    if (solution.totalCost > 0){
       int x, y;
       double timeToMove;

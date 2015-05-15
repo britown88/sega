@@ -37,6 +37,7 @@ CommandManager *createCommandManager(WorldView *view);
 void commandManagerUpdate(CommandManager *self);
 Action *commandManagerCreateAction(CommandManager *self);
 void entityPushCommand(Entity *e, Action *cmd);
+void entityPushFrontCommand(Entity *e, Action *cmd);
 void entityCancelCommands(Entity *e);
 void entityClearCommands(Entity *e);
 

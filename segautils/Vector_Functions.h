@@ -8,6 +8,7 @@
 #define vecPushBack(TYPE) CONCAT(vecPushBack_, TYPE)
 #define vecPushArray(TYPE) CONCAT(vecPushArray_, TYPE)
 #define vecPopBack(TYPE) CONCAT(vecPopBack_, TYPE)
+#define vecInsert(TYPE) CONCAT(vecInsert_, TYPE)
 #define vecAt(TYPE) CONCAT(vecAt_, TYPE)
 #define vecIsEmpty(TYPE) CONCAT(vecIsEmpty_, TYPE)
 #define vecSize(TYPE) CONCAT(vecSize_, TYPE)

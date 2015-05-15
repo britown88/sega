@@ -117,7 +117,7 @@ static void _handleMouse(BoardState *state){
                      entityCancelCommands(*e);
                   }
 
-                  entityPushCommand(*e, createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0)));
+                  entityPushCommand(*e, createActionCombat(managers->commandManager, 0, *vecAt(EntityPtr)(clickedEntities, 0)));
                });
             }
             else if (gridIndex < INF){
@@ -162,6 +162,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
    COMPONENT_ADD(e, SizeComponent, 32, 32);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
+   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern("melee"), NULL });
    //COMPONENT_ADD(e, WanderComponent, 1);
 
    entityUpdate(e);

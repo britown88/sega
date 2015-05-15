@@ -33,6 +33,7 @@
 typedef struct{
    Coroutine command; 
    bool commandReady;
+   size_t runningIndex;//0 by  default
 }TCommandComponent;
 
 static void TCommandComponentDestroy(TCommandComponent *self){
@@ -139,13 +140,14 @@ static void _updateEntity(CommandManager *self, Entity *e){
          cc->cancelled = false;
 
          closureDestroy(Coroutine)(&tcc->command);
-         vecRemoveAt(ActionPtr)(cc->actions, 0);         
+         vecRemoveAt(ActionPtr)(cc->actions, tcc->runningIndex);         
       }
    }
    else{//command not ready, keep popping until we find a good one
       while (!vecIsEmpty(ActionPtr)(cc->actions) && !tcc->commandReady){
          tcc->command = _updateCommand(self, *vecBegin(ActionPtr)(cc->actions));
          tcc->commandReady = !closureIsNull(Coroutine)(&tcc->command);
+         tcc->runningIndex = 0;
          if (!tcc->commandReady){
             vecRemoveAt(ActionPtr)(cc->actions, 0);
          }
@@ -182,6 +184,22 @@ void entityPushCommand(Entity *e, Action *cmd){
    COMPONENT_ADD(cmd, ActionUserComponent, e);
 
    vecPushBack(ActionPtr)(cc->actions, &cmd);
+}
+
+void entityPushFrontCommand(Entity *e, Action *cmd){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+
+   if (!cc){
+      cc = _addCommandComponent(e);
+   }
+
+   COMPONENT_ADD(cmd, ActionUserComponent, e);
+   vecInsert(ActionPtr)(cc->actions, 0, &cmd);
+
+   if (vecSize(ActionPtr)(cc->actions) > 1){
+      entityGet(TCommandComponent)(e)->runningIndex += 1;
+   }
+   
 }
 
 void entityCancelCommands(Entity *e){

@@ -21,3 +21,5 @@ void combatRoutineLibraryAdd(CombatRoutineLibrary *self, StringView name, Combat
 CombatRoutineGenerator combatRoutineLibraryGet(CombatRoutineLibrary *self, StringView name);
 
 void buildAllCombatRoutines(CombatRoutineLibrary *self);
+
+CombatRoutineGenerator buildMeleeAttackRoutine();
