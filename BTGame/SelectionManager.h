@@ -26,6 +26,8 @@ SelectionManager *createSelectionManager(WorldView *view);
 void selectionManagerSelectEx(SelectionManager *self, SelectCriteria *filters, size_t filterCount);
 vec(EntityPtr) *selectionManagerGetSelected(SelectionManager *self);
 
+void entityDeselect(Entity *e);
+
 
 
 //links an arbitrary entity as a "Selection transient" to  a parent

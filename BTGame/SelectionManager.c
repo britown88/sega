@@ -21,6 +21,8 @@ typedef struct{
    vec(EntityPtr) *transientList;
 }TSelectedComponent;
 
+
+
 void TSelectedComponentDestroy(TSelectedComponent *self){
    vecForEach(EntityPtr, te, self->transientList, {
       entityGet(TSelectedTransientComponent)(*te)->parent = NULL;
@@ -33,6 +35,10 @@ void TSelectedComponentDestroy(TSelectedComponent *self){
 #define COMP_DESTROY_FUNC TSelectedComponentDestroy
 #define TComponentT TSelectedComponent
 #include "Entities\ComponentDeclTransient.h"
+
+void entityDeselect(Entity *e){
+   entityRemove(TSelectedComponent)(e);
+}
 
 struct SelectionManager_t{
    Manager m;

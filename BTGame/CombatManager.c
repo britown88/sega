@@ -9,6 +9,7 @@
 #include "Combat.h"
 #include "CombatConstants.h"
 #include "LogManager.h"
+#include "SelectionManager.h"
 
 #include <math.h>
 
@@ -62,6 +63,7 @@ static void _registerUpdateDelegates(CombatManager *self){
 static void _updateDeadEntity(EntityPtr *e){
    COMPONENT_ADD(*e, VisibilityComponent, .shown = false);
    entityRemove(GridComponent)(*e);
+   entityDeselect(*e);
    entityUpdate(*e);
 }
 
