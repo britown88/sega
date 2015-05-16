@@ -12,13 +12,20 @@
 #include "Entities\ComponentImpl.h"
 #define ComponentT CActionTargetComponent
 #include "Entities\ComponentImpl.h"
+#define ComponentT CActionCancelledComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT CActionRangeComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT CActionDamageComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT CActionDamageTypeComponent
+#include "Entities\ComponentImpl.h"
 
 struct CombatManager_t{
    Manager m;
    WorldView *view;
    EntitySystem *actions;
 };
-
 
 ImplManagerVTable(CombatManager)
 

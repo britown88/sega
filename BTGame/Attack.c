@@ -9,11 +9,21 @@
 #include "GridManager.h"
 #include "CoreComponents.h"
 #include "LogManager.h"
+#include "Combat.h"
+
+typedef enum{
+   NotAttacked = 0,
+   WindUp,
+   Swing,
+   Recoil
+}MoveStage;
 
 typedef struct {
    WorldView *view;
    Action *a;
-   long startTime;
+   MoveStage stage;
+   Int2 dir;
+   CombatAction *action;
 }MeleeRoutineData;
 
 static MeleeRoutineData *meleeRoutineDataCreate(){
@@ -37,36 +47,106 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
    ActionCombatComponent *cc = entityGet(ActionCombatComponent)(data->a);
    Entity *e, *target;
+   static int windup = 16;
 
    if (!uc || !tec || !cc){
       //shouldnt get here but return done if we dont ahve the right components!
       return Finished;
    }
 
-   
-   if (data->startTime == 0){
-      //we're not currently in an attack
-
-
-
-   }
-   else{
-
-   }
-
    e = uc->user;
    target = tec->target;
+   
+   if (data->stage == NotAttacked){
+      //we're not currently in an attack
+      if (_distance(e, target) > 1){
+         //not in melee range, we need to push a move command and return   
+         logManagerPushMessage(managers->logManager, "Moving to attack.");
+         entityPushFrontCommand(e, createActionCombat(managers->commandManager, cc->slot, target));
+         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target));
+         return Finished;
+      }
+      else{
+         data->action = combatManagerCreateAction(managers->combatManager, e, target);
 
-   if (_distance(e, target) > 1){
-      //not in melee range, we need to push a move command and return   
-      logManagerPushMessage(managers->logManager, "Moving to attack.");
-      entityPushFrontCommand(e, createActionCombat(managers->commandManager, cc->slot, target));
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target));
-      return Finished;
+         COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 100.0f);
+         COMPONENT_ADD(data->action, CActionRangeComponent, .range = 1.0f);
+         COMPONENT_ADD(data->action, CActionDamageTypeComponent, .type = DamageTypePhysical);
+
+         data->action = combatManagerDeclareAction(managers->combatManager, data->action);
+
+         if (entityGet(CActionCancelledComponent)(data->action)){
+            //action got cancelled, bail The F Out
+            return Finished;
+         }
+         else{
+            GridComponent *gc0 = entityGet(GridComponent)(e);
+            GridComponent *gc1 = entityGet(GridComponent)(target);
+            PositionComponent *pc = entityGet(PositionComponent)(e);
+
+            //we're in range, our declaration's been accepted, lets go!
+            data->stage = WindUp;
+
+            data->dir.x = gc1->x - gc0->x;
+            data->dir.y = gc1->y - gc0->y;
+
+            COMPONENT_ADD(e, InterpolationComponent,
+               pc->x - (data->dir.x * windup),
+               pc->y - (data->dir.y * windup), 0.25);
+
+            entityUpdate(e);
+
+            return NotFinished;
+         }
+      }
    }
-   else{
-      logManagerPushMessage(managers->logManager, "Attacked!");
-      return Finished;
+   else if (data->stage == WindUp){
+      PositionComponent *pc = entityGet(PositionComponent)(e);
+
+      if (!entityGet(InterpolationComponent)(e)){
+         data->stage = Swing;
+
+         COMPONENT_ADD(e, InterpolationComponent,
+            pc->x + (data->dir.x * windup * 2),
+            pc->y + (data->dir.y * windup * 2), 0.25);
+         entityUpdate(e);
+      }
+
+      return NotFinished;
+   }
+   else if (data->stage == Swing){
+      PositionComponent *pc = entityGet(PositionComponent)(e);
+
+      if (!entityGet(InterpolationComponent)(e)){
+         data->stage = Recoil;
+
+         COMPONENT_ADD(e, InterpolationComponent,
+            pc->x - (data->dir.x * windup),
+            pc->y - (data->dir.y * windup), 0.25);
+         entityUpdate(e);
+
+         //here we are at the end, its time to see if our damage actually gets applied
+         data->action = combatManagerQueryActionResult(managers->combatManager, data->action);
+         if (!entityGet(CActionCancelledComponent)(data->action)){
+            logManagerPushMessage(managers->logManager, "Inflicted %0.2f damage!", entityGet(CActionDamageComponent)(data->action)->damage);
+         }
+      }
+
+      return NotFinished;
+   }
+   else {
+      if (!entityGet(InterpolationComponent)(e)){
+
+         if (!cancel){
+            entityPushFrontCommand(e, createActionCombat(managers->commandManager, 0, target));
+         }
+         
+         return Finished;
+         
+      }
+      else{
+         return NotFinished;
+      }
    }
 
    return Finished;

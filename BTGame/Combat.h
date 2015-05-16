@@ -30,3 +30,33 @@ typedef struct{
 #define ComponentT CActionTargetComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct{
+   EMPTY_STRUCT;
+}CActionCancelledComponent;
+#define ComponentT CActionCancelledComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct{
+   float range;
+}CActionRangeComponent;
+#define ComponentT CActionRangeComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct{
+   float damage;
+}CActionDamageComponent;
+#define ComponentT CActionDamageComponent
+#include "Entities\ComponentDecl.h"
+
+typedef enum{
+   DamageTypePhysical,
+   DamageTypeMagical,
+   DamnageTypeChaos
+}DamageType;
+
+typedef struct{
+   DamageType type;
+}CActionDamageTypeComponent;
+#define ComponentT CActionDamageTypeComponent
+#include "Entities\ComponentDecl.h"
+
