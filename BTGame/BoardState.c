@@ -16,6 +16,7 @@
 #include "segashared\Strings.h"
 #include "LogManager.h"
 #include "GameClock.h"
+#include "Combat.h"
 
 typedef struct {
    WorldView *view;
@@ -49,6 +50,7 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
       commandManagerUpdate(managers->commandManager);      
    }
 
+   combatManagerUpdate(managers->combatManager);
    logManagerUpdate(managers->logManager);
 }
 
@@ -165,6 +167,12 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
    COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern("melee"), NULL });
    //COMPONENT_ADD(e, WanderComponent, 1);
+
+   COMPONENT_ADD(e, StatsComponent, .strength = 25, .agility = 25, .intelligence = 25);
+
+   COMPONENT_LOCK(StatsComponent, sc, e, {
+      sc->HP = entityGetMaxHP(e);
+   });
 
    entityUpdate(e);
 }

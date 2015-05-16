@@ -72,6 +72,9 @@
     <ClInclude Include="GameClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CombatConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">

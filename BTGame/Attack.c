@@ -38,7 +38,11 @@ static int _distance(Entity *user, Entity *target){
    GridComponent *gc0 = entityGet(GridComponent)(user);
    GridComponent *gc1 = entityGet(GridComponent)(target);
 
-   return abs(gc0->x - gc1->x) + abs(gc0->y - gc1->y);
+   if (gc0 && gc1){
+      return abs(gc0->x - gc1->x) + abs(gc0->y - gc1->y);
+   }
+
+   return 0;
 }
 
 static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
@@ -56,8 +60,15 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
 
    e = uc->user;
    target = tec->target;
+
+   
    
    if (data->stage == NotAttacked){
+
+      if (entityIsDead(target)){
+         return Finished;
+      }
+
       //we're not currently in an attack
       if (_distance(e, target) > 1){
          //not in melee range, we need to push a move command and return   
@@ -69,7 +80,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
       else{
          data->action = combatManagerCreateAction(managers->combatManager, e, target);
 
-         COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 100.0f);
+         COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 45.0f);
          COMPONENT_ADD(data->action, CActionRangeComponent, .range = 1.0f);
          COMPONENT_ADD(data->action, CActionDamageTypeComponent, .type = DamageTypePhysical);
 
@@ -83,6 +94,10 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
             GridComponent *gc0 = entityGet(GridComponent)(e);
             GridComponent *gc1 = entityGet(GridComponent)(target);
             PositionComponent *pc = entityGet(PositionComponent)(e);
+
+            if (!gc0 || !gc1 || !pc){
+               return Finished;
+            }
 
             //we're in range, our declaration's been accepted, lets go!
             data->stage = WindUp;
@@ -128,7 +143,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
          //here we are at the end, its time to see if our damage actually gets applied
          data->action = combatManagerQueryActionResult(managers->combatManager, data->action);
          if (!entityGet(CActionCancelledComponent)(data->action)){
-            logManagerPushMessage(managers->logManager, "Inflicted %0.2f damage!", entityGet(CActionDamageComponent)(data->action)->damage);
+            combatManagerExecuteAction(managers->combatManager, data->action);
          }
       }
 
@@ -137,10 +152,12 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
    else {
       if (!entityGet(InterpolationComponent)(e)){
 
-         if (!cancel){
+         if (!cancel && !entityIsDead(target)){
+            //we're not cancelling so keep hittin the dude
             entityPushFrontCommand(e, createActionCombat(managers->commandManager, 0, target));
          }
-         
+
+         //we're done!
          return Finished;
          
       }

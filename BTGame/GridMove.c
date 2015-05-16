@@ -4,6 +4,7 @@
 #include "segashared\CheckedMemory.h"
 #include "SelectionManager.h"
 #include "Actions.h"
+#include "Combat.h"
 #include <math.h>
 
 typedef struct {
@@ -41,7 +42,7 @@ static float _singleDistance(size_t d0, size_t d1){
 }
 
 static int _distance(size_t d0, size_t d1){
-   int x0, y0, x1, y1, dist;
+   int x0, y0, x1, y1;
 
    gridXYFromIndex(d0, &x0, &y0);
    gridXYFromIndex(d1, &x1, &y1);
@@ -122,7 +123,7 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    }
    else if(targetEntity){
       GridComponent *targetGridPos = entityGet(GridComponent)(targetEntity->target);
-      if (targetGridPos){
+      if (targetGridPos && !entityIsDead(targetEntity->target)){
          destination = gridIndexFromXY(targetGridPos->x, targetGridPos->y);
       }
       else{

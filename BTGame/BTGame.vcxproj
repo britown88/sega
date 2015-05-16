@@ -75,6 +75,7 @@
   <ItemGroup>
     <ClInclude Include="BT.h" />
     <ClInclude Include="Combat.h" />
+    <ClInclude Include="CombatConstants.h" />
     <ClInclude Include="CombatRoutines.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="CoreComponents.h" />
