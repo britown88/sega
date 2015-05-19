@@ -8,6 +8,8 @@ typedef struct CommandManager_t CommandManager;
 typedef Entity Action;
 typedef Action *ActionPtr;
 
+typedef Entity CombatAction;
+
 #define VectorTPart ActionPtr
 #include "segautils\Vector_Decl.h"
 
@@ -39,6 +41,12 @@ typedef struct {
    size_t slot;
 }ActionCombatComponent;
 #define ComponentT ActionCombatComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   CombatAction *package;
+}ActionDeliveryComponent;
+#define ComponentT ActionDeliveryComponent
 #include "Entities\ComponentDecl.h"
 
 //put your action creating function decls here

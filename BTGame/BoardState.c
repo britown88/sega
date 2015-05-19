@@ -47,7 +47,7 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
    diceManagerUpdate(managers->diceManager);
 
    if (!state->paused){
-      commandManagerUpdate(managers->commandManager);      
+      commandManagerUpdate(managers->commandManager);
    }
 
    combatManagerUpdate(managers->combatManager);
@@ -65,7 +65,7 @@ static void _handleKeyboard(BoardState *state){
          if (e.action == SegaKey_Released){
             appQuit(appGet());
          }
-         break;
+                            break;
       case (SegaKey_Space) :
          if (e.action == SegaKey_Released){
             if (state->paused){
@@ -73,11 +73,11 @@ static void _handleKeyboard(BoardState *state){
                gameClockResume(state->view->gameClock);
             }
             else{
-               state->paused = true; 
+               state->paused = true;
                gameClockPause(state->view->gameClock);
             }
          }
-         break;
+                           break;
       }
 
    }
@@ -95,15 +95,15 @@ static void _handleMouse(BoardState *state){
          if (event.button == SegaMouseBtn_Left){
             cursorManagerStartDrag(managers->cursorManager, event.pos.x, event.pos.y);
          }
-         
+
          break;
       case SegaMouse_Released:
          if (event.button == SegaMouseBtn_Left){
             Recti mouseArea = cursorManagerEndDrag(managers->cursorManager, event.pos.x, event.pos.y);
 
-            selectionManagerSelect(managers->selectionManager, 
-               { scArea, .box = mouseArea }, 
-               { scTeam, .teamID = 0 });           
+            selectionManagerSelect(managers->selectionManager,
+            { scArea, .box = mouseArea },
+            { scTeam, .teamID = 0 });
          }
          else if (event.button == SegaMouseBtn_Right){
             bool shift = keyboardIsDown(k, SegaKey_LeftShift) || keyboardIsDown(k, SegaKey_RightShift);
@@ -111,8 +111,9 @@ static void _handleMouse(BoardState *state){
             vec(EntityPtr) *clickedEntities;
             size_t gridIndex = gridIndexFromScreenXY(event.pos.x, event.pos.y);
 
-            selectionManagerGetEntities(managers->selectionManager, clickedEntities, 
-            { scArea, .box = (Recti){ event.pos.x, event.pos.y, event.pos.x, event.pos.y } }); 
+            selectionManagerGetEntities(managers->selectionManager, clickedEntities,
+            { scArea, .box = (Recti){ event.pos.x, event.pos.y, event.pos.x, event.pos.y } },
+            { scTeam, .teamID = 1 });
 
             if (!vecIsEmpty(EntityPtr)(clickedEntities)){
                logManagerPushMessage(managers->logManager, "Clicked an Entity");
@@ -124,17 +125,32 @@ static void _handleMouse(BoardState *state){
                   entityPushCommand(*e, createActionCombat(managers->commandManager, 0, *vecAt(EntityPtr)(clickedEntities, 0)));
                });
             }
-            else if (gridIndex < INF){
-               int gx, gy;
-               logManagerPushMessage(managers->logManager, "Clicked a Position");
-               gridXYFromIndex(gridIndex, &gx, &gy);
-               vecForEach(EntityPtr, e, selectedEntities, {
-                  if (!shift){
-                     entityCancelCommands(*e);
-                  }
-                  
-                  entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
-               });
+            else{
+               selectionManagerGetEntities(managers->selectionManager, clickedEntities,
+               { scArea, .box = (Recti){ event.pos.x, event.pos.y, event.pos.x, event.pos.y } },
+               { scTeam, .teamID = 0 });
+
+               if (!vecIsEmpty(EntityPtr)(clickedEntities)){
+                  vecForEach(EntityPtr, e, selectedEntities, {
+                     if (!shift){
+                        entityCancelCommands(*e);
+                     }
+
+                     entityPushCommand(*e, createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f));
+                  });
+               }
+               else if (gridIndex < INF){
+                  int gx, gy;
+                  logManagerPushMessage(managers->logManager, "Clicked a Position");
+                  gridXYFromIndex(gridIndex, &gx, &gy);
+                  vecForEach(EntityPtr, e, selectedEntities, {
+                     if (!shift){
+                        entityCancelCommands(*e);
+                     }
+
+                     entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
+                  });
+               }
             }
          }
          break;

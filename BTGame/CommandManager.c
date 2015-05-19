@@ -27,6 +27,9 @@
 #define ComponentT ActionCombatComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT ActionDeliveryComponent
+#include "Entities\ComponentImpl.h"
+
 #define VectorTPart ActionPtr
 #include "segautils\Vector_Impl.h"
 

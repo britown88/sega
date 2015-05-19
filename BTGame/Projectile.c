@@ -33,21 +33,29 @@ static CoroutineStatus _projectileRoutine(ProjectileRoutineData *data, bool canc
    Entity *e, *target;
 
    if (!uc || !tec || !cc){
-      //shouldnt get here but return done if we dont ahve the right components!
-      
+      //shouldnt get here but return done if we dont ahve the right components!      
       return Finished;
    }
 
    e = uc->user;
    target = tec->target;
 
-
    if (entityIsDead(target)){
-      entityDestroy(e);
+      COMPONENT_ADD(e, DestructionComponent, 0);
       return Finished;
    }
 
    if (!entityGet(InterpolationComponent)(e)){
+      ActionDeliveryComponent *delivery = entityGet(ActionDeliveryComponent)(data->a);
+
+      if (delivery){
+         data->action = delivery->package;
+         data->action = combatManagerQueryActionResult(managers->combatManager, data->action);
+         if (!entityGet(CActionCancelledComponent)(data->action)){
+            combatManagerExecuteAction(managers->combatManager, data->action);
+         }
+      }
+
       COMPONENT_ADD(e, DestructionComponent, 0);
       return Finished;
    }
