@@ -99,6 +99,7 @@
     <ClCompile Include="CombatRoutineLibrary.c" />
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
+    <ClCompile Include="DestructionManager.c" />
     <ClCompile Include="DiceManager.c" />
     <ClCompile Include="GameClock.c" />
     <ClCompile Include="GameState.c" />
@@ -108,6 +109,8 @@
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LogManager.c" />
+    <ClCompile Include="Projectile.c" />
+    <ClCompile Include="Ranged.c" />
     <ClCompile Include="RenderManager.c" />
     <ClCompile Include="MeshRendering.c" />
     <ClCompile Include="SelectionManager.c" />

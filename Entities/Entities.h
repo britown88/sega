@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include "segashared\RTTI.h"
+#include <assert.h>
 
 DeclLocalRTTITag(COMPONENTS)
 
@@ -122,12 +123,12 @@ size_t componentListGetCount(ComponentList *self);
    component_type *varName = entityGet(component_type)(entity); \
    if (varName){ \
       __VA_ARGS__ \
-   } \
+      } \
 }
 
 /*
 IF_COMPONENT(e, PositionComponent, pc, {
-   pc->x = 5;
+pc->x = 5;
 });
 */
 

@@ -52,6 +52,7 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
 
    combatManagerUpdate(managers->combatManager);
    logManagerUpdate(managers->logManager);
+   destructionManagerUpdate(managers->destructionManager);
 }
 
 static void _handleKeyboard(BoardState *state){
@@ -165,7 +166,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
    COMPONENT_ADD(e, SizeComponent, 32, 32);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
-   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern("melee"), NULL });
+   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern("bow"), NULL });
    //COMPONENT_ADD(e, WanderComponent, 1);
 
    COMPONENT_ADD(e, StatsComponent, .strength = 25, .agility = 25, .intelligence = 25);

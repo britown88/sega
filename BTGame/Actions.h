@@ -43,5 +43,5 @@ typedef struct {
 
 //put your action creating function decls here
 Action *createActionGridPosition(CommandManager *self, int x, int y);
-Action *createActionGridTarget(CommandManager *self, Entity *e);
+Action *createActionGridTarget(CommandManager *self, Entity *e, float range);
 Action *createActionCombat(CommandManager *self, size_t slot, Entity *e);

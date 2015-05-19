@@ -37,7 +37,10 @@ void TSelectedComponentDestroy(TSelectedComponent *self){
 #include "Entities\ComponentDeclTransient.h"
 
 void entityDeselect(Entity *e){
-   entityRemove(TSelectedComponent)(e);
+   if (entityGet(TSelectedComponent)(e)){
+      entityRemove(TSelectedComponent)(e);
+   }
+   
 }
 
 struct SelectionManager_t{

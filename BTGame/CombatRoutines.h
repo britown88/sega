@@ -23,3 +23,5 @@ CombatRoutineGenerator combatRoutineLibraryGet(CombatRoutineLibrary *self, Strin
 void buildAllCombatRoutines(CombatRoutineLibrary *self);
 
 CombatRoutineGenerator buildMeleeAttackRoutine();
+CombatRoutineGenerator buildBowAttackRoutine();
+CombatRoutineGenerator buildProjectileAttackRoutine();

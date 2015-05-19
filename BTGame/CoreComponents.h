@@ -141,4 +141,11 @@ typedef struct {
 #define ComponentT CombatSlotsComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   EMPTY_STRUCT;
+} DestructionComponent;
+
+#define ComponentT DestructionComponent
+#include "Entities\ComponentDecl.h"
+
 #pragma pack(pop)

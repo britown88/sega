@@ -137,5 +137,14 @@
     <ClCompile Include="GameClock.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Ranged.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Projectile.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="DestructionManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

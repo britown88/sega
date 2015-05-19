@@ -198,10 +198,10 @@ Action *createActionGridPosition(CommandManager *self, int x, int y){
    return a;
 }
 
-Action *createActionGridTarget(CommandManager *self, Entity *e){
+Action *createActionGridTarget(CommandManager *self, Entity *e, float range){
    Action *a = commandManagerCreateAction(self);
    COMPONENT_ADD(a, ActionTargetEntityComponent, e);
-   COMPONENT_ADD(a, ActionRangeComponent, 1.0f);
+   COMPONENT_ADD(a, ActionRangeComponent, range);
    entityUpdate(a);
 
    return a;

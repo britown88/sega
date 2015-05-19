@@ -46,12 +46,31 @@ static void TCommandComponentDestroy(TCommandComponent *self){
 #define TComponentT TCommandComponent
 #include "Entities\ComponentDeclTransient.h"
 
+typedef struct {
+   Entity *e;
+   bool add;
+}PostRunTransient;
+
+#define VectorT PostRunTransient
+#include "segautils\Vector_Create.h"
+
+static void _postRunDestroy(PostRunTransient *self){
+
+   if (self->add){
+      COMPONENT_ADD(self->e, TCommandComponent, 0);
+   }
+   else{
+      entityRemove(TCommandComponent)(self->e);
+   }
+}
 
 struct CommandManager_t{
    Manager m;
    WorldView *view;
    CombatRoutineLibrary *routines;
    EntitySystem *actionSystem;
+   bool executing;
+   vec(PostRunTransient) *postRuns;
 };
 
 //determine which coroutine to use from a given action
@@ -95,6 +114,8 @@ CommandManager *createCommandManager(WorldView *view){
    out->m.vTable = CreateManagerVTable(CommandManager);
    out->actionSystem = entitySystemCreate();
    out->routines = combatRoutineLibraryCreate();
+   out->postRuns = vecCreate(PostRunTransient)(&_postRunDestroy);
+   out->executing = false;
 
    buildAllCombatRoutines(out->routines);
 
@@ -104,6 +125,7 @@ CommandManager *createCommandManager(WorldView *view){
 void _destroy(CommandManager *self){
    entitySystemDestroy(self->actionSystem);
    combatRoutineLibraryDestroy(self->routines);
+   vecDestroy(PostRunTransient)(self->postRuns);
    checkedFree(self);
 }
 void _onDestroy(CommandManager *self, Entity *e){
@@ -117,11 +139,22 @@ void _onUpdate(CommandManager *self, Entity *e){
    TCommandComponent *tcc = entityGet(TCommandComponent)(e);
 
    if (cc && !tcc){
-      COMPONENT_ADD(e, TCommandComponent, 0);
+      if (self->executing){
+         vecPushBack(PostRunTransient)(self->postRuns, &(PostRunTransient){.e = e, .add = true});
+      }
+      else{
+         COMPONENT_ADD(e, TCommandComponent, 0);
+      }
+      
    }
 
    if (tcc && !cc){
-      entityRemove(TCommandComponent)(e);
+      if (self->executing){
+         vecPushBack(PostRunTransient)(self->postRuns, &(PostRunTransient){.e = e, .add = false});
+      }
+      else{
+         entityRemove(TCommandComponent)(e);
+      }
    }
 }
 
@@ -154,7 +187,11 @@ static void _updateEntity(CommandManager *self, Entity *e){
 
    //if we got one, run it
    if (tcc->commandReady){
-      CoroutineStatus ret = closureCall(&tcc->command, cc->cancelled);      
+      CoroutineStatus ret = closureCall(&tcc->command, cc->cancelled); 
+
+      //things may havbe gotten shuffled by new commands being created so best to re-retreive here
+      cc = entityGet(CommandComponent)(e);
+      tcc = entityGet(TCommandComponent)(e);
       
       //we keep executing coroutines bambam until we're out or utnil one returns not finished
       //this allows insta-routines to all be in 1 frame
@@ -172,16 +209,24 @@ static void _updateEntity(CommandManager *self, Entity *e){
          //if theres one avail, run it
          if (tcc->commandReady){
             ret = closureCall(&tcc->command, cc->cancelled);
+
+            //things may havbe gotten shuffled by new commands being created so best to re-retreive here
+            cc = entityGet(CommandComponent)(e);
+            tcc = entityGet(TCommandComponent)(e);
          }
       }
    }
 }
 
 void commandManagerUpdate(CommandManager *self){
+   self->executing = true;
    COMPONENT_QUERY(self->view->entitySystem, TCommandComponent, tcc, {
       Entity *e = componentGetParent(tcc, self->view->entitySystem);
       _updateEntity(self, e);
    });
+
+   vecClear(PostRunTransient)(self->postRuns);
+   self->executing = false;
 }
 
 static void _actionVDestroy(ActionPtr *self){

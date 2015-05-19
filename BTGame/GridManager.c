@@ -15,6 +15,7 @@
 #include "WorldView.h"
 
 #include <stdio.h>
+#include <math.h>
 
 #define ClosureTPart CLOSURE_NAME(GridProcessNeighbor)
 #include "segautils\Closure_Impl.h"
@@ -371,6 +372,17 @@ void screenPosFromGridIndex(size_t index, int *x, int *y){
    int gx, gy;
    gridXYFromIndex(index, &gx, &gy);
    screenPosFromGridXY(gx, gy, x, y);
+}
+
+int gridDistance(Entity *user, Entity *target){
+   GridComponent *gc0 = entityGet(GridComponent)(user);
+   GridComponent *gc1 = entityGet(GridComponent)(target);
+
+   if (gc0 && gc1){
+      return abs(gc0->x - gc1->x) + abs(gc0->y - gc1->y);
+   }
+
+   return 0;
 }
 
 

@@ -34,16 +34,6 @@ static void _meleeRoutineDestroy(MeleeRoutineData *self){
    checkedFree(self);
 }
 
-static int _distance(Entity *user, Entity *target){
-   GridComponent *gc0 = entityGet(GridComponent)(user);
-   GridComponent *gc1 = entityGet(GridComponent)(target);
-
-   if (gc0 && gc1){
-      return abs(gc0->x - gc1->x) + abs(gc0->y - gc1->y);
-   }
-
-   return 0;
-}
 
 static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
    BTManagers *managers = data->view->managers;
@@ -70,11 +60,11 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
       }
 
       //we're not currently in an attack
-      if (_distance(e, target) > 1){
+      if (gridDistance(e, target) > 1){
          //not in melee range, we need to push a move command and return   
          logManagerPushMessage(managers->logManager, "Moving to attack.");
          entityPushFrontCommand(e, createActionCombat(managers->commandManager, cc->slot, target));
-         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target));
+         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f));
          return Finished;
       }
       else{

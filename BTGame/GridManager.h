@@ -57,3 +57,5 @@ void gridXYFromIndex(size_t index, int*x, int*y);
 void screenPosFromGridXY(int gx, int gy, int *x, int *y);
 void screenPosFromGridIndex(size_t index, int *x, int *y);
 
+int gridDistance(Entity *user, Entity *target);
+
