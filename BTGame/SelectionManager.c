@@ -6,6 +6,7 @@
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
 #include "WorldView.h"
+#include "GridManager.h"
 
 //marks en entity as a transient element 
 //tied to a parent
@@ -94,11 +95,11 @@ static TSelectedComponent *_initSelection(Entity *e){
       Entity *cursor = entityCreate(entityGetSystem(e));
 
       COMPONENT_ADD(cursor, PositionComponent, 0, 0);
-      COMPONENT_ADD(cursor, ImageComponent, stringIntern("assets/img/select.ega"));
+      //COMPONENT_ADD(cursor, ImageComponent, stringIntern("assets/img/selectsmall.ega"));
       COMPONENT_ADD(cursor, RectangleComponent, 15);
 
       COMPONENT_ADD(cursor, LayerComponent, LayerSubToken0);;
-      COMPONENT_ADD(cursor, SizeComponent, 32, 32);
+      COMPONENT_ADD(cursor, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
       COMPONENT_ADD(cursor, LockedPositionComponent, e);
       COMPONENT_ADD(cursor, VisibilityComponent, .shown = false);
       COMPONENT_ADD(cursor, TSelectedTransientComponent, e);

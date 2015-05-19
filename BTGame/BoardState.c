@@ -176,7 +176,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    Entity *e = entityCreate(system);
 
    COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern(AI ? "assets/img/badguy.ega" : "assets/img/actor.ega"));
+   COMPONENT_ADD(e, ImageComponent, stringIntern(AI ? "assets/img/kefka.ega" : "assets/img/mog.ega"));
 
    COMPONENT_ADD(e, LayerComponent, LayerTokens);;
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);

@@ -13,10 +13,10 @@
 #include "Combat.h"
 #include "GameClock.h"
 
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 720
-#define FULLSCREEN 0
-#define FRAME_RATE 60.0
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
+#define FULLSCREEN 1
+#define FRAME_RATE 9000.0
 
 typedef struct {
    VirtualApp vApp;
@@ -130,7 +130,7 @@ void _onStart(BTGame *self){
 
    Entity *e = entityCreate(self->entitySystem);      
    COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/boardui.ega"));
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/medgrid.ega"));
    entityUpdate(e);
 
    appLoadPalette(appGet(), "assets/img/default.pal");
