@@ -51,6 +51,8 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
    }
 
    combatManagerUpdate(managers->combatManager);
+   AIManagerUpdate(managers->AIManager);
+
    logManagerUpdate(managers->logManager);
    destructionManagerUpdate(managers->destructionManager);
 }
@@ -172,6 +174,7 @@ void _boardRender(BoardState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
+static byte foo = 0;
 static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    Entity *e = entityCreate(system);
 
@@ -180,9 +183,12 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
 
    COMPONENT_ADD(e, LayerComponent, LayerTokens);;
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
-   COMPONENT_ADD(e, SizeComponent, 32, 32);
+   COMPONENT_ADD(e, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
-   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern("bow"), NULL });
+   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(foo++ % 2 ? "bow" : "melee" ), NULL });
+   //if (true){
+      COMPONENT_ADD(e, AIComponent, 0);
+   //}
    //COMPONENT_ADD(e, WanderComponent, 1);
 
    COMPONENT_ADD(e, StatsComponent, .strength = 25, .agility = 25, .intelligence = 25);
@@ -207,8 +213,9 @@ StateClosure gameStateCreateBoard(WorldView *view){
       _createTestEntity(view->entitySystem, i, 0, false);
    }
 
-   
-   _createTestEntity(view->entitySystem, 11, 7, true);   
+   for (i = 0; i < 12; ++i){
+      _createTestEntity(view->entitySystem, 4 + i, 10, true);
+   }  
 
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);

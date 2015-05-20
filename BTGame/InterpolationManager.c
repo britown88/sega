@@ -125,7 +125,7 @@ void _removeComponents(InterpolationManager *self){
 void interpolationManagerUpdate(InterpolationManager *self){
    long time = gameClockGetTime(self->view->gameClock);
 
-   COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, ic, {
+   COMPONENT_QUERY(self->view->entitySystem, InterpolationComponent, ic, {
       Entity *e = componentGetParent(ic, self->view->entitySystem);
       _updateEntity(self, e, time);
    });

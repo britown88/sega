@@ -91,6 +91,7 @@
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AIManager.c" />
     <ClCompile Include="AllCombatRoutines.c" />
     <ClCompile Include="Attack.c" />
     <ClCompile Include="BoardState.c" />

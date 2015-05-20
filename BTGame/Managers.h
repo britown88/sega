@@ -20,6 +20,7 @@ typedef struct CombatManager_t CombatManager;
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
 typedef struct DestructionManager_t DestructionManager;
+typedef struct AIManager_t AIManager;
 
 typedef struct BTManagers_t {
    RenderManager *renderManager;
@@ -32,6 +33,7 @@ typedef struct BTManagers_t {
    LogManager *logManager;
    CombatManager *combatManager;
    DestructionManager *destructionManager;
+   AIManager *AIManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -59,6 +61,9 @@ void diceManagerUpdate(DiceManager *self);
 
 DestructionManager *createDestructionManager(WorldView *view);
 void destructionManagerUpdate(DestructionManager *self);
+
+AIManager *createAIManager(WorldView *view);
+void AIManagerUpdate(AIManager *self);
 
 
 

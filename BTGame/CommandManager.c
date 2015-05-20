@@ -11,6 +11,7 @@
 #include "Commands.h"
 #include "WorldView.h"
 #include "CombatRoutines.h"
+#include "Combat.h"
 
 #define ComponentT ActionUserComponent
 #include "Entities\ComponentImpl.h"
@@ -225,7 +226,9 @@ void commandManagerUpdate(CommandManager *self){
    self->executing = true;
    COMPONENT_QUERY(self->view->entitySystem, TCommandComponent, tcc, {
       Entity *e = componentGetParent(tcc, self->view->entitySystem);
-      _updateEntity(self, e);
+      if (!entityIsDead(e)){
+         _updateEntity(self, e);
+      }      
    });
 
    vecClear(PostRunTransient)(self->postRuns);

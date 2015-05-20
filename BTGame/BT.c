@@ -13,9 +13,9 @@
 #include "Combat.h"
 #include "GameClock.h"
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
-#define FULLSCREEN 1
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 720
+#define FULLSCREEN 0
 #define FRAME_RATE 9000.0
 
 typedef struct {
@@ -88,6 +88,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.selectionManager, createSelectionManager(&self->view));
    RegisterManager(self->managers.logManager, createLogManager(&self->view));
    RegisterManager(self->managers.combatManager, createCombatManager(&self->view));
+   RegisterManager(self->managers.AIManager, createAIManager(&self->view));
    RegisterManager(self->managers.destructionManager, createDestructionManager(&self->view));
 }
 

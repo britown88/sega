@@ -55,3 +55,6 @@ static void PolygonComponentDestroy(PolygonComponent *self){
 
 #define ComponentT DestructionComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT AIComponent
+#include "Entities\ComponentImpl.h"

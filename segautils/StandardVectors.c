@@ -20,3 +20,6 @@
 
 #define VectorTPart Float3
 #include "Vector_Impl.h"
+
+#define VectorTPart VoidPtr
+#include "Vector_Impl.h"

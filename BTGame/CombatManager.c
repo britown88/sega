@@ -210,7 +210,7 @@ bool entityIsDead(Entity *e){
       return tcc->isDead;
    }
 
-   return true;
+   return false;
 }
 
 float entityGetMaxHP(Entity *e){

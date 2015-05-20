@@ -146,5 +146,8 @@
     <ClCompile Include="DestructionManager.c">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="AIManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
