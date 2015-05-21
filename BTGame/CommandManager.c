@@ -77,6 +77,36 @@ struct CommandManager_t{
    vec(PostRunTransient) *postRuns;
 };
 
+float commandManagerGetRoutineRange(CommandManager *self, StringView cmdID){
+   Action *a = createActionCombatRoutine(self, cmdID, NULL);
+   CombatRoutineGenerator c = combatRoutineLibraryGet(self->routines, cmdID);
+   float out = 0.0f;
+
+   if (!closureIsNull(CombatRoutineGenerator)(&c)){
+      Coroutine routine = closureCall(&c, self->view, a);
+      if (!closureIsNull(Coroutine)(&routine)){
+         ActionRangeComponent *arc = entityGet(ActionRangeComponent)(a);
+         if (arc){
+            out = arc->range;
+         }
+         closureDestroy(Coroutine)(&routine);
+      }
+   }
+
+   return out;
+
+}
+
+float commandManagerGetSlotRange(CommandManager *self, Entity *e, size_t slot){
+   CombatSlotsComponent *csc = entityGet(CombatSlotsComponent)(e);
+
+   if (slot < COMBAT_SLOT_COUNT && csc && csc->slots[slot]){
+      return commandManagerGetRoutineRange(self, csc->slots[slot]);
+   }
+
+   return 0.0f;
+}
+
 //determine which coroutine to use from a given action
 static Coroutine _updateCommand(CommandManager *self, Action *a){
    ActionTargetPositionComponent *tpc = entityGet(ActionTargetPositionComponent)(a);
@@ -281,7 +311,25 @@ void entityPushFrontCommand(Entity *e, Action *cmd){
    
 }
 
-void entityCancelCommands(Entity *e){
+void entityCancelFirstCommand(Entity *e){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   if (cc){
+      if (!vecIsEmpty(ActionPtr)(cc->actions)){
+         cc->request = Cancel;
+      }
+   }
+}
+
+void entityForceCancelFirstCommand(Entity *e){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   if (cc){
+      if (!vecIsEmpty(ActionPtr)(cc->actions)){
+         cc->request = ForceCancel;
+      }
+   }
+}
+
+void entityCancelAllCommands(Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    if (cc){      
       if (!vecIsEmpty(ActionPtr)(cc->actions)){
@@ -291,7 +339,7 @@ void entityCancelCommands(Entity *e){
    }
 }
 
-void entityForceCancelCommands(Entity *e){
+void entityForceCancelAllCommands(Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    if (cc){
       if (!vecIsEmpty(ActionPtr)(cc->actions)){

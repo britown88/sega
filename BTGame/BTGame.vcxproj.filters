@@ -75,6 +75,9 @@
     <ClInclude Include="CombatConstants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GridHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -157,6 +160,15 @@
     </ClCompile>
     <ClCompile Include="swap-other.c">
       <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="PrimaryTargetManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="auto.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="GridHelpers.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

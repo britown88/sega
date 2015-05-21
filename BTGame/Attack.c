@@ -106,6 +106,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
             }
 
             //we're in range, our declaration's been accepted, lets go!
+            entitySetPrimaryTargetEntity(e, target);
             data->stage = WindUp;
 
             data->startPos = (Int2){ pc->x, pc->y };
@@ -159,12 +160,6 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
    }
    else {
       if (!entityGet(InterpolationComponent)(e)){
-
-         if (!requestIsCancel(request) && !entityIsDead(target)){
-            //we're not cancelling so keep hittin the dude
-            entityPushFrontCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
-         }
-
          //we're done!
          return Finished;
          
@@ -183,6 +178,9 @@ static Coroutine _buildMelee(ClosureData data, WorldView *view, Action *a){
    newData->view = view;
    newData->a = a;
    closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_meleeRoutine, &_meleeRoutineDestroy);
+
+   COMPONENT_ADD(a, ActionRangeComponent, 1);
+
    return out;
 }
 

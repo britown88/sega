@@ -50,6 +50,8 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
       commandManagerUpdate(managers->commandManager);
    }
 
+   primaryTargetManagerUpdate(managers->primaryTargetManager);
+
    combatManagerUpdate(managers->combatManager);
    AIManagerUpdate(managers->AIManager);
 
@@ -128,7 +130,7 @@ static void _handleMouse(BoardState *state){
                logManagerPushMessage(managers->logManager, "Clicked an Entity");
                vecForEach(EntityPtr, e, selectedEntities, {
                   if (!shift){
-                     entityCancelCommands(*e);
+                     entityCancelAllCommands(*e);
                   }
 
                   entityPushCommand(*e, createActionCombatSlot(managers->commandManager, special ? 1 : 0, *vecAt(EntityPtr)(clickedEntities, 0)));
@@ -142,11 +144,15 @@ static void _handleMouse(BoardState *state){
 
                if (!vecIsEmpty(EntityPtr)(clickedEntities)){
                   vecForEach(EntityPtr, e, selectedEntities, {
+                     Action *cmd = special ?
+                        createActionCombatSlot(managers->commandManager, 1, *vecAt(EntityPtr)(clickedEntities, 0)) :
+                        createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f);
+
                      if (!shift){
-                        entityCancelCommands(*e);
+                        entityCancelAllCommands(*e);
                      }
 
-                     entityPushCommand(*e, createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f));
+                     entityPushCommand(*e, cmd);
                   });
                }
                else if (gridIndex < INF){
@@ -155,9 +161,9 @@ static void _handleMouse(BoardState *state){
                   gridXYFromIndex(gridIndex, &gx, &gy);
                   vecForEach(EntityPtr, e, selectedEntities, {
                      if (!shift){
-                        entityCancelCommands(*e);
+                        entityCancelAllCommands(*e);
                      }
-
+                     entitySetPrimaryTargetPosition(*e, gridIndex);
                      entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
                   });
                }

@@ -95,13 +95,8 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
 
             //attach our modified combataction to the projectile's command
             a = createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), e);
-            entityForceCancelCommands(target);
-            entityPushCommand(target, a);
-
-            if (!requestIsCancel(request) && !entityIsDead(target)){
-               //we're not cancelling so keep hittin the dude
-               entityPushFrontCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
-            }
+            entityForceCancelFirstCommand(target);
+            entityPushFrontCommand(target, a);
 
             //pushfront our own swap
             entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), target));
@@ -121,6 +116,9 @@ static Coroutine _buildSwap(ClosureData data, WorldView *view, Action *a){
    newData->view = view;
    newData->a = a;
    closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_SwapRoutine, &_SwapRoutineDestroy);
+
+   COMPONENT_ADD(a, ActionRangeComponent, SWAP_RANGE);
+
    return out;
 }
 

@@ -12,6 +12,8 @@
 #include "Combat.h"
 #include "GameClock.h"
 
+#define PROJECT_RANGE 5
+
 typedef struct {
    WorldView *view;
    Action *a;
@@ -48,21 +50,21 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
    }
 
    //we're not currently in an attack
-   if (gridDistance(e, target) > 5){
+   if (gridDistance(e, target) > PROJECT_RANGE){
       Action *cmd = cc->type == ccSlot ?
          createActionCombatSlot(managers->commandManager, cc->slot, target) :
          createActionCombatRoutine(managers->commandManager, cc->routine, target);
 
       //not in melee range, we need to push a move command and return   
       entityPushFrontCommand(e, cmd);
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 5.0f));
+      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, PROJECT_RANGE));
       return Finished;
    }
    else{
       if (data->startTime == 0){
          data->action = combatManagerCreateAction(managers->combatManager, e, target);
          COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 30.0f);
-         COMPONENT_ADD(data->action, CActionRangeComponent, .range = 5.0f);
+         COMPONENT_ADD(data->action, CActionRangeComponent, .range = PROJECT_RANGE);
          COMPONENT_ADD(data->action, CActionDamageTypeComponent, .type = DamageTypePhysical);
 
          data->action = combatManagerDeclareAction(managers->combatManager, data->action);
@@ -93,6 +95,8 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
                return Finished;
             }
 
+            entitySetPrimaryTargetEntity(e, target);
+
             projectile = entityCreate(data->view->entitySystem);
 
             //we're in range, our declaration's been accepted, lets go!
@@ -106,11 +110,6 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
             a = createActionCombatRoutine(managers->commandManager, stringIntern("projectile"), target);
             COMPONENT_ADD(a, ActionDeliveryComponent, data->action);
             entityPushCommand(projectile, a);
-
-            if (!requestIsCancel(request) && !entityIsDead(target)){
-               //we're not cancelling so keep hittin the dude
-               entityPushFrontCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
-            }
 
             return Finished;
          }         
@@ -126,6 +125,9 @@ static Coroutine _buildBow(ClosureData data, WorldView *view, Action *a){
    newData->view = view;
    newData->a = a;
    closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_bowRoutine, &_bowRoutineDestroy);
+
+   COMPONENT_ADD(a, ActionRangeComponent, PROJECT_RANGE);
+
    return out;
 }
 

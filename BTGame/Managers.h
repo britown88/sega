@@ -21,6 +21,7 @@ typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
 typedef struct DestructionManager_t DestructionManager;
 typedef struct AIManager_t AIManager;
+typedef struct PrimaryTargetManager_t PrimaryTargetManager;
 
 typedef struct BTManagers_t {
    RenderManager *renderManager;
@@ -34,6 +35,7 @@ typedef struct BTManagers_t {
    CombatManager *combatManager;
    DestructionManager *destructionManager;
    AIManager *AIManager;
+   PrimaryTargetManager *primaryTargetManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -42,10 +44,14 @@ void renderManagerRender(RenderManager *self, Frame *frame);
 CommandManager *createCommandManager(WorldView *view);
 void commandManagerUpdate(CommandManager *self);
 Action *commandManagerCreateAction(CommandManager *self);
+float commandManagerGetRoutineRange(CommandManager *self, StringView cmdID);
+float commandManagerGetSlotRange(CommandManager *self, Entity *e, size_t slot);
 void entityPushCommand(Entity *e, Action *cmd);
 void entityPushFrontCommand(Entity *e, Action *cmd);
-void entityCancelCommands(Entity *e);
-void entityForceCancelCommands(Entity *e);
+void entityCancelFirstCommand(Entity *e);
+void entityForceCancelFirstCommand(Entity *e);
+void entityCancelAllCommands(Entity *e);
+void entityForceCancelAllCommands(Entity *e);
 void entityClearCommands(Entity *e);
 
 CursorManager *createCursorManager(WorldView *view);
@@ -65,6 +71,11 @@ void destructionManagerUpdate(DestructionManager *self);
 
 AIManager *createAIManager(WorldView *view);
 void AIManagerUpdate(AIManager *self);
+
+PrimaryTargetManager *createPrimaryTargetManager(WorldView *view);
+void primaryTargetManagerUpdate(PrimaryTargetManager *self);
+void entitySetPrimaryTargetPosition(Entity *e, size_t gridIndex);
+void entitySetPrimaryTargetEntity(Entity *e, Entity *other);
 
 
 

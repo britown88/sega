@@ -82,6 +82,7 @@
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Actions.h" />
+    <ClInclude Include="GridHelpers.h" />
     <ClInclude Include="GridManager.h" />
     <ClInclude Include="ImageLibrary.h" />
     <ClInclude Include="LogManager.h" />
@@ -94,6 +95,7 @@
     <ClCompile Include="AIManager.c" />
     <ClCompile Include="AllCombatRoutines.c" />
     <ClCompile Include="Attack.c" />
+    <ClCompile Include="auto.c" />
     <ClCompile Include="BoardState.c" />
     <ClCompile Include="BT.c" />
     <ClCompile Include="CombatManager.c" />
@@ -104,12 +106,14 @@
     <ClCompile Include="DiceManager.c" />
     <ClCompile Include="GameClock.c" />
     <ClCompile Include="GameState.c" />
+    <ClCompile Include="GridHelpers.c" />
     <ClCompile Include="GridMove.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="CommandManager.c" />
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LogManager.c" />
+    <ClCompile Include="PrimaryTargetManager.c" />
     <ClCompile Include="Projectile.c" />
     <ClCompile Include="Ranged.c" />
     <ClCompile Include="RenderManager.c" />

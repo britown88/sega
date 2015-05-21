@@ -6,4 +6,6 @@ void buildAllCombatRoutines(CombatRoutineLibrary *self){
    combatRoutineLibraryAdd(self, stringIntern("projectile"), buildProjectileAttackRoutine());
    combatRoutineLibraryAdd(self, stringIntern("swap"), buildSwapAttackRoutine());
    combatRoutineLibraryAdd(self, stringIntern("swap-other"), buildSwapOtherAttackRoutine());
+   combatRoutineLibraryAdd(self, stringIntern("auto"), buildAutoAttackRoutine());
+   
 }

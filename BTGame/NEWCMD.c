@@ -48,6 +48,10 @@ static Coroutine _buildNEWCMD(ClosureData data, WorldView *view, Action *a){
    newData->view = view;
    newData->a = a;
    closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_NEWCMDRoutine, &_NEWCMDRoutineDestroy);
+
+   //set the range of this action into the action that generated it for ease of looking
+   COMPONENT_ADD(a, ActionRangeComponent, 0);
+
    return out;
 }
 

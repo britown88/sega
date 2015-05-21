@@ -82,9 +82,9 @@ static CoroutineStatus _execution(ExecutionListData *data, CoroutineRequest requ
    }
 
    //remove everything after the current if cancelling
-   if (requestIsCancel(request) && count > data->iter + 1){
-      vecResize(Coroutine)(data->list, data->iter + 1, &(Coroutine){0});
-   }
+   //if (requestIsCancel(request) && count > data->iter + 1){
+   //   vecResize(Coroutine)(data->list, data->iter + 1, &(Coroutine){0});
+   //}
 
    if (closureCall(vecAt(Coroutine)(data->list, data->iter), request) == Finished){
       ++data->iter;
