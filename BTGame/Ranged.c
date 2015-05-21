@@ -27,7 +27,7 @@ static void _bowRoutineDestroy(BowRoutineData *self){
    checkedFree(self);
 }
 
-static CoroutineStatus _bowRoutine(BowRoutineData *data, bool cancel){
+static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest request){
    BTManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
@@ -60,7 +60,7 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, bool cancel){
          if (gameClockGetTime(data->view->gameClock) - data->startTime > 1000){
             //timers done lets create our action
             data->action = combatManagerCreateAction(managers->combatManager, e, target);
-            COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 20.0f);
+            COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 30.0f);
             COMPONENT_ADD(data->action, CActionRangeComponent, .range = 5.0f);
             COMPONENT_ADD(data->action, CActionDamageTypeComponent, .type = DamageTypePhysical);
 
@@ -95,7 +95,7 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, bool cancel){
                COMPONENT_ADD(a, ActionDeliveryComponent, data->action);
                entityPushCommand(projectile, a);
 
-               if (!cancel && !entityIsDead(target)){
+               if (!requestIsCancel(request) && !entityIsDead(target)){
                   //we're not cancelling so keep hittin the dude
                   entityPushFrontCommand(e, createActionCombat(managers->commandManager, 0, target));
                }
@@ -105,13 +105,13 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, bool cancel){
          }
          else {
             //clock is still going, but cancellable so
-            return cancel ? Finished : NotFinished;
+            return requestIsCancel(request) ? Finished : NotFinished;
          }
       }
       else{
          //start the timer
          data->startTime = gameClockGetTime(data->view->gameClock);
-         return cancel ? Finished : NotFinished;
+         return requestIsCancel(request) ? Finished : NotFinished;
       }      
    }
 

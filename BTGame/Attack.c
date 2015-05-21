@@ -35,7 +35,7 @@ static void _meleeRoutineDestroy(MeleeRoutineData *self){
 }
 
 
-static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
+static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest request){
    BTManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
@@ -50,8 +50,6 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
 
    e = uc->user;
    target = tec->target;
-
-   
    
    if (data->stage == NotAttacked){
 
@@ -143,7 +141,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
    else {
       if (!entityGet(InterpolationComponent)(e)){
 
-         if (!cancel && !entityIsDead(target)){
+         if (!requestIsCancel(request) && !entityIsDead(target)){
             //we're not cancelling so keep hittin the dude
             entityPushFrontCommand(e, createActionCombat(managers->commandManager, 0, target));
          }

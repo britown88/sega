@@ -126,7 +126,7 @@ typedef struct {
 
 typedef struct {
    vec(ActionPtr) *actions;
-   bool cancelled;
+   CoroutineRequest request;
 }CommandComponent;
 
 #define ComponentT CommandComponent

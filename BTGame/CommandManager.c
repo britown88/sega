@@ -191,7 +191,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
 
    //if we got one, run it
    if (tcc->commandReady){
-      CoroutineStatus ret = closureCall(&tcc->command, cc->cancelled); 
+      CoroutineStatus ret = closureCall(&tcc->command, cc->request); 
 
       //things may havbe gotten shuffled by new commands being created so best to re-retreive here
       cc = entityGet(CommandComponent)(e);
@@ -201,7 +201,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
       //this allows insta-routines to all be in 1 frame
       while (ret == Finished && !vecIsEmpty(ActionPtr)(cc->actions)){
          tcc->commandReady = false;
-         cc->cancelled = false;
+         cc->request = Continue;
 
          //cleanup the current one
          closureDestroy(Coroutine)(&tcc->command);
@@ -212,7 +212,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
 
          //if theres one avail, run it
          if (tcc->commandReady){
-            ret = closureCall(&tcc->command, cc->cancelled);
+            ret = closureCall(&tcc->command, cc->request);
 
             //things may havbe gotten shuffled by new commands being created so best to re-retreive here
             cc = entityGet(CommandComponent)(e);
@@ -242,7 +242,7 @@ static void _actionVDestroy(ActionPtr *self){
 static CommandComponent *_addCommandComponent(Entity *e){
    COMPONENT_ADD(e, CommandComponent, 
       .actions = vecCreate(ActionPtr)(&_actionVDestroy),
-      .cancelled = false);
+      .request = Continue);
    entityUpdate(e);
    return entityGet(CommandComponent)(e);
 }
@@ -279,7 +279,7 @@ void entityCancelCommands(Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    if (cc){      
       if (!vecIsEmpty(ActionPtr)(cc->actions)){
-         cc->cancelled = true;
+         cc->request = Cancel;
          vecResize(ActionPtr)(cc->actions, 1, NULL);
       }
    }
@@ -288,7 +288,7 @@ void entityCancelCommands(Entity *e){
 void entityClearCommands(Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    if (cc){
-      cc->cancelled = false;
+      cc->request = Continue;
       vecClear(ActionPtr)(cc->actions);
    }
 }

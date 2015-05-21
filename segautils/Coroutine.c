@@ -14,12 +14,12 @@ static void _coroutineVectorDestroy(vec(Coroutine) *self){
    vecDestroy(Coroutine)(self);
 }
 
-static CoroutineStatus _synchronized(vec(Coroutine) *list, bool cancel){
+static CoroutineStatus _synchronized(vec(Coroutine) *list, CoroutineRequest request){
    vec(Coroutine) *deleteList = NULL;
    CoroutineStatus status = Finished;
 
    vecForEach(Coroutine, /*Coroutine* */c, list, {
-      status = closureCall(c, cancel);
+      status = closureCall(c, request);
 
       if (status == Finished){
          if (!deleteList){
@@ -73,7 +73,7 @@ static void _executionDataDestroy(ExecutionListData *self){
    checkedFree(self);
 }
 
-static CoroutineStatus _execution(ExecutionListData *data, bool cancel){
+static CoroutineStatus _execution(ExecutionListData *data, CoroutineRequest request){
    size_t count = vecSize(Coroutine)(data->list);
 
    //sanity check to see if we're done before we start
@@ -82,11 +82,11 @@ static CoroutineStatus _execution(ExecutionListData *data, bool cancel){
    }
 
    //remove everything after the current if cancelling
-   if (cancel && count > data->iter + 1){
+   if (requestIsCancel(request) && count > data->iter + 1){
       vecResize(Coroutine)(data->list, data->iter + 1, &(Coroutine){0});
    }
 
-   if (closureCall(vecAt(Coroutine)(data->list, data->iter), cancel) == Finished){
+   if (closureCall(vecAt(Coroutine)(data->list, data->iter), request) == Finished){
       ++data->iter;
    }
 

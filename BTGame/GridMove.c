@@ -99,7 +99,7 @@ static GridSolution solve(GridManager *manager, Action *a, size_t start, size_t 
    return gridManagerSolve(manager, start, cFunc, nFunc);
 }
 
-static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
+static CoroutineStatus _gridMove(GridMoveData *data, CoroutineRequest request){
    ActionUserComponent *user = entityGet(ActionUserComponent)(data->a);
    ActionTargetPositionComponent *targetPos = entityGet(ActionTargetPositionComponent)(data->a);
    ActionTargetEntityComponent *targetEntity = entityGet(ActionTargetEntityComponent)(data->a);
@@ -147,7 +147,7 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
       range = rc->range;
    }
 
-   if (cancel || //cancelled
+   if (requestIsCancel(request) || //cancelled
       _distance(pos, destination) <= range || //at our destination
       destination == INF){//impossible
 
