@@ -39,7 +39,11 @@ static CoroutineStatus _projectileRoutine(ProjectileRoutineData *data, Coroutine
 
    e = uc->user;
    target = tec->target;
-   
+
+   if (requestIsCancel(request)){
+      COMPONENT_ADD(e, DestructionComponent, 0);
+      return Finished;
+   }   
 
    if (!entityGet(InterpolationComponent)(e)){
       ActionDeliveryComponent *delivery = entityGet(ActionDeliveryComponent)(data->a);

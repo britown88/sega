@@ -118,6 +118,21 @@ static CoroutineStatus _gridMove(GridMoveData *data, CoroutineRequest request){
       return Finished;
    }  
 
+   if (request == ForceCancel){
+      //forced cancel, snap to target and end
+      InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
+      if (ic){
+         COMPONENT_LOCK(PositionComponent, ppc, e, {
+            ppc->x = ic->destX;
+            ppc->y = ic->destY;
+         });
+         entityRemove(InterpolationComponent)(e);
+         entityUpdate(e);
+      }
+      
+      return Finished;
+   }
+
    if (entityGet(InterpolationComponent)(e)){
       //we're moving, not done, cant be cancelled!
       return NotFinished;

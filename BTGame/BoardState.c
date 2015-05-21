@@ -147,7 +147,7 @@ static void _handleMouse(BoardState *state){
                   gridXYFromIndex(gridIndex, &gx, &gy);
                   vecForEach(EntityPtr, e, selectedEntities, {
                      if (!shift){
-                        entityCancelCommands(*e);
+                        entityForceCancelCommands(*e);
                      }
 
                      entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
@@ -187,7 +187,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
    COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(foo++ % 2 ? "bow" : "melee" ), NULL });
    //if (true){
-      COMPONENT_ADD(e, AIComponent, 0);
+      //COMPONENT_ADD(e, AIComponent, 0);
    //}
    //COMPONENT_ADD(e, WanderComponent, 1);
 

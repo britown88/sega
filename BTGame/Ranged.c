@@ -43,7 +43,7 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
    target = tec->target;
 
 
-   if (entityIsDead(target)){
+   if (entityIsDead(target) || requestIsCancel(request)){
       return Finished;
    }
 

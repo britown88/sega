@@ -22,7 +22,7 @@ typedef struct {
    WorldView *view;
    Action *a;
    MoveStage stage;
-   Int2 dir;
+   Int2 dir, startPos;
    CombatAction *action;
 }MeleeRoutineData;
 
@@ -50,6 +50,20 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
 
    e = uc->user;
    target = tec->target;
+
+   if (request == ForceCancel){
+      if (data->stage != NotAttacked && entityGet(InterpolationComponent)(e)){
+         entityRemove(InterpolationComponent)(e);
+
+         COMPONENT_LOCK(PositionComponent, pc, e, {
+            pc->x = data->startPos.x;
+            pc->y = data->startPos.y;
+         });
+         entityUpdate(e);
+      }
+
+      return Finished;
+   }
    
    if (data->stage == NotAttacked){
 
@@ -90,6 +104,8 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
 
             //we're in range, our declaration's been accepted, lets go!
             data->stage = WindUp;
+
+            data->startPos = (Int2){ pc->x, pc->y };
 
             data->dir.x = gc1->x - gc0->x;
             data->dir.y = gc1->y - gc0->y;

@@ -285,6 +285,16 @@ void entityCancelCommands(Entity *e){
    }
 }
 
+void entityForceCancelCommands(Entity *e){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   if (cc){
+      if (!vecIsEmpty(ActionPtr)(cc->actions)){
+         cc->request = ForceCancel;
+         vecResize(ActionPtr)(cc->actions, 1, NULL);
+      }
+   }
+}
+
 void entityClearCommands(Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    if (cc){
