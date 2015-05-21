@@ -146,7 +146,7 @@ static void _handleMouse(BoardState *state){
                   vecForEach(EntityPtr, e, selectedEntities, {
                      Action *cmd = special ?
                         createActionCombatSlot(managers->commandManager, 1, *vecAt(EntityPtr)(clickedEntities, 0)) :
-                        createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f);
+                        createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f, true);
 
                      if (!shift){
                         entityCancelAllCommands(*e);
@@ -163,8 +163,7 @@ static void _handleMouse(BoardState *state){
                      if (!shift){
                         entityCancelAllCommands(*e);
                      }
-                     entitySetPrimaryTargetPosition(*e, gridIndex);
-                     entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
+                     entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy, true));
                   });
                }
             }
@@ -201,7 +200,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
    COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(!AI ? "bow" : "melee"), stringIntern("swap") });
    //if (true){
-      COMPONENT_ADD(e, AIComponent, 0);
+      //COMPONENT_ADD(e, AIComponent, 0);
    //}
    //COMPONENT_ADD(e, WanderComponent, 1);
 

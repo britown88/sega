@@ -31,6 +31,9 @@
 #define ComponentT ActionDeliveryComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT ActionSetPrimaryTargetComponent
+#include "Entities\ComponentImpl.h"
+
 #define VectorTPart ActionPtr
 #include "segautils\Vector_Impl.h"
 
@@ -139,7 +142,8 @@ static Coroutine _updateCommand(CommandManager *self, Action *a){
    //we didnt find a coroutine to run so look and see if we 
    //have movement we can pass to a move command
    if (tpc || tec){
-      return createCommandGridMove(a, self->view->managers->gridManager);
+      bool setPrimary = entityGet(ActionSetPrimaryTargetComponent)(a) != NULL;
+      return createCommandGridMove(a, self->view->managers->gridManager, setPrimary);
    }
 
    //we aint found shit

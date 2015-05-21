@@ -49,6 +49,8 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
       return Finished;
    }
 
+   entitySetPrimaryTargetEntity(e, target);
+
    //we're not currently in an attack
    if (gridDistance(e, target) > SWAP_RANGE){
       Action *cmd = cc->type == ccSlot ?
@@ -57,7 +59,7 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
 
       //not in melee range, we need to push a move command and return   
       entityPushFrontCommand(e, cmd);
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, SWAP_RANGE));
+      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, SWAP_RANGE, false));
       return Finished;
    }
    else{
@@ -93,10 +95,17 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
 
             combatManagerExecuteAction(managers->combatManager, data->action);
 
+            //completely wipe all of the targets actions
+            entityForceCancelAllCommands(target);
+            entityClearPrimaryTarget(target);
+
             //attach our modified combataction to the projectile's command
-            a = createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), e);
-            entityForceCancelFirstCommand(target);
+            a = createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), e);            
             entityPushFrontCommand(target, a);
+
+            //kill our target focus and push an autoattack for after the swap
+            entityClearPrimaryTarget(e);
+            entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
 
             //pushfront our own swap
             entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), target));

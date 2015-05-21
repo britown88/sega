@@ -71,6 +71,8 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
          return Finished;
       }
 
+      entitySetPrimaryTargetEntity(e, target);
+
       //we're not currently in an attack
       if (gridDistance(e, target) > 1){
          Action *cmd = cc->type == ccSlot ?
@@ -79,7 +81,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
 
          //not in melee range, we need to push a move command and return   
          entityPushFrontCommand(e, cmd);
-         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f));
+         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f, false));
 
          return Finished;
       }
@@ -106,7 +108,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
             }
 
             //we're in range, our declaration's been accepted, lets go!
-            entitySetPrimaryTargetEntity(e, target);
+            
             data->stage = WindUp;
 
             data->startPos = (Int2){ pc->x, pc->y };

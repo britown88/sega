@@ -10,9 +10,9 @@
 #include "WorldView.h"
 
 #define LOG_LINE_LEN 20
-#define LOG_LINE_COUNT 6
+#define LOG_LINE_COUNT 14
 #define LOG_X 2
-#define LOG_Y 17
+#define LOG_Y 9
 #define LOG_COLOR_FG 0
 #define LOG_COLOR_BG 7
 

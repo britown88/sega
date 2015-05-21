@@ -49,6 +49,8 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
       return Finished;
    }
 
+   entitySetPrimaryTargetEntity(e, target);
+
    //we're not currently in an attack
    if (gridDistance(e, target) > PROJECT_RANGE){
       Action *cmd = cc->type == ccSlot ?
@@ -57,7 +59,7 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
 
       //not in melee range, we need to push a move command and return   
       entityPushFrontCommand(e, cmd);
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, PROJECT_RANGE));
+      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, PROJECT_RANGE, false));
       return Finished;
    }
    else{
@@ -95,7 +97,7 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
                return Finished;
             }
 
-            entitySetPrimaryTargetEntity(e, target);
+            
 
             projectile = entityCreate(data->view->entitySystem);
 

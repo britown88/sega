@@ -67,7 +67,7 @@ static void _buildDiceBuffers(vec(Vertex) *vbo, vec(size_t) *ibo){
 }
 static void _createDie(DiceManager *self){
    Entity *e = entityCreate(self->view->entitySystem);
-   COMPONENT_ADD(e, PositionComponent, 100, 275);
+   COMPONENT_ADD(e, PositionComponent, 100, 75);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/d6.ega"));
    COMPONENT_ADD(e, LayerComponent, LayerUI);
    COMPONENT_ADD(e, MeshComponent, self->vbo, self->ibo, 32, vNormalized((Float3){ 1.0f, 1.0f, 1.0f }), 0.0f);

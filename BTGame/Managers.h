@@ -76,6 +76,7 @@ PrimaryTargetManager *createPrimaryTargetManager(WorldView *view);
 void primaryTargetManagerUpdate(PrimaryTargetManager *self);
 void entitySetPrimaryTargetPosition(Entity *e, size_t gridIndex);
 void entitySetPrimaryTargetEntity(Entity *e, Entity *other);
+void entityClearPrimaryTarget(Entity *e);
 
 
 

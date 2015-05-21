@@ -10,6 +10,7 @@
 typedef struct {
    Action *a;
    GridManager *manager;
+   bool setTarget;
 } GridMoveData;
 
 static GridMoveData *_gridMoveDataCreate(){
@@ -155,6 +156,10 @@ static CoroutineStatus _gridMove(GridMoveData *data, CoroutineRequest request){
       //doesnt have a target, we're done
       return Finished;
    }
+
+   if (data->setTarget){
+      entitySetPrimaryTargetPosition(e, destination);
+   }
    
    pos = gridIndexFromXY(gc->x, gc->y);
 
@@ -194,29 +199,40 @@ static CoroutineStatus _gridMove(GridMoveData *data, CoroutineRequest request){
    return NotFinished;
 }
 
-Coroutine createCommandGridMove(Action *a, GridManager *manager){
+Coroutine createCommandGridMove(Action *a, GridManager *manager, bool setPrimary){
    Coroutine out;
    GridMoveData *data = _gridMoveDataCreate();
 
    data->a = a;
    data->manager = manager;
+   data->setTarget = setPrimary;
 
    closureInit(Coroutine)(&out, data, (CoroutineFunc)&_gridMove, &_gridMoveDataDestroy);
    return out;
 }
 
-Action *createActionGridPosition(CommandManager *self, int x, int y){
+Action *createActionGridPosition(CommandManager *self, int x, int y, bool setPrimary){
    Action *a = commandManagerCreateAction(self);
+
+   if (setPrimary){
+      COMPONENT_ADD(a, ActionSetPrimaryTargetComponent, 0);
+   }
+
    COMPONENT_ADD(a, ActionTargetPositionComponent, .x = x, .y = y);
    entityUpdate(a);
 
    return a;
 }
 
-Action *createActionGridTarget(CommandManager *self, Entity *e, float range){
+Action *createActionGridTarget(CommandManager *self, Entity *e, float range, bool setPrimary){
    Action *a = commandManagerCreateAction(self);
    COMPONENT_ADD(a, ActionTargetEntityComponent, e);
    COMPONENT_ADD(a, ActionRangeComponent, range);
+
+   if (setPrimary){
+      COMPONENT_ADD(a, ActionSetPrimaryTargetComponent, 0);
+   }
+
    entityUpdate(a);
 
    return a;

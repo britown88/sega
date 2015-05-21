@@ -82,7 +82,7 @@ static void _updateEntity(PrimaryTargetManager *self, Entity *e){
          vecPushBack(EntityPtr)(self->removeList, &e);
       }
       else{
-         entityPushCommand(e, createActionGridPosition(managers->commandManager, x, y));
+         entityPushCommand(e, createActionGridPosition(managers->commandManager, x, y, false));
       }
    }else if (tptc->type == ptEntity && tptc->e){
       //targeting an entity, find its alignment
@@ -99,7 +99,7 @@ static void _updateEntity(PrimaryTargetManager *self, Entity *e){
       if (tcOther){
          if (tc->teamID == tcOther->teamID){
             //same team
-            entityPushCommand(e, createActionGridTarget(managers->commandManager, target, 0));
+            entityPushCommand(e, createActionGridTarget(managers->commandManager, target, 0, false));
          }
          else{
             //opposing teams
@@ -137,5 +137,11 @@ void entitySetPrimaryTargetEntity(Entity *e, Entity *other){
    }
    else{
       *tptc = (TPrimaryTargetComponent){ ptEntity, .e = other };
+   }
+}
+
+void entityClearPrimaryTarget(Entity *e){
+   if (entityGet(TPrimaryTargetComponent)(e)){
+      entityRemove(TPrimaryTargetComponent)(e);
    }
 }

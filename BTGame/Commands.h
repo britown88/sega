@@ -6,4 +6,4 @@
 
 typedef struct GridManager_t GridManager;
 
-Coroutine createCommandGridMove(Action *a, GridManager *manager);
+Coroutine createCommandGridMove(Action *a, GridManager *manager, bool setPrimary);
