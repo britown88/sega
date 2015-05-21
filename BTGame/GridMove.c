@@ -116,7 +116,12 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    if (!gc || !pc){
       //doesnt have the right components, we're done
       return Finished;
-   }   
+   }  
+
+   if (entityGet(InterpolationComponent)(e)){
+      //we're moving, not done, cant be cancelled!
+      return NotFinished;
+   }
 
    if (targetPos){
       destination = gridIndexFromXY(targetPos->x, targetPos->y);
@@ -134,11 +139,6 @@ static CoroutineStatus _gridMove(GridMoveData *data, bool cancel){
    else{
       //doesnt have a target, we're done
       return Finished;
-   }
-
-   if (entityGet(InterpolationComponent)(e)){
-      //we're moving, not done, cant be cancelled!
-      return NotFinished;
    }
    
    pos = gridIndexFromXY(gc->x, gc->y);

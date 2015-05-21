@@ -257,6 +257,14 @@ void _onDestroy(GridManager *self, Entity *e){
       vecDestroy(size_t)(tgc->occupyingNodes);
    }
 }
+
+static void _removeEntityFromNode(GridManager *self, Entity *e, size_t node){
+   vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, node);
+   if (entitiesAtOld){
+      vecRemove(EntityPtr)(entitiesAtOld, &e);
+   }
+}
+
 void _onUpdate(GridManager *self, Entity *e){
    TGridComponent *tgc = entityGet(TGridComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
@@ -278,10 +286,7 @@ void _onUpdate(GridManager *self, Entity *e){
       if (tgc){
          //no longer on grid, remove from occupying nodes
          vecForEach(size_t, node, tgc->occupyingNodes, {
-            vec(EntityPtr) *entitiesAtOld = gridManagerEntitiesAt(self, *node);
-            if (entitiesAtOld){
-               vecRemove(EntityPtr)(entitiesAtOld, &e);
-            }
+            _removeEntityFromNode(self, e, *node);
          });
          vecDestroy(size_t)(tgc->occupyingNodes);
          entityRemove(TGridComponent)(e);

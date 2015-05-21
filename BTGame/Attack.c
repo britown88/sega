@@ -65,6 +65,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, bool cancel){
          logManagerPushMessage(managers->logManager, "Moving to attack.");
          entityPushFrontCommand(e, createActionCombat(managers->commandManager, cc->slot, target));
          entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f));
+
          return Finished;
       }
       else{

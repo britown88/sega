@@ -23,7 +23,3 @@
 
 #define VectorTPart Float3
 #include "Vector_Decl.h"
-
-typedef void* VoidPtr;
-#define VectorTPart VoidPtr
-#include "Vector_Decl.h"

@@ -197,8 +197,6 @@ void combatManagerExecuteAction(CombatManager *self, CombatAction *action){
          sc->HP -= dc->damage;
       });
       
-
-      
       //logManagerPushMessage(self->view->managers->logManager, "Hit for %0.2f!", dc->damage);
    }
 }
