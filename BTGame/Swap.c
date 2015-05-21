@@ -12,22 +12,24 @@
 #include "Combat.h"
 #include "GameClock.h"
 
+#define SWAP_RANGE 10
+
 typedef struct {
    WorldView *view;
    Action *a;
    CombatAction *action;
    long startTime;
-}BowRoutineData;
+}SwapRoutineData;
 
-static BowRoutineData *bowRoutineDataCreate(){
-   return checkedCalloc(1, sizeof(BowRoutineData));
+static SwapRoutineData *SwapRoutineDataCreate(){
+   return checkedCalloc(1, sizeof(SwapRoutineData));
 }
 
-static void _bowRoutineDestroy(BowRoutineData *self){
+static void _SwapRoutineDestroy(SwapRoutineData *self){
    checkedFree(self);
 }
 
-static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest request){
+static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest request){
    BTManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
@@ -48,22 +50,20 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
    }
 
    //we're not currently in an attack
-   if (gridDistance(e, target) > 5){
+   if (gridDistance(e, target) > SWAP_RANGE){
       Action *cmd = cc->type == ccSlot ?
          createActionCombatSlot(managers->commandManager, cc->slot, target) :
          createActionCombatRoutine(managers->commandManager, cc->routine, target);
 
       //not in melee range, we need to push a move command and return   
       entityPushFrontCommand(e, cmd);
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 5.0f));
+      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, SWAP_RANGE));
       return Finished;
    }
    else{
       if (data->startTime == 0){
          data->action = combatManagerCreateAction(managers->combatManager, e, target);
-         COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 30.0f);
-         COMPONENT_ADD(data->action, CActionRangeComponent, .range = 5.0f);
-         COMPONENT_ADD(data->action, CActionDamageTypeComponent, .type = DamageTypePhysical);
+         COMPONENT_ADD(data->action, CActionRangeComponent, .range = SWAP_RANGE);
 
          data->action = combatManagerDeclareAction(managers->combatManager, data->action);
 
@@ -78,59 +78,54 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
       }
       else{
          long elapsed = gameClockGetTime(data->view->gameClock) - data->startTime;
-         if (elapsed < 775){
+         if (elapsed < 250){
             //clock is still going, but cancellable so
             return requestIsCancel(request) ? Finished : NotFinished;
          }
-         else{         
+         else{
             //timers done lets create our action
-            PositionComponent *pc = entityGet(PositionComponent)(e);
-            PositionComponent *pc2 = entityGet(PositionComponent)(target);
-            Entity *projectile;
             Action *a;
 
-            if (!pc || !pc2){
-               return Finished;
+            data->action = combatManagerQueryActionResult(managers->combatManager, data->action);
+            if (entityGet(CActionCancelledComponent)(data->action)){
+               return Finished;               
             }
 
-            projectile = entityCreate(data->view->entitySystem);
-
-            //we're in range, our declaration's been accepted, lets go!
-            COMPONENT_ADD(projectile, PositionComponent, .x = pc->x, .y = pc->y);
-            COMPONENT_ADD(projectile, ImageComponent, stringIntern("assets/img/dota/venge.ega"));
-            COMPONENT_ADD(projectile, LayerComponent, LayerUI);
-            COMPONENT_ADD(projectile, InterpolationComponent, .destX = pc2->x, .destY = pc2->y, .time = 0.25);
-            entityUpdate(projectile);
+            combatManagerExecuteAction(managers->combatManager, data->action);
 
             //attach our modified combataction to the projectile's command
-            a = createActionCombatRoutine(managers->commandManager, stringIntern("projectile"), target);
-            COMPONENT_ADD(a, ActionDeliveryComponent, data->action);
-            entityPushCommand(projectile, a);
+            a = createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), e);
+            entityForceCancelCommands(target);
+            entityPushCommand(target, a);
 
             if (!requestIsCancel(request) && !entityIsDead(target)){
                //we're not cancelling so keep hittin the dude
                entityPushFrontCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
             }
 
+            //pushfront our own swap
+            entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), target));
+
             return Finished;
-         }         
-      }           
+         }
+      }
    }
 
    return Finished;
+
 }
 
-static Coroutine _buildBow(ClosureData data, WorldView *view, Action *a){
+static Coroutine _buildSwap(ClosureData data, WorldView *view, Action *a){
    Coroutine out;
-   BowRoutineData *newData = bowRoutineDataCreate();
+   SwapRoutineData *newData = SwapRoutineDataCreate();
    newData->view = view;
    newData->a = a;
-   closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_bowRoutine, &_bowRoutineDestroy);
+   closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_SwapRoutine, &_SwapRoutineDestroy);
    return out;
 }
 
-CombatRoutineGenerator buildBowAttackRoutine(){
+CombatRoutineGenerator buildSwapAttackRoutine(){
    CombatRoutineGenerator out;
-   closureInit(CombatRoutineGenerator)(&out, NULL, (CombatRoutineGeneratorFunc)&_buildBow, NULL);
+   closureInit(CombatRoutineGenerator)(&out, NULL, (CombatRoutineGeneratorFunc)&_buildSwap, NULL);
    return out;
 }

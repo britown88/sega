@@ -25,3 +25,5 @@ void buildAllCombatRoutines(CombatRoutineLibrary *self);
 CombatRoutineGenerator buildMeleeAttackRoutine();
 CombatRoutineGenerator buildBowAttackRoutine();
 CombatRoutineGenerator buildProjectileAttackRoutine();
+CombatRoutineGenerator buildSwapAttackRoutine();
+CombatRoutineGenerator buildSwapOtherAttackRoutine();

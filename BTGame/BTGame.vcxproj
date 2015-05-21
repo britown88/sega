@@ -115,6 +115,9 @@
     <ClCompile Include="RenderManager.c" />
     <ClCompile Include="MeshRendering.c" />
     <ClCompile Include="SelectionManager.c" />
+    <ClCompile Include="NEWCMD.c" />
+    <ClCompile Include="swap-other.c" />
+    <ClCompile Include="Swap.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Entities\Entities.vcxproj">

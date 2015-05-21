@@ -83,22 +83,28 @@ static Coroutine _updateCommand(CommandManager *self, Action *a){
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(a);
    ActionCombatComponent *cc = entityGet(ActionCombatComponent)(a);
 
-   if (cc && cc->slot < COMBAT_SLOT_COUNT){
-      ActionUserComponent *uc = entityGet(ActionUserComponent)(a);
-      CombatSlotsComponent *csc = entityGet(CombatSlotsComponent)(uc->user);
-      if (csc && csc->slots[cc->slot]){
-         CombatRoutineGenerator c = combatRoutineLibraryGet(self->routines, csc->slots[cc->slot]);
-         if (!closureIsNull(CombatRoutineGenerator)(&c)){
+   if (cc){
+      StringView cmdID = NULL;
 
-            //...*ahem*
-            // action has a slot and a user, that user has combat slots,
-            // the slot selected by the action is assigned in the user,
-            // that slot name is a valid coroutine
-            // so...return it, otherwise drop through so move is default
+      if (cc->type == ccSlot && cc->slot < COMBAT_SLOT_COUNT){
+         ActionUserComponent *uc = entityGet(ActionUserComponent)(a);
+         CombatSlotsComponent *csc = entityGet(CombatSlotsComponent)(uc->user);
+         if (csc && csc->slots[cc->slot]){
+            cmdID = csc->slots[cc->slot];
+         }
+      }      
+      else if (cc->type == ccRoutine){
+         cmdID = cc->routine;
+      }
+
+      if (cmdID){
+         CombatRoutineGenerator c = combatRoutineLibraryGet(self->routines, cmdID);
+         if (!closureIsNull(CombatRoutineGenerator)(&c)){
             return closureCall(&c, self->view, a);
          }
-      }
+      }         
    }
+
 
    //we didnt find a coroutine to run so look and see if we 
    //have movement we can pass to a move command

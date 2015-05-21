@@ -73,9 +73,12 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
 
       //we're not currently in an attack
       if (gridDistance(e, target) > 1){
+         Action *cmd = cc->type == ccSlot ?
+            createActionCombatSlot(managers->commandManager, cc->slot, target) :
+            createActionCombatRoutine(managers->commandManager, cc->routine, target);
+
          //not in melee range, we need to push a move command and return   
-         logManagerPushMessage(managers->logManager, "Moving to attack.");
-         entityPushFrontCommand(e, createActionCombat(managers->commandManager, cc->slot, target));
+         entityPushFrontCommand(e, cmd);
          entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f));
 
          return Finished;
@@ -159,7 +162,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
 
          if (!requestIsCancel(request) && !entityIsDead(target)){
             //we're not cancelling so keep hittin the dude
-            entityPushFrontCommand(e, createActionCombat(managers->commandManager, 0, target));
+            entityPushFrontCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
          }
 
          //we're done!
@@ -189,10 +192,19 @@ CombatRoutineGenerator buildMeleeAttackRoutine(){
    return out;
 }
 
-Action *createActionCombat(CommandManager *self, size_t slot, Entity *e){
+Action *createActionCombatSlot(CommandManager *self, size_t slot, Entity *e){
    Action *a = commandManagerCreateAction(self);
    COMPONENT_ADD(a, ActionTargetEntityComponent, e);
-   COMPONENT_ADD(a, ActionCombatComponent, .slot = slot);
+   COMPONENT_ADD(a, ActionCombatComponent, ccSlot, .slot = slot);
+   entityUpdate(a);
+
+   return a;
+}
+
+Action *createActionCombatRoutine(CommandManager *self, StringView routine, Entity *e){
+   Action *a = commandManagerCreateAction(self);
+   COMPONENT_ADD(a, ActionTargetEntityComponent, e);
+   COMPONENT_ADD(a, ActionCombatComponent, ccRoutine, .routine = routine);
    entityUpdate(a);
 
    return a;

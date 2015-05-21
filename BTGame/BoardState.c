@@ -57,12 +57,19 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
    destructionManagerUpdate(managers->destructionManager);
 }
 
+static bool special = false;
+
 static void _handleKeyboard(BoardState *state){
    BTManagers *managers = state->view->managers;
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    while (keyboardPopEvent(k, &e)){
       switch (e.key){
+      case (SegaKey_1) :
+         if (e.action == SegaKey_Released){
+            special = true;
+         }
+                            break;
       case (SegaKey_Escape) :
          if (e.action == SegaKey_Released){
             appQuit(appGet());
@@ -124,8 +131,9 @@ static void _handleMouse(BoardState *state){
                      entityCancelCommands(*e);
                   }
 
-                  entityPushCommand(*e, createActionCombat(managers->commandManager, 0, *vecAt(EntityPtr)(clickedEntities, 0)));
+                  entityPushCommand(*e, createActionCombatSlot(managers->commandManager, special ? 1 : 0, *vecAt(EntityPtr)(clickedEntities, 0)));
                });
+               special = false;
             }
             else{
                selectionManagerGetEntities(managers->selectionManager, clickedEntities,
@@ -147,7 +155,7 @@ static void _handleMouse(BoardState *state){
                   gridXYFromIndex(gridIndex, &gx, &gy);
                   vecForEach(EntityPtr, e, selectedEntities, {
                      if (!shift){
-                        entityForceCancelCommands(*e);
+                        entityCancelCommands(*e);
                      }
 
                      entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
@@ -179,15 +187,15 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    Entity *e = entityCreate(system);
 
    COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern(AI ? "assets/img/kefka.ega" : "assets/img/mog.ega"));
+   COMPONENT_ADD(e, ImageComponent, stringIntern(AI ? "assets/img/dota/ursa.ega" : "assets/img/dota/venge.ega"));
 
    COMPONENT_ADD(e, LayerComponent, LayerTokens);;
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
    COMPONENT_ADD(e, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
-   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(foo++ % 2 ? "bow" : "melee" ), NULL });
+   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(!AI ? "bow" : "melee"), stringIntern("swap") });
    //if (true){
-      //COMPONENT_ADD(e, AIComponent, 0);
+      COMPONENT_ADD(e, AIComponent, 0);
    //}
    //COMPONENT_ADD(e, WanderComponent, 1);
 

@@ -37,8 +37,17 @@ typedef struct {
 #define ComponentT ActionRangeComponent
 #include "Entities\ComponentDecl.h"
 
+typedef enum {
+   ccSlot,
+   ccRoutine
+} CombatComponentType;
+
 typedef struct {
-   size_t slot;
+   CombatComponentType type;
+   union {
+      size_t slot;
+      StringView routine;
+   };
 }ActionCombatComponent;
 #define ComponentT ActionCombatComponent
 #include "Entities\ComponentDecl.h"
@@ -52,4 +61,5 @@ typedef struct {
 //put your action creating function decls here
 Action *createActionGridPosition(CommandManager *self, int x, int y);
 Action *createActionGridTarget(CommandManager *self, Entity *e, float range);
-Action *createActionCombat(CommandManager *self, size_t slot, Entity *e);
+Action *createActionCombatSlot(CommandManager *self, size_t slot, Entity *e);
+Action *createActionCombatRoutine(CommandManager *self, StringView routine, Entity *e);
