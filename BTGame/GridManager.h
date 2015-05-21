@@ -7,7 +7,7 @@
 #define TABLE_HEIGHT 11
 #define CELL_COUNT (TABLE_WIDTH*TABLE_HEIGHT)
 #define GRID_X_POS 224
-#define GRID_Y_POS 38
+#define GRID_Y_POS 34
 #define GRID_RES_SIZE 24
 
 typedef struct GridManager_t GridManager;
