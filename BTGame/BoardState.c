@@ -21,6 +21,8 @@
 typedef struct {
    WorldView *view;
    bool paused;
+
+   Entity *pausedbanner;
 }BoardState;
 
 static void _boardStateDestroy(BoardState *self){
@@ -99,12 +101,14 @@ static void _handleKeyboard(BoardState *state){
          if (e.action == SegaKey_Released){
             if (state->paused){
                state->paused = false;
-               gameClockResume(state->view->gameClock);
+               gameClockResume(state->view->gameClock);               
             }
             else{
                state->paused = true;
                gameClockPause(state->view->gameClock);
             }
+
+            entityGet(VisibilityComponent)(state->pausedbanner)->shown = state->paused;
          }
                            break;
       }
@@ -229,6 +233,29 @@ void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
 
    entityUpdate(e);
 }
+static void _createPausedText(BoardState *state){
+   //28 to 76: 48
+   char str[50] = { 0 };
+   int i;
+   Entity *e = entityCreate(state->view->entitySystem);
+
+   for (i = 0; i < 48; ++i){
+      str[i] = ' ';
+   }
+
+   strcpy(str + 21, "Paused");
+   str[27] = ' ';
+
+   COMPONENT_ADD(e, LayerComponent, LayerUI);
+   COMPONENT_ADD(e, TextComponent,
+      .text = stringIntern(str),
+      .x = 28, .y = 11,
+      .fg = 15, .bg = 0);
+   COMPONENT_ADD(e, VisibilityComponent, .shown = false);
+   entityUpdate(e);
+
+   state->pausedbanner = e;
+}
 
 StateClosure gameStateCreateBoard(WorldView *view){
    StateClosure out;
@@ -245,7 +272,9 @@ StateClosure gameStateCreateBoard(WorldView *view){
 
    for (i = 0; i < 12; ++i){
       _createTestEntity(view->entitySystem, 4 + i, 10, true);
-   }  
+   } 
+
+   _createPausedText(state);
 
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);

@@ -69,7 +69,7 @@ void cursorManagerCreateCursor(CursorManager *self){
    COMPONENT_ADD(self->e, PositionComponent, 0, 0);
    COMPONENT_ADD(self->e, ImageComponent, stringIntern("assets/img/cursor.ega"));
    COMPONENT_ADD(self->e, TCursorComponent, 0);
-   COMPONENT_ADD(self->e, LayerComponent, LayerUI);   
+   COMPONENT_ADD(self->e, LayerComponent, LayerCursor);
    entityUpdate(self->e);
 }
 

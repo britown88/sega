@@ -116,7 +116,7 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
             //we're in range, our declaration's been accepted, lets go!
             COMPONENT_ADD(projectile, PositionComponent, .x = pc->x, .y = pc->y);
             COMPONENT_ADD(projectile, ImageComponent, stringIntern("assets/img/dota/venge.ega"));
-            COMPONENT_ADD(projectile, LayerComponent, LayerUI);
+            COMPONENT_ADD(projectile, LayerComponent, LayerTokens);
             COMPONENT_ADD(projectile, InterpolationComponent, .destX = pc2->x, .destY = pc2->y, .time = 0.25);
             entityUpdate(projectile);
 
