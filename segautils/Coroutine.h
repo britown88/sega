@@ -10,7 +10,8 @@ typedef enum{
 typedef enum{
    Continue,
    Cancel,
-   ForceCancel
+   ForceCancel,
+   Pause
 }CoroutineRequest;
 
 static bool requestIsCancel(CoroutineRequest c){ return c == Cancel || c == ForceCancel; }

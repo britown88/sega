@@ -36,6 +36,10 @@ static CoroutineStatus _AutoRoutine(AutoRoutineData *data, CoroutineRequest requ
       return Finished;
    }
 
+   if (request == Pause){
+      return NotFinished;
+   }
+
    e = uc->user;
    range = commandManagerGetSlotRange(managers->commandManager, e, 0);
    if (range > 0.0f){

@@ -18,7 +18,8 @@ typedef struct {
    WorldView *view;
    Action *a;
    CombatAction *action;
-   long startTime;
+   long startTime, pausedTime;
+   bool paused;
 }SwapRoutineData;
 
 static SwapRoutineData *SwapRoutineDataCreate(){
@@ -44,6 +45,18 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
    e = uc->user;
    target = tec->target;
 
+   if (request == Pause && !data->paused){
+      data->paused = true;
+      data->pausedTime = gameClockGetTime(data->view->gameClock);
+      return NotFinished;
+   }
+
+   if (data->paused){
+      data->paused = false;
+      if (data->startTime > 0){
+         data->startTime += gameClockGetTime(data->view->gameClock) - data->pausedTime;
+      }
+   }
 
    if (entityIsDead(target) || requestIsCancel(request)){
       return Finished;
@@ -96,16 +109,19 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
             combatManagerExecuteAction(managers->combatManager, data->action);
 
             //completely wipe all of the targets actions
-            entityForceCancelAllCommands(target);
-            entityClearPrimaryTarget(target);
+            //entityPauseCommand(target);
+            //entityForceCancelAllCommands(target);
+            //entityClearPrimaryTarget(target);
 
             //attach our modified combataction to the projectile's command
             a = createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), e);            
-            entityPushFrontCommand(target, a);
+            //entityPushFrontCommand(target, a);
+
+            entityPauseCommand(target, a);
 
             //kill our target focus and push an autoattack for after the swap
             entityClearPrimaryTarget(e);
-            entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
+            //entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
 
             //pushfront our own swap
             entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), target));

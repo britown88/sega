@@ -46,6 +46,7 @@ void commandManagerUpdate(CommandManager *self);
 Action *commandManagerCreateAction(CommandManager *self);
 float commandManagerGetRoutineRange(CommandManager *self, StringView cmdID);
 float commandManagerGetSlotRange(CommandManager *self, Entity *e, size_t slot);
+void entityPauseCommand(Entity *e, Action *cmd);
 void entityPushCommand(Entity *e, Action *cmd);
 void entityPushFrontCommand(Entity *e, Action *cmd);
 void entityCancelFirstCommand(Entity *e);

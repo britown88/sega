@@ -134,8 +134,8 @@ static void _handleMouse(BoardState *state){
                   }
 
                   entityPushCommand(*e, createActionCombatSlot(managers->commandManager, special ? 1 : 0, *vecAt(EntityPtr)(clickedEntities, 0)));
-               });
-               special = false;
+                  special = false;
+               });               
             }
             else{
                selectionManagerGetEntities(managers->selectionManager, clickedEntities,
@@ -147,7 +147,7 @@ static void _handleMouse(BoardState *state){
                      Action *cmd = special ?
                         createActionCombatSlot(managers->commandManager, 1, *vecAt(EntityPtr)(clickedEntities, 0)) :
                         createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f, true);
-
+                     special = false;
                      if (!shift){
                         entityCancelAllCommands(*e);
                      }
@@ -170,6 +170,8 @@ static void _handleMouse(BoardState *state){
          }
          break;
       }
+
+      
 
       if (event.action == SegaMouse_Scrolled){
          //size += e.pos.y;

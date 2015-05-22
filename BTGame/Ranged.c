@@ -18,14 +18,19 @@ typedef struct {
    WorldView *view;
    Action *a;
    CombatAction *action;
-   long startTime;
+   long startTime, pausedTime;
+   bool paused;
 }BowRoutineData;
 
+static int refcount = 0;
+
 static BowRoutineData *bowRoutineDataCreate(){
+   refcount += 1;
    return checkedCalloc(1, sizeof(BowRoutineData));
 }
 
 static void _bowRoutineDestroy(BowRoutineData *self){
+   refcount -= 1;
    checkedFree(self);
 }
 
@@ -44,6 +49,18 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
    e = uc->user;
    target = tec->target;
 
+   if (request == Pause && !data->paused){
+      data->paused = true;
+      data->pausedTime = gameClockGetTime(data->view->gameClock);
+      return NotFinished;
+   }
+
+   if (data->paused){
+      data->paused = false;
+      if (data->startTime > 0){
+         data->startTime += gameClockGetTime(data->view->gameClock) - data->pausedTime;
+      }
+   }
 
    if (entityIsDead(target) || requestIsCancel(request)){
       return Finished;

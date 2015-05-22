@@ -287,6 +287,21 @@ static CommandComponent *_addCommandComponent(Entity *e){
    return entityGet(CommandComponent)(e);
 }
 
+void entityPauseCommand(Entity *e, Action *cmd){
+   TCommandComponent *tcc;
+
+   entityPushFrontCommand(e, cmd);
+   tcc = entityGet(TCommandComponent)(e);
+
+   if (tcc && tcc->commandReady){
+      closureCall(&tcc->command, Pause);      
+
+      //weve paused so invalidate the list back at 0
+      tcc->runningIndex -= 1;
+      tcc->commandReady = false;
+   }
+}
+
 void entityPushCommand(Entity *e, Action *cmd){
    CommandComponent *cc = entityGet(CommandComponent)(e);
 

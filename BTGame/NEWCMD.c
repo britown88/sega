@@ -14,6 +14,7 @@
 typedef struct {
    WorldView *view;
    Action *a;
+   bool paused;
 }NEWCMDRoutineData;
 
 static NEWCMDRoutineData *NEWCMDRoutineDataCreate(){
@@ -38,6 +39,23 @@ static CoroutineStatus _NEWCMDRoutine(NEWCMDRoutineData *data, CoroutineRequest 
 
    e = uc->user;
    target = tec->target;
+
+   if (request == ForceCancel){
+      //close gracefully
+      return Finished;
+   }
+
+   if (request == Pause && !data->paused){
+      //pause
+      data->paused = true;
+
+      return NotFinished;
+   }
+
+   if (data->paused){
+      //resume
+      data->paused = false;
+   }
 
    return Finished;
 }

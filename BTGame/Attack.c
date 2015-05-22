@@ -24,6 +24,7 @@ typedef struct {
    MoveStage stage;
    Int2 dir, startPos;
    CombatAction *action;
+   bool paused;
 }MeleeRoutineData;
 
 static MeleeRoutineData *meleeRoutineDataCreate(){
@@ -63,6 +64,29 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
       }
 
       return Finished;
+   }
+
+   if (request == Pause && !data->paused){
+      //pause
+      data->paused = true;
+      if (data->stage != NotAttacked && entityGet(InterpolationComponent)(e)){
+         entityRemove(InterpolationComponent)(e);
+
+         COMPONENT_LOCK(PositionComponent, pc, e, {
+            pc->x = data->startPos.x;
+            pc->y = data->startPos.y;
+         });
+         entityUpdate(e);
+
+         data->stage = NotAttacked;
+      }
+
+      return NotFinished;
+   }
+
+   if (data->paused){
+      //resume
+      data->paused = false;
    }
    
    if (data->stage == NotAttacked){

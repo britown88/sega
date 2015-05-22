@@ -40,6 +40,10 @@ static CoroutineStatus _projectileRoutine(ProjectileRoutineData *data, Coroutine
    e = uc->user;
    target = tec->target;
 
+   if (request == Pause){
+      return NotFinished;
+   }
+
    if (requestIsCancel(request)){
       COMPONENT_ADD(e, DestructionComponent, 0);
       return Finished;

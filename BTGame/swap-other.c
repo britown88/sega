@@ -14,7 +14,7 @@
 typedef struct {
    WorldView *view;
    Action *a;
-   bool started;
+   bool started, paused;
    Entity *placeHolder;
    Int2 dest;
 }SwapOtherRoutineData;
@@ -43,9 +43,20 @@ static CoroutineStatus _SwapOtherRoutine(SwapOtherRoutineData *data, CoroutineRe
    e = uc->user;
    target = tec->target;
 
+   if (request == Pause && !data->paused){
+
+      if (data->started){
+         if (entityGet(InterpolationComponent)(e)){
+            entityRemove(InterpolationComponent)(e);
+            entityUpdate(e);
+         }
+      }
+      data->paused = true;
+      return NotFinished;
+   }
+
    if (request == ForceCancel){
       //snap to and finish
-
       if (data->started){
          InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
 
@@ -82,6 +93,23 @@ static CoroutineStatus _SwapOtherRoutine(SwapOtherRoutineData *data, CoroutineRe
          //wrong comps
          return Finished;
       }
+
+      if (data->paused){
+         //resuming
+         data->paused = false;
+         if (data->started){
+            //re-add in the interp-comp
+            Int2 destPos;
+            screenPosFromGridXY(data->dest.x, data->dest.y, &destPos.x, &destPos.y);
+
+            COMPONENT_ADD(e, InterpolationComponent,
+               .destX = destPos.x,
+               .destY = destPos.y,
+               .time = 0.1f);
+            entityUpdate(e);
+         }
+      }
+
 
       if (entityGet(InterpolationComponent)(e)){
          //still moving, return

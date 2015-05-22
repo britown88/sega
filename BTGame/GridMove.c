@@ -10,7 +10,7 @@
 typedef struct {
    Action *a;
    GridManager *manager;
-   bool setTarget;
+   bool setTarget, paused;
 } GridMoveData;
 
 static GridMoveData *_gridMoveDataCreate(){
@@ -119,6 +119,16 @@ static CoroutineStatus _gridMove(GridMoveData *data, CoroutineRequest request){
       return Finished;
    }  
 
+   if (request == Pause && !data->paused){
+      //ensure proper state for pausing
+      data->paused = true;
+      if (entityGet(InterpolationComponent)(e)){
+         entityRemove(InterpolationComponent)(e);
+         entityUpdate(e);
+      }
+      return NotFinished;
+   }
+
    if (request == ForceCancel){
       //forced cancel, snap to target and end
       InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
@@ -132,6 +142,11 @@ static CoroutineStatus _gridMove(GridMoveData *data, CoroutineRequest request){
       }
       
       return Finished;
+   }
+
+   if (data->paused){
+      data->paused = false;
+      //resume from pause
    }
 
    if (entityGet(InterpolationComponent)(e)){
