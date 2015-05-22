@@ -125,14 +125,8 @@
     <ClCompile Include="CommandManager.c">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="GridMove.c">
-      <Filter>Source Files\Commands</Filter>
-    </ClCompile>
     <ClCompile Include="LogManager.c">
       <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="Attack.c">
-      <Filter>Source Files\Commands</Filter>
     </ClCompile>
     <ClCompile Include="CombatRoutineLibrary.c">
       <Filter>Source Files</Filter>
@@ -146,29 +140,11 @@
     <ClCompile Include="GameClock.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Ranged.c">
-      <Filter>Source Files\Commands</Filter>
-    </ClCompile>
-    <ClCompile Include="Projectile.c">
-      <Filter>Source Files\Commands</Filter>
-    </ClCompile>
     <ClCompile Include="DestructionManager.c">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="AIManager.c">
       <Filter>Source Files\Managers</Filter>
-    </ClCompile>
-    <ClCompile Include="NEWCMD.c">
-      <Filter>Source Files\Commands</Filter>
-    </ClCompile>
-    <ClCompile Include="Swap.c">
-      <Filter>Source Files\Commands</Filter>
-    </ClCompile>
-    <ClCompile Include="swap-other.c">
-      <Filter>Source Files\Commands</Filter>
-    </ClCompile>
-    <ClCompile Include="auto.c">
-      <Filter>Source Files\Commands</Filter>
     </ClCompile>
     <ClCompile Include="GridHelpers.c">
       <Filter>Source Files</Filter>
@@ -180,6 +156,45 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MagicMissile.c">
+      <Filter>Source Files\Abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Move.c">
+      <Filter>Source Files\Abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoAttack.c">
+      <Filter>Source Files\Abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="MeleeAttack.c">
+      <Filter>Source Files\Abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="RangedAttack.c">
+      <Filter>Source Files\Abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-melee.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-auto.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-gridmove.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-projectile.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-ranged.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-new.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-swap.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-swap-other.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Swap.c">
       <Filter>Source Files\Abilities</Filter>
     </ClCompile>
   </ItemGroup>

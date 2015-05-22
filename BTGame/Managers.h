@@ -41,9 +41,8 @@ void renderManagerRender(RenderManager *self, Frame *frame);
 
 CommandManager *createCommandManager(WorldView *view);
 void commandManagerUpdate(CommandManager *self);
-Action *commandManagerCreateAction(CommandManager *self);
-float commandManagerGetRoutineRange(CommandManager *self, StringView cmdID);
-float commandManagerGetSlotRange(CommandManager *self, Entity *e, size_t slot);
+float commandManagerGetAbilityRange(CommandManager *self, Entity *user, StringView cmdID);
+float commandManagerGetAbilitySlotRange(CommandManager *self, Entity *e, size_t slot);
 bool entityCommandQueueEmpty(Entity *e);
 bool entityShouldAutoAttack(Entity *e);
 void entityPauseCommand(Entity *e, Action *cmd);

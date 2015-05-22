@@ -221,21 +221,4 @@ Coroutine createCommandGridMove(Action *a, GridManager *manager){
    return out;
 }
 
-Action *createActionGridPosition(CommandManager *self, int x, int y){
-   Action *a = commandManagerCreateAction(self);
 
-   COMPONENT_ADD(a, ActionTargetPositionComponent, .x = x, .y = y);
-   entityUpdate(a);
-
-   return a;
-}
-
-Action *createActionGridTarget(CommandManager *self, Entity *e, float range){
-   Action *a = commandManagerCreateAction(self);
-   COMPONENT_ADD(a, ActionTargetEntityComponent, e);
-   COMPONENT_ADD(a, ActionRangeComponent, range);
-
-   entityUpdate(a);
-
-   return a;
-}

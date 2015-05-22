@@ -31,11 +31,10 @@ static CoroutineStatus _SwapOtherRoutine(SwapOtherRoutineData *data, CoroutineRe
    BTManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
-   ActionCombatComponent *cc = entityGet(ActionCombatComponent)(data->a);
    
    Entity *e, *target;
 
-   if (!uc || !tec || !cc){
+   if (!uc || !tec){
       //shouldnt get here but return done if we dont ahve the right components!      
       return Finished;
    }

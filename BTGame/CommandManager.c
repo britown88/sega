@@ -23,13 +23,19 @@
 #define ComponentT ActionTargetPositionComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT ActionAbilityNameComponent
+#include "Entities\ComponentImpl.h"
+
 #define ComponentT ActionRangeComponent
 #include "Entities\ComponentImpl.h"
 
-#define ComponentT ActionCombatComponent
+#define ComponentT ActionRoutineComponent
 #include "Entities\ComponentImpl.h"
 
 #define ComponentT ActionDeliveryComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT ActionInvalidComponent
 #include "Entities\ComponentImpl.h"
 
 #define VectorTPart ActionPtr
@@ -91,33 +97,24 @@ struct CommandManager_t{
    vec(PostRunTransient) *postRuns;
 };
 
-float commandManagerGetRoutineRange(CommandManager *self, StringView cmdID){
-   Action *a = createActionCombatRoutine(self, cmdID, NULL);
-   CombatRoutineGenerator c = combatRoutineLibraryGet(self->routines, cmdID);
-   float out = 0.0f;
-
-   entityDestroy(a);
-
-   if (!closureIsNull(CombatRoutineGenerator)(&c)){
-      Coroutine routine = closureCall(&c, self->view, a);
-      if (!closureIsNull(Coroutine)(&routine)){
-         ActionRangeComponent *arc = entityGet(ActionRangeComponent)(a);
-         if (arc){
-            out = arc->range;
-         }
-         closureDestroy(Coroutine)(&routine);
+float commandManagerGetAbilityRange(CommandManager *self, Entity *user, StringView cmdID){
+   Action *a = actionFromAbilityName(self, user, cmdID);
+   if (a){
+      ActionRangeComponent *arc = entityGet(ActionRangeComponent)(a);
+      if (arc){
+         return arc->range;
       }
    }
 
-   return out;
+   return 0.0f;
 
 }
 
-float commandManagerGetSlotRange(CommandManager *self, Entity *e, size_t slot){
-   CombatSlotsComponent *csc = entityGet(CombatSlotsComponent)(e);
+float commandManagerGetAbilitySlotRange(CommandManager *self, Entity *e, size_t slot){
+   AbilitySlotsComponent *csc = entityGet(AbilitySlotsComponent)(e);
 
-   if (slot < COMBAT_SLOT_COUNT && csc && csc->slots[slot]){
-      return commandManagerGetRoutineRange(self, csc->slots[slot]);
+   if (slot < ABILITY_SLOT_COUNT && csc && csc->slots[slot]){
+      return commandManagerGetAbilityRange(self, e, csc->slots[slot]);
    }
 
    return 0.0f;
@@ -127,21 +124,10 @@ float commandManagerGetSlotRange(CommandManager *self, Entity *e, size_t slot){
 static Coroutine _updateCommand(CommandManager *self, Action *a){
    ActionTargetPositionComponent *tpc = entityGet(ActionTargetPositionComponent)(a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(a);
-   ActionCombatComponent *cc = entityGet(ActionCombatComponent)(a);
+   ActionRoutineComponent *rc = entityGet(ActionRoutineComponent)(a);
 
-   if (cc){
-      StringView cmdID = NULL;
-
-      if (cc->type == ccSlot && cc->slot < COMBAT_SLOT_COUNT){
-         ActionUserComponent *uc = entityGet(ActionUserComponent)(a);
-         CombatSlotsComponent *csc = entityGet(CombatSlotsComponent)(uc->user);
-         if (csc && csc->slots[cc->slot]){
-            cmdID = csc->slots[cc->slot];
-         }
-      }      
-      else if (cc->type == ccRoutine){
-         cmdID = cc->routine;
-      }
+   if (rc){
+      StringView cmdID = rc->routine;
 
       if (cmdID){
          CombatRoutineGenerator c = combatRoutineLibraryGet(self->routines, cmdID);
@@ -215,10 +201,6 @@ void _onUpdate(CommandManager *self, Entity *e){
          entityRemove(TCommandComponent)(e);
       }
    }
-}
-
-Action *commandManagerCreateAction(CommandManager *self){
-   return entityCreate(self->actionSystem);
 }
 
 static void _updateEntityCommand(CommandManager *self, Entity *e){
@@ -418,4 +400,160 @@ bool entityCommandQueueEmpty(Entity *e){
 }
 bool entityShouldAutoAttack(Entity *e){
    return entityCommandQueueEmpty(e);
+}
+
+Action *actionCreateCustom(CommandManager *self){
+   return entityCreate(self->actionSystem);
+}
+
+Action *actionFromAbilityName(CommandManager *self, Entity *user, StringView name){
+   AbilityGenerator gen = abilityLibraryGet(self->abilities, name);
+   if (!closureIsNull(AbilityGenerator)(&gen)){
+      Action *ret = closureCall(&gen, self->view, user);
+      if (ret){
+         COMPONENT_ADD(ret, ActionAbilityNameComponent, name);
+         return ret;
+      }
+   }
+
+   return NULL;
+}
+Action *actionFromAbilitySlot(CommandManager *self, Entity *user, size_t slot){
+   AbilitySlotsComponent *asc = entityGet(AbilitySlotsComponent)(user);
+   if (asc && slot < ABILITY_SLOT_COUNT && asc->slots[slot]){
+      return actionFromAbilityName(self, user, asc->slots[slot]);
+   }
+
+   return NULL;
+}
+Action *actionTargetGridPosition(Action *self, int x, int y){
+   COMPONENT_ADD(self, ActionTargetPositionComponent, .x = x, .y = y);
+   entityUpdate(self);
+   return self;
+}
+Action *actionTargetEntity(Action *self, Entity *target){
+   COMPONENT_ADD(self, ActionTargetEntityComponent, target);
+   entityUpdate(self);
+   return self;
+}
+
+Action *actionSetRange(Action *self, float range){
+   COMPONENT_ADD(self, ActionRangeComponent, range);
+   entityUpdate(self);
+   return self;
+}
+
+void actionHelperPushSlot(CommandManager *self, Entity *user, Entity *target, size_t slot){
+   Action *a = actionFromAbilitySlot(self, user, slot);
+   if (a){
+      a = actionTargetEntity(a, target);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushCommand(user, a);
+      }
+   }
+}
+void actionHelperPushSlotAtPosition(CommandManager *self, Entity *user, int x, int y, size_t slot){
+   Action *a = actionFromAbilitySlot(self, user, slot);
+   if (a){
+      a = actionTargetGridPosition(a, x, y);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushCommand(user, a);
+      }
+   }
+}
+void actionHelperPushAbility(CommandManager *self, Entity *user, Entity *target, StringView ability){
+   Action *a = actionFromAbilityName(self, user, ability);
+   if (a){
+      a = actionTargetEntity(a, target);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushCommand(user, a);
+      }
+   }
+}
+void actionHelperPushAbilityAtPosition(CommandManager *self, Entity *user, int x, int y, StringView ability){
+   Action *a = actionFromAbilityName(self, user, ability);
+   if (a){
+      a = actionTargetGridPosition(a, x, y);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushCommand(user, a);
+      }
+   }
+}
+
+void actionHelperPushFrontSlot(CommandManager *self, Entity *user, Entity *target, size_t slot){
+   Action *a = actionFromAbilitySlot(self, user, slot);
+   if (a){
+      a = actionTargetEntity(a, target);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushFrontCommand(user, a);
+      }
+   }
+}
+void actionHelperPushFrontSlotAtPosition(CommandManager *self, Entity *user, int x, int y, size_t slot){
+   Action *a = actionFromAbilitySlot(self, user, slot);
+   if (a){
+      a = actionTargetGridPosition(a, x, y);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushFrontCommand(user, a);
+      }
+   }
+}
+void actionHelperPushFrontAbility(CommandManager *self, Entity *user, Entity *target, StringView ability){
+   Action *a = actionFromAbilityName(self, user, ability);
+   if (a){
+      a = actionTargetEntity(a, target);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushFrontCommand(user, a);
+      }
+   }
+}
+void actionHelperPushFrontAbilityAtPosition(CommandManager *self, Entity *user, int x, int y, StringView ability){
+   Action *a = actionFromAbilityName(self, user, ability);
+   if (a){
+      a = actionTargetGridPosition(a, x, y);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushFrontCommand(user, a);
+      }
+   }
+}
+
+void actionHelperPushMoveToEntity(CommandManager *self, Entity *user, Entity *target, float range){
+   Action *a = actionFromAbilityName(self, user, stringIntern("move"));
+   if (a){
+      a = actionTargetEntity(a, target);
+      a = actionSetRange(a, range);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushCommand(user, a);
+      }
+   }
+}
+void actionHelperPushMoveToPosition(CommandManager *self, Entity *user, int x, int y, float range){
+   Action *a = actionFromAbilityName(self, user, stringIntern("move"));
+   if (a){
+      a = actionTargetGridPosition(a, x, y);
+      a = actionSetRange(a, range);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushCommand(user, a);
+      }
+   }
+}
+void actionHelperPushFrontMoveToEntity(CommandManager *self, Entity *user, Entity *target, float range){
+   Action *a = actionFromAbilityName(self, user, stringIntern("move"));
+   if (a){
+      a = actionTargetEntity(a, target);
+      a = actionSetRange(a, range);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushFrontCommand(user, a);
+      }
+   }
+}
+void actionHelperPushFrontMoveToPosition(CommandManager *self, Entity *user, int x, int y, float range){
+   Action *a = actionFromAbilityName(self, user, stringIntern("move"));
+   if (a){
+      a = actionTargetGridPosition(a, x, y);
+      a = actionSetRange(a, range);
+      if (!entityGet(ActionInvalidComponent)(a)){
+         entityPushFrontCommand(user, a);
+      }
+   }
 }

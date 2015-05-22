@@ -40,11 +40,11 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
    BTManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
-   ActionCombatComponent *cc = entityGet(ActionCombatComponent)(data->a);
+   ActionAbilityNameComponent *anc = entityGet(ActionAbilityNameComponent)(data->a);
    Entity *e, *target;
    static int windup = 16;
 
-   if (!uc || !tec || !cc){
+   if (!uc || !tec || !anc){
       //shouldnt get here but return done if we dont ahve the right components!
       return Finished;
    }
@@ -93,20 +93,18 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
 
       if (entityIsDead(target)){
          if (entityShouldAutoAttack(e)){
-            entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
+            Action *cmd = actionFromAbilityName(managers->commandManager, e, stringIntern("auto"));
+            cmd = actionTargetEntity(cmd, NULL);
+            entityPushFrontCommand(e, cmd);
          }
          return Finished;
       }
 
       //we're not currently in an attack
       if (gridDistance(e, target) > 1){
-         Action *cmd = cc->type == ccSlot ?
-            createActionCombatSlot(managers->commandManager, cc->slot, target) :
-            createActionCombatRoutine(managers->commandManager, cc->routine, target);
-
          //not in melee range, we need to push a move command and return   
-         entityPushFrontCommand(e, cmd);
-         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f));
+         actionHelperPushFrontAbility(managers->commandManager, e, target, anc->ability);
+         actionHelperPushFrontMoveToEntity(managers->commandManager, e, target, 1.0f);
 
          return Finished;
       }
@@ -189,7 +187,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
       if (!entityGet(InterpolationComponent)(e)){
 
          if (!requestIsCancel(request)){
-            entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), target));
+            actionHelperPushFrontAbility(managers->commandManager, e, target, stringIntern("auto"));
          }
 
          //we're done!
@@ -220,22 +218,4 @@ CombatRoutineGenerator buildMeleeAttackRoutine(){
    CombatRoutineGenerator out;
    closureInit(CombatRoutineGenerator)(&out, NULL, (CombatRoutineGeneratorFunc)&_buildMelee, NULL);
    return out;
-}
-
-Action *createActionCombatSlot(CommandManager *self, size_t slot, Entity *e){
-   Action *a = commandManagerCreateAction(self);
-   COMPONENT_ADD(a, ActionTargetEntityComponent, e);
-   COMPONENT_ADD(a, ActionCombatComponent, ccSlot, .slot = slot);
-   entityUpdate(a);
-
-   return a;
-}
-
-Action *createActionCombatRoutine(CommandManager *self, StringView routine, Entity *e){
-   Action *a = commandManagerCreateAction(self);
-   COMPONENT_ADD(a, ActionTargetEntityComponent, e);
-   COMPONENT_ADD(a, ActionCombatComponent, ccRoutine, .routine = routine);
-   entityUpdate(a);
-
-   return a;
 }

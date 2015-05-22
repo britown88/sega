@@ -12,14 +12,13 @@
 #include "Combat.h"
 #include "GameClock.h"
 
-#define PROJECT_RANGE 5
-
 typedef struct {
    WorldView *view;
    Action *a;
    CombatAction *action;
    long startTime, pausedTime;
    bool paused;
+   float range;
 }BowRoutineData;
 
 static BowRoutineData *bowRoutineDataCreate(){
@@ -34,10 +33,10 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
    BTManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
-   ActionCombatComponent *cc = entityGet(ActionCombatComponent)(data->a);
+   ActionAbilityNameComponent *anc = entityGet(ActionAbilityNameComponent)(data->a);
    Entity *e, *target;
 
-   if (!uc || !tec || !cc){
+   if (!uc || !tec || !anc){
       //shouldnt get here but return done if we dont ahve the right components!
       return Finished;
    }
@@ -60,27 +59,24 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
 
    if (entityIsDead(target)){
       if (entityShouldAutoAttack(e)){
-         entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
+         actionHelperPushFrontAbility(managers->commandManager, e, NULL, stringIntern("auto"));
       }
       return Finished;
    }
 
    //we're not currently in an attack
-   if (gridDistance(e, target) > PROJECT_RANGE){
-      Action *cmd = cc->type == ccSlot ?
-         createActionCombatSlot(managers->commandManager, cc->slot, target) :
-         createActionCombatRoutine(managers->commandManager, cc->routine, target);
+   if (gridDistance(e, target) > data->range){
 
-      //not in melee range, we need to push a move command and return   
-      entityPushFrontCommand(e, cmd);
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, PROJECT_RANGE));
+      //not in bow range, we need to push a move command and return
+      actionHelperPushFrontAbility(managers->commandManager, e, target, anc->ability);
+      actionHelperPushFrontMoveToEntity(managers->commandManager, e, target, data->range);
       return Finished;
    }
    else{
       if (data->startTime == 0){
          data->action = combatManagerCreateAction(managers->combatManager, e, target);
          COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 30.0f);
-         COMPONENT_ADD(data->action, CActionRangeComponent, .range = PROJECT_RANGE);
+         COMPONENT_ADD(data->action, CActionRangeComponent, .range = data->range);
          COMPONENT_ADD(data->action, CActionDamageTypeComponent, .type = DamageTypePhysical);
 
          data->action = combatManagerDeclareAction(managers->combatManager, data->action);
@@ -121,12 +117,14 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
             entityUpdate(projectile);
 
             //attach our modified combataction to the projectile's command
-            a = createActionCombatRoutine(managers->commandManager, stringIntern("projectile"), target);
+            a = actionCreateCustom(managers->commandManager);
+            COMPONENT_ADD(a, ActionTargetEntityComponent, target);
+            COMPONENT_ADD(a, ActionRoutineComponent, stringIntern("projectile"));
             COMPONENT_ADD(a, ActionDeliveryComponent, data->action);
             entityPushCommand(projectile, a);
 
             if (!requestIsCancel(request)){
-               entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), target));
+               actionHelperPushFrontAbility(managers->commandManager, e, target, stringIntern("auto"));
             }
 
             return Finished;
@@ -140,11 +138,14 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
 static Coroutine _buildBow(ClosureData data, WorldView *view, Action *a){
    Coroutine out;
    BowRoutineData *newData = bowRoutineDataCreate();
+   ActionRangeComponent *arc = entityGet(ActionRangeComponent)(a);
+
    newData->view = view;
    newData->a = a;
-   closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_bowRoutine, &_bowRoutineDestroy);
+   newData->range = arc ? arc->range : 0.0f;
 
-   COMPONENT_ADD(a, ActionRangeComponent, PROJECT_RANGE);
+
+   closureInit(Coroutine)(&out, newData, (CoroutineFunc)&_bowRoutine, &_bowRoutineDestroy);
 
    return out;
 }

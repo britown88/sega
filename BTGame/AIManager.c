@@ -51,7 +51,7 @@ static void _updateEntity(AIManager *self, Entity *e){
       size_t teamID = !tc->teamID;
       Entity *target = gridFindClosestEntity(managers->gridManager, gridIndexFromXY(gc->x, gc->y), teamID, INFF);
       if (target){
-         entityPushCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
+         actionHelperPushSlot(managers->commandManager, e, target, 0);
       }
    }
 }

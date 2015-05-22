@@ -133,13 +133,13 @@ typedef struct {
 #define ComponentT CommandComponent
 #include "Entities\ComponentDecl.h"
 
-#define COMBAT_SLOT_COUNT 2
+#define ABILITY_SLOT_COUNT 2
 
 typedef struct {
-   StringView slots[COMBAT_SLOT_COUNT];
-} CombatSlotsComponent;
+   StringView slots[ABILITY_SLOT_COUNT];
+} AbilitySlotsComponent;
 
-#define ComponentT CombatSlotsComponent
+#define ComponentT AbilitySlotsComponent
 #include "Entities\ComponentDecl.h"
 
 typedef struct {

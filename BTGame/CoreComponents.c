@@ -50,7 +50,7 @@ static void PolygonComponentDestroy(PolygonComponent *self){
 #define ComponentT CommandComponent
 #include "Entities\ComponentImpl.h"
 
-#define ComponentT CombatSlotsComponent
+#define ComponentT AbilitySlotsComponent
 #include "Entities\ComponentImpl.h"
 
 #define ComponentT DestructionComponent

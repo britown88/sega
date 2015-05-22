@@ -47,7 +47,7 @@ static CoroutineStatus _AutoRoutine(AutoRoutineData *data, CoroutineRequest requ
    }
 
    e = uc->user;
-   range = commandManagerGetSlotRange(managers->commandManager, e, 0);
+   range = commandManagerGetAbilitySlotRange(managers->commandManager, e, 0);
    if (range > 0.0f){
       GridComponent *gc = entityGet(GridComponent)(e);
       TeamComponent *tc = entityGet(TeamComponent)(e);
@@ -62,7 +62,7 @@ static CoroutineStatus _AutoRoutine(AutoRoutineData *data, CoroutineRequest requ
          }         
 
          if (target){
-            entityPushFrontCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
+            actionHelperPushFrontSlot(managers->commandManager, e, target, 0);
          }
       }
    }

@@ -154,8 +154,7 @@ static void _handleMouse(BoardState *state){
                   if (!shift){
                      entityCancelAllCommands(*e);
                   }
-
-                  entityPushCommand(*e, createActionCombatSlot(managers->commandManager, special ? 1 : 0, *vecAt(EntityPtr)(clickedEntities, 0)));
+                  actionHelperPushSlot(managers->commandManager, *e, *vecAt(EntityPtr)(clickedEntities, 0), special ? 1 : 0);
                   special = false;
                });               
             }
@@ -165,16 +164,21 @@ static void _handleMouse(BoardState *state){
                { scTeam, .teamID = 0 });
 
                if (!vecIsEmpty(EntityPtr)(clickedEntities)){
-                  vecForEach(EntityPtr, e, selectedEntities, {
-                     Action *cmd = special ?
-                        createActionCombatSlot(managers->commandManager, 1, *vecAt(EntityPtr)(clickedEntities, 0)) :
-                        createActionGridTarget(managers->commandManager, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f);
-                     special = false;
+                  vecForEach(EntityPtr, e, selectedEntities, {                     
                      if (!shift){
                         entityCancelAllCommands(*e);
                      }
 
-                     entityPushCommand(*e, cmd);
+                     if (special){
+                        actionHelperPushSlot(managers->commandManager, *e, *vecAt(EntityPtr)(clickedEntities, 0), 1);
+                     }
+                     else{
+                        actionHelperPushMoveToEntity(managers->commandManager, *e, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f);
+                     }
+
+                     special = false;
+
+
                   });
                }
                else if (gridIndex < INF){
@@ -185,7 +189,8 @@ static void _handleMouse(BoardState *state){
                      if (!shift){
                         entityCancelAllCommands(*e);
                      }
-                     entityPushCommand(*e, createActionGridPosition(managers->commandManager, gx, gy));
+
+                     actionHelperPushMoveToPosition(managers->commandManager, *e, gx, gy, 0.0f);
                   });
                }
             }
@@ -219,7 +224,7 @@ void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
    COMPONENT_ADD(e, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
-   COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(!AI ? "bow" : "melee"), stringIntern("swap") });
+   COMPONENT_ADD(e, AbilitySlotsComponent, .slots = { stringIntern(!AI ? "ranged" : "melee"), stringIntern("swap") });
    if (true){
       COMPONENT_ADD(e, AIComponent, 0);
    }

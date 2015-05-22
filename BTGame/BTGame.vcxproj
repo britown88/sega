@@ -97,8 +97,9 @@
     <ClCompile Include="AIManager.c" />
     <ClCompile Include="AllAbilities.c" />
     <ClCompile Include="AllCombatRoutines.c" />
-    <ClCompile Include="Attack.c" />
-    <ClCompile Include="auto.c" />
+    <ClCompile Include="cmd-melee.c" />
+    <ClCompile Include="cmd-auto.c" />
+    <ClCompile Include="AutoAttack.c" />
     <ClCompile Include="BoardState.c" />
     <ClCompile Include="BT.c" />
     <ClCompile Include="CombatManager.c" />
@@ -110,20 +111,24 @@
     <ClCompile Include="GameClock.c" />
     <ClCompile Include="GameState.c" />
     <ClCompile Include="GridHelpers.c" />
-    <ClCompile Include="GridMove.c" />
+    <ClCompile Include="cmd-gridmove.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="CommandManager.c" />
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LogManager.c" />
     <ClCompile Include="MagicMissile.c" />
-    <ClCompile Include="Projectile.c" />
-    <ClCompile Include="Ranged.c" />
+    <ClCompile Include="MeleeAttack.c" />
+    <ClCompile Include="Move.c" />
+    <ClCompile Include="cmd-projectile.c" />
+    <ClCompile Include="cmd-ranged.c" />
+    <ClCompile Include="RangedAttack.c" />
     <ClCompile Include="RenderManager.c" />
     <ClCompile Include="MeshRendering.c" />
     <ClCompile Include="SelectionManager.c" />
-    <ClCompile Include="NEWCMD.c" />
-    <ClCompile Include="swap-other.c" />
+    <ClCompile Include="cmd-new.c" />
+    <ClCompile Include="cmd-swap-other.c" />
+    <ClCompile Include="cmd-swap.c" />
     <ClCompile Include="Swap.c" />
   </ItemGroup>
   <ItemGroup>

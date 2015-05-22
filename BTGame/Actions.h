@@ -32,24 +32,21 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
+   StringView ability;
+}ActionAbilityNameComponent;
+#define ComponentT ActionAbilityNameComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
    float range;
 }ActionRangeComponent;
 #define ComponentT ActionRangeComponent
 #include "Entities\ComponentDecl.h"
 
-typedef enum {
-   ccSlot,
-   ccRoutine
-} CombatComponentType;
-
 typedef struct {
-   CombatComponentType type;
-   union {
-      size_t slot;
-      StringView routine;
-   };
-}ActionCombatComponent;
-#define ComponentT ActionCombatComponent
+   StringView routine;
+}ActionRoutineComponent;
+#define ComponentT ActionRoutineComponent
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
@@ -58,8 +55,33 @@ typedef struct {
 #define ComponentT ActionDeliveryComponent
 #include "Entities\ComponentDecl.h"
 
-//put your action creating function decls here
-Action *createActionGridPosition(CommandManager *self, int x, int y);
-Action *createActionGridTarget(CommandManager *self, Entity *e, float range);
-Action *createActionCombatSlot(CommandManager *self, size_t slot, Entity *e);
-Action *createActionCombatRoutine(CommandManager *self, StringView routine, Entity *e);
+typedef struct {
+   EMPTY_STRUCT;
+}ActionInvalidComponent;
+#define ComponentT ActionInvalidComponent
+#include "Entities\ComponentDecl.h"
+
+Action *actionCreateCustom(CommandManager *self);
+Action *actionFromAbilityName(CommandManager *self, Entity *user, StringView name);
+Action *actionFromAbilitySlot(CommandManager *self, Entity *user, size_t slot);
+
+Action *actionTargetGridPosition(Action *self, int x, int y);
+Action *actionTargetEntity(Action *self, Entity *target);
+Action *actionSetRange(Action *self, float range);
+
+//helpers
+void actionHelperPushSlot(CommandManager *self, Entity *user, Entity *target, size_t slot);
+void actionHelperPushSlotAtPosition(CommandManager *self, Entity *user, int x, int y, size_t slot);
+void actionHelperPushAbility(CommandManager *self, Entity *user, Entity *target, StringView ability);
+void actionHelperPushAbilityAtPosition(CommandManager *self, Entity *user, int x, int y, StringView ability);
+
+void actionHelperPushFrontSlot(CommandManager *self, Entity *user, Entity *target, size_t slot);
+void actionHelperPushFrontSlotAtPosition(CommandManager *self, Entity *user, int x, int y, size_t slot);
+void actionHelperPushFrontAbility(CommandManager *self, Entity *user, Entity *target, StringView ability);
+void actionHelperPushFrontAbilityAtPosition(CommandManager *self, Entity *user, int x, int y, StringView ability);
+
+void actionHelperPushMoveToEntity(CommandManager *self, Entity *user, Entity *target, float range);
+void actionHelperPushMoveToPosition(CommandManager *self, Entity *user, int x, int y, float range);
+void actionHelperPushFrontMoveToEntity(CommandManager *self, Entity *user, Entity *target, float range);
+void actionHelperPushFrontMoveToPosition(CommandManager *self, Entity *user, int x, int y, float range);
+
