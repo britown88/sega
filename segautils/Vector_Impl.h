@@ -154,6 +154,10 @@ void vecRemove(T)(VEC_NAME *self, T*item){
 
 void vecRemoveAt(T)(VEC_NAME *self, size_t index){
    if (index < self->count){
+      if (self->destroy){
+         self->destroy(self->data + index);
+      }
+
       memcpy(self->data + index,
          self->data + index + 1,
          sizeof(T) * (self->count-- - 1 - index));      

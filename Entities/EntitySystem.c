@@ -216,12 +216,15 @@ ComponentList *entitySystemGetCompList(EntitySystem *self, size_t rtti){
    return out;
 }
 
+#define SEGASSERT(...) if(!(__VA_ARGS__)){ int a = *(int*)0; }
 
 Entity *entityCreate(EntitySystem *system){
    Entity *out;
 
    if (priorityQueueIsEmpty(system->eQueue)){
       int ID = system->eCount++;
+
+      SEGASSERT(ID < MAX_ENTITIES);
       
       out = system->entityPool + ID;
       out->system = system;      

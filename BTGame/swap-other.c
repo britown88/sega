@@ -91,6 +91,10 @@ static CoroutineStatus _SwapOtherRoutine(SwapOtherRoutineData *data, CoroutineRe
 
       if (!gc || !gc2){
          //wrong comps
+         if (data->started){
+            COMPONENT_ADD(data->placeHolder, DestructionComponent, 0);
+            entityUpdate(data->placeHolder);
+         }
          return Finished;
       }
 

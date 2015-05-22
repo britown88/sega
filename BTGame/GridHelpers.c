@@ -1,5 +1,6 @@
 #include "GridHelpers.h"
 #include "CoreComponents.h"
+#include "Combat.h"
 #include <math.h>
 
 typedef struct{
@@ -33,7 +34,7 @@ static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, Gr
    if (entities && !vecIsEmpty(EntityPtr)(entities)){
       vecForEach(EntityPtr, e, entities, {
          TeamComponent *tc = entityGet(TeamComponent)(*e);
-         if (tc && tc->teamID == data->targetID){
+         if (!entityIsDead(*e) && tc && tc->teamID == data->targetID){
             data->found = *e;
             return gridNodeGetScore(current);
          }

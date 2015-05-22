@@ -37,10 +37,30 @@ static void _board(BoardState *state, Type *t, Message m){
    else if (t == GetRTTI(GameStateRender)){ _boardRender(state, m); }
 }
 
+static void _createTestEntity(EntitySystem *system, int x, int y, bool AI);
+
+static long spawnTimer = 0;
+
 void _boardUpdate(BoardState *state, GameStateUpdate *m){
    BTManagers *managers = state->view->managers;
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
+
+   if (spawnTimer == 0){
+      spawnTimer = gameClockGetTime(state->view->gameClock);
+   }
+
+   if (gameClockGetTime(state->view->gameClock) - spawnTimer > 2000){
+      spawnTimer = gameClockGetTime(state->view->gameClock);
+
+      if (vecIsEmpty(EntityPtr)(gridManagerEntitiesAt(managers->gridManager, gridIndexFromXY(0, 0)))){
+         _createTestEntity(state->view->entitySystem, 0, 0, false);
+      }
+
+      if (vecIsEmpty(EntityPtr)(gridManagerEntitiesAt(managers->gridManager, gridIndexFromXY(15, 10)))){
+         _createTestEntity(state->view->entitySystem, 15, 10, true);
+      }
+   }
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
    interpolationManagerUpdate(managers->interpolationManager);
@@ -169,8 +189,6 @@ static void _handleMouse(BoardState *state){
          break;
       }
 
-      
-
       if (event.action == SegaMouse_Scrolled){
          //size += e.pos.y;
       }
@@ -187,8 +205,7 @@ void _boardRender(BoardState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
-static byte foo = 0;
-static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
+void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    Entity *e = entityCreate(system);
 
    COMPONENT_ADD(e, PositionComponent, 0, 0);
@@ -200,7 +217,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
    COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(!AI ? "bow" : "melee"), stringIntern("swap") });
    if (true){
-      //COMPONENT_ADD(e, AIComponent, 0);
+      COMPONENT_ADD(e, AIComponent, 0);
    }
    //COMPONENT_ADD(e, WanderComponent, 1);
 

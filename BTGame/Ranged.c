@@ -22,15 +22,11 @@ typedef struct {
    bool paused;
 }BowRoutineData;
 
-static int refcount = 0;
-
 static BowRoutineData *bowRoutineDataCreate(){
-   refcount += 1;
    return checkedCalloc(1, sizeof(BowRoutineData));
 }
 
 static void _bowRoutineDestroy(BowRoutineData *self){
-   refcount -= 1;
    checkedFree(self);
 }
 

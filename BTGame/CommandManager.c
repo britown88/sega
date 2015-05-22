@@ -94,6 +94,8 @@ float commandManagerGetRoutineRange(CommandManager *self, StringView cmdID){
    CombatRoutineGenerator c = combatRoutineLibraryGet(self->routines, cmdID);
    float out = 0.0f;
 
+   entityDestroy(a);
+
    if (!closureIsNull(CombatRoutineGenerator)(&c)){
       Coroutine routine = closureCall(&c, self->view, a);
       if (!closureIsNull(Coroutine)(&routine)){
@@ -249,7 +251,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
       //this allows insta-routines to all be in 1 frame
       while (ret == Finished && !vecIsEmpty(ActionPtr)(cc->actions)){
          tcc->commandReady = false;
-         cc->request = Continue;
+         
 
          //cleanup the current one
          closureDestroy(Coroutine)(&tcc->command);
@@ -264,6 +266,7 @@ static void _updateEntity(CommandManager *self, Entity *e){
          }
          else{
             //update to the next one
+            cc->request = Continue;
             _updateEntityCommand(self, e);
          }
 
