@@ -201,9 +201,9 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
    COMPONENT_ADD(e, CombatSlotsComponent, .slots = { stringIntern(!AI ? "bow" : "melee"), stringIntern("swap") });
-   //if (true){
-      //COMPONENT_ADD(e, AIComponent, 0);
-   //}
+   if (AI){
+      COMPONENT_ADD(e, AIComponent, 0);
+   }
    //COMPONENT_ADD(e, WanderComponent, 1);
 
    COMPONENT_ADD(e, StatsComponent, .strength = 25, .agility = 25, .intelligence = 25);

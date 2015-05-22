@@ -38,15 +38,21 @@
 #include "segautils\Vector_Impl.h"
 
 typedef struct{
-   Coroutine command; 
+   Coroutine command;
+   vec(Coroutine) *pausedCommands;
    bool commandReady;
    size_t runningIndex;//0 by  default
 }TCommandComponent;
 
 static void TCommandComponentDestroy(TCommandComponent *self){
    if (self->commandReady){
-      closureDestroy(Coroutine)(&self->command);
+      closureDestroy(Coroutine)(&self->command);      
    }
+
+   vecForEach(Coroutine, c, self->pausedCommands, {
+      closureDestroy(Coroutine)(c);
+   });
+   vecDestroy(Coroutine)(self->pausedCommands);
 }
 
 #define COMP_DESTROY_FUNC TCommandComponentDestroy
@@ -61,10 +67,16 @@ typedef struct {
 #define VectorT PostRunTransient
 #include "segautils\Vector_Create.h"
 
+static void _addNewTCommandComponent(Entity *e){
+   TCommandComponent tcc = { 0 };
+   tcc.pausedCommands = vecCreate(Coroutine)(NULL);
+   entityAdd(TCommandComponent)(e, &tcc);
+}
+
 static void _postRunDestroy(PostRunTransient *self){
 
    if (self->add){
-      COMPONENT_ADD(self->e, TCommandComponent, 0);
+      _addNewTCommandComponent(self->e);
    }
    else{
       entityRemove(TCommandComponent)(self->e);
@@ -187,7 +199,7 @@ void _onUpdate(CommandManager *self, Entity *e){
          vecPushBack(PostRunTransient)(self->postRuns, &(PostRunTransient){.e = e, .add = true});
       }
       else{
-         COMPONENT_ADD(e, TCommandComponent, 0);
+         _addNewTCommandComponent(e);
       }
       
    }
@@ -245,10 +257,19 @@ static void _updateEntity(CommandManager *self, Entity *e){
 
          //cleanup the current one
          closureDestroy(Coroutine)(&tcc->command);
-         vecRemoveAt(ActionPtr)(cc->actions, tcc->runningIndex);   
+         vecRemoveAt(ActionPtr)(cc->actions, tcc->runningIndex);  
 
-         //update to the next one
-         _updateEntityCommand(self, e);
+         //check to see if a paused routine is waiting
+         if (!vecIsEmpty(Coroutine)(tcc->pausedCommands)){
+            //we have paused actions, pop one off and use it instead of creating a new one
+            tcc->command = *vecBack(Coroutine)(tcc->pausedCommands);
+            vecPopBack(Coroutine)(tcc->pausedCommands);
+            tcc->commandReady = !closureIsNull(Coroutine)(&tcc->command);
+         }
+         else{
+            //update to the next one
+            _updateEntityCommand(self, e);
+         }
 
          //if theres one avail, run it
          if (tcc->commandReady){
@@ -294,7 +315,8 @@ void entityPauseCommand(Entity *e, Action *cmd){
    tcc = entityGet(TCommandComponent)(e);
 
    if (tcc && tcc->commandReady){
-      closureCall(&tcc->command, Pause);      
+      closureCall(&tcc->command, Pause);     
+      vecPushBack(Coroutine)(tcc->pausedCommands, &tcc->command);
 
       //weve paused so invalidate the list back at 0
       tcc->runningIndex -= 1;
