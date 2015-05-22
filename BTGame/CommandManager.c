@@ -31,9 +31,6 @@
 #define ComponentT ActionDeliveryComponent
 #include "Entities\ComponentImpl.h"
 
-#define ComponentT ActionSetPrimaryTargetComponent
-#include "Entities\ComponentImpl.h"
-
 #define VectorTPart ActionPtr
 #include "segautils\Vector_Impl.h"
 
@@ -154,8 +151,7 @@ static Coroutine _updateCommand(CommandManager *self, Action *a){
    //we didnt find a coroutine to run so look and see if we 
    //have movement we can pass to a move command
    if (tpc || tec){
-      bool setPrimary = entityGet(ActionSetPrimaryTargetComponent)(a) != NULL;
-      return createCommandGridMove(a, self->view->managers->gridManager, setPrimary);
+      return createCommandGridMove(a, self->view->managers->gridManager);
    }
 
    //we aint found shit
@@ -398,3 +394,20 @@ void entityClearCommands(Entity *e){
    }
 }
 
+bool entityCommandQueueEmpty(Entity *e){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   TCommandComponent *tcc = entityGet(TCommandComponent)(e);
+
+   if (cc && tcc){
+      size_t actionCount = vecSize(ActionPtr)(cc->actions);
+      bool noActionsQueued = actionCount <= 1 + tcc->runningIndex;
+      bool noPausedActions = vecIsEmpty(Coroutine)(tcc->pausedCommands);
+
+      return noActionsQueued && noPausedActions;
+   }
+
+   return true;
+}
+bool entityShouldAutoAttack(Entity *e){
+   return entityCommandQueueEmpty(e);
+}

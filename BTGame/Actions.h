@@ -32,12 +32,6 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
-   EMPTY_STRUCT;
-}ActionSetPrimaryTargetComponent;
-#define ComponentT ActionSetPrimaryTargetComponent
-#include "Entities\ComponentDecl.h"
-
-typedef struct {
    float range;
 }ActionRangeComponent;
 #define ComponentT ActionRangeComponent
@@ -65,7 +59,7 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 //put your action creating function decls here
-Action *createActionGridPosition(CommandManager *self, int x, int y, bool setPrimary);
-Action *createActionGridTarget(CommandManager *self, Entity *e, float range, bool setPrimary);
+Action *createActionGridPosition(CommandManager *self, int x, int y);
+Action *createActionGridTarget(CommandManager *self, Entity *e, float range);
 Action *createActionCombatSlot(CommandManager *self, size_t slot, Entity *e);
 Action *createActionCombatRoutine(CommandManager *self, StringView routine, Entity *e);

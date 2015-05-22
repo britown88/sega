@@ -62,11 +62,12 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
       }
    }
 
-   if (entityIsDead(target) || requestIsCancel(request)){
+   if (entityIsDead(target)){
+      if (entityShouldAutoAttack(e)){
+         entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
+      }
       return Finished;
    }
-
-   entitySetPrimaryTargetEntity(e, target);
 
    //we're not currently in an attack
    if (gridDistance(e, target) > PROJECT_RANGE){
@@ -76,7 +77,7 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
 
       //not in melee range, we need to push a move command and return   
       entityPushFrontCommand(e, cmd);
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, PROJECT_RANGE, false));
+      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, PROJECT_RANGE));
       return Finished;
    }
    else{
@@ -114,8 +115,6 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
                return Finished;
             }
 
-            
-
             projectile = entityCreate(data->view->entitySystem);
 
             //we're in range, our declaration's been accepted, lets go!
@@ -129,6 +128,10 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
             a = createActionCombatRoutine(managers->commandManager, stringIntern("projectile"), target);
             COMPONENT_ADD(a, ActionDeliveryComponent, data->action);
             entityPushCommand(projectile, a);
+
+            if (!requestIsCancel(request)){
+               entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), target));
+            }
 
             return Finished;
          }         

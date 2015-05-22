@@ -28,12 +28,18 @@ static void _AutoRoutineDestroy(AutoRoutineData *self){
 static CoroutineStatus _AutoRoutine(AutoRoutineData *data, CoroutineRequest request){
    BTManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
+   ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
    float range = 0.0;
    Entity *e;
+   Entity *target = NULL;
 
    if (!uc){
       //bail out if we dont hav a user   
       return Finished;
+   }
+
+   if (tec && tec->target && !entityIsDead(tec->target)){
+      target = tec->target;
    }
 
    if (request == Pause){
@@ -46,14 +52,17 @@ static CoroutineStatus _AutoRoutine(AutoRoutineData *data, CoroutineRequest requ
       GridComponent *gc = entityGet(GridComponent)(e);
       TeamComponent *tc = entityGet(TeamComponent)(e);
       if (gc && tc){
-         Entity *target = gridFindClosestEntity(
-            managers->gridManager,
-            gridIndexFromXY(gc->x, gc->y),
-            !tc->teamID,
-            range);
+
+         if (!target || gridDistance(e, target) > range){
+            target = gridFindClosestEntity(
+               managers->gridManager,
+               gridIndexFromXY(gc->x, gc->y),
+               !tc->teamID,
+               range);
+         }         
 
          if (target){
-            entitySetPrimaryTargetEntity(e, target);
+            entityPushFrontCommand(e, createActionCombatSlot(managers->commandManager, 0, target));
          }
       }
    }

@@ -24,6 +24,7 @@ typedef struct{
 #define ComponentT StatModsComponent
 #include "Entities\ComponentDecl.h"
 
+bool entitiesAreEnemies(Entity *e1, Entity *e2);
 bool entityIsDead(Entity *e);
 float entityGetMaxHP(Entity *e);
 float entityGetStrength(Entity *e);

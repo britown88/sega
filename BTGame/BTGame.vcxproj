@@ -113,7 +113,6 @@
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LogManager.c" />
-    <ClCompile Include="PrimaryTargetManager.c" />
     <ClCompile Include="Projectile.c" />
     <ClCompile Include="Ranged.c" />
     <ClCompile Include="RenderManager.c" />

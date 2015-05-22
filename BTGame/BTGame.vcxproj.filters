@@ -161,9 +161,6 @@
     <ClCompile Include="swap-other.c">
       <Filter>Source Files\Commands</Filter>
     </ClCompile>
-    <ClCompile Include="PrimaryTargetManager.c">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
     <ClCompile Include="auto.c">
       <Filter>Source Files\Commands</Filter>
     </ClCompile>

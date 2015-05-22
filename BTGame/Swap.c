@@ -62,8 +62,6 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
       return Finished;
    }
 
-   entitySetPrimaryTargetEntity(e, target);
-
    //we're not currently in an attack
    if (gridDistance(e, target) > SWAP_RANGE){
       Action *cmd = cc->type == ccSlot ?
@@ -72,7 +70,7 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
 
       //not in melee range, we need to push a move command and return   
       entityPushFrontCommand(e, cmd);
-      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, SWAP_RANGE, false));
+      entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, SWAP_RANGE));
       return Finished;
    }
    else{
@@ -108,22 +106,16 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
 
             combatManagerExecuteAction(managers->combatManager, data->action);
 
-            //completely wipe all of the targets actions
-            //entityPauseCommand(target);
-            //entityForceCancelAllCommands(target);
-            //entityClearPrimaryTarget(target);
+            a = createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), e);
 
-            //attach our modified combataction to the projectile's command
-            a = createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), e);            
-            //entityPushFrontCommand(target, a);
+            entityForceCancelAllCommands(target);
+            entityPushFrontCommand(target, a);            
 
-            entityPauseCommand(target, a);
-
-            //kill our target focus and push an autoattack for after the swap
-            entityClearPrimaryTarget(e);
-            //entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
-
-            //pushfront our own swap
+            //pushfront our own commands, we want to swap and then do an auto attack
+            if (entityShouldAutoAttack(e) && entitiesAreEnemies(e, target)){
+               entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), target));
+            }
+            
             entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("swap-other"), target));
 
             return Finished;

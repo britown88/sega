@@ -200,6 +200,16 @@ void combatManagerExecuteAction(CombatManager *self, CombatAction *action){
       //logManagerPushMessage(self->view->managers->logManager, "Hit for %0.2f!", dc->damage);
    }
 }
+bool entitiesAreEnemies(Entity *e1, Entity *e2){
+   TeamComponent *tc1 = entityGet(TeamComponent)(e1);
+   TeamComponent *tc2 = entityGet(TeamComponent)(e2);
+
+   if (tc1 && tc2){
+      return tc1->teamID != tc2->teamID;
+   }
+
+   return false;
+}
 
 bool entityIsDead(Entity *e){
    TCombatComponent *tcc = entityGet(TCombatComponent)(e);

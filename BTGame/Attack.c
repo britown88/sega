@@ -92,10 +92,11 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
    if (data->stage == NotAttacked){
 
       if (entityIsDead(target)){
+         if (entityShouldAutoAttack(e)){
+            entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), NULL));
+         }
          return Finished;
       }
-
-      entitySetPrimaryTargetEntity(e, target);
 
       //we're not currently in an attack
       if (gridDistance(e, target) > 1){
@@ -105,7 +106,7 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
 
          //not in melee range, we need to push a move command and return   
          entityPushFrontCommand(e, cmd);
-         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f, false));
+         entityPushFrontCommand(e, createActionGridTarget(managers->commandManager, target, 1.0f));
 
          return Finished;
       }
@@ -186,6 +187,11 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
    }
    else {
       if (!entityGet(InterpolationComponent)(e)){
+
+         if (!requestIsCancel(request)){
+            entityPushFrontCommand(e, createActionCombatRoutine(managers->commandManager, stringIntern("auto"), target));
+         }
+
          //we're done!
          return Finished;
          
