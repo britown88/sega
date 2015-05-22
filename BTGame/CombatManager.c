@@ -199,6 +199,8 @@ void combatManagerExecuteAction(CombatManager *self, CombatAction *action){
       
       //logManagerPushMessage(self->view->managers->logManager, "Hit for %0.2f!", dc->damage);
    }
+
+   entityDestroy(action);
 }
 bool entitiesAreEnemies(Entity *e1, Entity *e2){
    TeamComponent *tc1 = entityGet(TeamComponent)(e1);
