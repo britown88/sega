@@ -73,6 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Abilities.h" />
     <ClInclude Include="BT.h" />
     <ClInclude Include="Combat.h" />
     <ClInclude Include="CombatConstants.h" />
@@ -92,7 +93,9 @@
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AbilityLibrary.c" />
     <ClCompile Include="AIManager.c" />
+    <ClCompile Include="AllAbilities.c" />
     <ClCompile Include="AllCombatRoutines.c" />
     <ClCompile Include="Attack.c" />
     <ClCompile Include="auto.c" />
@@ -113,6 +116,7 @@
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LogManager.c" />
+    <ClCompile Include="MagicMissile.c" />
     <ClCompile Include="Projectile.c" />
     <ClCompile Include="Ranged.c" />
     <ClCompile Include="RenderManager.c" />

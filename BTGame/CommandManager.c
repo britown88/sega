@@ -11,6 +11,7 @@
 #include "Commands.h"
 #include "WorldView.h"
 #include "CombatRoutines.h"
+#include "Abilities.h"
 #include "Combat.h"
 
 #define ComponentT ActionUserComponent
@@ -84,6 +85,7 @@ struct CommandManager_t{
    Manager m;
    WorldView *view;
    CombatRoutineLibrary *routines;
+   AbilityLibrary *abilities;
    EntitySystem *actionSystem;
    bool executing;
    vec(PostRunTransient) *postRuns;
@@ -168,10 +170,12 @@ CommandManager *createCommandManager(WorldView *view){
    out->m.vTable = CreateManagerVTable(CommandManager);
    out->actionSystem = entitySystemCreate();
    out->routines = combatRoutineLibraryCreate();
+   out->abilities = abilityLibraryCreate();
    out->postRuns = vecCreate(PostRunTransient)(&_postRunDestroy);
    out->executing = false;
 
    buildAllCombatRoutines(out->routines);
+   buildAllAbilities(out->abilities);
 
    return out;
 }
@@ -179,6 +183,7 @@ CommandManager *createCommandManager(WorldView *view){
 void _destroy(CommandManager *self){
    entitySystemDestroy(self->actionSystem);
    combatRoutineLibraryDestroy(self->routines);
+   abilityLibraryDestroy(self->abilities);
    vecDestroy(PostRunTransient)(self->postRuns);
    checkedFree(self);
 }

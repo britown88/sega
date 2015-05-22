@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Commands">
       <UniqueIdentifier>{a9ca7d73-333f-431c-9822-81d70be7e6c9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Abilities">
+      <UniqueIdentifier>{4eb92e23-aeac-4332-8d54-4df102a65593}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
@@ -76,6 +79,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GridHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Abilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -166,6 +172,15 @@
     </ClCompile>
     <ClCompile Include="GridHelpers.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AbilityLibrary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AllAbilities.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MagicMissile.c">
+      <Filter>Source Files\Abilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
