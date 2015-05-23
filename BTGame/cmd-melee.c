@@ -53,15 +53,14 @@ static CoroutineStatus _meleeRoutine(MeleeRoutineData *data, CoroutineRequest re
    target = tec->target;
 
    if (request == ForceCancel){
-      if (data->stage != NotAttacked && entityGet(InterpolationComponent)(e)){
+      if (entityGet(InterpolationComponent)(e)){
          entityRemove(InterpolationComponent)(e);
-
-         COMPONENT_LOCK(PositionComponent, pc, e, {
-            pc->x = data->startPos.x;
-            pc->y = data->startPos.y;
-         });
          entityUpdate(e);
       }
+      COMPONENT_LOCK(PositionComponent, pc, e, {
+         pc->x = data->startPos.x;
+         pc->y = data->startPos.y;
+      });
 
       return Finished;
    }

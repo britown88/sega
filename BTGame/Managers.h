@@ -21,6 +21,7 @@ typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
 typedef struct DestructionManager_t DestructionManager;
 typedef struct AIManager_t AIManager;
+typedef struct StatusManager_t StatusManager;
 
 typedef struct BTManagers_t {
    RenderManager *renderManager;
@@ -34,6 +35,7 @@ typedef struct BTManagers_t {
    CombatManager *combatManager;
    DestructionManager *destructionManager;
    AIManager *AIManager;
+   StatusManager *statusManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -47,6 +49,7 @@ bool entityCommandQueueEmpty(Entity *e);
 bool entityShouldAutoAttack(Entity *e);
 void entityPauseCommand(Entity *e, Action *cmd);
 void entityPushCommand(Entity *e, Action *cmd);
+void entityPushNextCommand(Entity *e, Action *cmd);
 void entityPushFrontCommand(Entity *e, Action *cmd);
 void entityCancelFirstCommand(Entity *e);
 void entityForceCancelFirstCommand(Entity *e);

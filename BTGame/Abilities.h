@@ -28,4 +28,5 @@ AbilityGenerator buildMeleeAttackAbility();
 AbilityGenerator buildMoveAbility();
 AbilityGenerator buildRangedAttackAbility();
 AbilityGenerator buildSwapAbility();
+AbilityGenerator buildStunAbility();
 

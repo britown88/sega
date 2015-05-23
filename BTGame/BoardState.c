@@ -1,6 +1,7 @@
 #include "WorldView.h"
 #include "Managers.h"
 #include "SelectionManager.h"
+#include "StatusManager.h"
 #include "GridManager.h"
 #include "Entities\Entities.h"
 #include "ImageLibrary.h"
@@ -41,12 +42,11 @@ static void _board(BoardState *state, Type *t, Message m){
 
 static void _createTestEntity(EntitySystem *system, int x, int y, bool AI);
 
-static long spawnTimer = 0;
 
-void _boardUpdate(BoardState *state, GameStateUpdate *m){
+
+static void _testSpawn(BoardState *state){
    BTManagers *managers = state->view->managers;
-   Mouse *mouse = appGetMouse(appGet());
-   Int2 mousePos = mouseGetPosition(mouse);
+   static long spawnTimer = 0;
 
    if (spawnTimer == 0){
       spawnTimer = gameClockGetTime(state->view->gameClock);
@@ -63,6 +63,14 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
          _createTestEntity(state->view->entitySystem, 15, 10, true);
       }
    }
+}
+
+void _boardUpdate(BoardState *state, GameStateUpdate *m){
+   BTManagers *managers = state->view->managers;
+   Mouse *mouse = appGetMouse(appGet());
+   Int2 mousePos = mouseGetPosition(mouse);
+
+   //_testSpawn(state);
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
    interpolationManagerUpdate(managers->interpolationManager);
@@ -74,6 +82,7 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
 
    combatManagerUpdate(managers->combatManager);
    AIManagerUpdate(managers->AIManager);
+   statusManagerUpdate(managers->statusManager);
 
    logManagerUpdate(managers->logManager);
    destructionManagerUpdate(managers->destructionManager);
@@ -225,7 +234,7 @@ void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
    COMPONENT_ADD(e, AbilitySlotsComponent, .slots = { stringIntern(!AI ? "ranged" : "melee"), stringIntern("swap") });
-   if (true){
+   if (AI){
       COMPONENT_ADD(e, AIComponent, 0);
    }
    //COMPONENT_ADD(e, WanderComponent, 1);
@@ -275,7 +284,7 @@ StateClosure gameStateCreateBoard(WorldView *view){
       _createTestEntity(view->entitySystem, i, 0, false);
    }
 
-   for (i = 0; i < 12; ++i){
+   for (i = 0; i < 1; ++i){
       _createTestEntity(view->entitySystem, 4 + i, 10, true);
    } 
 

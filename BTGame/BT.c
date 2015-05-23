@@ -7,6 +7,7 @@
 #include "ImageLibrary.h"
 #include "GridManager.h"
 #include "SelectionManager.h"
+#include "StatusManager.h"
 #include "WorldView.h"
 #include "GameState.h"
 #include "LogManager.h"
@@ -90,6 +91,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.combatManager, createCombatManager(&self->view));
    RegisterManager(self->managers.AIManager, createAIManager(&self->view));
    RegisterManager(self->managers.destructionManager, createDestructionManager(&self->view));
+   RegisterManager(self->managers.statusManager, createStatusManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){

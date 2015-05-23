@@ -90,6 +90,7 @@
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="SelectionManager.h" />
+    <ClInclude Include="StatusManager.h" />
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +103,7 @@
     <ClCompile Include="AutoAttack.c" />
     <ClCompile Include="BoardState.c" />
     <ClCompile Include="BT.c" />
+    <ClCompile Include="cmd-stun.c" />
     <ClCompile Include="CombatManager.c" />
     <ClCompile Include="CombatRoutineLibrary.c" />
     <ClCompile Include="CoreComponents.c" />
@@ -129,6 +131,8 @@
     <ClCompile Include="cmd-new.c" />
     <ClCompile Include="cmd-swap-other.c" />
     <ClCompile Include="cmd-swap.c" />
+    <ClCompile Include="StatusManager.c" />
+    <ClCompile Include="Stun.c" />
     <ClCompile Include="Swap.c" />
   </ItemGroup>
   <ItemGroup>

@@ -10,6 +10,7 @@
 #include "CoreComponents.h"
 #include "LogManager.h"
 #include "Combat.h"
+#include "StatusManager.h"
 
 typedef struct {
    WorldView *view;
@@ -60,7 +61,16 @@ static CoroutineStatus _projectileRoutine(ProjectileRoutineData *data, Coroutine
          data->action = delivery->package;
          data->action = combatManagerQueryActionResult(managers->combatManager, data->action);
          if (!entityGet(CActionCancelledComponent)(data->action)){
+            Status *s = statusCreate(managers->statusManager);
+            COMPONENT_ADD(s, StatusNameComponent, stringIntern("stun"));
+            COMPONENT_ADD(s, StatusDurationComponent, 250);
+            COMPONENT_ADD(s, StatusInflictsStunComponent, 0);
+
+            entityAddStatus(managers->statusManager, target, s);
+
             combatManagerExecuteAction(managers->combatManager, data->action);
+
+
          }
       }
 

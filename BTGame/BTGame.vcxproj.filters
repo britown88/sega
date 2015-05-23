@@ -28,6 +28,9 @@
     <Filter Include="Source Files\Abilities">
       <UniqueIdentifier>{4eb92e23-aeac-4332-8d54-4df102a65593}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Statuses">
+      <UniqueIdentifier>{06d4838d-c492-4dda-80bb-2063a410a476}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
@@ -83,6 +86,9 @@
     </ClInclude>
     <ClInclude Include="Abilities.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatusManager.h">
+      <Filter>Header Files\Managers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +201,15 @@
       <Filter>Source Files\Commands</Filter>
     </ClCompile>
     <ClCompile Include="Swap.c">
+      <Filter>Source Files\Abilities</Filter>
+    </ClCompile>
+    <ClCompile Include="StatusManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd-stun.c">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Stun.c">
       <Filter>Source Files\Abilities</Filter>
     </ClCompile>
   </ItemGroup>

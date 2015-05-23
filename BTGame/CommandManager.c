@@ -322,6 +322,21 @@ void entityPushCommand(Entity *e, Action *cmd){
    vecPushBack(ActionPtr)(cc->actions, &cmd);
 }
 
+void entityPushNextCommand(Entity *e, Action *cmd){
+   CommandComponent *cc = entityGet(CommandComponent)(e);
+   TCommandComponent *tcc;
+
+   if (!cc){
+      cc = _addCommandComponent(e);
+   }
+
+   tcc = entityGet(TCommandComponent)(e);
+
+   COMPONENT_ADD(cmd, ActionUserComponent, e);
+
+   vecInsert(ActionPtr)(cc->actions, tcc->runningIndex + 1, &cmd);
+}
+
 void entityPushFrontCommand(Entity *e, Action *cmd){
    CommandComponent *cc = entityGet(CommandComponent)(e);
 

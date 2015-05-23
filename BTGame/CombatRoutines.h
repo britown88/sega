@@ -28,3 +28,4 @@ CombatRoutineGenerator buildProjectileAttackRoutine();
 CombatRoutineGenerator buildSwapAttackRoutine();
 CombatRoutineGenerator buildSwapOtherAttackRoutine();
 CombatRoutineGenerator buildAutoAttackRoutine();
+CombatRoutineGenerator buildStunAttackRoutine();
