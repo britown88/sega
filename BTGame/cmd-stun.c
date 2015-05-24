@@ -49,13 +49,15 @@ static CoroutineStatus _StunRoutine(StunRoutineData *data, CoroutineRequest requ
 
       if (newStun && !entityGet(ActionInvalidComponent)(newStun)){
          //we need to update our parent status with the new command so it can still kill us
-         Status *s = entityGetStatus(e, stunName);
-         if (s){
-            IF_COMPONENT(s, StatusChildActionComponent, cac, {
+
+         IF_COMPONENT(data->a, ActionGoverningStatusComponent, gsc, {
+            IF_COMPONENT(gsc->parent, StatusChildActionComponent, cac, {
+               COMPONENT_ADD(newStun, ActionGoverningStatusComponent, gsc->parent);
                cac->child = newStun;
                entityPushNextCommand(e, newStun);
             });
-         }
+         });
+
       }
      
       return Finished;

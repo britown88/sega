@@ -60,17 +60,8 @@ static CoroutineStatus _projectileRoutine(ProjectileRoutineData *data, Coroutine
       if (delivery){
          data->action = delivery->package;
          data->action = combatManagerQueryActionResult(managers->combatManager, data->action);
-         if (!entityGet(CActionCancelledComponent)(data->action)){
-            Status *s = statusCreate(managers->statusManager);
-            COMPONENT_ADD(s, StatusNameComponent, stringIntern("stun"));
-            COMPONENT_ADD(s, StatusDurationComponent, 250);
-            COMPONENT_ADD(s, StatusInflictsStunComponent, 0);
-
-            entityAddStatus(managers->statusManager, target, s);
-
+         if (!entityGet(CActionCancelledComponent)(data->action)){ 
             combatManagerExecuteAction(managers->combatManager, data->action);
-
-
          }
       }
 

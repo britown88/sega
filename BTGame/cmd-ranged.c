@@ -11,11 +11,11 @@
 #include "LogManager.h"
 #include "Combat.h"
 #include "GameClock.h"
+#include "StatusManager.h"
 
 typedef struct {
    WorldView *view;
    Action *a;
-   CombatAction *action;
    long startTime, pausedTime;
    bool paused;
    float range;
@@ -74,14 +74,12 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
    }
    else{
       if (data->startTime == 0){
-         data->action = combatManagerCreateAction(managers->combatManager, e, target);
-         COMPONENT_ADD(data->action, CActionDamageComponent, .damage = 30.0f);
-         COMPONENT_ADD(data->action, CActionRangeComponent, .range = data->range);
-         COMPONENT_ADD(data->action, CActionDamageTypeComponent, .type = DamageTypePhysical);
+         ActionDeliveryComponent *dc = entityGet(ActionDeliveryComponent)(data->a);   
+         COMPONENT_ADD(dc->package, CActionTargetComponent, target);
 
-         data->action = combatManagerDeclareAction(managers->combatManager, data->action);
+         dc->package = combatManagerDeclareAction(managers->combatManager, dc->package);
 
-         if (entityGet(CActionCancelledComponent)(data->action)){
+         if (entityGet(CActionCancelledComponent)(dc->package)){
             //action got cancelled, bail The F Out
             return Finished;
          }
@@ -92,7 +90,8 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
       }
       else{
          long elapsed = gameClockGetTime(data->view->gameClock) - data->startTime;
-         if (elapsed < 775){
+         long time = (long)(entityGet(ActionPreDelayComponent)(data->a)->delay * 1000);
+         if (elapsed < time){
             //clock is still going, but cancellable so
             return requestIsCancel(request) ? Finished : NotFinished;
          }
@@ -100,27 +99,32 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
             //timers done lets create our action
             PositionComponent *pc = entityGet(PositionComponent)(e);
             PositionComponent *pc2 = entityGet(PositionComponent)(target);
+            ActionSubActionComponent *sac = entityGet(ActionSubActionComponent)(data->a);
             Entity *projectile;
             Action *a;
 
-            if (!pc || !pc2){
+            if (!pc || !pc2 || !sac){
                return Finished;
             }
+
+            a = sac->sub;
 
             projectile = entityCreate(data->view->entitySystem);
 
             //we're in range, our declaration's been accepted, lets go!
             COMPONENT_ADD(projectile, PositionComponent, .x = pc->x, .y = pc->y);
-            COMPONENT_ADD(projectile, ImageComponent, stringIntern("assets/img/dota/venge.ega"));
+
+            //pass on our image
+            IF_COMPONENT(a, ImageComponent, aic, {
+               COMPONENT_ADD(projectile, ImageComponent, aic->filename);
+            });
+
             COMPONENT_ADD(projectile, LayerComponent, LayerTokens);
             COMPONENT_ADD(projectile, InterpolationComponent, .destX = pc2->x, .destY = pc2->y, .time = 0.25);
             entityUpdate(projectile);
 
             //attach our modified combataction to the projectile's command
-            a = actionCreateCustom(managers->commandManager);
             COMPONENT_ADD(a, ActionTargetEntityComponent, target);
-            COMPONENT_ADD(a, ActionRoutineComponent, stringIntern("projectile"));
-            COMPONENT_ADD(a, ActionDeliveryComponent, data->action);
             entityPushCommand(projectile, a);
 
             if (!requestIsCancel(request)){

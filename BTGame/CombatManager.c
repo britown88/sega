@@ -10,6 +10,7 @@
 #include "CombatConstants.h"
 #include "LogManager.h"
 #include "SelectionManager.h"
+#include "StatusManager.h"
 
 #include <math.h>
 
@@ -29,6 +30,10 @@
 #define ComponentT CActionDamageComponent
 #include "Entities\ComponentImpl.h"
 #define ComponentT CActionDamageTypeComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT CActionInflictsStatusComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT CActionRemovesStatusComponent
 #include "Entities\ComponentImpl.h"
 
 typedef struct{
@@ -139,6 +144,11 @@ CombatAction *combatManagerCreateAction(CombatManager *self, Entity *source, Ent
    return out;
 }
 
+CombatAction *combatActionCreateCustom(CombatManager *self){
+   CombatAction *out = entityCreate(self->actions);
+   return out;
+}
+
 //declare your intent, returns the modified action to perform
 CombatAction *combatManagerDeclareAction(CombatManager *self, CombatAction *proposed){
    Entity *src = entityGet(CActionSourceComponent)(proposed)->source;
@@ -170,7 +180,7 @@ CombatAction *combatManagerQueryActionResult(CombatManager *self, CombatAction *
       }
 
       //variance
-      dc->damage *= 1.0f + (appRand(appGet(), 0, 20) - 10) * 0.01f;
+      dc->damage *= 1.0f + (appRand(appGet(), 0, 10) - 5) * 0.01f;
 
       arm = (float)(int)entityGetArmor(tar);
       if (arm > 0.0f){
@@ -199,6 +209,10 @@ void combatManagerExecuteAction(CombatManager *self, CombatAction *action){
       
       //logManagerPushMessage(self->view->managers->logManager, "Hit for %0.2f!", dc->damage);
    }
+
+   IF_COMPONENT(action, CActionInflictsStatusComponent, isc, {
+      entityAddStatus(self->view->managers->statusManager, tar, isc->status);
+   });
 
    entityDestroy(action);
 }

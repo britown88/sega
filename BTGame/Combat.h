@@ -40,6 +40,7 @@ void combatManagerUpdate(CombatManager *self);
 typedef Entity CombatAction;
 
 //create a new combat action
+CombatAction *combatActionCreateCustom(CombatManager *self);
 CombatAction *combatManagerCreateAction(CombatManager *self, Entity *source, Entity *target);
 
 //declare your intent, returns the modified action to perform
@@ -91,5 +92,19 @@ typedef struct{
    DamageType type;
 }CActionDamageTypeComponent;
 #define ComponentT CActionDamageTypeComponent
+#include "Entities\ComponentDecl.h"
+
+typedef Entity Status;
+
+typedef struct{
+   Status *status;
+}CActionInflictsStatusComponent;
+#define ComponentT CActionInflictsStatusComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct{
+   StringView name;
+}CActionRemovesStatusComponent;
+#define ComponentT CActionRemovesStatusComponent
 #include "Entities\ComponentDecl.h"
 

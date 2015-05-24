@@ -60,6 +60,7 @@ struct StatusManager_t{
 
    EntitySystem *statuses;
    vec(StatusPtr) *postDestroy;
+   StatusLibrary *statusGenerators;
 };
 
 ImplManagerVTable(StatusManager)
@@ -71,6 +72,9 @@ StatusManager *createStatusManager(WorldView *view){
 
    out->statuses = entitySystemCreate();
    out->postDestroy = vecCreate(StatusPtr)(&_postDestroy);
+   out->statusGenerators = statusLibraryCreate();
+
+   buildAllStatuses(out->statusGenerators);
 
    return out;
 }
@@ -78,6 +82,7 @@ StatusManager *createStatusManager(WorldView *view){
 void _destroy(StatusManager *self){
    entitySystemDestroy(self->statuses);
    vecDestroy(StatusPtr)(self->postDestroy);
+   statusLibraryDestroy(self->statusGenerators);
 
    checkedFree(self);
 }
@@ -88,7 +93,7 @@ void statusManagerUpdate(StatusManager *self){
 
    COMPONENT_QUERY(self->statuses, StatusDurationComponent, dc, {
       Status *s = componentGetParent(dc, self->statuses);
-      if (gameClockGetTime(self->view->gameClock) - dc->startTime > dc->duration){
+      if (dc->startTime > 0 && gameClockGetTime(self->view->gameClock) - dc->startTime > (dc->duration * 1000)){
 
          vecPushBack(StatusPtr)(self->postDestroy, &s);
       }
@@ -97,8 +102,21 @@ void statusManagerUpdate(StatusManager *self){
    vecClear(StatusPtr)(self->postDestroy);
 }
 
-Status *statusCreate(StatusManager *self){
+Status *statusCreateCustom(StatusManager *self){
    return entityCreate(self->statuses);
+}
+
+Status *statusCreateByName(StatusManager *self, StringView name){
+   StatusGenerator gen = statusLibraryGet(self->statusGenerators, name);
+   if (!closureIsNull(StatusGenerator)(&gen)){
+      return closureCall(&gen, self->view);
+   }
+
+   return NULL;
+}
+Status *statusSetDuration(Status *status, float duration){
+   COMPONENT_ADD(status, StatusDurationComponent, duration);
+   return status;
 }
 
 Status *entityGetStatus(Entity *e, StringView name){
@@ -151,6 +169,7 @@ void entityAddStatus(StatusManager *self, Entity *e, Status *s){
          Action *stun = actionFromAbilityName(self->view->managers->commandManager, e, stringIntern("stun"));
 
          COMPONENT_ADD(s, StatusChildActionComponent, stun);
+         COMPONENT_ADD(stun, ActionGoverningStatusComponent, s);
 
          entityForceCancelAllCommands(e);
          entityPushCommand(e, stun);

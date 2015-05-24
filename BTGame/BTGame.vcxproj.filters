@@ -212,5 +212,14 @@
     <ClCompile Include="Stun.c">
       <Filter>Source Files\Abilities</Filter>
     </ClCompile>
+    <ClCompile Include="StatusLibrary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="status-stun.c">
+      <Filter>Source Files\Statuses</Filter>
+    </ClCompile>
+    <ClCompile Include="AllStatuses.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

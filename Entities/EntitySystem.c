@@ -212,6 +212,9 @@ ComponentList *entitySystemGetCompList(EntitySystem *self, size_t rtti){
    }
 
    out = vecAt(ComponentList)(self->lists, rtti);
+   if (!out->cvt){
+      return NULL;
+   }
 
    return out;
 }

@@ -16,26 +16,25 @@
 
 #define ComponentT ActionUserComponent
 #include "Entities\ComponentImpl.h"
-
 #define ComponentT ActionTargetEntityComponent
 #include "Entities\ComponentImpl.h"
-
 #define ComponentT ActionTargetPositionComponent
 #include "Entities\ComponentImpl.h"
-
 #define ComponentT ActionAbilityNameComponent
 #include "Entities\ComponentImpl.h"
-
 #define ComponentT ActionRangeComponent
 #include "Entities\ComponentImpl.h"
-
 #define ComponentT ActionRoutineComponent
 #include "Entities\ComponentImpl.h"
-
 #define ComponentT ActionDeliveryComponent
 #include "Entities\ComponentImpl.h"
-
 #define ComponentT ActionInvalidComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT ActionGoverningStatusComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT ActionPreDelayComponent
+#include "Entities\ComponentImpl.h"
+#define ComponentT ActionSubActionComponent
 #include "Entities\ComponentImpl.h"
 
 #define VectorTPart ActionPtr

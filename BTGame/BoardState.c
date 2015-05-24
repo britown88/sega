@@ -70,7 +70,7 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
 
-   //_testSpawn(state);
+   _testSpawn(state);
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
    interpolationManagerUpdate(managers->interpolationManager);
@@ -164,8 +164,9 @@ static void _handleMouse(BoardState *state){
                      entityCancelAllCommands(*e);
                   }
                   actionHelperPushSlot(managers->commandManager, *e, *vecAt(EntityPtr)(clickedEntities, 0), special ? 1 : 0);
-                  special = false;
-               });               
+                  
+               });  
+               special = false;
             }
             else{
                selectionManagerGetEntities(managers->selectionManager, clickedEntities,
@@ -185,10 +186,8 @@ static void _handleMouse(BoardState *state){
                         actionHelperPushMoveToEntity(managers->commandManager, *e, *vecAt(EntityPtr)(clickedEntities, 0), 0.0f);
                      }
 
-                     special = false;
-
-
                   });
+                  special = false;
                }
                else if (gridIndex < INF){
                   int gx, gy;
@@ -233,8 +232,8 @@ void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
    COMPONENT_ADD(e, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
-   COMPONENT_ADD(e, AbilitySlotsComponent, .slots = { stringIntern(!AI ? "ranged" : "melee"), stringIntern("swap") });
-   if (AI){
+   COMPONENT_ADD(e, AbilitySlotsComponent, .slots = { stringIntern(!AI ? "ranged" : "melee"), stringIntern("magic_missile") });
+   if (true){
       COMPONENT_ADD(e, AIComponent, 0);
    }
    //COMPONENT_ADD(e, WanderComponent, 1);
@@ -257,8 +256,7 @@ static void _createPausedText(BoardState *state){
       str[i] = ' ';
    }
 
-   strcpy(str + 21, "Paused");
-   str[27] = ' ';
+   memcpy(str + 21, "Paused", 6);
 
    COMPONENT_ADD(e, LayerComponent, LayerUI);
    COMPONENT_ADD(e, TextComponent,
@@ -284,7 +282,7 @@ StateClosure gameStateCreateBoard(WorldView *view){
       _createTestEntity(view->entitySystem, i, 0, false);
    }
 
-   for (i = 0; i < 1; ++i){
+   for (i = 0; i < 12; ++i){
       _createTestEntity(view->entitySystem, 4 + i, 10, true);
    } 
 

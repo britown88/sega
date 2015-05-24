@@ -55,10 +55,29 @@ typedef struct {
 #define ComponentT ActionDeliveryComponent
 #include "Entities\ComponentDecl.h"
 
+typedef Entity Status;
+typedef struct {
+   Status *parent;
+}ActionGoverningStatusComponent;
+#define ComponentT ActionGoverningStatusComponent
+#include "Entities\ComponentDecl.h"
+
 typedef struct {
    EMPTY_STRUCT;
 }ActionInvalidComponent;
 #define ComponentT ActionInvalidComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   float delay;
+}ActionPreDelayComponent;
+#define ComponentT ActionPreDelayComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   Action *sub;
+}ActionSubActionComponent;
+#define ComponentT ActionSubActionComponent
 #include "Entities\ComponentDecl.h"
 
 Action *actionCreateCustom(CommandManager *self);

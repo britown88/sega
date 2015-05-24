@@ -98,6 +98,7 @@
     <ClCompile Include="AIManager.c" />
     <ClCompile Include="AllAbilities.c" />
     <ClCompile Include="AllCombatRoutines.c" />
+    <ClCompile Include="AllStatuses.c" />
     <ClCompile Include="cmd-melee.c" />
     <ClCompile Include="cmd-auto.c" />
     <ClCompile Include="AutoAttack.c" />
@@ -131,6 +132,8 @@
     <ClCompile Include="cmd-new.c" />
     <ClCompile Include="cmd-swap-other.c" />
     <ClCompile Include="cmd-swap.c" />
+    <ClCompile Include="status-stun.c" />
+    <ClCompile Include="StatusLibrary.c" />
     <ClCompile Include="StatusManager.c" />
     <ClCompile Include="Stun.c" />
     <ClCompile Include="Swap.c" />
