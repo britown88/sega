@@ -20,6 +20,10 @@ typedef struct {
    String *line;
 }LogEntry;
 
+static void _logEntryDestroy(LogEntry *self){
+   stringDestroy(self->line);
+}
+
 #define VectorT LogEntry
 #include "segautils\Vector_Create.h"
 
@@ -59,7 +63,7 @@ LogManager *createLogManager(WorldView *view){
    out->m.vTable = CreateManagerVTable(LogManager);
 
    out->logLines = vecCreate(EntityPtr)(NULL);
-   out->log = vecCreate(LogEntry)(NULL);
+   out->log = vecCreate(LogEntry)(&_logEntryDestroy);
 
    _createLines(out);
 
