@@ -44,6 +44,11 @@ static void PolygonComponentDestroy(PolygonComponent *self){
 #define ComponentT VisibilityComponent
 #include "Entities\ComponentImpl.h"
 
+static void TextComponentDestroy(TextComponent *self){
+   stringDestroy(self->text);
+}
+
+#define COMP_DESTROY_FUNC TextComponentDestroy
 #define ComponentT TextComponent
 #include "Entities\ComponentImpl.h"
 

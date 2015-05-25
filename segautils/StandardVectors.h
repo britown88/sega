@@ -6,6 +6,9 @@
 #define VectorTPart size_t
 #include "Vector_Decl.h"
 
+#define VectorTPart char
+#include "Vector_Decl.h"
+
 #define VectorTPart int
 #include "Vector_Decl.h"
 

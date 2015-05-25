@@ -246,7 +246,7 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    //text
    if (trc->hasText){
       TextComponent *tc = entityGet(TextComponent)(e);
-      frameRenderText(frame, tc->text, tc->x, tc->y,
+      frameRenderText(frame, c_str(tc->text), tc->x, tc->y,
          fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg));
    }
 }

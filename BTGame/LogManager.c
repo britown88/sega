@@ -17,7 +17,7 @@
 #define LOG_COLOR_BG 7
 
 typedef struct {
-   StringView line;
+   String *line;
 }LogEntry;
 
 #define VectorT LogEntry
@@ -38,7 +38,7 @@ static Entity *_createLine(EntitySystem *system, int line){
    Entity *e = entityCreate(system);
    COMPONENT_ADD(e, LayerComponent, LayerUI);
    COMPONENT_ADD(e, TextComponent, 
-                     .text = stringIntern(""),
+                     .text = stringCreate(""),
                      .x = LOG_X, .y = LOG_Y + line,
                      .fg = LOG_COLOR_FG, .bg = LOG_COLOR_BG);
    entityUpdate(e);
@@ -82,7 +82,7 @@ void logManagerUpdate(LogManager *self){
       int i = 0;
       StringView emptyString = stringIntern("");
       vecForEach(EntityPtr, e, self->logLines, {
-         entityGet(TextComponent)(*e)->text = emptyString;
+         stringClear(entityGet(TextComponent)(*e)->text);
       });
 
       self->logPosition = size--;
@@ -90,11 +90,12 @@ void logManagerUpdate(LogManager *self){
       for (i = LOG_LINE_COUNT - 1; i >= 0 && size >= 0; --i, --size){
          Entity *e = *vecAt(EntityPtr)(self->logLines, i);
          TextComponent *tc = entityGet(TextComponent)(e);
-         tc->text = vecAt(LogEntry)(self->log, size)->line;
+         String *line = vecAt(LogEntry)(self->log, size)->line;
+         stringConcat(tc->text, c_str(line));
       }
    }
 }
 
-void logManagerPushStringView(LogManager *self, StringView text){
+void logManagerPushString(LogManager *self, String *text){
    vecPushBack(LogEntry)(self->log, &(LogEntry){text});
 }

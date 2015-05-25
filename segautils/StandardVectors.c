@@ -3,6 +3,9 @@
 #define VectorTPart size_t
 #include "Vector_Impl.h"
 
+#define VectorTPart char
+#include "Vector_Impl.h"
+
 #define VectorTPart int
 #include "Vector_Impl.h"
 

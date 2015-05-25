@@ -31,6 +31,7 @@
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="StandardVectors.h" />
+    <ClInclude Include="String.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector_Create.h" />
     <ClInclude Include="Vector_Decl.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="Matrix.c" />
     <ClCompile Include="Quaternion.c" />
     <ClCompile Include="StandardVectors.c" />
+    <ClCompile Include="String.c" />
     <ClCompile Include="Vector.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

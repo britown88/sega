@@ -260,11 +260,16 @@ static void _createPausedText(BoardState *state){
 
    COMPONENT_ADD(e, LayerComponent, LayerUI);
    COMPONENT_ADD(e, TextComponent,
-      .text = stringIntern(str),
+      .text = stringCreate(str),
       .x = 28, .y = 11,
       .fg = 15, .bg = 0);
    COMPONENT_ADD(e, VisibilityComponent, .shown = false);
    entityUpdate(e);
+
+   {
+      TextComponent *tc = entityGet(TextComponent)(e);
+      String *t = tc->text;
+   }
 
    state->pausedbanner = e;
 }

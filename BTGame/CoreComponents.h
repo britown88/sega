@@ -4,6 +4,7 @@
 #include "segashared\Strings.h"
 #include "MeshRendering.h"
 #include "Actions.h"
+#include "segautils\String.h"
 
 #pragma pack(push, 1)
 
@@ -119,7 +120,7 @@ typedef struct {
 typedef struct {
    byte x, y;
    byte fg, bg;
-   StringView text;
+   String *text;
 }TextComponent;
 
 #define ComponentT TextComponent

@@ -10,9 +10,9 @@
 #include "Vector_Functions.h"
 
 struct CONCAT(VEC_NAME, _t){
-   void(*destroy)(T*);
-
    T *data;
+
+   void(*destroy)(T*);
 
    //number of items in the table
    size_t count;
