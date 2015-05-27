@@ -144,13 +144,6 @@ static void _handleMouse(BoardState *state){
          if (event.button == SegaMouseBtn_Left){
             Recti mouseArea = cursorManagerEndDrag(managers->cursorManager, event.pos.x, event.pos.y);
 
-            {
-               Entity *numbertest = entityCreate(state->view->entitySystem);
-               COMPONENT_ADD(numbertest, PositionComponent, event.pos.x, event.pos.y);
-               COMPONENT_ADD(numbertest, DamageMarkerComponent, 9999);
-               entityUpdate(numbertest);
-            }
-
             selectionManagerSelect(managers->selectionManager,
             { scArea, .box = mouseArea },
             { scTeam, .teamID = 0 });

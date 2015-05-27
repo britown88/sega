@@ -113,10 +113,12 @@ static void _renderToDigits(Entity *parent, size_t value){
 
 static void _addNewTransient(Entity *e){
    DamageMarkerComponent *dmc = entityGet(DamageMarkerComponent)(e);
+   PositionComponent *pc = entityGet(PositionComponent)(e);
    COMPONENT_ADD(e, TDamageMarkerComponent, vecCreate(EntityPtr)(NULL));
+   COMPONENT_ADD(e, InterpolationComponent, pc->x, pc->y - 8, 0.25f);
+   entityUpdate(e);
 
    _renderToDigits(e, dmc->value);
-
 }
 
 void _destroy(DamageMarkerManager *self){
@@ -139,6 +141,15 @@ void _onUpdate(DamageMarkerManager *self, Entity *e){
    }
 }
 
-void damageMarkerManagerUpdate(DamageMarkerManager *self){
+static void _updateEntity(Entity *e){
+   if (!entityGet(InterpolationComponent)(e)){
+      COMPONENT_ADD(e, DestructionComponent, 0);
+   }
+}
 
+void damageMarkerManagerUpdate(DamageMarkerManager *self){
+   COMPONENT_QUERY(self->view->entitySystem, TDamageMarkerComponent, dmc, {
+      Entity *e = componentGetParent(dmc, self->view->entitySystem);
+      _updateEntity(e);
+   });
 }

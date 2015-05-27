@@ -197,6 +197,15 @@ CombatAction *combatManagerQueryActionResult(CombatManager *self, CombatAction *
    return proposed;
 }
 
+static void _createDamageMarker(Entity *target, int damage){
+   PositionComponent *pc = entityGet(PositionComponent)(target);
+   SizeComponent *sc = entityGet(SizeComponent)(target);
+   Entity *dmg = entityCreate(entityGetSystem(target));
+   COMPONENT_ADD(dmg, PositionComponent, pc->x + (sc->x / 2), pc->y + (sc->y / 2));
+   COMPONENT_ADD(dmg, DamageMarkerComponent, damage);
+   entityUpdate(dmg);
+}
+
 void combatManagerExecuteAction(CombatManager *self, CombatAction *action){
    Entity *src = entityGet(CActionSourceComponent)(action)->source;
    Entity *tar = entityGet(CActionTargetComponent)(action)->target;
@@ -206,7 +215,7 @@ void combatManagerExecuteAction(CombatManager *self, CombatAction *action){
       COMPONENT_LOCK(StatsComponent, sc, tar, {
          sc->HP -= dc->damage;
       });
-      
+      _createDamageMarker(tar, (int)dc->damage);
       //logManagerPushMessage(self->view->managers->logManager, "Hit for %0.2f!", dc->damage);
    }
 
