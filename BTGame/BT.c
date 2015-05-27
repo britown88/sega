@@ -92,6 +92,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.AIManager, createAIManager(&self->view));
    RegisterManager(self->managers.destructionManager, createDestructionManager(&self->view));
    RegisterManager(self->managers.statusManager, createStatusManager(&self->view));
+   RegisterManager(self->managers.damageMarkerManager, createDamageMarkerManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){

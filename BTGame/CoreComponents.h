@@ -40,6 +40,7 @@ typedef struct {
 //updated in interpolation manager
 typedef struct {
    Entity *parent;
+   int offsetX, offsetY;
 }LockedPositionComponent;
 
 #define ComponentT LockedPositionComponent
@@ -157,6 +158,13 @@ typedef struct {
 } AIComponent;
 
 #define ComponentT AIComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   size_t value;
+} DamageMarkerComponent;
+
+#define ComponentT DamageMarkerComponent
 #include "Entities\ComponentDecl.h"
 
 #pragma pack(pop)

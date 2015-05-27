@@ -158,21 +158,18 @@ void frameRenderImagePartial(Frame *self, short x, short y, Image *img, short im
    clipSizeX -= ignoreOffsetX;
    clipSizeY -= ignoreOffsetY;
 
-   ignoreOffsetX = MAX(imgX, ignoreOffsetX);
-   ignoreOffsetY = MAX(imgY, ignoreOffsetY);
-
    if (clipSizeX <= 0 || clipSizeY <= 0) {
       return;
    }
 
-   for (j = 0; j < clipSizeY; ++j) {
-      imageScanLineRender(imageGetScanLine(img, j + ignoreOffsetY, 0), alphaBuffer);//transparency
+   for (j = 0; j < clipSizeY && j + MAX(imgY, ignoreOffsetY) < imgHeight; ++j) {
+      imageScanLineRender(imageGetScanLine(img, j + MAX(imgY, ignoreOffsetY), 0), alphaBuffer);//transparency
 
       for (i = 0; i < EGA_PLANES; ++i) {
-         imageScanLineRender(imageGetScanLine(img, j + ignoreOffsetY, i + 1), colorBuffer);
+         imageScanLineRender(imageGetScanLine(img, j + MAX(imgY, ignoreOffsetY), i + 1), colorBuffer);
 
          _scanLineRenderImageScanLine(&self->planes[i].lines[j + y + ignoreOffsetY], x + ignoreOffsetX,
-            colorBuffer, alphaBuffer, ignoreOffsetX, clipSizeX);
+            colorBuffer, alphaBuffer, MAX(imgX, ignoreOffsetX), clipSizeX);
       }
    }
 }

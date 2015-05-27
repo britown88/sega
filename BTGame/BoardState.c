@@ -83,6 +83,7 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
    combatManagerUpdate(managers->combatManager);
    AIManagerUpdate(managers->AIManager);
    statusManagerUpdate(managers->statusManager);
+   damageMarkerManagerUpdate(managers->damageMarkerManager);
 
    logManagerUpdate(managers->logManager);
    destructionManagerUpdate(managers->destructionManager);
@@ -142,6 +143,13 @@ static void _handleMouse(BoardState *state){
       case SegaMouse_Released:
          if (event.button == SegaMouseBtn_Left){
             Recti mouseArea = cursorManagerEndDrag(managers->cursorManager, event.pos.x, event.pos.y);
+
+            {
+               Entity *numbertest = entityCreate(state->view->entitySystem);
+               COMPONENT_ADD(numbertest, PositionComponent, event.pos.x, event.pos.y);
+               COMPONENT_ADD(numbertest, DamageMarkerComponent, 9999);
+               entityUpdate(numbertest);
+            }
 
             selectionManagerSelect(managers->selectionManager,
             { scArea, .box = mouseArea },

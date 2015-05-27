@@ -22,6 +22,7 @@ typedef struct WorldView_t WorldView;
 typedef struct DestructionManager_t DestructionManager;
 typedef struct AIManager_t AIManager;
 typedef struct StatusManager_t StatusManager;
+typedef struct DamageMarkerManager_t DamageMarkerManager;
 
 typedef struct BTManagers_t {
    RenderManager *renderManager;
@@ -36,6 +37,7 @@ typedef struct BTManagers_t {
    DestructionManager *destructionManager;
    AIManager *AIManager;
    StatusManager *statusManager;
+   DamageMarkerManager *damageMarkerManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -74,6 +76,9 @@ void destructionManagerUpdate(DestructionManager *self);
 
 AIManager *createAIManager(WorldView *view);
 void AIManagerUpdate(AIManager *self);
+
+DamageMarkerManager *createDamageMarkerManager(WorldView *view);
+void damageMarkerManagerUpdate(DamageMarkerManager *self);
 
 
 

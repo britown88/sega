@@ -63,3 +63,6 @@ static void TextComponentDestroy(TextComponent *self){
 
 #define ComponentT AIComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT DamageMarkerComponent
+#include "Entities\ComponentImpl.h"

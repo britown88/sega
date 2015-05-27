@@ -59,8 +59,8 @@ void _onUpdate(InterpolationManager *self, Entity *e){
          PositionComponent *pc = entityGet(PositionComponent)(e);
          PositionComponent *opc = entityGet(PositionComponent)(lpc->parent);
          if (opc){
-            pc->x = opc->x;
-            pc->y = opc->y;
+            pc->x = opc->x + lpc->offsetX;
+            pc->y = opc->y + lpc->offsetY;
          }
       }
 
@@ -139,8 +139,8 @@ void interpolationManagerUpdate(InterpolationManager *self){
       PositionComponent *pc = entityGet(PositionComponent)(e);
       PositionComponent *opc = entityGet(PositionComponent)(lpc->parent);
       if (opc){
-         pc->x = opc->x;
-         pc->y = opc->y;
+         pc->x = opc->x + lpc->offsetX;
+         pc->y = opc->y + lpc->offsetY;
       }
    });
 }

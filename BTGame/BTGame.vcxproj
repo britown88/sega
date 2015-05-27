@@ -109,6 +109,7 @@
     <ClCompile Include="CombatRoutineLibrary.c" />
     <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
+    <ClCompile Include="DamageMarkerManager.c" />
     <ClCompile Include="DestructionManager.c" />
     <ClCompile Include="DiceManager.c" />
     <ClCompile Include="GameClock.c" />
