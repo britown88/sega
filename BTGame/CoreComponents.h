@@ -59,6 +59,9 @@ typedef enum{
    LayerBackground,
    LayerSubToken0,
    LayerTokens,
+   LayerPostToken0,
+   LayerPostToken1,
+   LayerPostTokenDmg,
    LayerUI,
    LayerCursor,
    LayerCount

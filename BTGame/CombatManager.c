@@ -11,6 +11,7 @@
 #include "LogManager.h"
 #include "SelectionManager.h"
 #include "StatusManager.h"
+#include "GridManager.h"
 
 #include <math.h>
 
@@ -36,10 +37,21 @@
 #define ComponentT CActionRemovesStatusComponent
 #include "Entities\ComponentImpl.h"
 
+#define HEALTH_BAR_WIDTH GRID_RES_SIZE
+#define HEALTH_BAR_HEIGHT 2
+
 typedef struct{
    bool isDead;
+   Entity *healthbar_bg;
+   Entity *healthbar_fg;
 }TCombatComponent;
 
+static void TCombatComponentDestroy(TCombatComponent *tcc){
+   COMPONENT_ADD(tcc->healthbar_bg, DestructionComponent, 0);
+   COMPONENT_ADD(tcc->healthbar_fg, DestructionComponent, 0);
+}
+
+#define COMP_DESTROY_FUNC TCombatComponentDestroy
 #define TComponentT TCombatComponent
 #include "Entities\ComponentDeclTransient.h"
 
@@ -66,6 +78,11 @@ static void _registerUpdateDelegates(CombatManager *self){
 }
 
 static void _updateDeadEntity(EntityPtr *e){
+   TCombatComponent *tc = entityGet(TCombatComponent)(*e);
+
+   COMPONENT_ADD(tc->healthbar_bg, VisibilityComponent, .shown = false);
+   COMPONENT_ADD(tc->healthbar_fg, VisibilityComponent, .shown = false);
+
    COMPONENT_ADD(*e, VisibilityComponent, .shown = false);
    entityRemove(GridComponent)(*e);
    entityDeselect(*e);
@@ -85,6 +102,26 @@ CombatManager *createCombatManager(WorldView *view){
    return out;
 }
 
+static void _addHealthbars(CombatManager *self, Entity *e){
+   TCombatComponent *tc = entityGet(TCombatComponent)(e);
+
+   tc->healthbar_bg = entityCreate(self->view->entitySystem);
+   COMPONENT_ADD(tc->healthbar_bg, PositionComponent, 0, 0);
+   COMPONENT_ADD(tc->healthbar_bg, RectangleComponent, 4);
+   COMPONENT_ADD(tc->healthbar_bg, LayerComponent, LayerPostToken0);
+   COMPONENT_ADD(tc->healthbar_bg, SizeComponent, HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
+   COMPONENT_ADD(tc->healthbar_bg, LockedPositionComponent, e, 0, GRID_RES_SIZE - HEALTH_BAR_HEIGHT);
+   entityUpdate(tc->healthbar_bg);
+
+   tc->healthbar_fg = entityCreate(self->view->entitySystem);
+   COMPONENT_ADD(tc->healthbar_fg, PositionComponent, 0, 0);
+   COMPONENT_ADD(tc->healthbar_fg, RectangleComponent, 2);
+   COMPONENT_ADD(tc->healthbar_fg, LayerComponent, LayerPostToken1);
+   COMPONENT_ADD(tc->healthbar_fg, SizeComponent, HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
+   COMPONENT_ADD(tc->healthbar_fg, LockedPositionComponent, e, 0, GRID_RES_SIZE - HEALTH_BAR_HEIGHT);
+   entityUpdate(tc->healthbar_fg);
+}
+
 void _destroy(CombatManager *self){
    entitySystemDestroy(self->actions);
    vecDestroy(EntityPtr)(self->deadList);
@@ -98,6 +135,7 @@ void _onUpdate(CombatManager *self, Entity *e){
    if (sc){
       if (!tcc){
          COMPONENT_ADD(e, TCombatComponent, .isDead = false);
+         _addHealthbars(self, e);
       }
    }
    else{
@@ -123,13 +161,23 @@ void _statModsComponentUpdate(CombatManager *self, Entity *e, StatModsComponent 
 
 }
 
-void combatManagerUpdate(CombatManager *self){
- 
+static void _updateHealthbars(CombatManager *self, Entity *e){
+   StatsComponent *sc = entityGet(StatsComponent)(e);
+   TCombatComponent *tcc = entityGet(TCombatComponent)(e);
+
+   entityGet(SizeComponent)(tcc->healthbar_fg)->x = (int)((sc->HP / entityGetMaxHP(e)) * (float)HEALTH_BAR_WIDTH);
+}
+
+void combatManagerUpdate(CombatManager *self){ 
 
    COMPONENT_QUERY(self->view->entitySystem, TCombatComponent, tc, {
       Entity *e = componentGetParent(tc, self->view->entitySystem);
       if (tc->isDead && entityGet(GridComponent)(e)){
          vecPushBack(EntityPtr)(self->deadList, &e);
+      }
+
+      if (!tc->isDead){
+         _updateHealthbars(self, e);
       }
    });
 

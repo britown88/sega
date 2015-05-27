@@ -30,33 +30,7 @@ static void TDamageMarkerComponentDestroy(TDamageMarkerComponent *self){
 struct DamageMarkerManager_t{
    Manager m;
    WorldView *view;
-
 };
-
-static void _dmgMarkerComponentUpdate(GridManager *self, Entity *e, DamageMarkerComponent *olddm){
-   DamageMarkerComponent *dmc = entityGet(DamageMarkerComponent)(e);
-   //do shit
-
-}
-
-static void _registerUpdateDelegate(DamageMarkerManager *self, EntitySystem *system){
-   ComponentUpdate update;
-
-   closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_dmgMarkerComponentUpdate, NULL);
-   compRegisterUpdateDelegate(DamageMarkerComponent)(system, update);
-}
-
-
-ImplManagerVTable(DamageMarkerManager)
-
-DamageMarkerManager *createDamageMarkerManager(WorldView *view){
-   DamageMarkerManager *out = checkedCalloc(1, sizeof(DamageMarkerManager));
-   out->view = view;
-   out->m.vTable = CreateManagerVTable(DamageMarkerManager);
-
-   _registerUpdateDelegate(out, view->entitySystem);
-   return out;
-}
 
 static void _updateDigitEntity(Entity *e, size_t value, size_t position, size_t len){
    ImageComponent *ic = entityGet(ImageComponent)(e);
@@ -86,7 +60,7 @@ static void _renderToDigits(Entity *parent, size_t value){
 
       if (!*eptr){
          e = entityCreate(entityGetSystem(parent));
-         COMPONENT_ADD(e, ImageComponent, 
+         COMPONENT_ADD(e, ImageComponent,
             .filename = stringIntern("assets//img/numbers.ega"),
             .partial = true,
             .width = DMARKER_WIDTH,
@@ -94,11 +68,11 @@ static void _renderToDigits(Entity *parent, size_t value){
             .x = 0, .y = 0);
 
          COMPONENT_ADD(e, PositionComponent, 0);
-         COMPONENT_ADD(e, LockedPositionComponent, 
+         COMPONENT_ADD(e, LockedPositionComponent,
             .parent = parent,
             .offsetX = 0,
             .offsetY = -3);
-         COMPONENT_ADD(e, LayerComponent, LayerUI);
+         COMPONENT_ADD(e, LayerComponent, LayerPostTokenDmg);
          entityUpdate(e);
 
          *eptr = e;
@@ -107,8 +81,35 @@ static void _renderToDigits(Entity *parent, size_t value){
          e = *eptr;
       }
 
-      _updateDigitEntity(e, buff[i] - '0'/*...lol*/, i, len);      
+      _updateDigitEntity(e, buff[i] - '0', i, len);
    }
+}
+
+
+static void _dmgMarkerComponentUpdate(GridManager *self, Entity *e, DamageMarkerComponent *olddm){
+   DamageMarkerComponent *dmc = entityGet(DamageMarkerComponent)(e);
+   if (dmc->value != olddm->value){
+      _renderToDigits(e, dmc->value);
+   }
+}
+
+static void _registerUpdateDelegate(DamageMarkerManager *self, EntitySystem *system){
+   ComponentUpdate update;
+
+   closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_dmgMarkerComponentUpdate, NULL);
+   compRegisterUpdateDelegate(DamageMarkerComponent)(system, update);
+}
+
+
+ImplManagerVTable(DamageMarkerManager)
+
+DamageMarkerManager *createDamageMarkerManager(WorldView *view){
+   DamageMarkerManager *out = checkedCalloc(1, sizeof(DamageMarkerManager));
+   out->view = view;
+   out->m.vTable = CreateManagerVTable(DamageMarkerManager);
+
+   _registerUpdateDelegate(out, view->entitySystem);
+   return out;
 }
 
 static void _addNewTransient(Entity *e){
