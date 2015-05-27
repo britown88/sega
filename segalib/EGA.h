@@ -63,6 +63,7 @@ typedef struct Image_t Image;
 Frame *frameCreate();
 void frameDestroy(Frame *self);
 void frameRenderImage(Frame *self, short x, short y, Image *img);
+void frameRenderImagePartial(Frame *self, short x, short y, Image *img, short imgX, short imgY, short imgWidth, short imgHeight);
 void frameRenderPoint(Frame *self, short x, short y, byte color);
 void frameRenderLine(Frame *self, short x1, short y1, short x2, short y2, byte color);
 void frameRenderRect(Frame *self, short left, short top, short right, short bottom, byte color);

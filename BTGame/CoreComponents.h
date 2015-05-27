@@ -47,6 +47,8 @@ typedef struct {
 
 typedef struct{
    StringView filename;
+   bool partial;
+   short x, y, width, height;
 }ImageComponent;
 
 #define ComponentT ImageComponent

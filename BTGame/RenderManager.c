@@ -233,7 +233,14 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
          if (mc){ _renderMeshEntity(e, frame, mc, x, y, img); }         
       }
       else{
-         frameRenderImage(frame, x, y, img);
+         ImageComponent *ic = entityGet(ImageComponent)(e);
+         if (ic->partial){
+            frameRenderImagePartial(frame, x, y, img, ic->x, ic->y, ic->width, ic->height);
+         }
+         else{
+            frameRenderImage(frame, x, y, img);
+         }
+         
       }
    }
 
@@ -287,5 +294,5 @@ void renderManagerRender(RenderManager *self, Frame *frame){
 
    _renderLayers(self, frame);
 
-   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 7, 0),  *self->fps);
+   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 7, 0), *self->fps);
 }

@@ -13,8 +13,8 @@
 #define LOG_LINE_COUNT 14
 #define LOG_X 2
 #define LOG_Y 9
-#define LOG_COLOR_FG 0
-#define LOG_COLOR_BG 7
+#define LOG_COLOR_FG 7
+#define LOG_COLOR_BG 0
 
 typedef struct {
    String *line;

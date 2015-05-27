@@ -138,6 +138,45 @@ ImageScanLine *createSmallestScanLine(short bitCount, byte *data){
    return scanline;
 }
 
+void frameRenderImagePartial(Frame *self, short x, short y, Image *img, short imgX, short imgY, short subimgWidth, short subimgHeight) {
+   short imgWidth = MIN(subimgWidth, imageGetWidth(img));
+   short imgHeight = MIN(subimgHeight, imageGetHeight(img));
+
+   short clipSizeX, clipSizeY, ignoreOffsetX, ignoreOffsetY;
+   int j, i;
+   byte colorBuffer[MAX_IMAGE_WIDTH];
+   byte alphaBuffer[MAX_IMAGE_WIDTH];
+
+   ignoreOffsetX = x < 0 ? -x : 0;
+   ignoreOffsetY = y < 0 ? -y : 0;
+
+   clipSizeX = imgWidth;
+   clipSizeY = imgHeight;
+   if (clipSizeX + x > EGA_RES_WIDTH) clipSizeX = EGA_RES_WIDTH - x;
+   if (clipSizeY + y > EGA_RES_HEIGHT) clipSizeY = EGA_RES_HEIGHT - y;
+
+   clipSizeX -= ignoreOffsetX;
+   clipSizeY -= ignoreOffsetY;
+
+   ignoreOffsetX = MAX(imgX, ignoreOffsetX);
+   ignoreOffsetY = MAX(imgY, ignoreOffsetY);
+
+   if (clipSizeX <= 0 || clipSizeY <= 0) {
+      return;
+   }
+
+   for (j = 0; j < clipSizeY; ++j) {
+      imageScanLineRender(imageGetScanLine(img, j + ignoreOffsetY, 0), alphaBuffer);//transparency
+
+      for (i = 0; i < EGA_PLANES; ++i) {
+         imageScanLineRender(imageGetScanLine(img, j + ignoreOffsetY, i + 1), colorBuffer);
+
+         _scanLineRenderImageScanLine(&self->planes[i].lines[j + y + ignoreOffsetY], x + ignoreOffsetX,
+            colorBuffer, alphaBuffer, ignoreOffsetX, clipSizeX);
+      }
+   }
+}
+
 void frameRenderImage(Frame *self, short x, short y, Image *img) {
    short imgWidth = imageGetWidth(img);
    short imgHeight = imageGetHeight(img);
