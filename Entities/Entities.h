@@ -82,9 +82,9 @@ EntitySystem *entitySystemCreateChecked(const char *file, int line);
 EntitySystem *entitySystemCreateUnchecked();
 
 #ifdef _DEBUG
-#define entitySystem() entityCreateChecked(__FILE__, __LINE__)
+#define entitySystemCreate() entitySystemCreateChecked(__FILE__, __LINE__)
 #else
-#define entitySystem() entityCreateUnchecked()
+#define entitySystemCreate() entitySystemCreateUnchecked()
 #endif 
 
 

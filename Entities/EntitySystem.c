@@ -4,6 +4,8 @@
 #include "segautils\Defs.h"
 #include "segautils\BitTwiddling.h"
 
+#include <stdio.h>
+
 ImplLocalRTTITag(COMPONENTS)
 
 #define ClosureTPart CLOSURE_NAME(ComponentUpdate)
@@ -142,11 +144,17 @@ EntitySystem *entitySystemCreateUnchecked(){
    return out;
 }
 
+static FILE *_openLeakReport(const char *file, int line){
+   static char buff[256] = { 0 };
+   sprintf(buff, "EntityLeaks_%s_%i.txt", file, line);
+   return fopen(buff, "wt");
+}
+
 void _destroyAllEntities(EntitySystem *self){
    Entity *first = self->entityPool;
    Entity *last = first + self->eCount;
 #ifdef _DEBUG
-   FILE *leakRpt = fopen()
+   FILE *leakRpt = _openLeakReport(self->file, self->line);
 #endif
 
    while (first != last){
@@ -154,12 +162,15 @@ void _destroyAllEntities(EntitySystem *self){
       if (e->loaded){
 #ifdef _DEBUG
 //print
+         fprintf(leakRpt, "%s:%i\n", e->file, e->line);
 #endif
-
-
          entityDestroy(e);
       }
    }
+
+#ifdef _DEBUG
+   fclose(leakRpt);
+#endif
 
 }
 
