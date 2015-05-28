@@ -41,6 +41,11 @@ typedef struct Entity_t{
    int ID;
    byte loaded;
    EntitySystem *system;
+
+#ifdef _DEBUG
+   const char *file;
+   int line;
+#endif
 };
 
 #define VectorTPart EntityPtr
@@ -93,6 +98,11 @@ struct EntitySystem_t {
    vec(ComponentList) *lists;
    vec(ManagerPtr) *managers;
    ht(cudEntry) *updateDelegates;
+
+#ifdef _DEBUG
+   const char *file;
+   int line;
+#endif
 };
 
 Entity *_eNodeCompareFunc(Entity *n1, Entity *n2){
@@ -112,7 +122,16 @@ void managerOnUpdate(Manager *self, Entity *e){
    self->vTable->onUpdate(self, e);
 }
 
-EntitySystem *entitySystemCreate(){
+EntitySystem *entitySystemCreateChecked(const char *file, int line){
+   EntitySystem *out = entitySystemCreateUnchecked();
+#ifdef _DEBUG
+   out->file = file;
+   out->line = line;
+#endif
+   return out;
+}
+
+EntitySystem *entitySystemCreateUnchecked(){
    EntitySystem *out = checkedCalloc(1, sizeof(EntitySystem));
    out->eQueue = priorityQueueCreate(offsetof(Entity, node), (PQCompareFunc)&_eNodeCompareFunc);
    out->entityPool = checkedCalloc(MAX_ENTITIES, sizeof(Entity));
@@ -126,9 +145,18 @@ EntitySystem *entitySystemCreate(){
 void _destroyAllEntities(EntitySystem *self){
    Entity *first = self->entityPool;
    Entity *last = first + self->eCount;
+#ifdef _DEBUG
+   FILE *leakRpt = fopen()
+#endif
+
    while (first != last){
       Entity *e = first++;
       if (e->loaded){
+#ifdef _DEBUG
+//print
+#endif
+
+
          entityDestroy(e);
       }
    }
@@ -221,7 +249,18 @@ ComponentList *entitySystemGetCompList(EntitySystem *self, size_t rtti){
 
 #define SEGASSERT(...) if(!(__VA_ARGS__)){ int a = *(int*)0; }
 
-Entity *entityCreate(EntitySystem *system){
+Entity *entityCreateChecked(EntitySystem *system, const char *file, int line){
+   Entity *out = entityCreateUnchecked(system);
+
+#ifdef _DEBUG
+   out->file = file;
+   out->line = line;
+#endif
+
+   return out;
+}
+
+Entity *entityCreateUnchecked(EntitySystem *system){
    Entity *out;
 
    if (priorityQueueIsEmpty(system->eQueue)){

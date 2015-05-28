@@ -4,6 +4,6 @@
 #include "Entities\Entities.h"
 #include "Actions.h"
 
-typedef struct GridManager_t GridManager;
+typedef struct WorldView_t WorldView;
 
-Coroutine createCommandGridMove(Action *a, GridManager *manager);
+Coroutine createCommandGridMove(Action *a, WorldView *view);

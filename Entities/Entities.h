@@ -78,7 +78,16 @@ void _onUpdate(MyTestManager *self, Entity *e){}
 
 */
 
-EntitySystem *entitySystemCreate();
+EntitySystem *entitySystemCreateChecked(const char *file, int line);
+EntitySystem *entitySystemCreateUnchecked();
+
+#ifdef _DEBUG
+#define entitySystem() entityCreateChecked(__FILE__, __LINE__)
+#else
+#define entitySystem() entityCreateUnchecked()
+#endif 
+
+
 void entitySystemDestroy(EntitySystem *self);
 
 void entitySystemRegisterManager(EntitySystem *self, Manager *manager);
@@ -95,7 +104,16 @@ Manager **entitySystemGetManagers(EntitySystem *self);
 void entitySystemUpdateComponent(EntitySystem *self, size_t compRtti, Entity *e, Component oldComponent);
 void entitySystemRegisterComponentUpdate(EntitySystem *self, size_t compRtti, ComponentUpdate del);
 
-Entity *entityCreate(EntitySystem *system);
+
+Entity *entityCreateChecked(EntitySystem *system, const char *file, int line);
+Entity *entityCreateUnchecked(EntitySystem *system);
+
+#ifdef _DEBUG
+#define entityCreate(SYSTEM) entityCreateChecked(SYSTEM, __FILE__, __LINE__)
+#else
+#define entityCreate(SYSTEM) entityCreateUnchecked(SYSTEM)
+#endif 
+
 void entityUpdate(Entity *self);
 void entityDestroy(Entity *self);
 void entityVectorDestroy(EntityPtr *self);//for use with vector destructor

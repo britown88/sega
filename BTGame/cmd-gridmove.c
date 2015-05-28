@@ -5,12 +5,15 @@
 #include "SelectionManager.h"
 #include "Actions.h"
 #include "Combat.h"
+#include "WorldView.h"
 #include <math.h>
 
 typedef struct {
    Action *a;
    GridManager *manager;
+   WorldView *view;
    bool paused;
+   Entity *waypoint;
 } GridMoveData;
 
 static GridMoveData *_gridMoveDataCreate(){
@@ -19,6 +22,7 @@ static GridMoveData *_gridMoveDataCreate(){
 }
 
 static void _gridMoveDataDestroy(GridMoveData *self){
+   COMPONENT_ADD(self->waypoint, DestructionComponent, 0);
    checkedFree(self);
 }
 
@@ -210,12 +214,34 @@ static CoroutineStatus _gridMove(GridMoveData *data, CoroutineRequest request){
    return NotFinished;
 }
 
-Coroutine createCommandGridMove(Action *a, GridManager *manager){
+static void _createWaypoint(GridMoveData *self){
+   ActionTargetPositionComponent *tpc = entityGet(ActionTargetPositionComponent)(self->a);
+   ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(self->a);
+   self->waypoint = entityCreate(self->view->entitySystem);
+
+   if (tpc){
+      int x, y;
+      screenPosFromGridXY(tpc->x, tpc->y, &x, &y);
+      COMPONENT_ADD(self->waypoint, PositionComponent, x, y);
+      COMPONENT_ADD(self->waypoint, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
+      COMPONENT_ADD(self->waypoint, LayerComponent, LayerSubToken0);
+      COMPONENT_ADD(self->waypoint, RectangleComponent, 10);
+   }
+
+   entityUpdate(self->waypoint);
+}
+
+Coroutine createCommandGridMove(Action *a, WorldView *view){
    Coroutine out;
    GridMoveData *data = _gridMoveDataCreate();
 
    data->a = a;
-   data->manager = manager;
+   data->manager = view->managers->gridManager;
+   data->view = view;
+
+   _createWaypoint(data);
+
+
 
    closureInit(Coroutine)(&out, data, (CoroutineFunc)&_gridMove, &_gridMoveDataDestroy);
    return out;

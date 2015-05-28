@@ -140,7 +140,7 @@ static Coroutine _updateCommand(CommandManager *self, Action *a){
    //we didnt find a coroutine to run so look and see if we 
    //have movement we can pass to a move command
    if (tpc || tec){
-      return createCommandGridMove(a, self->view->managers->gridManager);
+      return createCommandGridMove(a, self->view);
    }
 
    //we aint found shit
