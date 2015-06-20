@@ -11,18 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{81713CA5-BCEC-450C-9D78-EDAC6C7B71D1}</ProjectGuid>
-    <RootNamespace>BTGame</RootNamespace>
+    <ProjectGuid>{2F441A33-903C-4503-89C5-359BB137260C}</ProjectGuid>
+    <RootNamespace>Shift</RootNamespace>
+    <ProjectName>Shift</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -44,14 +45,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
       <CompileAs>CompileAsC</CompileAs>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\;</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -61,87 +63,30 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>../;</AdditionalIncludeDirectories>
       <CompileAs>CompileAsC</CompileAs>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;BUILDING_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\;</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Abilities.h" />
-    <ClInclude Include="BT.h" />
-    <ClInclude Include="Combat.h" />
-    <ClInclude Include="CombatConstants.h" />
-    <ClInclude Include="CombatRoutines.h" />
-    <ClInclude Include="Commands.h" />
-    <ClInclude Include="CoreComponents.h" />
-    <ClInclude Include="GameClock.h" />
-    <ClInclude Include="GameState.h" />
-    <ClInclude Include="Actions.h" />
-    <ClInclude Include="GridHelpers.h" />
-    <ClInclude Include="GridManager.h" />
-    <ClInclude Include="ImageLibrary.h" />
-    <ClInclude Include="LogManager.h" />
-    <ClInclude Include="Managers.h" />
-    <ClInclude Include="MeshRendering.h" />
-    <ClInclude Include="SelectionManager.h" />
-    <ClInclude Include="StatusManager.h" />
-    <ClInclude Include="WorldView.h" />
+    <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AbilityLibrary.c" />
-    <ClCompile Include="AIManager.c" />
-    <ClCompile Include="AllAbilities.c" />
-    <ClCompile Include="AllCombatRoutines.c" />
-    <ClCompile Include="AllStatuses.c" />
-    <ClCompile Include="cmd-melee.c" />
-    <ClCompile Include="cmd-auto.c" />
-    <ClCompile Include="AutoAttack.c" />
-    <ClCompile Include="BoardState.c" />
-    <ClCompile Include="BT.c" />
-    <ClCompile Include="cmd-stun.c" />
-    <ClCompile Include="CombatManager.c" />
-    <ClCompile Include="CombatRoutineLibrary.c" />
-    <ClCompile Include="CoreComponents.c" />
-    <ClCompile Include="CursorManager.c" />
-    <ClCompile Include="DamageMarkerManager.c" />
-    <ClCompile Include="DestructionManager.c" />
-    <ClCompile Include="DiceManager.c" />
-    <ClCompile Include="GameClock.c" />
-    <ClCompile Include="GameState.c" />
-    <ClCompile Include="GridHelpers.c" />
-    <ClCompile Include="cmd-gridmove.c" />
-    <ClCompile Include="GridManager.c" />
-    <ClCompile Include="CommandManager.c" />
-    <ClCompile Include="ImageLibrary.c" />
-    <ClCompile Include="InterpolationManager.c" />
-    <ClCompile Include="LogManager.c" />
-    <ClCompile Include="MagicMissile.c" />
-    <ClCompile Include="MeleeAttack.c" />
-    <ClCompile Include="Move.c" />
-    <ClCompile Include="cmd-projectile.c" />
-    <ClCompile Include="cmd-ranged.c" />
-    <ClCompile Include="RangedAttack.c" />
-    <ClCompile Include="RenderManager.c" />
-    <ClCompile Include="MeshRendering.c" />
-    <ClCompile Include="SelectionManager.c" />
-    <ClCompile Include="cmd-new.c" />
-    <ClCompile Include="cmd-swap-other.c" />
-    <ClCompile Include="cmd-swap.c" />
-    <ClCompile Include="status-stun.c" />
-    <ClCompile Include="StatusLibrary.c" />
-    <ClCompile Include="StatusManager.c" />
-    <ClCompile Include="Stun.c" />
-    <ClCompile Include="Swap.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Entities\Entities.vcxproj">
-      <Project>{c01298c5-f64b-4e7d-ad46-f6bcdf59c4a9}</Project>
+    <ProjectReference Include="..\ShiftGame\ShiftGame.vcxproj">
+      <Project>{81713ca5-bcec-450c-9d78-edac6c7b71d1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\GLFWContext\GLFWContext.vcxproj">
+      <Project>{ffb94248-0cc7-4f3e-a0f1-165a4dc07fa4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\OGLRenderer\OGLRenderer.vcxproj">
+      <Project>{8c0896e9-2a31-46aa-9ed8-e97e32199648}</Project>
     </ProjectReference>
     <ProjectReference Include="..\segalib\segalib.vcxproj">
       <Project>{57b143e8-2941-478d-9873-8fd793813fa2}</Project>

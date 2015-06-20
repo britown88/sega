@@ -7,14 +7,14 @@
    COPYRIGHT TODAY
 ************************************/
 #include "SEGA\App.h"
-#include "BTGame\BT.h"
+#include "ShiftGame\Shift.h"
 #include "segashared\CheckedMemory.h"
 #include "OGLRenderer\OGLRenderer.h"
 #include "GLFWContext\GLFWContext.h"
 
 int main()
 {
-   runApp(btCreate(), createOGLRenderer(), createGLFWContext());
+   runApp(shiftCreate(), createOGLRenderer(), createGLFWContext());
    printMemoryLeaks();
 
    return 0;

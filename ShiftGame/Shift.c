@@ -1,4 +1,4 @@
-#include "BT.h"
+#include "Shift.h"
 #include "SEGA\App.h"
 #include "segashared\CheckedMemory.h"
 #include "segashared\Strings.h"
@@ -99,7 +99,7 @@ void _destroyEntitySystem(BTGame *self){
    entitySystemDestroy(self->entitySystem);
 }
 
-VirtualApp *btCreate() {
+VirtualApp *shiftCreate() {
    BTGame *r = checkedCalloc(1, sizeof(BTGame));
    r->vApp.vTable = getVtable();
    r->data = createData();

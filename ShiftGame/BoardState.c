@@ -159,7 +159,7 @@ static void _handleMouse(BoardState *state){
             { scTeam, .teamID = 1 });
 
             if (!vecIsEmpty(EntityPtr)(clickedEntities)){
-               logManagerPushMessage(managers->logManager, "Clicked an Entity");
+               //logManagerPushMessage(managers->logManager, "Clicked an Entity");
                vecForEach(EntityPtr, e, selectedEntities, {
                   if (!shift){
                      entityCancelAllCommands(*e);
@@ -192,7 +192,7 @@ static void _handleMouse(BoardState *state){
                }
                else if (gridIndex < INF){
                   int gx, gy;
-                  logManagerPushMessage(managers->logManager, "Clicked a Position");
+                  //logManagerPushMessage(managers->logManager, "Clicked a Position");
                   gridXYFromIndex(gridIndex, &gx, &gy);
                   vecForEach(EntityPtr, e, selectedEntities, {
                      if (!shift){

@@ -216,7 +216,7 @@ CombatAction *combatManagerQueryActionResult(CombatManager *self, CombatAction *
 
    if (dc){
       float arm = 0.0f;
-      logManagerPushMessage(self->view->managers->logManager, "Attack for %0.2f!", dc->damage);
+      //logManagerPushMessage(self->view->managers->logManager, "Attack for %0.2f!", dc->damage);
 
       if (dtc){         
          if (dtc->type == DamageTypePhysical){
