@@ -36,6 +36,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinGDIContext", "WinGDICont
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLFWContext", "GLFWContext\GLFWContext.vcxproj", "{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BT", "BT\BT.vcxproj", "{0A4083AD-4B62-477D-AB45-91E4EB639BC1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BTGame", "BTGame\BTGame.vcxproj", "{73586AA7-F78C-4ACA-AA0A-7583E035D0CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -94,6 +98,14 @@ Global
 		{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}.Debug|Win32.Build.0 = Debug|Win32
 		{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}.Release|Win32.ActiveCfg = Release|Win32
 		{FFB94248-0CC7-4F3E-A0F1-165A4DC07FA4}.Release|Win32.Build.0 = Release|Win32
+		{0A4083AD-4B62-477D-AB45-91E4EB639BC1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0A4083AD-4B62-477D-AB45-91E4EB639BC1}.Debug|Win32.Build.0 = Debug|Win32
+		{0A4083AD-4B62-477D-AB45-91E4EB639BC1}.Release|Win32.ActiveCfg = Release|Win32
+		{0A4083AD-4B62-477D-AB45-91E4EB639BC1}.Release|Win32.Build.0 = Release|Win32
+		{73586AA7-F78C-4ACA-AA0A-7583E035D0CC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{73586AA7-F78C-4ACA-AA0A-7583E035D0CC}.Debug|Win32.Build.0 = Debug|Win32
+		{73586AA7-F78C-4ACA-AA0A-7583E035D0CC}.Release|Win32.ActiveCfg = Release|Win32
+		{73586AA7-F78C-4ACA-AA0A-7583E035D0CC}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

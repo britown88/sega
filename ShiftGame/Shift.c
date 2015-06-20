@@ -30,14 +30,14 @@ typedef struct {
 
    WorldView view;
 
-} BTGame;
+} ShiftGame;
 
 #pragma region App_Things
 
-static AppData *_getData(BTGame *);
-static void _destroy(BTGame *);
-static void _onStart(BTGame *);
-static void _onStep(BTGame *);
+static AppData *_getData(ShiftGame *);
+static void _destroy(ShiftGame *);
+static void _onStart(ShiftGame *);
+static void _onStep(ShiftGame *);
 
 static VirtualAppVTable *getVtable()
 {
@@ -66,7 +66,7 @@ AppData createData() {
 
    return data;
 }
-AppData *_getData(BTGame *self) {
+AppData *_getData(ShiftGame *self) {
    return &self->data;
 }
 
@@ -76,7 +76,7 @@ AppData *_getData(BTGame *self) {
    member = funcCall; \
    entitySystemRegisterManager(self->entitySystem, (Manager*)member);
 
-void _initEntitySystem(BTGame *self){
+void _initEntitySystem(ShiftGame *self){
    self->entitySystem = entitySystemCreate();
    self->view.entitySystem = self->entitySystem;//this is important
 
@@ -95,12 +95,12 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.damageMarkerManager, createDamageMarkerManager(&self->view));
 }
 
-void _destroyEntitySystem(BTGame *self){
+void _destroyEntitySystem(ShiftGame *self){
    entitySystemDestroy(self->entitySystem);
 }
 
 VirtualApp *shiftCreate() {
-   BTGame *r = checkedCalloc(1, sizeof(BTGame));
+   ShiftGame *r = checkedCalloc(1, sizeof(ShiftGame));
    r->vApp.vTable = getVtable();
    r->data = createData();
 
@@ -121,7 +121,7 @@ VirtualApp *shiftCreate() {
    return (VirtualApp*)r;
 }
 
-void _destroy(BTGame *self){
+void _destroy(ShiftGame *self){
    fsmDestroy(self->gameState);
    _destroyEntitySystem(self);
 
@@ -130,7 +130,7 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
-void _onStart(BTGame *self){
+void _onStart(ShiftGame *self){
 
    Entity *e = entityCreate(self->entitySystem);      
    COMPONENT_ADD(e, PositionComponent, 0, 0);
@@ -146,7 +146,7 @@ void _onStart(BTGame *self){
 }
 
 
-void _onStep(BTGame *self){
+void _onStep(ShiftGame *self){
    fsmSend(self->gameState, GameStateHandleInput);
    fsmSend(self->gameState, GameStateUpdate);   
    fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);         

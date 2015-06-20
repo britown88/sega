@@ -154,3 +154,13 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+/Shift/memleak.txt
+/BT/allocReport.csv
+/BT/memleak.txt
+/Shift/allocReport.csv
+/Shift/EntityLeaks_BT.c_80.txt
+/Shift/EntityLeaks_CombatManager.c_97.txt
+/Shift/EntityLeaks_CommandManager.c_156.txt
+/Shift/EntityLeaks_Shift.c_80.txt
+/Shift/EntityLeaks_StatusManager.c_73.txt
+/Shift/mem.txt
