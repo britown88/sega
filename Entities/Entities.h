@@ -4,6 +4,8 @@
 #include "segashared\RTTI.h"
 #include <assert.h>
 
+#define __FILE_EX__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+
 DeclLocalRTTITag(COMPONENTS)
 
 #define MAX_ENTITIES (1024 * 128)
@@ -82,7 +84,7 @@ EntitySystem *entitySystemCreateChecked(const char *file, int line);
 EntitySystem *entitySystemCreateUnchecked();
 
 #ifdef _DEBUG
-#define entitySystemCreate() entitySystemCreateChecked(__FILE__, __LINE__)
+#define entitySystemCreate() entitySystemCreateChecked(__FILE_EX__, __LINE__)
 #else
 #define entitySystemCreate() entitySystemCreateUnchecked()
 #endif 
@@ -109,7 +111,7 @@ Entity *entityCreateChecked(EntitySystem *system, const char *file, int line);
 Entity *entityCreateUnchecked(EntitySystem *system);
 
 #ifdef _DEBUG
-#define entityCreate(SYSTEM) entityCreateChecked(SYSTEM, __FILE__, __LINE__)
+#define entityCreate(SYSTEM) entityCreateChecked(SYSTEM, __FILE_EX__, __LINE__)
 #else
 #define entityCreate(SYSTEM) entityCreateUnchecked(SYSTEM)
 #endif 

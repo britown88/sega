@@ -18,9 +18,54 @@
     <ClInclude Include="BT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Managers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageLibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CoreComponents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CoreComponents.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CursorManager.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameClock.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameState.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageLibrary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRendering.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderManager.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldState.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

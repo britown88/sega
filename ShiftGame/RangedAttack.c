@@ -8,7 +8,7 @@
 
 static Action *_buildRangedAttack(ClosureData d, WorldView *view, Entity *user){
    float range = 4.0f;
-   BTManagers *managers = view->managers;   
+   ShiftManagers *managers = view->managers;   
 
    CombatAction *dmg = combatActionCreateCustom(managers->combatManager);
    COMPONENT_ADD(dmg, CActionSourceComponent, .source = user);

@@ -3,6 +3,14 @@
 #include "segashared\CheckedMemory.h"
 #include "segashared\Strings.h"
 
+#include "Entities\Entities.h"
+#include "WorldView.h"
+#include "GameClock.h"
+#include "ImageLibrary.h"
+#include "Managers.h"
+#include "GameState.h"
+
+
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
@@ -11,6 +19,14 @@
 typedef struct {
    VirtualApp vApp;
    AppData data;
+
+   BTManagers managers;
+
+   EntitySystem *entitySystem;
+   ImageLibrary *imageLibrary;
+   FSM *gameState;
+   GameClock *gameClock;
+   WorldView view;
 
 } BTGame;
 
@@ -58,27 +74,67 @@ AppData *_getData(BTGame *self) {
    member = funcCall; \
    entitySystemRegisterManager(self->entitySystem, (Manager*)member);
 
+void _initEntitySystem(BTGame *self){
+   self->entitySystem = entitySystemCreate();
+   self->view.entitySystem = self->entitySystem;//this is important
+
+   RegisterManager(self->managers.renderManager, createRenderManager(&self->view, &self->data.fps));
+   RegisterManager(self->managers.cursorManager, createCursorManager(&self->view));
+}
+
+void _destroyEntitySystem(BTGame *self){
+   entitySystemDestroy(self->entitySystem);
+}
 
 VirtualApp *btCreate() {
    BTGame *r = checkedCalloc(1, sizeof(BTGame));
    r->vApp.vTable = getVtable();
    r->data = createData();
 
+   //Other constructor shit goes here   
+   r->imageLibrary = imageLibraryCreate();
+   r->gameState = fsmCreate();
+   r->gameClock = gameClockCreate();
+
+   //init the view
+   r->view.imageLibrary = r->imageLibrary;
+   r->view.gameState = r->gameState;
+   r->view.managers = &r->managers;
+   r->view.gameClock = r->gameClock;
+
+   _initEntitySystem(r);
+
    return (VirtualApp*)r;
 }
 
 void _destroy(BTGame *self){
+   fsmDestroy(self->gameState);
+   _destroyEntitySystem(self);
+
+   imageLibraryDestroy(self->imageLibrary);
+   gameClockDestroy(self->gameClock);
    checkedFree(self);
 }
 
 void _onStart(BTGame *self){
+   //Entity *e = entityCreate(self->entitySystem);
+   //COMPONENT_ADD(e, PositionComponent, 0, 0);
+   //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
+   //entityUpdate(e);
 
+   appLoadPalette(appGet(), "assets/img/default.pal");
+   cursorManagerCreateCursor(self->managers.cursorManager);
+
+   //push the opening state
+   fsmPush(self->gameState, gameStateCreateWorld(&self->view));
 
 }
 
 
 void _onStep(BTGame *self){
-
+   fsmSend(self->gameState, GameStateHandleInput);
+   fsmSend(self->gameState, GameStateUpdate);
+   fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);
 }
 
 

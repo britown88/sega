@@ -8,7 +8,7 @@
 
 static Action *_buildMagicMissile(ClosureData d, WorldView *view, Entity *user){
    float range = 6.0f;
-   BTManagers *managers = view->managers;
+   ShiftManagers *managers = view->managers;
 
    Status *s = statusCreateByName(managers->statusManager, stringIntern("stun"));
    s = statusSetDuration(s, 2.0f);

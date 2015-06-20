@@ -26,7 +26,7 @@ static void _NEWCMDRoutineDestroy(NEWCMDRoutineData *self){
 }
 
 static CoroutineStatus _NEWCMDRoutine(NEWCMDRoutineData *data, CoroutineRequest request){
-   BTManagers *managers = data->view->managers;
+   ShiftManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
    Entity *e, *target;

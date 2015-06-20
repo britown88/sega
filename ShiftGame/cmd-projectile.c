@@ -27,7 +27,7 @@ static void _projectileRoutineDestroy(ProjectileRoutineData *self){
 }
 
 static CoroutineStatus _projectileRoutine(ProjectileRoutineData *data, CoroutineRequest request){
-   BTManagers *managers = data->view->managers;
+   ShiftManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
    Entity *e, *target;

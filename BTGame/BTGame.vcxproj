@@ -88,9 +88,24 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h" />
+    <ClInclude Include="CoreComponents.h" />
+    <ClInclude Include="GameClock.h" />
+    <ClInclude Include="GameState.h" />
+    <ClInclude Include="ImageLibrary.h" />
+    <ClInclude Include="Managers.h" />
+    <ClInclude Include="MeshRendering.h" />
+    <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="WorldState.c" />
     <ClCompile Include="BT.c" />
+    <ClCompile Include="CoreComponents.c" />
+    <ClCompile Include="CursorManager.c" />
+    <ClCompile Include="GameClock.c" />
+    <ClCompile Include="GameState.c" />
+    <ClCompile Include="ImageLibrary.c" />
+    <ClCompile Include="MeshRendering.c" />
+    <ClCompile Include="RenderManager.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

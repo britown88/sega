@@ -24,7 +24,7 @@ typedef struct AIManager_t AIManager;
 typedef struct StatusManager_t StatusManager;
 typedef struct DamageMarkerManager_t DamageMarkerManager;
 
-typedef struct BTManagers_t {
+typedef struct ShiftManagers_t {
    RenderManager *renderManager;
    CursorManager *cursorManager;
    GridManager *gridManager;
@@ -38,7 +38,7 @@ typedef struct BTManagers_t {
    AIManager *AIManager;
    StatusManager *statusManager;
    DamageMarkerManager *damageMarkerManager;
-}BTManagers;
+}ShiftManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);

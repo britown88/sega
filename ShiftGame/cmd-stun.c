@@ -26,7 +26,7 @@ static void _StunRoutineDestroy(StunRoutineData *self){
 }
 
 static CoroutineStatus _StunRoutine(StunRoutineData *data, CoroutineRequest request){
-   BTManagers *managers = data->view->managers;
+   ShiftManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    Entity *e;
 

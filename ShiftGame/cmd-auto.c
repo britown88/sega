@@ -26,7 +26,7 @@ static void _AutoRoutineDestroy(AutoRoutineData *self){
 }
 
 static CoroutineStatus _AutoRoutine(AutoRoutineData *data, CoroutineRequest request){
-   BTManagers *managers = data->view->managers;
+   ShiftManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
    float range = 0.0;

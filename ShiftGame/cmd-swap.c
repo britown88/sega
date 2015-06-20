@@ -39,7 +39,7 @@ static void _pushSwapOtherAction(CommandManager *manager, Entity *user, Entity *
 }
 
 static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest request){
-   BTManagers *managers = data->view->managers;
+   ShiftManagers *managers = data->view->managers;
    ActionUserComponent *uc = entityGet(ActionUserComponent)(data->a);
    ActionTargetEntityComponent *tec = entityGet(ActionTargetEntityComponent)(data->a);
    ActionAbilityNameComponent *anc = entityGet(ActionAbilityNameComponent)(data->a);

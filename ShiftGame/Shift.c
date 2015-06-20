@@ -22,7 +22,7 @@
 typedef struct {
    VirtualApp vApp;
    AppData data;
-   BTManagers managers;
+   ShiftManagers managers;
    EntitySystem *entitySystem;
    ImageLibrary *imageLibrary;
    FSM *gameState;

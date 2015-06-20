@@ -42,7 +42,7 @@ static void _updateEntity(AIManager *self, Entity *e){
    CommandComponent *cc = entityGet(CommandComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
    TeamComponent *tc = entityGet(TeamComponent)(e);
-   BTManagers *managers = self->view->managers;
+   ShiftManagers *managers = self->view->managers;
    if (!gc || !tc || entityIsDead(e)){
       return;
    }

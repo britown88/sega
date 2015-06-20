@@ -45,7 +45,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI);
 
 
 static void _testSpawn(BoardState *state){
-   BTManagers *managers = state->view->managers;
+   ShiftManagers *managers = state->view->managers;
    static long spawnTimer = 0;
 
    if (spawnTimer == 0){
@@ -66,7 +66,7 @@ static void _testSpawn(BoardState *state){
 }
 
 void _boardUpdate(BoardState *state, GameStateUpdate *m){
-   BTManagers *managers = state->view->managers;
+   ShiftManagers *managers = state->view->managers;
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
 
@@ -92,7 +92,7 @@ void _boardUpdate(BoardState *state, GameStateUpdate *m){
 static bool special = false;
 
 static void _handleKeyboard(BoardState *state){
-   BTManagers *managers = state->view->managers;
+   ShiftManagers *managers = state->view->managers;
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    while (keyboardPopEvent(k, &e)){
@@ -127,7 +127,7 @@ static void _handleKeyboard(BoardState *state){
 }
 
 static void _handleMouse(BoardState *state){
-   BTManagers *managers = state->view->managers;
+   ShiftManagers *managers = state->view->managers;
    Mouse *mouse = appGetMouse(appGet());
    Keyboard *k = appGetKeyboard(appGet());
    MouseEvent event = { 0 };
