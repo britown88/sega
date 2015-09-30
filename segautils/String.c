@@ -32,5 +32,8 @@ void stringConcat(String *self, const char*str){
 }
 
 const char *c_str(String *str){
+   if (!str) {
+      return NULL;
+   }
    return vecAt(char)((vec(char)*)str, 0);
 }

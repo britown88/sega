@@ -34,6 +34,15 @@
     <ClCompile Include="String.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LispExpressions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LispContext.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LispParser.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preprocessor.h">
@@ -112,6 +121,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="String.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lisp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

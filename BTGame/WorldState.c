@@ -13,6 +13,8 @@
 #include "segashared\Strings.h"
 #include "GameClock.h"
 
+#include "segautils/Lisp.h"
+
 typedef struct {
    WorldView *view;
 }WorldState;
@@ -66,9 +68,19 @@ void _boardRender(WorldState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
+static void _testLisp() {
+   LispExpr ex = lispCreatef32(1.0f);
+
+   float *f = lispf32(&ex);
+   int *i = lispi32(&ex);
+}
+
 StateClosure gameStateCreateWorld(WorldView *view){
    StateClosure out;
    WorldState *state = checkedCalloc(1, sizeof(WorldState));
+
+
+   _testLisp();
 
    state->view = view;
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);

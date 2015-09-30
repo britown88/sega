@@ -25,6 +25,7 @@
     <ClInclude Include="HashTable_Create.h" />
     <ClInclude Include="HashTable_Functions.h" />
     <ClInclude Include="IntrusiveHeap.h" />
+    <ClInclude Include="Lisp.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Preprocessor.h" />
@@ -45,6 +46,9 @@
     <ClCompile Include="Dijkstras.c" />
     <ClCompile Include="FSM.c" />
     <ClCompile Include="IntrusiveHeap.c" />
+    <ClCompile Include="LispContext.c" />
+    <ClCompile Include="LispExpressions.c" />
+    <ClCompile Include="LispParser.c" />
     <ClCompile Include="Matrix.c" />
     <ClCompile Include="Quaternion.c" />
     <ClCompile Include="StandardVectors.c" />

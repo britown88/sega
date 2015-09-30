@@ -294,5 +294,5 @@ void renderManagerRender(RenderManager *self, Frame *frame){
 
    _renderLayers(self, frame);
 
-   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 7, 0), *self->fps);
+   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
 }
