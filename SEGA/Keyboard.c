@@ -5,7 +5,7 @@
 #define VectorT KeyboardEvent
 #include "segautils\Vector_Create.h"
 
-typedef struct Keyboard_t {
+struct Keyboard_t {
    vec(KeyboardEvent) *eventQueue;
    int heldMap[SegaKey_COUNT];
    int queuePos;

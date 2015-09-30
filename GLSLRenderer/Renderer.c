@@ -6,7 +6,7 @@
 #include <malloc.h>
 
 
-typedef struct Renderer_t {
+struct Renderer_t {
    Rectf vpStack[256];
    Matrix camStack[256];
 

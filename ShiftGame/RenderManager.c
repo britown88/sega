@@ -278,7 +278,7 @@ void _renderFramerate(Frame *frame, Font *font, double d){
    short x;
    sprintf(buffer, "FPS: %.2f", d);
 
-   x = EGA_TEXT_RES_WIDTH - strlen(buffer);
+   x = EGA_TEXT_RES_WIDTH - (byte)strlen(buffer);
    frameRenderText(frame, buffer, x, y, font);
 }
 

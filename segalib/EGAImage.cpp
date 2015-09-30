@@ -144,7 +144,7 @@ public:
       byte forced[64];
       memset(forced, EGA_COLOR_UNUSED, 64);
 
-      size_t totalCount = 0;
+      byte totalCount = 0;
       for(int i = 0; i < 16; ++i) {
          if(p[i] != EGA_COLOR_UNUSED) {
             if(p[i] != EGA_COLOR_UNDEFINED) {

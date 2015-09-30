@@ -586,7 +586,7 @@ private:
          bool askFileOverwrite(String ^path){
             if(IO::File::Exists(path)){
                auto ret = MessageBox::Show("File already exists. Overwrite?", "Confirmation", MessageBoxButtons::YesNo, MessageBoxIcon::Warning);
-               return ret == Windows::Forms::DialogResult::Yes;
+               return ret == System::Windows::Forms::DialogResult::Yes;
             }
 
             return true;
@@ -801,7 +801,7 @@ private: System::Void btnUnusedPalette_Click(System::Object^  sender, System::Ev
             }
          }
 private: System::Void palettePanel_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-            if(e->Button == Windows::Forms::MouseButtons::Right){
+            if(e->Button == System::Windows::Forms::MouseButtons::Right){
                if(m_paletteDragging)
                   return;
 
@@ -819,7 +819,7 @@ private: System::Void palettePanel_MouseClick(System::Object^  sender, System::W
                   }
                }
             }
-            else if(e->Button == Windows::Forms::MouseButtons::Left){
+            else if(e->Button == System::Windows::Forms::MouseButtons::Left){
                auto x = e->X / 20;
 
                if(x >= 0 && x < 16) {
@@ -889,7 +889,7 @@ private: System::Void palettePanel_MouseDown(System::Object^  sender, System::Wi
             auto x = e->X / 20;
 
             if(x >= 0 && x < 16) {
-               if(e->Button == Windows::Forms::MouseButtons::Right) {
+               if(e->Button == System::Windows::Forms::MouseButtons::Right) {
                   if(!m_currentItem || m_currentItem->type == FileTypes::PNG) {
                      if(m_palette[x] != EGA_COLOR_UNDEFINED){                     
                         m_dragValue = EGA_COLOR_UNDEFINED;
@@ -904,7 +904,7 @@ private: System::Void palettePanel_MouseDown(System::Object^  sender, System::Wi
             }
          }
 private: System::Void palettePanel_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-            if(e->Button == Windows::Forms::MouseButtons::Right) {
+            if(e->Button == System::Windows::Forms::MouseButtons::Right) {
                if(!m_currentItem || m_currentItem->type == FileTypes::PNG)
                   m_paletteDragging = false;
             }

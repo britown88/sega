@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-typedef struct BitBuffer_t {
+struct BitBuffer_t {
    long pos;
    int deleteData;
    byte *buffer;

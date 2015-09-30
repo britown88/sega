@@ -11,7 +11,7 @@ typedef struct {
 #define HashTableT iEntry
 #include "segautils\HashTable_Create.h"
 
-typedef struct ManagedImage_t{   
+struct ManagedImage_t{   
    ht(iEntry) *map;
    StringView path;
    Image *image;
@@ -46,7 +46,7 @@ static void _iEntryDestroy(iEntry *p){
    checkedFree(p->value);
 }
 
-typedef struct ImageLibrary_t{
+struct ImageLibrary_t{
    ht(iEntry) *table;
 };
 

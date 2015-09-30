@@ -38,7 +38,7 @@ static void _compUpdateDestroy(ComponentUpdate *self){
    closureDestroy(ComponentUpdate)(self);
 }
 
-typedef struct Entity_t{ 
+struct Entity_t{ 
    QueueNode node;
    int ID;
    byte loaded;

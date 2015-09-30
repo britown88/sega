@@ -32,7 +32,7 @@ struct DamageMarkerManager_t{
    WorldView *view;
 };
 
-static void _updateDigitEntity(Entity *e, size_t value, size_t position, size_t len){
+static void _updateDigitEntity(Entity *e, byte value, size_t position, size_t len){
    ImageComponent *ic = entityGet(ImageComponent)(e);
    LockedPositionComponent *lpc = entityGet(LockedPositionComponent)(e);
    size_t center = len / 2;

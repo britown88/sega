@@ -15,7 +15,7 @@
 #include <malloc.h>
 #include <string.h>
 
-typedef struct EGADisplay_t {
+struct EGADisplay_t {
    VBO *vbo;
    Shader *shader;
    Matrix model;

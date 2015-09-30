@@ -9,7 +9,7 @@
 #include <malloc.h>
 #include <string.h>
 
-typedef struct EGAPalette_t {
+struct EGAPalette_t {
    byte *imgData;
    unsigned int handle;
 };

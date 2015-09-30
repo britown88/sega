@@ -9,7 +9,7 @@
 
 #include <malloc.h>
 
-typedef struct FBO_t {
+struct FBO_t {
    unsigned int handle, texHandle;
    int width, height;
    Matrix model;

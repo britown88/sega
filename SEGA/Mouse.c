@@ -8,7 +8,7 @@
 #define ClosureTPart CLOSURE_NAME(MousePos)
 #include "segautils\Closure_Impl.h"
 
-typedef struct Mouse_t {
+struct Mouse_t {
    vec(MouseEvent) *eventQueue;
    MousePos getPos;
    int heldMap[SegaMouseBtn_COUNT];

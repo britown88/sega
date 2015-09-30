@@ -5,7 +5,7 @@
 
 #define HANDLE_COUNT 8
 
-typedef struct EGATexture_t {
+struct EGATexture_t {
    GLuint handle[HANDLE_COUNT];
    int currentHandle;
 	byte *pixels;

@@ -19,12 +19,12 @@ typedef struct {
 	FontScanLine lines[FONT_FILE_HEIGHT];
 } FontBitPlane;
 
-typedef struct Font_t{
+struct Font_t{
    byte built;
 	FontBitPlane *planes;
 };
 
-typedef struct FontFactory_t {
+struct FontFactory_t {
    FontBitPlane textPlane;
    Font fonts[256];
 };
