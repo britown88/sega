@@ -121,8 +121,9 @@ void _onStart(BTGame *self){
    //COMPONENT_ADD(e, PositionComponent, 0, 0);
    //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
    //entityUpdate(e);
-
-   appLoadPalette(appGet(), "assets/img/default.pal");
+   
+   appLoadPalette(appGet(), "ultima6 - dos - 59.pal");
+   //appLoadPalette(appGet(), "assets/img/default.pal");
    cursorManagerCreateCursor(self->managers.cursorManager);
 
    //push the opening state

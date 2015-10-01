@@ -75,11 +75,18 @@ static void _testLisp() {
    int *i = lispi32(&ex);
 }
 
+static void _addTestEntities(WorldView *view) {
+   Entity *e = entityCreate(view->entitySystem);
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, ImageComponent, stringIntern("ultima6 - dos - 59.ega"));
+   entityUpdate(e);
+}
+
 StateClosure gameStateCreateWorld(WorldView *view){
    StateClosure out;
    WorldState *state = checkedCalloc(1, sizeof(WorldState));
 
-
+   _addTestEntities(view);
    _testLisp();
 
    state->view = view;
