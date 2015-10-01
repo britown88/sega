@@ -3,11 +3,11 @@
 #include "segautils\BitTwiddling.h"
 #include <string.h>
 
-#define FONT_FILE_WIDTH 256
-#define FONT_FILE_HEIGHT 64
+#define FONT_CHAR_WIDTH 32
+#define FONT_CHAR_HEIGHT 8
 
-#define FONT_CHAR_WIDTH (FONT_FILE_WIDTH/ EGA_TEXT_CHAR_WIDTH)
-#define FONT_CHAR_HEIGHT (FONT_FILE_HEIGHT / EGA_TEXT_CHAR_HEIGHT)
+#define FONT_FILE_WIDTH (FONT_CHAR_WIDTH * EGA_TEXT_CHAR_WIDTH)
+#define FONT_FILE_HEIGHT (FONT_CHAR_HEIGHT * EGA_TEXT_CHAR_HEIGHT)
 
 
 
@@ -34,8 +34,8 @@ FontFactory *fontFactoryCreate(Image *fontImage) {
    FontFactory *r = 0;
    int y;
 
-   if(imageGetWidth(fontImage) != FONT_FILE_WIDTH ||
-      imageGetHeight(fontImage) != FONT_FILE_HEIGHT) {
+   if(imageGetWidth(fontImage) < FONT_FILE_WIDTH ||
+      imageGetHeight(fontImage) < FONT_FILE_HEIGHT) {
          return 0;
    }
       

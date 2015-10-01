@@ -1,23 +1,36 @@
 #pragma once
 
+#include "config.h"
+
 typedef unsigned char byte;
 typedef struct BitBuffer_t BitBuffer;
 
-#define EGA_COLORS 64
-#define EGA_COLOR_UNDEFINED (EGA_COLORS)
-#define EGA_COLOR_UNUSED (EGA_COLORS + 1)
-
-#define EGA_PALETTE_COLORS 16
+#if defined(EGA_MODE_0Dh)
 #define EGA_RES_WIDTH 320
 #define EGA_RES_HEIGHT 200
 #define EGA_TEXT_CHAR_WIDTH 8
 #define EGA_TEXT_CHAR_HEIGHT 8
+#define EGA_PIXEL_HEIGHT 1.2f
+#define EGA_PIXEL_WIDTH 1.00f
+#elif defined(EGA_MODE_10h)
+#define EGA_RES_WIDTH 640
+#define EGA_RES_HEIGHT 350
+#define EGA_TEXT_CHAR_WIDTH 8
+#define EGA_TEXT_CHAR_HEIGHT 14
+#define EGA_PIXEL_HEIGHT 1.37f
+#define EGA_PIXEL_WIDTH 1.00f
+#else
+#error SEGALIB REQUIRES DESIRED VIDEO MODE DIRECTIVE
+#endif
+
+#define EGA_COLORS 64
+#define EGA_COLOR_UNDEFINED (EGA_COLORS)
+#define EGA_COLOR_UNUSED (EGA_COLORS + 1)
+#define EGA_PALETTE_COLORS 16
 #define EGA_TEXT_RES_WIDTH (EGA_RES_WIDTH / EGA_TEXT_CHAR_WIDTH)
 #define EGA_TEXT_RES_HEIGHT (EGA_RES_HEIGHT / EGA_TEXT_CHAR_HEIGHT)
 #define EGA_PIXELS (EGA_RES_WIDTH * EGA_RES_HEIGHT)
 #define EGA_BYTES (EGA_PIXELS / 8)
-#define EGA_PIXEL_HEIGHT 1.2f
-#define EGA_PIXEL_WIDTH 1.00f
 #define EGA_PLANES 4
 #define EGA_IMAGE_PLANES (EGA_PLANES + 1)
 
