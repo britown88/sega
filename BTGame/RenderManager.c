@@ -114,7 +114,7 @@ ImplManagerVTable(RenderManager)
 
 RenderManager *createRenderManager(WorldView *view, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
-   Image *fontImage = imageDeserializeOptimized("assets/img/font.ega");
+   Image *fontImage = imageDeserializeOptimized("assets/img/cga8bold.ega");
    out->view = view;
    out->m.vTable = CreateManagerVTable(RenderManager);
    out->fontFactory = fontFactoryCreate(fontImage);
