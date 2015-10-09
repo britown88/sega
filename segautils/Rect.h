@@ -26,9 +26,23 @@ typedef struct {
    int left, top, right, bottom;
 } Recti;
 
-static Recti rectiCreate(int left, int top, int right, int bottom) {
-   Recti r = {left, top, right, bottom};
-   return r;
+static Recti rectiCreate(int x, int y, int width, int height) {
+   return (Recti) {x, y, x + width, y + height};
+}
+
+static int rectiWidth(Recti *r) {
+   return r->right - r->left;
+}
+
+static int rectiHeight(Recti *r) {
+   return r->bottom - r->top;
+}
+
+static void rectiOffset(Recti *r, int x, int y) {
+   r->left += x;
+   r->right += x;
+   r->top += y;
+   r->bottom += y;
 }
 
 static bool rectiIntersects(Recti a, Recti b){

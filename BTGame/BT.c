@@ -9,12 +9,12 @@
 #include "ImageLibrary.h"
 #include "Managers.h"
 #include "GameState.h"
+#include "GridManager.h"
 
-
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 720
-#define FULLSCREEN 0
-#define FRAME_RATE 9000.0
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
+#define FULLSCREEN 1
+#define FRAME_RATE 24
 
 typedef struct {
    VirtualApp vApp;
@@ -80,6 +80,7 @@ void _initEntitySystem(BTGame *self){
 
    RegisterManager(self->managers.renderManager, createRenderManager(&self->view, &self->data.fps));
    RegisterManager(self->managers.cursorManager, createCursorManager(&self->view));
+   RegisterManager(self->managers.gridManager, createGridManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -101,6 +102,8 @@ VirtualApp *btCreate() {
    r->view.gameState = r->gameState;
    r->view.managers = &r->managers;
    r->view.gameClock = r->gameClock;
+   r->view.viewport = (Viewport){ .screen = { GRID_POS_X, GRID_POS_Y }, 
+                                  .world = rectiCreate(0, 0, GRID_PX_WIDTH, GRID_PX_HEIGHT) };
 
    _initEntitySystem(r);
 
@@ -122,7 +125,7 @@ void _onStart(BTGame *self){
    //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
    //entityUpdate(e);
    
-   appLoadPalette(appGet(), "ultima6 - dos - 59.pal");
+   appLoadPalette(appGet(), "assets/img/default.pal");
    //appLoadPalette(appGet(), "assets/img/default.pal");
    cursorManagerCreateCursor(self->managers.cursorManager);
 

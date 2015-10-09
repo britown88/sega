@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Viewport.h"
+
 typedef struct BTManagers_t BTManagers;
 typedef struct EntitySystem_t EntitySystem;
 typedef struct ImageLibrary_t ImageLibrary;
@@ -12,4 +14,5 @@ typedef struct WorldView_t {
    ImageLibrary *imageLibrary;
    FSM *gameState;
    GameClock *gameClock;
+   Viewport viewport;
 }WorldView;

@@ -4,12 +4,15 @@
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
+typedef struct GridManager_t GridManager;
+
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
 
 typedef struct BTManagers_t {
    RenderManager *renderManager;
    CursorManager *cursorManager;
+   GridManager *gridManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);

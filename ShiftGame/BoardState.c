@@ -233,7 +233,7 @@ void _createTestEntity(EntitySystem *system, int x, int y, bool AI){
    COMPONENT_ADD(e, GridComponent, .x = x, .y = y);
    COMPONENT_ADD(e, SizeComponent, GRID_RES_SIZE, GRID_RES_SIZE);
    COMPONENT_ADD(e, TeamComponent, AI ? 1 : 0);
-   COMPONENT_ADD(e, AbilitySlotsComponent, .slots = { stringIntern(!AI ? "ranged" : "melee"), stringIntern("magic_missile") });
+   COMPONENT_ADD(e, AbilitySlotsComponent, .slots = { stringIntern(!AI ? "ranged" : "melee"), stringIntern("swap") });
    if (true){
       COMPONENT_ADD(e, AIComponent, 0);
    }

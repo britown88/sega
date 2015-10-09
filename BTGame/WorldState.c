@@ -78,8 +78,12 @@ static void _testLisp() {
 static void _addTestEntities(WorldView *view) {
    Entity *e = entityCreate(view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern("ultima6 - dos - 59.ega"));
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid.ega"));
    entityUpdate(e);
+}
+
+static void _enterState(WorldView *view) {
+
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){

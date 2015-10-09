@@ -91,12 +91,15 @@
     <ClInclude Include="CoreComponents.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameState.h" />
+    <ClInclude Include="GridManager.h" />
     <ClInclude Include="ImageLibrary.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
+    <ClInclude Include="Viewport.h" />
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="GridManager.c" />
     <ClCompile Include="WorldState.c" />
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />

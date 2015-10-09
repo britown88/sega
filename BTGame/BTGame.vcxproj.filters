@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Managers">
+      <UniqueIdentifier>{0fc0de4b-d390-4fec-837b-801c416c2de9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game States">
+      <UniqueIdentifier>{4f8661ff-7527-40b9-8e09-c3023cdf2b0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
@@ -39,15 +45,18 @@
     <ClInclude Include="WorldView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Viewport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CoreComponents.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CursorManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameClock.c">
@@ -62,11 +71,17 @@
     <ClCompile Include="MeshRendering.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CursorManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
     <ClCompile Include="RenderManager.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="WorldState.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Game States</Filter>
+    </ClCompile>
+    <ClCompile Include="GridManager.c">
+      <Filter>Source Files\Managers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

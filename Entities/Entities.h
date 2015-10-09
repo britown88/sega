@@ -62,14 +62,14 @@ Usage:
 
 struct MyTestManager_t{
    Manager m;
-   EntitySystem *system;
+   WorldView *view;
 };
 
 ImplManagerVTable(MyTestManager)
 
-MyTestManager *createMyTestManager(EntitySystem *system){
-   MyTestManager *out = checkedCalloc(1, sizeof(CursorManager));
-   out->system = system;
+MyTestManager *createMyTestManager(WorldView *view){
+   MyTestManager *out = checkedCalloc(1, sizeof(MyTestManager));
+   out->view = view;
    out->m.vTable = CreateManagerVTable(MyTestManager);
    return out;
 }
