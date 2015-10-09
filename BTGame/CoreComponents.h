@@ -93,4 +93,11 @@ typedef struct {
 #define ComponentT TextComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   EMPTY_STRUCT
+}InViewComponent;
+
+#define ComponentT InViewComponent
+#include "Entities\ComponentDecl.h"
+
 #pragma pack(pop)

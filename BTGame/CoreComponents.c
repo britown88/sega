@@ -36,3 +36,6 @@ static void TextComponentDestroy(TextComponent *self){
 #define COMP_DESTROY_FUNC TextComponentDestroy
 #define ComponentT TextComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT InViewComponent
+#include "Entities\ComponentImpl.h"

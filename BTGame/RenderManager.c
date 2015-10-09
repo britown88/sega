@@ -26,6 +26,7 @@ typedef struct{
    bool hasRect;
    bool hasPolygon;
    bool hasText;
+   bool inView;
 
    ManagedImage *img;
    StringView filename;
@@ -67,6 +68,9 @@ static bool _buildTRenderComponent(RenderManager *self, TRenderComponent *trc, E
 
    trc->hasMesh = entityGet(MeshComponent)(e) != NULL;
    if (trc->hasMesh){ success = true; }
+
+   trc->hasMesh = entityGet(InViewComponent)(e) != NULL;
+   if (trc->inView) { success = true; }
 
    return success;
 }
@@ -213,6 +217,10 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    if (pc){
       x = pc->x;
       y = pc->y;
+   }
+
+   if (trc->inView) {
+
    }
 
    //render rect
