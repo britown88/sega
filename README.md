@@ -7,9 +7,9 @@ The goal of the project is to create a full-featured modern game engine entirely
 What started as a small graphics demo rendering 16 colors from a palette to bitplanes quickly turned into a whole library of EGA functions including the ability to convert PNG images to the EGA format by generating an optimal palette from the EGA color space to use.
 
 ## How do I build it?
-[Visual Studio Community 2013 is free now!](http://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx)  I feel like not using cmake-gcc-cross-platform-super-indie-python-something-makefile-build-pattern© is a bit of a taboo and so sorry for tarnishing github's fine image with this corporate trash but really, VS2013 has some really wonderful git integration and it's been a joy to work with.
+[Visual Studio Community 2015 is free now!](https://www.visualstudio.com/en-us/products/vs-2015-product-editions.aspx)  I feel like not using cmake-gcc-cross-platform-super-indie-python-something-makefile-build-pattern© is a bit of a taboo and so sorry for tarnishing github's fine image with this corporate trash but really, VS2015 has some really wonderful git integration and it's been a joy to work with.
 
-Output is BT.exe and Sega Studio.exe.  The former is the app proper (You'll want to copy the assets folder from the BT folder into the debug/release directories for it to work!)  Or just run it within VS by using BT or Sega Studio has the startup projects.
+Currently in the solution there is Sega Studio, a .NET app for creating EGA image files, and two game projects, BT and Shift.  Everything uses the segalib library for EGA functions.  If you want to use segalib, make sure to edit the config.h file to set which video mode you wish to compile it with.  BT uses 320x200 and Shift uses 640x480!
 
 ## What is Sega Studio?
 A quick and dirty .Net App that uses C++/CLI to call my EGA library functions.  You can open PNG files, create a full or partial palette to render it with, and then convert to EGA which will find the optimal way to encode the image with those colors.  While in EGA edit mode you can also make palette changes and it will show the result in the viewer as you hover over the colors making it easy to test out palette-swaps!
