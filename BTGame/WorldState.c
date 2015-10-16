@@ -103,12 +103,12 @@ static void _addTestEntities(WorldView *view) {
    COMPONENT_ADD(e, LayerComponent, LayerBackground);
    entityUpdate(e);
 
-   e = entityCreate(view->entitySystem);
-   COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
-   COMPONENT_ADD(e, InViewComponent, 0);
-   COMPONENT_ADD(e, LayerComponent, LayerGrid);
-   entityUpdate(e);
+   //e = entityCreate(view->entitySystem);
+   //COMPONENT_ADD(e, PositionComponent, 0, 0);
+   //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
+   //COMPONENT_ADD(e, InViewComponent, 0);
+   //COMPONENT_ADD(e, LayerComponent, LayerGrid);
+   //entityUpdate(e);
 }
 
 static void _enterState(WorldState *state) {

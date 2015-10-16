@@ -1,7 +1,10 @@
 #pragma once
 
+#include "segautils/Defs.h"
+
 typedef struct GridManager_t GridManager;
 typedef struct Frame_t Frame;
+typedef struct WorldView_t WorldView;
 
 #define GRID_POS_X 13
 #define GRID_POS_Y 11

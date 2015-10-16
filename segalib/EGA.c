@@ -176,7 +176,7 @@ void frameRenderImagePartial(Frame *self, FrameRegion *vp, short x, short y, Ima
          imageScanLineRender(imageGetScanLine(img, j + MAX(imgY, ignoreOffsetY), i + 1), colorBuffer);
 
          _scanLineRenderImageScanLine(&self->planes[i].lines[j + y + ignoreOffsetY], x + ignoreOffsetX,
-            colorBuffer, alphaBuffer, MAX(imgX, ignoreOffsetX), clipSizeX);
+            colorBuffer, alphaBuffer, imgX + ignoreOffsetX, clipSizeX);
       }
    }
 }
