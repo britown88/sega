@@ -120,15 +120,6 @@ void _destroy(BTGame *self){
 }
 
 void _onStart(BTGame *self){
-   //Entity *e = entityCreate(self->entitySystem);
-   //COMPONENT_ADD(e, PositionComponent, 0, 0);
-   //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
-   //entityUpdate(e);
-   
-   appLoadPalette(appGet(), "assets/img/default.pal");
-   //appLoadPalette(appGet(), "assets/img/default.pal");
-   cursorManagerCreateCursor(self->managers.cursorManager);
-
    //push the opening state
    fsmPush(self->gameState, gameStateCreateWorld(&self->view));
 

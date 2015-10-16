@@ -100,16 +100,21 @@ static void _addTestEntities(WorldView *view) {
    Entity *e = entityCreate(view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid.ega"));
+   COMPONENT_ADD(e, LayerComponent, LayerBackground);
    entityUpdate(e);
 
    e = entityCreate(view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
    COMPONENT_ADD(e, InViewComponent, 0);
+   COMPONENT_ADD(e, LayerComponent, LayerGrid);
    entityUpdate(e);
 }
 
 static void _enterState(WorldState *state) {
+   appLoadPalette(appGet(), "assets/img/default.pal");
+   cursorManagerCreateCursor(state->view->managers->cursorManager);
+
    _addTestEntities(state->view);
    _testLisp();
 }

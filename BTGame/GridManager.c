@@ -32,3 +32,7 @@ void _onUpdate(GridManager *self, Entity *e) {}
 void gridManagerUpdate(GridManager *self) {
 
 }
+
+void gridManagerRender(GridManager *self, Frame *frame) {
+
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 typedef struct GridManager_t GridManager;
+typedef struct Frame_t Frame;
 
 #define GRID_POS_X 13
 #define GRID_POS_Y 11
@@ -13,3 +14,4 @@ typedef struct GridManager_t GridManager;
 #define GRID_PX_HEIGHT (GRID_HEIGHT * GRID_CELL_SIZE)
 
 GridManager *createGridManager(WorldView *view);
+void gridManagerRender(GridManager *self, Frame *frame);

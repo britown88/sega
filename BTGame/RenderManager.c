@@ -8,6 +8,7 @@
 #include "segalib\EGA.h"
 #include "MeshRendering.h"
 #include "WorldView.h"
+#include "GridManager.h"
 
 #include <stdio.h>
 
@@ -175,8 +176,8 @@ void _addToLayers(RenderManager *self, Entity* e){
 
 void _renderMeshEntity(Entity *e, Frame *frame, MeshComponent *mc, short x, short y, Image *img){
    Transform t = {
-      .size = (Int3){ mc->size, mc->size, mc->size },
-      .offset = (Int3){ x, y, 0 },
+      .size = { mc->size, mc->size, mc->size },
+      .offset = { x, y, 0 },
       .rotation = quaternionFromAxisAngle(mc->rotNormal, mc->angle)
    };
    renderMesh(mc->vbo, mc->ibo, img, t, frame);
@@ -280,7 +281,14 @@ void _renderLayers(RenderManager *self, Frame *frame){
    vec(EntityPtr) **first = self->layers;
    vec(EntityPtr) **last = first + LayerCount;
 
-   while (first != last){  _renderLayer(self, *first++, frame);  }
+   int i = 0;
+   while (first != last){  
+      if (i++ == LayerGrid) {
+         gridManagerRender(self->view->managers->gridManager, frame);
+      }
+
+      _renderLayer(self, *first++, frame);  
+   }
 }
 
 

@@ -33,11 +33,7 @@ typedef struct{
 
 typedef enum{
    LayerBackground,
-   LayerSubToken0,
-   LayerTokens,
-   LayerPostToken0,
-   LayerPostToken1,
-   LayerPostTokenDmg,
+   LayerGrid,
    LayerUI,
    LayerCursor,
    LayerCount
