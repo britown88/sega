@@ -20,7 +20,7 @@ typedef struct BitBuffer_t BitBuffer;
 #define EGA_PIXEL_HEIGHT 1.37f
 #define EGA_PIXEL_WIDTH 1.00f
 #else
-#error SEGALIB REQUIRES DESIRED VIDEO MODE DIRECTIVE
+#error segalib: You must define a video mode in config.h
 #endif
 
 #define EGA_COLORS 64
@@ -61,6 +61,12 @@ typedef struct {
    SuperScanLine lines[MAX_IMAGE_HEIGHT];
 } SuperBitPlane;
 
+typedef struct {
+   int origin_x, origin_y, width, height;
+}FrameRegion;
+static FrameRegion FrameRegionFULL_CONCRETE = { 0, 0, EGA_RES_WIDTH, EGA_RES_HEIGHT };
+static FrameRegion *FrameRegionFULL = &FrameRegionFULL_CONCRETE;
+
 typedef struct Frame_t{
 	BitPlane planes[EGA_PLANES];
 } Frame;
@@ -75,12 +81,12 @@ typedef struct Image_t Image;
 
 Frame *frameCreate();
 void frameDestroy(Frame *self);
-void frameRenderImage(Frame *self, short x, short y, Image *img);
-void frameRenderImagePartial(Frame *self, short x, short y, Image *img, short imgX, short imgY, short imgWidth, short imgHeight);
-void frameRenderPoint(Frame *self, short x, short y, byte color);
-void frameRenderLine(Frame *self, short x1, short y1, short x2, short y2, byte color);
-void frameRenderRect(Frame *self, short left, short top, short right, short bottom, byte color);
-void frameClear(Frame *self, byte color);
+void frameRenderImage(Frame *self, FrameRegion *vp, short x, short y, Image *img);
+void frameRenderImagePartial(Frame *self, FrameRegion *vp, short x, short y, Image *img, short imgX, short imgY, short imgWidth, short imgHeight);
+void frameRenderPoint(Frame *self, FrameRegion *vp, short x, short y, byte color);
+void frameRenderLine(Frame *self, FrameRegion *vp, short x1, short y1, short x2, short y2, byte color);
+void frameRenderRect(Frame *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
+void frameClear(Frame *self, FrameRegion *vp, byte color);
 
 void scanLineSetBit(ScanLine *self, short position, byte value);
 byte scanLineGetBit(ScanLine *self, short position);

@@ -11,10 +11,10 @@
 #include "GameState.h"
 #include "GridManager.h"
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
-#define FULLSCREEN 1
-#define FRAME_RATE 24
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
+#define FULLSCREEN 0
+#define FRAME_RATE 9999
 
 typedef struct {
    VirtualApp vApp;
@@ -102,8 +102,9 @@ VirtualApp *btCreate() {
    r->view.gameState = r->gameState;
    r->view.managers = &r->managers;
    r->view.gameClock = r->gameClock;
-   r->view.viewport = (Viewport){ .screen = { GRID_POS_X, GRID_POS_Y }, 
-                                  .world = rectiCreate(0, 0, GRID_PX_WIDTH, GRID_PX_HEIGHT) };
+   r->view.viewport = (Viewport){   .screenPos = { GRID_POS_X, GRID_POS_Y }, 
+                                    .worldPos = { 0, 0 }, 
+                                    .size = { GRID_PX_WIDTH, GRID_PX_HEIGHT } };
 
    _initEntitySystem(r);
 

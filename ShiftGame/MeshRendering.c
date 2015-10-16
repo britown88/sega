@@ -57,7 +57,7 @@ static void pixelShader(RenderData *r, TexCoords *data, TrianglePoint *p){
       return;
    }
 
-   frameRenderPoint(r->frame, p->pos.x, p->pos.y, 0);
+   frameRenderPoint(r->frame, FrameRegionFULL, p->pos.x, p->pos.y, 0);
 }
 
 static void buildTransform(Matrix *m, Transform t){

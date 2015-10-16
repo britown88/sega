@@ -55,3 +55,5 @@ void lispContextStore(LispContext *self, LispSym key, LispExpr value);
 LispExpr *lispContextLoad(LispContext *self, LispSym key);
 LispExpr lispContextEvaluate(LispContext *self, LispExpr input);
 
+extern const LispExpr LispNil;
+

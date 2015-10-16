@@ -1,5 +1,7 @@
 #include "Lisp.h"
 
+const LispExpr LispNil = { NULL, NULL };
+
 #define VectorTPart LispExpr
 #include "Vector_Impl.h"
 

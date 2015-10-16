@@ -93,8 +93,10 @@ typedef struct {
 #define ComponentT TextComponent
 #include "Entities\ComponentDecl.h"
 
+//Rendering treats the position component as WorldPosition
+//Entity is then drawn relative to viewport
 typedef struct {
-   EMPTY_STRUCT
+   EMPTY_STRUCT;
 }InViewComponent;
 
 #define ComponentT InViewComponent

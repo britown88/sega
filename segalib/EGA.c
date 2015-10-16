@@ -138,11 +138,12 @@ ImageScanLine *createSmallestScanLine(short bitCount, byte *data){
    return scanline;
 }
 
-void frameRenderImagePartial(Frame *self, short x, short y, Image *img, short imgX, short imgY, short subimgWidth, short subimgHeight) {
+void frameRenderImagePartial(Frame *self, FrameRegion *vp, short x, short y, Image *img, short imgX, short imgY, short subimgWidth, short subimgHeight) {
    short imgWidth = MIN(subimgWidth, imageGetWidth(img));
    short imgHeight = MIN(subimgHeight, imageGetHeight(img));
 
    short clipSizeX, clipSizeY, ignoreOffsetX, ignoreOffsetY;
+   short borderRight, borderBottom;
    int j, i;
    byte colorBuffer[MAX_IMAGE_WIDTH];
    byte alphaBuffer[MAX_IMAGE_WIDTH];
@@ -150,10 +151,16 @@ void frameRenderImagePartial(Frame *self, short x, short y, Image *img, short im
    ignoreOffsetX = x < 0 ? -x : 0;
    ignoreOffsetY = y < 0 ? -y : 0;
 
+   x += vp->origin_x;
+   y += vp->origin_y;
+
+   borderRight = MIN(EGA_RES_WIDTH, vp->origin_x + vp->width);
+   borderBottom = MIN(EGA_RES_HEIGHT, vp->origin_y + vp->height);
+
    clipSizeX = imgWidth;
    clipSizeY = imgHeight;
-   if (clipSizeX + x > EGA_RES_WIDTH) clipSizeX = EGA_RES_WIDTH - x;
-   if (clipSizeY + y > EGA_RES_HEIGHT) clipSizeY = EGA_RES_HEIGHT - y;
+   if (clipSizeX + x > borderRight) clipSizeX = borderRight - x;
+   if (clipSizeY + y > borderBottom) clipSizeY = borderBottom - y;
 
    clipSizeX -= ignoreOffsetX;
    clipSizeY -= ignoreOffsetY;
@@ -174,11 +181,12 @@ void frameRenderImagePartial(Frame *self, short x, short y, Image *img, short im
    }
 }
 
-void frameRenderImage(Frame *self, short x, short y, Image *img) {
+void frameRenderImage(Frame *self, FrameRegion *vp, short x, short y, Image *img) {
    short imgWidth = imageGetWidth(img);
    short imgHeight = imageGetHeight(img);
 
    short clipSizeX, clipSizeY, ignoreOffsetX, ignoreOffsetY;
+   short borderRight, borderBottom;
    int j, i;
    byte colorBuffer[MAX_IMAGE_WIDTH];
    byte alphaBuffer[MAX_IMAGE_WIDTH];
@@ -186,10 +194,16 @@ void frameRenderImage(Frame *self, short x, short y, Image *img) {
    ignoreOffsetX = x < 0 ? -x : 0;
    ignoreOffsetY = y < 0 ? -y : 0;
 
+   x += vp->origin_x;
+   y += vp->origin_y;
+
+   borderRight = MIN(EGA_RES_WIDTH, vp->origin_x + vp->width);
+   borderBottom = MIN(EGA_RES_HEIGHT, vp->origin_y + vp->height);
+
    clipSizeX = imgWidth;
    clipSizeY = imgHeight;
-   if(clipSizeX + x > EGA_RES_WIDTH) clipSizeX = EGA_RES_WIDTH - x;
-   if(clipSizeY + y > EGA_RES_HEIGHT) clipSizeY = EGA_RES_HEIGHT - y;
+   if (clipSizeX + x > borderRight) clipSizeX = borderRight - x;
+   if (clipSizeY + y > borderBottom) clipSizeY = borderBottom - y;
 
    clipSizeX -= ignoreOffsetX;
    clipSizeY -= ignoreOffsetY;
@@ -210,24 +224,30 @@ void frameRenderImage(Frame *self, short x, short y, Image *img) {
    }
 }
 
-void frameRenderRect(Frame *self, short left, short top, short right, short bottom, byte color){
+void frameRenderRect(Frame *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color){
    short width = right - left;
    short height = bottom - top;
    short x = left;
    short y = top;
-
    short clipSizeX, clipSizeY, ignoreOffsetX, ignoreOffsetY;
    int j, i;
    byte colorBuffer[MAX_IMAGE_WIDTH] = { 0 };
    byte alphaBuffer[MAX_IMAGE_WIDTH] = { 0 };
+   short borderRight, borderBottom;
 
    ignoreOffsetX = x < 0 ? -x : 0;
    ignoreOffsetY = y < 0 ? -y : 0;
 
+   x += vp->origin_x;
+   y += vp->origin_y;
+
+   borderRight = MIN(EGA_RES_WIDTH, vp->origin_x + vp->width);
+   borderBottom = MIN(EGA_RES_HEIGHT, vp->origin_y + vp->height);
+
    clipSizeX = width;
    clipSizeY = height;
-   if (clipSizeX + x > EGA_RES_WIDTH) clipSizeX = EGA_RES_WIDTH - x;
-   if (clipSizeY + y > EGA_RES_HEIGHT) clipSizeY = EGA_RES_HEIGHT - y;
+   if (clipSizeX + x > borderRight) clipSizeX = borderRight - x;
+   if (clipSizeY + y > borderBottom) clipSizeY = borderBottom - y;
 
    clipSizeX -= ignoreOffsetX;
    clipSizeY -= ignoreOffsetY;
@@ -247,7 +267,14 @@ void frameRenderRect(Frame *self, short left, short top, short right, short bott
    }
 }
 
-void frameRenderPoint(Frame *self, short x, short y, byte color){
+void frameRenderPoint(Frame *self, FrameRegion *vp, short x, short y, byte color){
+   if (x < 0 || x >= vp->width || y < 0 || y >= vp->height) {
+      return;
+   }
+
+   x += vp->origin_x;
+   y += vp->origin_y;   
+
    if (x >= 0 && x < EGA_RES_WIDTH && y >= 0 && y < EGA_RES_HEIGHT){
       int j;
       for (j = 0; j < EGA_PLANES; ++j) {
@@ -256,7 +283,7 @@ void frameRenderPoint(Frame *self, short x, short y, byte color){
    }
 }
 
-void frameRenderLine(Frame *self, short _x0, short _y0, short _x1, short _y1, byte color){
+void frameRenderLine(Frame *self, FrameRegion *vp, short _x0, short _y0, short _x1, short _y1, byte color){
    short dx = abs(_x1 - _x0);
    short dy = abs(_y1 - _y0);
    short x0, x1, y0, y1;
@@ -282,13 +309,13 @@ void frameRenderLine(Frame *self, short _x0, short _y0, short _x1, short _y1, by
       slope = (float)(y1 - y0) / (float)(x1 - x0);
       
       while (x < x1){
-         frameRenderPoint(self, (short)x, (short)y, color);
+         frameRenderPoint(self, vp, (short)x, (short)y, color);
 
          x += 1.0f;
          y += slope;
       }
 
-      frameRenderPoint(self, (short)x1, (short)y1, color);
+      frameRenderPoint(self, vp, (short)x1, (short)y1, color);
    }
    else{
       if (_y0 > _y1){//flip
@@ -306,21 +333,29 @@ void frameRenderLine(Frame *self, short _x0, short _y0, short _x1, short _y1, by
 
       while (y < y1){
 
-         frameRenderPoint(self, (short)x, (short)y, color);
+         frameRenderPoint(self, vp, (short)x, (short)y, color);
 
          y += 1.0f;
          x += slope;
       }
 
-      frameRenderPoint(self, (short)x1, (short)y1, color);
+      frameRenderPoint(self, vp, (short)x1, (short)y1, color);
    }
 }
 
-void frameClear(Frame *self, byte color){
+void frameClear(Frame *self, FrameRegion *vp, byte color){
    int i;
-   for (i = 0; i < EGA_PLANES; ++i) {
-      byte current = getBit(color, i) ? 255 : 0;
-      memset((byte*)(self->planes + i), current, EGA_BYTES);
+   if (vp == FrameRegionFULL) {
+      for (i = 0; i < EGA_PLANES; ++i) {
+         byte current = getBit(color, i) ? 255 : 0;
+         memset((byte*)(self->planes + i), current, EGA_BYTES);
+      }
+   }
+   else {
+      frameRenderRect(self, FrameRegionFULL, 
+         vp->origin_x, vp->origin_y, 
+         vp->origin_x + vp->width, 
+         vp->origin_y + vp->height, color);
    }
 }
 

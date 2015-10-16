@@ -51,6 +51,7 @@ static bool _buildTRenderComponent(RenderManager *self, TRenderComponent *trc, E
    ImageComponent *ic = entityGet(ImageComponent)(e);
 
    trc->hasImage = ic != NULL;
+   trc->inView = entityGet(InViewComponent)(e) != NULL;
 
    if (ic){
       _updateManagedImage(self, trc, ic);
@@ -68,9 +69,6 @@ static bool _buildTRenderComponent(RenderManager *self, TRenderComponent *trc, E
 
    trc->hasMesh = entityGet(MeshComponent)(e) != NULL;
    if (trc->hasMesh){ success = true; }
-
-   trc->hasMesh = entityGet(InViewComponent)(e) != NULL;
-   if (trc->inView) { success = true; }
 
    return success;
 }
@@ -192,14 +190,14 @@ void _renderPolygon(Frame *frame, vec(Int2) *pList, byte color, bool open){
          Int2 p0 = *begin++;
          Int2 p1 = *begin;
 
-         frameRenderLine(frame, p0.x, p0.y, p1.x, p1.y, color);
+         frameRenderLine(frame, FrameRegionFULL, p0.x, p0.y, p1.x, p1.y, color);
       }
 
       if(!open && vecSize(Int2)(pList) >= 2) {
          Int2 p0 = *vecBack(Int2)(pList);
          Int2 p1 = *vecBegin(Int2)(pList);
 
-         frameRenderLine(frame, p0.x, p0.y, p1.x, p1.y, color);
+         frameRenderLine(frame, FrameRegionFULL, p0.x, p0.y, p1.x, p1.y, color);
       }
    }   
 }
@@ -228,7 +226,7 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
       RectangleComponent *rc = entityGet(RectangleComponent)(e);
       SizeComponent *sc = entityGet(SizeComponent)(e);
       if (rc && sc){
-         frameRenderRect(frame, x, y, x + sc->x, y + sc->y, rc->color);
+         frameRenderRect(frame, FrameRegionFULL, x, y, x + sc->x, y + sc->y, rc->color);
       }
    }
 
@@ -243,10 +241,10 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
       else{
          ImageComponent *ic = entityGet(ImageComponent)(e);
          if (ic->partial){
-            frameRenderImagePartial(frame, x, y, img, ic->x, ic->y, ic->width, ic->height);
+            frameRenderImagePartial(frame, FrameRegionFULL, x, y, img, ic->x, ic->y, ic->width, ic->height);
          }
          else{
-            frameRenderImage(frame, x, y, img);
+            frameRenderImage(frame, FrameRegionFULL, x, y, img);
          }
          
       }
@@ -282,16 +280,16 @@ void _renderLayers(RenderManager *self, Frame *frame){
 
 void _renderFramerate(Frame *frame, Font *font, double d){
    static char buffer[256] = { 0 };
-   short y = 0;
+   short y = 2;
    short x;
    sprintf(buffer, "FPS: %.2f", d);
 
-   x = EGA_TEXT_RES_WIDTH - (byte)strlen(buffer);
+   x = EGA_TEXT_RES_WIDTH - (byte)strlen(buffer) - 2;
    frameRenderText(frame, buffer, x, y, font);
 }
 
 void renderManagerRender(RenderManager *self, Frame *frame){
-   frameClear(frame, 0);
+   frameClear(frame, FrameRegionFULL, 0);
 
    _clearLayers(self);
    
