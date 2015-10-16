@@ -182,7 +182,7 @@ void _renderMeshEntity(Entity *e, Frame *frame, MeshComponent *mc, short x, shor
    renderMesh(mc->vbo, mc->ibo, img, t, frame);
 }
 
-void _renderPolygon(Frame *frame, vec(Int2) *pList, byte color, bool open){
+void _renderPolygon(Frame *frame, FrameRegion *vp, vec(Int2) *pList, byte color, bool open){
    if (!vecIsEmpty(Int2)(pList)){
       Int2 *begin = vecBegin(Int2)(pList);
       Int2 *end = vecEnd(Int2)(pList);
@@ -190,14 +190,14 @@ void _renderPolygon(Frame *frame, vec(Int2) *pList, byte color, bool open){
          Int2 p0 = *begin++;
          Int2 p1 = *begin;
 
-         frameRenderLine(frame, FrameRegionFULL, p0.x, p0.y, p1.x, p1.y, color);
+         frameRenderLine(frame, vp, p0.x, p0.y, p1.x, p1.y, color);
       }
 
       if(!open && vecSize(Int2)(pList) >= 2) {
          Int2 p0 = *vecBack(Int2)(pList);
          Int2 p1 = *vecBegin(Int2)(pList);
 
-         frameRenderLine(frame, FrameRegionFULL, p0.x, p0.y, p1.x, p1.y, color);
+         frameRenderLine(frame, vp, p0.x, p0.y, p1.x, p1.y, color);
       }
    }   
 }
@@ -207,6 +207,7 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    PositionComponent *pc = entityGet(PositionComponent)(e);
    VisibilityComponent *vc = entityGet(VisibilityComponent)(e);
    int x = 0, y = 0;
+   FrameRegion *vp = FrameRegionFULL;
 
    if (vc && !vc->shown){
       return;
@@ -218,7 +219,12 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    }
 
    if (trc->inView) {
+      Viewport *view = &self->view->viewport;
 
+      x -= view->worldPos.x;
+      y -= view->worldPos.y;
+
+      vp = &view->region;
    }
 
    //render rect
@@ -226,7 +232,7 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
       RectangleComponent *rc = entityGet(RectangleComponent)(e);
       SizeComponent *sc = entityGet(SizeComponent)(e);
       if (rc && sc){
-         frameRenderRect(frame, FrameRegionFULL, x, y, x + sc->x, y + sc->y, rc->color);
+         frameRenderRect(frame, vp, x, y, x + sc->x, y + sc->y, rc->color);
       }
    }
 
@@ -241,10 +247,10 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
       else{
          ImageComponent *ic = entityGet(ImageComponent)(e);
          if (ic->partial){
-            frameRenderImagePartial(frame, FrameRegionFULL, x, y, img, ic->x, ic->y, ic->width, ic->height);
+            frameRenderImagePartial(frame, vp, x, y, img, ic->x, ic->y, ic->width, ic->height);
          }
          else{
-            frameRenderImage(frame, FrameRegionFULL, x, y, img);
+            frameRenderImage(frame, vp, x, y, img);
          }
          
       }
@@ -253,7 +259,7 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    //polygons
    if (trc->hasPolygon){
       PolygonComponent *pc = entityGet(PolygonComponent)(e);
-      _renderPolygon(frame, pc->pList, pc->color, pc->open);
+      _renderPolygon(frame, vp, pc->pList, pc->color, pc->open);
    }
 
    //text

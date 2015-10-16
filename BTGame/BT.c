@@ -102,9 +102,8 @@ VirtualApp *btCreate() {
    r->view.gameState = r->gameState;
    r->view.managers = &r->managers;
    r->view.gameClock = r->gameClock;
-   r->view.viewport = (Viewport){   .screenPos = { GRID_POS_X, GRID_POS_Y }, 
-                                    .worldPos = { 0, 0 }, 
-                                    .size = { GRID_PX_WIDTH, GRID_PX_HEIGHT } };
+   r->view.viewport = (Viewport){   .region = { GRID_POS_X, GRID_POS_Y, GRID_PX_WIDTH, GRID_PX_HEIGHT },
+                                    .worldPos = { 0, 0 } };
 
    _initEntitySystem(r);
 

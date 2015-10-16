@@ -2,8 +2,10 @@
 
 #include "segautils/Rect.h"
 #include "segautils/Vector.h"
+#include "segalib/EGA.h"
 
-typedef struct {
-   Int2 screenPos, size, worldPos;
+typedef struct {   
+   FrameRegion region;
+   Int2 worldPos;
 }Viewport;
 

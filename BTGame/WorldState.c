@@ -47,6 +47,22 @@ static void _handleKeyboard(WorldState *state){
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    while (keyboardPopEvent(k, &e)){
+      if (e.action == SegaKey_Pressed) {
+         switch (e.key) {
+         case SegaKey_Up:
+            state->view->viewport.worldPos.y -= 2;
+            break;
+         case SegaKey_Down:
+            state->view->viewport.worldPos.y += 2;
+            break;
+         case SegaKey_Left:
+            state->view->viewport.worldPos.x -= 2;
+            break;
+         case SegaKey_Right:
+            state->view->viewport.worldPos.x += 2;
+            break;
+         }
+      }
    }
 }
 
@@ -55,8 +71,13 @@ static void _handleMouse(WorldState *state){
    Mouse *mouse = appGetMouse(appGet());
    Keyboard *k = appGetKeyboard(appGet());
    MouseEvent event = { 0 };
+   Int2 pos = mouseGetPosition(mouse);
+   Viewport *vp = &state->view->viewport;
    while (mousePopEvent(mouse, &event)){
    }
+
+   vp->worldPos.x = pos.x - vp->region.origin_x - (vp->region.width / 2);
+   vp->worldPos.y = pos.y - vp->region.origin_y - (vp->region.height / 2);
 }
 
 void _boardHandleInput(WorldState *state, GameStateHandleInput *m){
@@ -80,20 +101,26 @@ static void _addTestEntities(WorldView *view) {
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid.ega"));
    entityUpdate(e);
+
+   e = entityCreate(view->entitySystem);
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
+   COMPONENT_ADD(e, InViewComponent, 0);
+   entityUpdate(e);
 }
 
-static void _enterState(WorldView *view) {
-
+static void _enterState(WorldState *state) {
+   _addTestEntities(state->view);
+   _testLisp();
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){
    StateClosure out;
    WorldState *state = checkedCalloc(1, sizeof(WorldState));
-
-   _addTestEntities(view);
-   _testLisp();
-
    state->view = view;
+
+   _enterState(state);
+
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_board, &_boardStateDestroy);
 
    return out;
