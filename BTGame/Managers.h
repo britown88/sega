@@ -17,6 +17,7 @@ typedef struct BTManagers_t {
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);
+void renderManagerToggleFPS(RenderManager *self);
 
 CursorManager *createCursorManager(WorldView *view);
 void cursorManagerCreateCursor(CursorManager *self);

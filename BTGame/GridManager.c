@@ -32,8 +32,8 @@ ImplManagerVTable(GridManager)
 
 static void _createTestSchemas(GridManager *self) {
    int i;
-   self->schemas = checkedCalloc(3, sizeof(TileSchema));
-   for (i = 0; i < 3; ++i) {
+   self->schemas = checkedCalloc(5, sizeof(TileSchema));
+   for (i = 0; i < 5; ++i) {
       self->schemas[i] = (TileSchema) { i };
    }   
 }
@@ -44,7 +44,7 @@ static void _createTestGrid(GridManager *self) {
    count = self->width * self->height;
    self->grid = checkedCalloc(count, sizeof(Tile));
    for (i = 0; i < count; ++i) {
-      self->grid[i] = (Tile) {appRand(appGet(), 1, 3), 0};
+      self->grid[i] = (Tile) {appRand(appGet(), 1, 5), 0};
    }
 
 }

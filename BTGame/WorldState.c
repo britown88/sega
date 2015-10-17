@@ -46,24 +46,31 @@ static void _handleKeyboard(WorldState *state){
    BTManagers *managers = state->view->managers;
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
-   while (keyboardPopEvent(k, &e)){
-      if (e.action == SegaKey_Pressed) {
-         switch (e.key) {
-         case SegaKey_Up:
-            state->view->viewport.worldPos.y -= 2;
-            break;
-         case SegaKey_Down:
-            state->view->viewport.worldPos.y += 2;
-            break;
-         case SegaKey_Left:
-            state->view->viewport.worldPos.x -= 2;
-            break;
-         case SegaKey_Right:
-            state->view->viewport.worldPos.x += 2;
-            break;
-         }
+   Viewport *vp = &state->view->viewport;
+   int speed = 3;
+   while (keyboardPopEvent(k, &e)) {
+      if (e.action == SegaKey_Released && e.key == SegaKey_F1) {
+         renderManagerToggleFPS(state->view->managers->renderManager);
+      }
+
+      if (e.action == SegaKey_Released && e.key == SegaKey_Escape) {
+         appQuit(appGet());
       }
    }
+
+   if (keyboardIsDown(k, SegaKey_W)) {
+      vp->worldPos.y -= speed;
+   }
+   if (keyboardIsDown(k, SegaKey_S)) {
+      vp->worldPos.y += speed;
+   }
+   if (keyboardIsDown(k, SegaKey_A)) {
+      vp->worldPos.x -= speed;
+   }
+   if (keyboardIsDown(k, SegaKey_D)) {
+      vp->worldPos.x += speed;
+   }
+
 }
 
 static void _handleMouse(WorldState *state){
@@ -76,8 +83,8 @@ static void _handleMouse(WorldState *state){
    while (mousePopEvent(mouse, &event)){
    }
 
-   vp->worldPos.x = pos.x - vp->region.origin_x - (vp->region.width / 2);
-   vp->worldPos.y = pos.y - vp->region.origin_y - (vp->region.height / 2);
+   //vp->worldPos.x = pos.x - vp->region.origin_x - (vp->region.width / 2);
+   //vp->worldPos.y = pos.y - vp->region.origin_y - (vp->region.height / 2);
 }
 
 void _boardHandleInput(WorldState *state, GameStateHandleInput *m){

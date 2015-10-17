@@ -17,6 +17,7 @@ struct RenderManager_t{
    WorldView *view;
    FontFactory *fontFactory;
    double *fps;
+   bool showFPS;
 
    vec(EntityPtr) *layers[LayerCount];
 };
@@ -125,6 +126,12 @@ RenderManager *createRenderManager(WorldView *view, double *fps){
    _initLayers(out);
 
    _registerUpdateDelegate(out, view->entitySystem);
+
+#ifdef DEBUG
+   out->showFPS = true;
+#else
+   out->showFPS = false;
+#endif
 
    imageDestroy(fontImage);
    return out;
@@ -302,6 +309,10 @@ void _renderFramerate(Frame *frame, Font *font, double d){
    frameRenderText(frame, buffer, x, y, font);
 }
 
+void renderManagerToggleFPS(RenderManager *self) {
+   self->showFPS = !self->showFPS;
+}
+
 void renderManagerRender(RenderManager *self, Frame *frame){
    frameClear(frame, FrameRegionFULL, 0);
 
@@ -314,5 +325,8 @@ void renderManagerRender(RenderManager *self, Frame *frame){
 
    _renderLayers(self, frame);
 
-   _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
+   if (self->showFPS) {
+      _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
+   }
+   
 }

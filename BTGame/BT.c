@@ -11,10 +11,10 @@
 #include "GameState.h"
 #include "GridManager.h"
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 720
 #define FULLSCREEN 0
-#define FRAME_RATE 9999
+#define FRAME_RATE 60
 
 typedef struct {
    VirtualApp vApp;
