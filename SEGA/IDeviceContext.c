@@ -3,6 +3,12 @@
 int iDeviceContextInit(IDeviceContext *self, int width, int height, StringView winTitle, int flags){
    return self->vTable->init(self, width, height, winTitle, flags);
 }
+void iDeviceContextInitRendering(IDeviceContext *self) {
+   self->vTable->initRendering(self);
+}
+void iDeviceContextCommitRender(IDeviceContext *self) {
+   self->vTable->commitRender(self);
+}
 void iDeviceContextPreRender(IDeviceContext *self){
    self->vTable->preRender(self);
 }

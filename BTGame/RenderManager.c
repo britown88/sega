@@ -127,7 +127,7 @@ RenderManager *createRenderManager(WorldView *view, double *fps){
 
    _registerUpdateDelegate(out, view->entitySystem);
 
-#ifdef DEBUG
+#ifdef _DEBUG
    out->showFPS = true;
 #else
    out->showFPS = false;

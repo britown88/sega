@@ -11,6 +11,7 @@ typedef struct Mouse_t Mouse;
 GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monitor);
 void glWindowDestroy(GLWindow *self);
 
+void glWindowBeginRendering(GLWindow *self);
 void glWindowPollEvents(GLWindow *self);
 void glWindowSwapBuffers(GLWindow *self);
 int glWindowShouldClose(GLWindow *self);

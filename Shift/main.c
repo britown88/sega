@@ -14,7 +14,8 @@
 
 int main()
 {
-   runApp(shiftCreate(), createOGLRenderer(), createGLFWContext());
+   IDeviceContext *context = createGLFWContext();
+   runApp(shiftCreate(), createOGLRenderer(context), context);
    printMemoryLeaks();
 
    return 0;

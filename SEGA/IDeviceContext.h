@@ -1,6 +1,7 @@
 #pragma once
 #include "segashared/Strings.h"
 #include "segautils/Vector.h"
+#include "segautils\DLLBullshit.h"
 
 typedef struct IDeviceContext_t IDeviceContext;
 typedef struct Keyboard_t Keyboard;
@@ -8,6 +9,8 @@ typedef struct Mouse_t Mouse;
 
 typedef struct {
    int(*init)(IDeviceContext*, int /*width*/, int /*height*/, StringView /*winName*/, int /*flags*/);
+   void(*initRendering)(IDeviceContext*);
+   void(*commitRender)(IDeviceContext*);
    void(*preRender)(IDeviceContext*);
    void(*postRender)(IDeviceContext*);
    int(*shouldClose)(IDeviceContext*);
@@ -24,6 +27,8 @@ struct IDeviceContext_t{
 
 int iDeviceContextInit(IDeviceContext *self, int width, int height, StringView winTitle, int flags);
 void iDeviceContextPreRender(IDeviceContext *self);
+DLL_PUBLIC void iDeviceContextInitRendering(IDeviceContext *self);
+DLL_PUBLIC void iDeviceContextCommitRender(IDeviceContext *self);
 void iDeviceContextPostRender(IDeviceContext *self);
 int iDeviceContextShouldClose(IDeviceContext *self);
 Int2 iDeviceContextWindowSize(IDeviceContext *self);

@@ -19,6 +19,8 @@ typedef struct {
 }GLFWContext;
 
 static int _init(GLFWContext *self, int width, int height, StringView winTitle, int flags);
+static void _initRendering(GLFWContext *self);
+static void _commitRender(GLFWContext *self);
 static void _preRender(GLFWContext *self);
 static void _postRender(GLFWContext *self);
 static int _shouldClose(GLFWContext *self);
@@ -33,6 +35,8 @@ static IDeviceContextVTable *_getTable(){
    if (!out){
       out = calloc(1, sizeof(IDeviceContextVTable));
       out->init = (int(*)(IDeviceContext*, int, int, StringView, int))&_init;
+      out->initRendering = (void(*)(IDeviceContext*))&_initRendering;
+      out->commitRender = (void(*)(IDeviceContext*))&_commitRender;
       out->preRender = (void(*)(IDeviceContext*))&_preRender;
       out->postRender = (void(*)(IDeviceContext*))&_postRender;
       out->shouldClose = (int(*)(IDeviceContext*))&_shouldClose;
@@ -66,16 +70,23 @@ int _init(GLFWContext *self, int width, int height, StringView winTitle, int fla
    self->window = glWindowCreate(size, winTitle, monitor);
 
    if (!self->window){
+      glfwTerminate();
       return 1;
    }
 
    return 0;
 }
+
+void _initRendering(GLFWContext *self) {
+   glWindowBeginRendering(self->window);
+}
+void _commitRender(GLFWContext *self) {
+   glWindowSwapBuffers(self->window);
+}
 void _preRender(GLFWContext *self){
 
 }
-void _postRender(GLFWContext *self){
-   glWindowSwapBuffers(self->window);
+void _postRender(GLFWContext *self){   
    glWindowPollEvents(self->window);
 }
 int _shouldClose(GLFWContext *self){

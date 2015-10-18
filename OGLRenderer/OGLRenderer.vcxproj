@@ -91,6 +91,9 @@
     <ProjectReference Include="..\segautils\segautils.vcxproj">
       <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\SEGA\SEGA.vcxproj">
+      <Project>{3de6287e-1249-41c4-a0f2-378ba3b0dd5a}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

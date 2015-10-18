@@ -14,7 +14,8 @@ COPYRIGHT TODAY
 
 int main()
 {
-   runApp(btCreate(), createOGLRenderer(), createGLFWContext());
+   IDeviceContext *context = createGLFWContext();
+   runApp(btCreate(), createOGLRenderer(context), context);
    printMemoryLeaks();
 
    return 0;
