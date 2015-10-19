@@ -106,7 +106,7 @@ void diceManagerUpdate(DiceManager *self){
    Mouse *mouse = appGetMouse(appGet());
    //Int2 mousePos = mouseGetPosition(mouse);
 
-   mc->angle = 3.1415926f * (float)(appGetTime(appGet()) / 1000.0f);
+   mc->angle = 3.1415926f * (float)t_u2s(appGetTime(appGet()));
    //pc->x = mousePos.x;
    //pc->y = mousePos.y;
 

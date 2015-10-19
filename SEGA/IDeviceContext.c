@@ -21,7 +21,7 @@ int iDeviceContextShouldClose(IDeviceContext *self) {
 Int2 iDeviceContextWindowSize(IDeviceContext *self){
    return self->vTable->windowSize(self);
 }
-double iDeviceContextTime(IDeviceContext *self){
+Microseconds iDeviceContextTime(IDeviceContext *self){
    return self->vTable->time(self);
 }
 void iDeviceContextDestroy(IDeviceContext *self){

@@ -56,7 +56,7 @@ AppData createData() {
    AppData data = { 0 };
 
    data.defaultWindowSize = (Int2){ WINDOW_WIDTH, WINDOW_HEIGHT };
-   data.frameRate = FRAME_RATE;
+   data.desiredFrameRate = FRAME_RATE;
 
    if (FULLSCREEN){
       data.dcFlags |= DC_FLAG_FULLSCREEN;

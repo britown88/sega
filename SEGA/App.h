@@ -1,6 +1,7 @@
 #pragma once
 
 #include "segautils\Vector.h"
+#include "segautils/Time.h"
 #include "segashared\Strings.h"
 #include "segautils\DLLBullshit.h"
 #include "segalib\EGA.h"
@@ -18,7 +19,7 @@ typedef struct VirtualApp_t VirtualApp;
 
 typedef struct {
    double fps;
-   double frameRate;
+   double desiredFrameRate;
    Int2 defaultWindowSize;
    StringView windowTitle;
    int dcFlags; 
@@ -54,8 +55,8 @@ DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext
 DLL_PUBLIC int appRand(App *self, int lower, int upper);
 DLL_PUBLIC Int2 appWindowToWorld(App *self, Float2 coords);
 
-DLL_PUBLIC double appGetTime(App *self);
-double appGetFrameTime(App *self);
+DLL_PUBLIC Microseconds appGetTime(App *self);
+Microseconds appGetFrameTime(App *self);
 double appGetFrameRate(App *self);
 
 extern App *g_App;

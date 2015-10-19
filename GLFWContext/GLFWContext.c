@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+#include <Windows.h>
+
 #define ClosureTPart CLOSURE_NAME(MousePos)
 #include "segautils\Closure_Impl.h"
 
@@ -25,7 +27,7 @@ static void _preRender(GLFWContext *self);
 static void _postRender(GLFWContext *self);
 static int _shouldClose(GLFWContext *self);
 static Int2 _windowSize(GLFWContext *self);
-static double _time(GLFWContext *self);
+static Microseconds _time(GLFWContext *self);
 static void _destroy(GLFWContext *self);
 static Keyboard* _keyboard(GLFWContext *self);
 static Mouse* _mouse(GLFWContext *self);
@@ -41,7 +43,7 @@ static IDeviceContextVTable *_getTable(){
       out->postRender = (void(*)(IDeviceContext*))&_postRender;
       out->shouldClose = (int(*)(IDeviceContext*))&_shouldClose;
       out->windowSize = (Int2(*)(IDeviceContext*))&_windowSize;
-      out->time = (double(*)(IDeviceContext*))&_time;
+      out->time = (Microseconds(*)(IDeviceContext*))&_time;
       out->destroy = (void(*)(IDeviceContext*))&_destroy;
       out->keyboard = (Keyboard*(*)(IDeviceContext*))&_keyboard;
       out->mouse = (Mouse*(*)(IDeviceContext*))&_mouse;
@@ -95,8 +97,20 @@ int _shouldClose(GLFWContext *self){
 Int2 _windowSize(GLFWContext *self){
    return glWindowGetSize(self->window);
 }
-double _time(GLFWContext *self){
-   return glfwGetTime();
+Microseconds _time(GLFWContext *self){  
+   static LARGE_INTEGER freq;
+   static bool freqInit = false;
+   LARGE_INTEGER time;
+
+   if (!freqInit) {
+      QueryPerformanceFrequency(&freq);
+      freqInit = true;
+   }
+
+   QueryPerformanceCounter(&time);
+
+   return (time.QuadPart * 1000000) / freq.QuadPart;
+
 }
 void _destroy(GLFWContext *self){
    glWindowDestroy(self->window);

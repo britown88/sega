@@ -4,7 +4,7 @@
 #include "SEGA\App.h"
 
 struct GameClock_t {
-   long time, appTime;
+   Microseconds time, appTime;
    bool paused;
 };
 
@@ -17,8 +17,8 @@ void gameClockDestroy(GameClock *self){
 }
 
 static void _updateTime(GameClock *self){
-   long newTime = (long)appGetTime(appGet());
-   long elapsed = newTime - self->appTime;
+   Microseconds newTime = appGetTime(appGet());
+   Microseconds elapsed = newTime - self->appTime;
 
    self->time += elapsed;
    self->appTime = newTime;
@@ -29,7 +29,7 @@ long gameClockGetTime(GameClock *self){
       _updateTime(self);
    }
 
-   return self->time;
+   return t_u2m(self->time);
 }
 void gameClockPause(GameClock *self){
    if (!self->paused){
@@ -39,7 +39,7 @@ void gameClockPause(GameClock *self){
 }
 void gameClockResume(GameClock *self){
    if (self->paused){
-      self->appTime = (long)appGetTime(appGet());
+      self->appTime = appGetTime(appGet());
       self->paused = false;
    }
 }

@@ -33,6 +33,7 @@
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="StandardVectors.h" />
     <ClInclude Include="String.h" />
+    <ClInclude Include="Time.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="Vector_Create.h" />
     <ClInclude Include="Vector_Decl.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="Quaternion.c" />
     <ClCompile Include="StandardVectors.c" />
     <ClCompile Include="String.c" />
+    <ClCompile Include="Time.c" />
     <ClCompile Include="Vector.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

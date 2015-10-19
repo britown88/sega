@@ -27,8 +27,8 @@ App *appGet(){
 struct App_t {
    VirtualApp *subclass;
    bool running;
-   double frameRate;
-   double lastUpdated;
+   double desiredFrameRate;
+   Microseconds lastUpdated;
    float vpScale;
  
    Int2 winSize;
@@ -60,15 +60,15 @@ Rectf _buildProportionalViewport(int width, int height, float *ratio)
    return vp;
 }
 
-static void _updateFPS(double delta, double *fps){
-   static double time = 0.0;
-   static const double interval = 500.0;
+static void _updateFPS(Microseconds delta, double *fps){
+   static Microseconds time = 0;
+   static const Microseconds interval = 500000;
    static double sample = 0.0;
    static int sampleCount = 0;
 
    time += delta;
 
-   sample += 1000.0 / (delta);
+   sample += 1000000.0 / (delta);
    ++sampleCount;
 
    if (time > interval){      
@@ -82,12 +82,11 @@ static void _updateFPS(double delta, double *fps){
 
 static void _step(App *self) {
    //dt
-   double time = appGetTime(self);
-   double deltaTime = time - self->lastUpdated;
-   double dt = deltaTime / appGetFrameTime(self);
+   Microseconds time = appGetTime(self);
+   Microseconds deltaTime = time - self->lastUpdated;
 
    //update
-   if(dt >= 1.0)
+   if(deltaTime >= appGetFrameTime(self))
    {
       self->lastUpdated = time;
       _updateFPS(deltaTime, &virtualAppGetData(self->subclass)->fps);
@@ -107,8 +106,9 @@ static void _step(App *self) {
       if(iDeviceContextShouldClose(self->context))
          self->running = false;  
    }
-   else
+   else {
       appSleep(0);
+   }
 }
 
 App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *renderer){
@@ -117,8 +117,8 @@ App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *render
    out->winSize = iDeviceContextWindowSize(context);
    out->subclass = subclass;
 
-   out->lastUpdated = 0.0;
-   out->frameRate = data->frameRate;
+   out->lastUpdated = 0;
+   out->desiredFrameRate = data->desiredFrameRate;
 
    out->renderer = renderer;
    out->context = context;
@@ -196,9 +196,9 @@ Mouse *appGetMouse(App *self){
    return iDeviceContextMouse(self->context);
 }
 
-double appGetTime(App *self){return iDeviceContextTime(self->context) * 1000;}
-double appGetFrameTime(App *self){return 1000.0 / self->frameRate;}
-double appGetFrameRate(App *self){return self->frameRate;}
+Microseconds appGetTime(App *self){return iDeviceContextTime(self->context);}
+Microseconds appGetFrameTime(App *self){ return t_s2u(1.0 / self->desiredFrameRate); }
+double appGetFrameRate(App *self){return self->desiredFrameRate;}
 
 void appQuit(App *app){
    app->running = false;
