@@ -18,7 +18,7 @@ size_t hashPtr(void* ptr){
 }
 
 int minByteCount(int bitCount) {
-   return bitCount/8 + !!(bitCount%8);
+   return (bitCount >> 3) + !!(bitCount & 7);
 }
 
 int minIntCount(int bitCount) {
@@ -36,19 +36,20 @@ void setBit(byte *dest, byte pos/*0-7*/, byte value/*0-1*/){
 
 void setBitInArray(byte *dest, int pos, byte value/*0-1*/) {
    if(value) {
-      dest[pos/8] |= 1 << pos%8;
+      dest[pos >> 3] |= 1 << (pos & 7);
    }
    else {
-      dest[pos/8] &= ~(1 << pos%8);
+      dest[pos >> 3] &= ~(1 << (pos & 7));
    }
 }
 
 byte getBit(byte dest, byte pos/*0-7*/){
-   return !!(dest & (1<<(pos%8)));
+   return !!(dest & (1<< (pos & 7)));
 }
 
 byte getBitFromArray(const byte *dest, int pos){
-   return !!(dest[pos/8] & (1<<(pos%8)));
+   //return !!(dest[pos/8] & (1<<(pos%8)));
+   return !!(dest[pos >> 3] & (1 << (pos & 7)));//i assume release is making this optimization for us?
 }
 
 

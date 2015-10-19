@@ -3,6 +3,8 @@
 #include "segautils\DLLBullshit.h"
 #include "segautils\Vector.h"
 
+#define SegaKey_Undefined -1
+
 typedef enum{
    SegaMouseBtn_Left = 0,
    SegaMouseBtn_Right,

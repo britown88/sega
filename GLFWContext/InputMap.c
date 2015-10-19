@@ -45,7 +45,7 @@ int getSegaKey(int GLFWKey){
 
    if (!mapInit){
       int i = 0; 
-      for (i = 0; i < GLFW_KEY_LAST; ++i){ keyMap[i] = -1; }
+      for (i = 0; i < GLFW_KEY_LAST; ++i){ keyMap[i] = SegaKey_Undefined; }
 
       keyMap[GLFW_KEY_SPACE] = SegaKey_Space;
       keyMap[GLFW_KEY_APOSTROPHE] = SegaKey_Apostrophe;

@@ -17,7 +17,10 @@
 
 typedef struct {
    IDeviceContext context;
-   GLWindow *window;
+   GLWindow *window;   
+   
+   uint64_t clockFreq;
+   Microseconds startTime;
 }GLFWContext;
 
 static int _init(GLFWContext *self, int width, int height, StringView winTitle, int flags);
@@ -76,6 +79,8 @@ int _init(GLFWContext *self, int width, int height, StringView winTitle, int fla
       return 1;
    }
 
+   QueryPerformanceFrequency((LARGE_INTEGER*)&self->clockFreq);
+   QueryPerformanceCounter((LARGE_INTEGER*)&self->startTime);
    return 0;
 }
 
@@ -97,19 +102,11 @@ int _shouldClose(GLFWContext *self){
 Int2 _windowSize(GLFWContext *self){
    return glWindowGetSize(self->window);
 }
-Microseconds _time(GLFWContext *self){  
-   static LARGE_INTEGER freq;
-   static bool freqInit = false;
-   LARGE_INTEGER time;
-
-   if (!freqInit) {
-      QueryPerformanceFrequency(&freq);
-      freqInit = true;
-   }
-
-   QueryPerformanceCounter(&time);
-
-   return (time.QuadPart * 1000000) / freq.QuadPart;
+Microseconds _time(GLFWContext *self){
+   Microseconds out;
+   QueryPerformanceCounter((LARGE_INTEGER*)&out);
+   out -= self->startTime;
+   return (out * 1000000) / self->clockFreq;
 
 }
 void _destroy(GLFWContext *self){

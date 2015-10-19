@@ -80,33 +80,35 @@ static void _updateFPS(Microseconds delta, double *fps){
 
 }
 
+static void _singleUpdate(App *self) {
+
+   virtualAppOnStep(self->subclass);
+   iDeviceContextPreRender(self->context);
+   iRendererRenderFrame(self->renderer,
+      self->subclass->currentFrame,
+      self->subclass->currentPalette.colors,
+      &self->viewport);
+   iDeviceContextPostRender(self->context);
+
+   if (iDeviceContextShouldClose(self->context))
+      self->running = false;
+}
+
 static void _step(App *self) {
    //dt
+   Microseconds usPerFrame = appGetFrameTime(self);
    Microseconds time = appGetTime(self);
-   Microseconds deltaTime = time - self->lastUpdated;
+   Microseconds deltaTime = time - self->lastUpdated;   
 
    //update
-   if(deltaTime >= appGetFrameTime(self))
-   {
-      self->lastUpdated = time;
+   if(deltaTime >= usPerFrame)
+   {      
+      self->lastUpdated = time;      
       _updateFPS(deltaTime, &virtualAppGetData(self->subclass)->fps);
-
-      virtualAppOnStep(self->subclass);
-
-      iDeviceContextPreRender(self->context);
-
-      iRendererRenderFrame(self->renderer,
-         self->subclass->currentFrame,
-         self->subclass->currentPalette.colors,
-         &self->viewport);
-
-      //swap
-      iDeviceContextPostRender(self->context);
-
-      if(iDeviceContextShouldClose(self->context))
-         self->running = false;  
+      _singleUpdate(self);
    }
-   else {
+   else if(usPerFrame - deltaTime > 3000){
+      //only yield if we're more than 3ms out
       appSleep(0);
    }
 }
@@ -197,7 +199,14 @@ Mouse *appGetMouse(App *self){
 }
 
 Microseconds appGetTime(App *self){return iDeviceContextTime(self->context);}
-Microseconds appGetFrameTime(App *self){ return t_s2u(1.0 / self->desiredFrameRate); }
+Microseconds appGetFrameTime(App *self){ 
+   static Microseconds out;
+   static bool outSet = false;
+   if (!outSet) {
+      out = t_s2u(1.0 / self->desiredFrameRate);
+   }
+   return out; 
+}
 double appGetFrameRate(App *self){return self->desiredFrameRate;}
 
 void appQuit(App *app){

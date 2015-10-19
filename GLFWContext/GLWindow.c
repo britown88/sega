@@ -42,7 +42,9 @@ static void glWindowKeyFunc(GLFWwindow* win, int key, int scancode, int action, 
       .key = getSegaKey(key) 
    };
 
-   keyboardPushEvent(self->keyboard, &e);
+   if (e.key != SegaKey_Undefined) {
+      keyboardPushEvent(self->keyboard, &e);
+   }
 }
 
 static Int2 _getMousePos(GLFWwindow *win){

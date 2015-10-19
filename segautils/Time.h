@@ -1,7 +1,9 @@
 #pragma once
 
-typedef long Microseconds;
-typedef long Milliseconds;
+#include <stdint.h>
+
+typedef uint64_t Microseconds;
+typedef uint64_t Milliseconds;
 typedef double Seconds;
 
 Microseconds t_m2u(Milliseconds t);

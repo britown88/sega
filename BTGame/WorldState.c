@@ -48,6 +48,7 @@ static void _handleKeyboard(WorldState *state){
    KeyboardEvent e = { 0 };
    Viewport *vp = &state->view->viewport;
    int speed = 3;
+
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released && e.key == SegaKey_F1) {
          renderManagerToggleFPS(state->view->managers->renderManager);
