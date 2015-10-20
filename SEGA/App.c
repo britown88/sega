@@ -56,7 +56,7 @@ Rectf _buildProportionalViewport(int width, int height, float *ratio)
    return vp;
 }
 
-static void _renderFrameTime(Frame *frame, Microseconds frameLength) {
+static void _renderUpdateFrameTime(Frame *frame, Microseconds frameLength) {
    static byte frameTimes[EGA_RES_WIDTH] = { 0 };
    static int index = 0;
    int i;
@@ -107,7 +107,7 @@ static void _singleUpdate(App *self, Microseconds frameLength) {
 
    virtualAppOnStep(self->subclass);
    iDeviceContextPreRender(self->context);
-   _renderFrameTime(self->subclass->currentFrame, frameLength);
+   _renderUpdateFrameTime(self->subclass->currentFrame, frameLength);
    iRendererRenderFrame(self->renderer,
       self->subclass->currentFrame,
       self->subclass->currentPalette.colors,

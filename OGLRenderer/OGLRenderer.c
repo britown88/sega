@@ -141,7 +141,7 @@ DWORD WINAPI _renderThread(LPVOID lpParam) {
    while (data->running) {
       App *app = appGet();
       static Microseconds lastUpdated = 0;
-      static int lastFrame = 0;
+      static int lastFrame = -1;
       
       Microseconds time = appGetTime(app);
       Microseconds deltaTime = time - lastUpdated;
@@ -152,14 +152,19 @@ DWORD WINAPI _renderThread(LPVOID lpParam) {
       if (scene) {;
          _renderFrameTime(scene);
 
-         if (WaitForSingleObject(data->mutex, INFINITE) == WAIT_OBJECT_0) {
+         if (lastFrame == data->frame) {
+            int tries = 10;
+            while (tries-- && lastFrame == data->frame) {
+               Sleep(0);
+            }
+         }
 
+         if (WaitForSingleObject(data->mutex, INFINITE) == WAIT_OBJECT_0) {
             if (lastFrame == data->frame) {
                _pushFrameResult(scene, deltaTime, DUPE);
+               Sleep(8);
             }
             else if (data->frame - lastFrame > 1) {
-               //int i = data->frame;
-               //while(i-- > lastFrame + 1){}
                _pushFrameResult(scene, deltaTime, DROP);
             }
             else{
@@ -203,7 +208,7 @@ void _RenderFrame(OGLRenderer *self, Frame *frame, byte *palette, Rectf *vp) {
       self->thread->back = self->thread->front;
       self->thread->front = temp;
 
-      ++self->thread->frame;
+      _InterlockedExchange(&self->thread->frame, self->thread->frame+1);
 
       ReleaseMutex(self->thread->mutex);
    }
