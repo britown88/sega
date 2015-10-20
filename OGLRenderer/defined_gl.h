@@ -1,5 +1,5 @@
 #ifdef _WIN32
-#include <Windows.h>
+#include "segautils/IncludeWindows.h"
 #include <gl\GL.h>
 #else
 #include <gl.h>

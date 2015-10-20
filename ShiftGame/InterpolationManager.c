@@ -20,6 +20,7 @@ typedef struct{
    long startTime;//ms
    int startX, startY;
    int destX, destY;
+   
 }TInterpolationComponent;
 
 #define TComponentT TInterpolationComponent
@@ -94,13 +95,13 @@ void _onUpdate(InterpolationManager *self, Entity *e){
    }
 }
 
-void _updateEntity(InterpolationManager *self, Entity *e, long time){
+void _updateEntity(InterpolationManager *self, Entity *e, Milliseconds time){
    TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
 
    if (ic && pc){
-      double m = (time - tic->startTime) / (ic->time * 1000.0);
+      double m = (time - tic->startTime) / (double)t_s2m(ic->time);
       if (m > 1.0){
          m = 1.0;
          vecPushBack(EntityPtr)(self->removeList, &e);
@@ -123,7 +124,7 @@ void _removeComponents(InterpolationManager *self){
 }
 
 void interpolationManagerUpdate(InterpolationManager *self){
-   long time = gameClockGetTime(self->view->gameClock);
+   Milliseconds time = gameClockGetTime(self->view->gameClock);
 
    COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, ic, {
       Entity *e = componentGetParent(ic, self->view->entitySystem);

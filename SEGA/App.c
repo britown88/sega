@@ -1,8 +1,4 @@
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
+#include "segautils/IncludeWindows.h"
 
 
 #include <malloc.h>
@@ -60,6 +56,33 @@ Rectf _buildProportionalViewport(int width, int height, float *ratio)
    return vp;
 }
 
+static void _renderFrameTime(Frame *frame, Microseconds frameLength) {
+   static byte frameTimes[EGA_RES_WIDTH] = { 0 };
+   static int index = 0;
+   int i;
+
+   frameTimes[index++] = (byte)t_u2m(frameLength);
+   if (index > EGA_RES_WIDTH) {
+      index = 0;
+   }
+
+   for (i = 0; i < EGA_RES_WIDTH; ++i) {
+      byte color = 10;
+      if (i == index) {
+         color = 0;
+      }
+      else if (i == index - 1) {
+         color = 2;
+      }
+
+      frameRenderLine(frame, FrameRegionFULL,
+         i, EGA_RES_HEIGHT - 16 - MAX(0, frameTimes[i] - 10),
+         i, EGA_RES_HEIGHT - 16, color);
+   }
+
+
+}
+
 static void _updateFPS(Microseconds delta, double *fps){
    static Microseconds time = 0;
    static const Microseconds interval = 500000;
@@ -80,10 +103,11 @@ static void _updateFPS(Microseconds delta, double *fps){
 
 }
 
-static void _singleUpdate(App *self) {
+static void _singleUpdate(App *self, Microseconds frameLength) {
 
    virtualAppOnStep(self->subclass);
    iDeviceContextPreRender(self->context);
+   _renderFrameTime(self->subclass->currentFrame, frameLength);
    iRendererRenderFrame(self->renderer,
       self->subclass->currentFrame,
       self->subclass->currentPalette.colors,
@@ -105,7 +129,8 @@ static void _step(App *self) {
    {      
       self->lastUpdated = time;      
       _updateFPS(deltaTime, &virtualAppGetData(self->subclass)->fps);
-      _singleUpdate(self);
+      _singleUpdate(self, deltaTime);
+      
    }
    else if(usPerFrame - deltaTime > 3000){
       //only yield if we're more than 3ms out

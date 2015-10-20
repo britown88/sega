@@ -2,6 +2,7 @@
 
 #include "Entities\Entities.h"
 #include "segautils\Coroutine.h"
+#include "segautils/Time.h"
 
 typedef struct CommandManager_t CommandManager;
 
@@ -69,7 +70,7 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
-   float delay;
+   Seconds delay;
 }ActionPreDelayComponent;
 #define ComponentT ActionPreDelayComponent
 #include "Entities\ComponentDecl.h"

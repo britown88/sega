@@ -1,5 +1,6 @@
 #pragma once
 
+#include "segautils/Time.h"
 #include "Entities\Entities.h"
 #include "WorldView.h"
 
@@ -42,8 +43,8 @@ typedef struct{
 #include "Entities\ComponentDecl.h"
 
 typedef struct{
-   float duration;
-   long startTime;
+   Seconds duration;
+   Milliseconds startTime;
 }StatusDurationComponent;
 #define ComponentT StatusDurationComponent
 #include "Entities\ComponentDecl.h"

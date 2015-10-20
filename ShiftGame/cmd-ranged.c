@@ -16,7 +16,7 @@
 typedef struct {
    WorldView *view;
    Action *a;
-   long startTime, pausedTime;
+   Milliseconds startTime, pausedTime;
    bool paused;
    float range;
 }BowRoutineData;
@@ -89,8 +89,8 @@ static CoroutineStatus _bowRoutine(BowRoutineData *data, CoroutineRequest reques
          return requestIsCancel(request) ? Finished : NotFinished;
       }
       else{
-         long elapsed = gameClockGetTime(data->view->gameClock) - data->startTime;
-         long time = (long)(entityGet(ActionPreDelayComponent)(data->a)->delay * 1000);
+         Milliseconds elapsed = gameClockGetTime(data->view->gameClock) - data->startTime;
+         Milliseconds time = t_s2m(entityGet(ActionPreDelayComponent)(data->a)->delay);
          if (elapsed < time){
             //clock is still going, but cancellable so
             return requestIsCancel(request) ? Finished : NotFinished;

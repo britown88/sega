@@ -46,7 +46,7 @@ static void _createTestEntity(EntitySystem *system, int x, int y, bool AI);
 
 static void _testSpawn(BoardState *state){
    ShiftManagers *managers = state->view->managers;
-   static long spawnTimer = 0;
+   static Milliseconds spawnTimer = 0;
 
    if (spawnTimer == 0){
       spawnTimer = gameClockGetTime(state->view->gameClock);

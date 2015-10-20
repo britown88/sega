@@ -140,6 +140,7 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
 
 void glWindowBeginRendering(GLWindow *self) {
    glfwMakeContextCurrent(self->threadWin);
+   glfwSwapInterval(1);
 }
 
 void glWindowDestroy(GLWindow *self){

@@ -5,6 +5,7 @@
 #include "MeshRendering.h"
 #include "Actions.h"
 #include "segautils\String.h"
+#include "segautils/Time.h"
 
 #pragma pack(push, 1)
 
@@ -76,7 +77,7 @@ typedef struct{
 
 typedef struct {
    int destX, destY;
-   double time;
+   Seconds time;
 }InterpolationComponent;
 
 #define ComponentT InterpolationComponent

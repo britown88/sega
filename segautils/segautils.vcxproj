@@ -24,6 +24,7 @@
     <ClInclude Include="FSM.h" />
     <ClInclude Include="HashTable_Create.h" />
     <ClInclude Include="HashTable_Functions.h" />
+    <ClInclude Include="IncludeWindows.h" />
     <ClInclude Include="IntrusiveHeap.h" />
     <ClInclude Include="Lisp.h" />
     <ClInclude Include="Matrix.h" />

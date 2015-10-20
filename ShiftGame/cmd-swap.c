@@ -17,7 +17,7 @@ typedef struct {
    WorldView *view;
    Action *a;
    CombatAction *action;
-   long startTime, pausedTime;
+   Milliseconds startTime, pausedTime;
    bool paused;
    float range;
 }SwapRoutineData;
@@ -93,7 +93,7 @@ static CoroutineStatus _SwapRoutine(SwapRoutineData *data, CoroutineRequest requ
          return requestIsCancel(request) ? Finished : NotFinished;
       }
       else{
-         long elapsed = gameClockGetTime(data->view->gameClock) - data->startTime;
+         Milliseconds elapsed = gameClockGetTime(data->view->gameClock) - data->startTime;
          if (elapsed < 250){
             //clock is still going, but cancellable so
             return requestIsCancel(request) ? Finished : NotFinished;

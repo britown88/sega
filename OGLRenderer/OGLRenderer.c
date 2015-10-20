@@ -6,7 +6,7 @@
 
 #include "EGATexture.h"
 
-#include <windows.h>
+#include "segautils/IncludeWindows.h"
 DWORD WINAPI _renderThread(LPVOID lpParam);
 
 typedef struct ThreadData_t ThreadData;
@@ -71,6 +71,7 @@ typedef struct ThreadData_t {
 
    Scene scenes[2];
    Scene *front, *back;
+   int frame;
 }ThreadData;
 
 void _startThread(OGLRenderer *self) {
@@ -88,17 +89,85 @@ void _startThread(OGLRenderer *self) {
    self->thread = data;
 }
 
+#define NONE 0
+#define DUPE (1 << 1)
+#define DROP (1 << 2)
+
+static byte frameTimes[EGA_RES_WIDTH] = { 0 };
+static byte status[EGA_RES_WIDTH] = { 0 };
+static int index = 0;
+
+static void _pushFrameResult(Scene *scene, Microseconds frameLength, int s) {
+   status[index] = s;
+   frameTimes[index++] = (byte)t_u2m(frameLength);
+
+   if (index > EGA_RES_WIDTH) {
+      index = 0;
+   }
+}
+
+static void _renderFrameTime(Scene *scene) {   
+   int i;  
+
+   for (i = 0; i < EGA_RES_WIDTH; ++i) {
+      byte color = 15;
+      if (i == index) {
+         color = 0;
+      }
+      else if (i == index - 1) {
+         color = 4;
+      }
+      else if (i == index - 2) {
+         color = 12;
+      }
+      else if (status[i]&DROP) {
+         color = 3;
+      }
+      else if (status[i]&DUPE) {
+         color = 13;
+      }      
+
+      frameRenderLine(&scene->frame, FrameRegionFULL,
+         i, EGA_RES_HEIGHT - 14,
+         i, EGA_RES_HEIGHT - 14 + MIN(13, MAX(0, frameTimes[i] - 10)), color);
+   }
+}
+
 DWORD WINAPI _renderThread(LPVOID lpParam) {
    ThreadData *data = lpParam;
-
    iDeviceContextInitRendering(data->renderer->context);
    egaTextureInitOGL(data->renderer->tex);
 
    while (data->running) {
+      App *app = appGet();
+      static Microseconds lastUpdated = 0;
+      static int lastFrame = 0;
+      
+      Microseconds time = appGetTime(app);
+      Microseconds deltaTime = time - lastUpdated;
+      lastUpdated = time;
+
       static Rectf vp;
       Scene *scene = data->front;
-      if (scene) {
+      if (scene) {;
+         _renderFrameTime(scene);
+
          if (WaitForSingleObject(data->mutex, INFINITE) == WAIT_OBJECT_0) {
+
+            if (lastFrame == data->frame) {
+               _pushFrameResult(scene, deltaTime, DUPE);
+            }
+            else if (data->frame - lastFrame > 1) {
+               //int i = data->frame;
+               //while(i-- > lastFrame + 1){}
+               _pushFrameResult(scene, deltaTime, DROP);
+            }
+            else{
+               _pushFrameResult(scene, deltaTime, NONE);
+            }
+
+            lastFrame = data->frame;            
+
             egaTextureUpdateTexture(data->renderer->tex, &scene->frame, scene->palette.colors);
             memcpy(&vp, &scene->vp, sizeof(Rectf));
             ReleaseMutex(data->mutex);
@@ -106,6 +175,7 @@ DWORD WINAPI _renderThread(LPVOID lpParam) {
 
          _performRender(data->renderer, &vp);
          iDeviceContextCommitRender(data->renderer->context);
+
       }
       else {
          Sleep(0);
@@ -132,6 +202,8 @@ void _RenderFrame(OGLRenderer *self, Frame *frame, byte *palette, Rectf *vp) {
       Scene *temp = self->thread->back;
       self->thread->back = self->thread->front;
       self->thread->front = temp;
+
+      ++self->thread->frame;
 
       ReleaseMutex(self->thread->mutex);
    }

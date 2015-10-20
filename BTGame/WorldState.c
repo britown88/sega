@@ -79,7 +79,7 @@ static void _handleMouse(WorldState *state){
    Mouse *mouse = appGetMouse(appGet());
    Keyboard *k = appGetKeyboard(appGet());
    MouseEvent event = { 0 };
-   Int2 pos = mouseGetPosition(mouse);
+   //Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = &state->view->viewport;
    while (mousePopEvent(mouse, &event)){
    }

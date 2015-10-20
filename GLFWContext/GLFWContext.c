@@ -4,13 +4,12 @@
 #include "SEGA\IDeviceContext.h"
 #include "SEGA\App.h"
 
+#include "segautils/IncludeWindows.h"
 #include "GLFW/glfw3.h"
 #include "segashared/CheckedMemory.h"
 #include "SEGA\Input.h"
 
 #include <stdio.h>
-
-#include <Windows.h>
 
 #define ClosureTPart CLOSURE_NAME(MousePos)
 #include "segautils\Closure_Impl.h"
@@ -71,6 +70,7 @@ int _init(GLFWContext *self, int width, int height, StringView winTitle, int fla
    if (flags&DC_FLAG_FULLSCREEN){
       monitor = glfwGetPrimaryMonitor();
    }
+
 
    self->window = glWindowCreate(size, winTitle, monitor);
 

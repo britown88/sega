@@ -93,7 +93,7 @@ void statusManagerUpdate(StatusManager *self){
 
    COMPONENT_QUERY(self->statuses, StatusDurationComponent, dc, {
       Status *s = componentGetParent(dc, self->statuses);
-      if (dc->startTime > 0 && gameClockGetTime(self->view->gameClock) - dc->startTime > (dc->duration * 1000)){
+      if (dc->startTime > 0 && gameClockGetTime(self->view->gameClock) - dc->startTime > t_s2m(dc->duration)){
 
          vecPushBack(StatusPtr)(self->postDestroy, &s);
       }
