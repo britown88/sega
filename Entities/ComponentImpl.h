@@ -6,10 +6,12 @@
 
 #define COMP_NAME CONCAT(comp_, ComponentT)
 
+#pragma pack(push, 1)
 typedef struct {
    int parentID;
    ComponentT data;   
 }COMP_NAME;
+#pragma pack(pop)
 
 #define VectorT COMP_NAME
 #include "segautils\Vector_Create.h"

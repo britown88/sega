@@ -102,43 +102,24 @@ static void _createTestGrid(GridManager *self) {
    }
 }
 
-static void _renderLight(GridManager *self, byte ox, byte oy, byte radius, byte centerLevel) {
+static void _renderLight(GridManager *self, int ox, int oy, byte radius, byte centerLevel) {
    int x, y;
    centerLevel = MIN(MAX(centerLevel, 0), MAX_BRIGHTNESS);
    radius = MAX(radius, centerLevel);
    for (y = -radius; y <= radius; ++y) {
       for (x = -radius; x <= radius; ++x) {
          if (ox + x >= 0 && ox + x < LIGHT_GRID_WIDTH &&
-            oy + y >= 0 && oy + y < LIGHT_GRID_HEIGHT) {
+             oy + y >= 0 && oy + y < LIGHT_GRID_HEIGHT) {
             int xxyy = x*x + y*y;
             if (xxyy <= radius * radius) {
                int dist = MAX(0, (int)sqrtf((float)xxyy));
 
-               _lightLevelAt(self, ox + x, oy + y)->level = MIN(centerLevel, radius - dist);
+               _lightLevelAt(self, ox + x, oy + y)->level += MIN(centerLevel, radius - dist);
             }
          }
       }
    }
 }
-
-static void _createTestLight(GridManager *self) {
-   //int i, j;
-   ////for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
-   ////   self->lightGrid[i].level = appRand(appGet(), 0, LIGHT_LEVEL_COUNT);
-   ////}
-
-   //for (i = 0; i < LIGHT_GRID_WIDTH; ++i) {
-
-   //   for (j = 0; j < LIGHT_GRID_HEIGHT; ++j) {
-   //      _lightLevelAt(self, i, j)->level = j;
-   //   }
-   //   
-   //   
-   //}
-
-   _renderLight(self, 10, 5, 5, MAX_BRIGHTNESS);
-}
-
 
 
 GridManager *createGridManager(WorldView *view) {
@@ -149,7 +130,6 @@ GridManager *createGridManager(WorldView *view) {
    out->tilePalette = imageLibraryGetImage(view->imageLibrary, stringIntern("assets/img/tiles.ega"));
    _createTestSchemas(out);
    _createTestGrid(out);
-   _createTestLight(out);
 
    return out;
 }
@@ -169,15 +149,20 @@ void gridManagerUpdate(GridManager *self) {
 
 }
 
+static void _renderLightEntity(GridManager *self, byte vpx, byte vpy, LightComponent *lc) {
+   Entity *e = componentGetParent(lc, self->view->entitySystem);
+   PositionComponent *pc = entityGet(PositionComponent)(e);
+   _renderLight(self, (pc->x / GRID_CELL_SIZE) - vpx, (pc->y / GRID_CELL_SIZE) - vpy, lc->radius, lc->centerLevel);
+}
+
 static void _renderAllLights(GridManager *self, byte vpx, byte vpy) {
    Viewport *vp = &self->view->viewport;
    memset(self->lightGrid, 0, sizeof(self->lightGrid));
 
-   COMPONENT_QUERY(self->view->entitySystem, LightComponent, lc, {
-      Entity *e = componentGetParent(lc, self->view->entitySystem);
-      PositionComponent *pc = entityGet(PositionComponent)(e);
-      _renderLight(self, (pc->x / GRID_CELL_SIZE) - vpx, (pc->y / GRID_CELL_SIZE) - vpy, lc->radius, lc->centerLevel);
+   COMPONENT_QUERY(self->view->entitySystem, LightComponent, lc, {      
+      _renderLightEntity(self, vpx, vpy, lc);
    });
+;
 }
 
 static void _renderTile(GridManager *self, Frame *frame, LightData *light, short x, short y, short imgX, short imgY) {
