@@ -107,7 +107,7 @@ static void _singleUpdate(App *self, Microseconds frameLength) {
 
    virtualAppOnStep(self->subclass);
    iDeviceContextPreRender(self->context);
-   _renderUpdateFrameTime(self->subclass->currentFrame, frameLength);
+   //_renderUpdateFrameTime(self->subclass->currentFrame, frameLength);
    iRendererRenderFrame(self->renderer,
       self->subclass->currentFrame,
       self->subclass->currentPalette.colors,

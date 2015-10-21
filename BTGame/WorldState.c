@@ -17,6 +17,7 @@
 
 typedef struct {
    WorldView *view;
+   Entity *mouseLight;
 }WorldState;
 
 static void _boardStateDestroy(WorldState *self){
@@ -47,7 +48,7 @@ static void _handleKeyboard(WorldState *state){
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    Viewport *vp = &state->view->viewport;
-   int speed = 3;
+   int speed = 1;
 
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released && e.key == SegaKey_F1) {
@@ -79,10 +80,15 @@ static void _handleMouse(WorldState *state){
    Mouse *mouse = appGetMouse(appGet());
    Keyboard *k = appGetKeyboard(appGet());
    MouseEvent event = { 0 };
-   //Int2 pos = mouseGetPosition(mouse);
+   Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = &state->view->viewport;
    while (mousePopEvent(mouse, &event)){
    }
+
+   COMPONENT_LOCK(PositionComponent, cpos, state->mouseLight, {
+      cpos->x = pos.x - vp->region.origin_x + vp->worldPos.x;
+      cpos->y = pos.y - vp->region.origin_y + vp->worldPos.y;
+   });
 
    //vp->worldPos.x = pos.x - vp->region.origin_x - (vp->region.width / 2);
    //vp->worldPos.y = pos.y - vp->region.origin_y - (vp->region.height / 2);
@@ -104,12 +110,17 @@ static void _testLisp() {
    int *i = lispi32(&ex);
 }
 
-static void _addTestEntities(WorldView *view) {
-   Entity *e = entityCreate(view->entitySystem);
+static void _addTestEntities(WorldState *state) {
+   Entity *e = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid.ega"));
    COMPONENT_ADD(e, LayerComponent, LayerBackground);
    entityUpdate(e);
+
+   state->mouseLight = entityCreate(state->view->entitySystem);
+   COMPONENT_ADD(state->mouseLight, PositionComponent, 0, 0);
+   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 7);
+   entityUpdate(state->mouseLight);
 
    //e = entityCreate(view->entitySystem);
    //COMPONENT_ADD(e, PositionComponent, 0, 0);
@@ -123,7 +134,7 @@ static void _enterState(WorldState *state) {
    appLoadPalette(appGet(), "assets/img/default.pal");
    cursorManagerCreateCursor(state->view->managers->cursorManager);
 
-   _addTestEntities(state->view);
+   _addTestEntities(state);
    _testLisp();
 }
 

@@ -150,19 +150,19 @@ DWORD WINAPI _renderThread(LPVOID lpParam) {
       static Rectf vp;
       Scene *scene = data->front;
       if (scene) {;
-         _renderFrameTime(scene);
+         //_renderFrameTime(scene);
 
          if (lastFrame == data->frame) {
             int tries = 10;
             while (tries-- && lastFrame == data->frame) {
-               Sleep(0);
+               Sleep(1);
             }
          }
 
          if (WaitForSingleObject(data->mutex, INFINITE) == WAIT_OBJECT_0) {
             if (lastFrame == data->frame) {
                _pushFrameResult(scene, deltaTime, DUPE);
-               Sleep(8);
+               //Sleep(8);
             }
             else if (data->frame - lastFrame > 1) {
                _pushFrameResult(scene, deltaTime, DROP);

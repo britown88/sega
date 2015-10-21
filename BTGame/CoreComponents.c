@@ -39,3 +39,6 @@ static void TextComponentDestroy(TextComponent *self){
 
 #define ComponentT InViewComponent
 #include "Entities\ComponentImpl.h"
+
+#define ComponentT LightComponent
+#include "Entities\ComponentImpl.h"

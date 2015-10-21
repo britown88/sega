@@ -98,4 +98,11 @@ typedef struct {
 #define ComponentT InViewComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   byte radius;
+}LightComponent;
+
+#define ComponentT LightComponent
+#include "Entities\ComponentDecl.h"
+
 #pragma pack(pop)
