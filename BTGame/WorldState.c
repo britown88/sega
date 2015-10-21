@@ -146,7 +146,7 @@ static void _addTestEntities(WorldState *state) {
 
    state->mouseLight = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(state->mouseLight, PositionComponent, 0, 0);
-   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 25, .centerLevel = MAX_BRIGHTNESS);
+   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 10, .centerLevel = MAX_BRIGHTNESS);
    entityUpdate(state->mouseLight);
 
    //e = entityCreate(view->entitySystem);
