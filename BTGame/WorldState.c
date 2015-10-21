@@ -12,6 +12,7 @@
 #include "CoreComponents.h"
 #include "segashared\Strings.h"
 #include "GameClock.h"
+#include "GridManager.h"
 
 #include "segautils/Lisp.h"
 
@@ -55,6 +56,16 @@ static void _handleKeyboard(WorldState *state){
          renderManagerToggleFPS(state->view->managers->renderManager);
       }
 
+      if (e.action == SegaKey_Released && e.key == SegaKey_KeypadAdd) {
+         LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
+         lc->centerLevel = MIN(lc->centerLevel + 1, MAX_BRIGHTNESS);
+      }
+
+      if (e.action == SegaKey_Released && e.key == SegaKey_KeypadSubtract) {
+         LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
+         lc->centerLevel = MAX(lc->centerLevel - 1, 0);
+      }
+
       if (e.action == SegaKey_Released && e.key == SegaKey_Escape) {
          appQuit(appGet());
       }
@@ -84,7 +95,8 @@ static void _handleMouse(WorldState *state){
    Viewport *vp = &state->view->viewport;
    while (mousePopEvent(mouse, &event)){
       if (event.action == SegaMouse_Scrolled) {
-         entityGet(LightComponent)(state->mouseLight)->radius += event.pos.y;
+         LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
+         lc->radius = MAX(0, lc->radius + event.pos.y);
       }
    }
 
@@ -122,7 +134,7 @@ static void _addTestEntities(WorldState *state) {
 
    state->mouseLight = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(state->mouseLight, PositionComponent, 0, 0);
-   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 25);
+   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 25, .centerLevel = MAX_BRIGHTNESS);
    entityUpdate(state->mouseLight);
 
    //e = entityCreate(view->entitySystem);

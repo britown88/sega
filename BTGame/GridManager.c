@@ -15,7 +15,7 @@
 #define LIGHT_GRID_WIDTH (GRID_WIDTH + 1)
 #define LIGHT_GRID_HEIGHT (GRID_HEIGHT + 1)
 #define LIGHT_GRID_CELL_COUNT (LIGHT_GRID_WIDTH * LIGHT_GRID_HEIGHT)
-#define LIGHT_LEVEL_COUNT 5
+
 
 static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
 //0
@@ -23,11 +23,11 @@ static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
       1, 1, 1, 1,
       1, 1, 1, 1,
       1, 1, 1, 1 },
-////1
-//{     0, 1, 1, 1,
-//      1, 1, 1, 1,
-//      1, 1, 1, 1,
-//      1, 1, 1, 0 },
+//1
+{     0, 1, 1, 1,
+      1, 1, 1, 1,
+      1, 1, 1, 1,
+      1, 1, 1, 0 },
 //2
 {     0, 1, 1, 1,
       1, 1, 0, 1,
@@ -43,11 +43,11 @@ static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
       0, 0, 1, 0,
       0, 1, 0, 0,
       0, 0, 0, 1 },
-////5
-//{     1, 0, 0, 0,
-//      0, 0, 0, 0,
-//      0, 0, 0, 0,
-//      0, 0, 0, 1 },
+//5
+{     1, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 1 },
 //6
 {     0, 0, 0, 0,
       0, 0, 0, 0,
@@ -102,16 +102,19 @@ static void _createTestGrid(GridManager *self) {
    }
 }
 
-static void _renderLight(GridManager *self, byte ox, byte oy, byte radius) {
+static void _renderLight(GridManager *self, byte ox, byte oy, byte radius, byte centerLevel) {
    int x, y;
+   centerLevel = MIN(MAX(centerLevel, 0), MAX_BRIGHTNESS);
+   radius = MAX(radius, centerLevel);
    for (y = -radius; y <= radius; ++y) {
       for (x = -radius; x <= radius; ++x) {
          if (ox + x >= 0 && ox + x < LIGHT_GRID_WIDTH &&
             oy + y >= 0 && oy + y < LIGHT_GRID_HEIGHT) {
-            if (x*x + y*y <= radius * radius) {
-               int dist = sqrtf((x) * (x) + (y) * (y));
+            int xxyy = x*x + y*y;
+            if (xxyy <= radius * radius) {
+               int dist = MAX(0, (int)sqrtf((float)xxyy));
 
-               _lightLevelAt(self, ox + x, oy + y)->level = MAX(LIGHT_LEVEL_COUNT, radius) - dist;
+               _lightLevelAt(self, ox + x, oy + y)->level = MIN(centerLevel, radius - dist);
             }
          }
       }
@@ -133,7 +136,7 @@ static void _createTestLight(GridManager *self) {
    //   
    //}
 
-   _renderLight(self, 10, 5, 5);
+   _renderLight(self, 10, 5, 5, MAX_BRIGHTNESS);
 }
 
 
@@ -173,7 +176,7 @@ static void _renderAllLights(GridManager *self, byte vpx, byte vpy) {
    COMPONENT_QUERY(self->view->entitySystem, LightComponent, lc, {
       Entity *e = componentGetParent(lc, self->view->entitySystem);
       PositionComponent *pc = entityGet(PositionComponent)(e);
-      _renderLight(self, (pc->x / GRID_CELL_SIZE) - vpx, (pc->y / GRID_CELL_SIZE) - vpy, lc->radius);
+      _renderLight(self, (pc->x / GRID_CELL_SIZE) - vpx, (pc->y / GRID_CELL_SIZE) - vpy, lc->radius, lc->centerLevel);
    });
 }
 

@@ -16,5 +16,8 @@ typedef struct WorldView_t WorldView;
 #define GRID_PX_WIDTH (GRID_WIDTH * GRID_CELL_SIZE)
 #define GRID_PX_HEIGHT (GRID_HEIGHT * GRID_CELL_SIZE)
 
+#define LIGHT_LEVEL_COUNT 7
+#define MAX_BRIGHTNESS (LIGHT_LEVEL_COUNT - 1)
+
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);

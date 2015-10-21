@@ -100,6 +100,7 @@ typedef struct {
 
 typedef struct {
    byte radius;
+   byte centerLevel;
 }LightComponent;
 
 #define ComponentT LightComponent
