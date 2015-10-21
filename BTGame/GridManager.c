@@ -15,7 +15,7 @@
 #define LIGHT_GRID_WIDTH (GRID_WIDTH + 1)
 #define LIGHT_GRID_HEIGHT (GRID_HEIGHT + 1)
 #define LIGHT_GRID_CELL_COUNT (LIGHT_GRID_WIDTH * LIGHT_GRID_HEIGHT)
-#define LIGHT_LEVEL_COUNT 7
+#define LIGHT_LEVEL_COUNT 5
 
 static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
 //0
@@ -23,11 +23,11 @@ static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
       1, 1, 1, 1,
       1, 1, 1, 1,
       1, 1, 1, 1 },
-//1
-{     0, 1, 1, 1,
-      1, 1, 1, 1,
-      1, 1, 1, 1,
-      1, 1, 1, 0 },
+////1
+//{     0, 1, 1, 1,
+//      1, 1, 1, 1,
+//      1, 1, 1, 1,
+//      1, 1, 1, 0 },
 //2
 {     0, 1, 1, 1,
       1, 1, 0, 1,
@@ -43,11 +43,11 @@ static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
       0, 0, 1, 0,
       0, 1, 0, 0,
       0, 0, 0, 1 },
-//5
-{     1, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 1 },
+////5
+//{     1, 0, 0, 0,
+//      0, 0, 0, 0,
+//      0, 0, 0, 0,
+//      0, 0, 0, 1 },
 //6
 {     0, 0, 0, 0,
       0, 0, 0, 0,
@@ -111,7 +111,7 @@ static void _renderLight(GridManager *self, byte ox, byte oy, byte radius) {
             if (x*x + y*y <= radius * radius) {
                int dist = sqrtf((x) * (x) + (y) * (y));
 
-               _lightLevelAt(self, ox + x, oy + y)->level = LIGHT_LEVEL_COUNT - dist;
+               _lightLevelAt(self, ox + x, oy + y)->level = MAX(LIGHT_LEVEL_COUNT, radius) - dist;
             }
          }
       }

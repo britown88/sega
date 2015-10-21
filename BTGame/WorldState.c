@@ -83,6 +83,9 @@ static void _handleMouse(WorldState *state){
    Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = &state->view->viewport;
    while (mousePopEvent(mouse, &event)){
+      if (event.action == SegaMouse_Scrolled) {
+         entityGet(LightComponent)(state->mouseLight)->radius += event.pos.y;
+      }
    }
 
    COMPONENT_LOCK(PositionComponent, cpos, state->mouseLight, {
@@ -119,7 +122,7 @@ static void _addTestEntities(WorldState *state) {
 
    state->mouseLight = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(state->mouseLight, PositionComponent, 0, 0);
-   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 7);
+   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 25);
    entityUpdate(state->mouseLight);
 
    //e = entityCreate(view->entitySystem);
