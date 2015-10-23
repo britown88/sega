@@ -26,7 +26,7 @@ LightGrid *lightGridCreate(GridManager *parent);
 void lightGridDestroy(LightGrid *self);
 
 //clears the light levels and recalculates
-void lightGridUpdate(LightGrid *self, EntitySystem *es, byte vpx, byte vpy);
+void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy);
 
 //returns null if out of bounds
 LightData *lightGridAt(LightGrid *self, byte x, byte y);

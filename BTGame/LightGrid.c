@@ -112,11 +112,11 @@ static void _addPoint(LightGrid *self, PointLight light) {
    }
 }
 
-void lightGridUpdate(LightGrid *self, EntitySystem *es, byte vpx, byte vpy) {
+void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
    memset(self->grid, 0, sizeof(self->grid));
    memset(self->occlusion, 0, sizeof(self->occlusion));
 
-   gridManagerQueryOcclusion(self->parent, self->occlusion);
+   //gridManagerQueryOcclusion(self->parent, self->occlusion);
 
    COMPONENT_QUERY(es, LightComponent, lc, {
       Entity *e = componentGetParent(lc, es);

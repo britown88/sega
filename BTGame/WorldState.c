@@ -49,7 +49,7 @@ static void _handleKeyboard(WorldState *state){
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    Viewport *vp = &state->view->viewport;
-   int speed = 1;
+   int speed = 5;
 
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released && e.key == SegaKey_F1) {
@@ -83,6 +83,9 @@ static void _handleKeyboard(WorldState *state){
    if (keyboardIsDown(k, SegaKey_D)) {
       vp->worldPos.x += speed;
    }
+
+   vp->worldPos.x = MAX(0, vp->worldPos.x);
+   vp->worldPos.y = MAX(0, vp->worldPos.y);
 
 }
 

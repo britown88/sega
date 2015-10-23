@@ -1,6 +1,7 @@
 #pragma once
 
 #include "segautils/Defs.h"
+#include "segautils/Rect.h"
 
 typedef struct GridManager_t GridManager;
 typedef struct Frame_t Frame;
@@ -20,4 +21,4 @@ typedef struct OcclusionCell_t OcclusionCell;
 
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);
-void gridManagerQueryOcclusion(GridManager *self, OcclusionCell *grid);
+void gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid);

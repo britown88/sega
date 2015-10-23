@@ -9,10 +9,9 @@
 #include "ImageLibrary.h"
 #include "LightGrid.h"
 
-
-
 #define SCHEMA_COUNT 256;
 
+#pragma pack(push, 1)
 typedef struct {
    short image_index;
 }TileSchema;
@@ -20,7 +19,9 @@ typedef struct {
 typedef struct {
    byte schema;
    byte collision;
+   byte occlusion;
 }Tile;
+#pragma pack(pop)
 
 struct GridManager_t {
    Manager m;
@@ -55,16 +56,19 @@ static void _createTestGrid(GridManager *self) {
    }
 }
 
-void gridManagerQueryOcclusion(GridManager *self, OcclusionCell *grid) {
+void gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid) {
    Viewport *vp = &self->view->viewport;
-
-   byte x = vp->worldPos.x / GRID_CELL_SIZE;
-   byte y = vp->worldPos.y / GRID_CELL_SIZE;
-
-
+   int x, y;
+   int vpx = vp->worldPos.x / GRID_CELL_SIZE;
+   int vpy = vp->worldPos.y / GRID_CELL_SIZE;
+   Recti worldArea = {
+      MAX(0, MIN(self->width - 1, area->left + vpx)),
+      MAX(0, MIN(self->height - 1, area->top + vpy)),
+      MAX(0, MIN(self->width - 1, area->right + vpx)),
+      MAX(0, MIN(self->height - 1, area->bottom + vpy))
+   };
+   
 }
-
-
 
 GridManager *createGridManager(WorldView *view) {
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
@@ -89,7 +93,22 @@ void _destroy(GridManager *self) {
    checkedFree(self);
 }
 void _onDestroy(GridManager *self, Entity *e) {}
-void _onUpdate(GridManager *self, Entity *e) {}
+void _onUpdate(GridManager *self, Entity *e) {
+   IF_COMPONENT(e, PositionComponent, pc, {
+   IF_COMPONENT(e, OcclusionComponent, oc,{
+      int x = pc->x / GRID_CELL_SIZE;
+      int y = pc->y / GRID_CELL_SIZE;
+      int gridIndex;
+
+      if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
+         return;
+      }
+
+      gridIndex = y * self->width + x;
+      self->grid[gridIndex].occlusion = 1;
+   });
+   });
+}
 
 void gridManagerUpdate(GridManager *self) {
 
@@ -110,11 +129,11 @@ void gridManagerRender(GridManager *self, Frame *frame) {
    byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
    byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
 
-   byte x = vp->worldPos.x / GRID_CELL_SIZE;
-   byte y = vp->worldPos.y / GRID_CELL_SIZE;
+   int x = vp->worldPos.x / GRID_CELL_SIZE;
+   int y = vp->worldPos.y / GRID_CELL_SIZE;
 
-   byte xstart = x, xend = x + xcount;
-   byte ystart = y, yend = y + ycount;
+   int xstart = x, xend = x + xcount;
+   int ystart = y, yend = y + ycount;
 
    lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);
 
