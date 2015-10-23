@@ -113,11 +113,9 @@ static void _handleMouse(WorldState *state){
       }
       else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Right) {
          PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
-         int x = pc->x, y = pc->y;
-         Entity *e = entityCreate(state->view->entitySystem);
-         COMPONENT_ADD(e, PositionComponent, .x = x, .y = y);
-         COMPONENT_ADD(e, OcclusionComponent, 0);
-         entityUpdate(e);
+         int x = pc->x / GRID_CELL_SIZE, y = pc->y / GRID_CELL_SIZE;
+         gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 5);
+         
       }
    }
 

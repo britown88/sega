@@ -14,12 +14,12 @@
 #pragma pack(push, 1)
 typedef struct {
    short image_index;
+   byte occlusion;
 }TileSchema;
 
 typedef struct {
    byte schema;
    byte collision;
-   byte occlusion;
 }Tile;
 #pragma pack(pop)
 
@@ -36,14 +36,18 @@ struct GridManager_t {
 
 ImplManagerVTable(GridManager)
 
-
+static Tile *_tileAt(GridManager *self, int x, int y) {
+   return self->grid + (y * self->width + x);
+}
 
 static void _createTestSchemas(GridManager *self) {
    int i;
-   self->schemas = checkedCalloc(5, sizeof(TileSchema));
-   for (i = 0; i < 5; ++i) {
-      self->schemas[i] = (TileSchema) { i };
+   self->schemas = checkedCalloc(6, sizeof(TileSchema));
+   for (i = 0; i < 6; ++i) {
+      self->schemas[i] = (TileSchema) { .image_index = i, .occlusion = 0 };
    }   
+
+   self->schemas[5].occlusion = 1;
 }
 
 static void _createTestGrid(GridManager *self) {
@@ -54,6 +58,14 @@ static void _createTestGrid(GridManager *self) {
    for (i = 0; i < count; ++i) {
       self->grid[i] = (Tile) {appRand(appGet(), 1, 5), 0};
    }
+}
+
+void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema) {
+   if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
+      return;
+   }
+
+   _tileAt(self, x, y)->schema = schema;
 }
 
 int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid) {
@@ -72,10 +84,10 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    for (y = worldArea.top; y <= worldArea.bottom; ++y) {
       for (x = worldArea.left; x <= worldArea.right; ++x) {
          int worldGridIndex = y * self->width + x;
-         int lightGridIndex = (y - vpy) * rectiWidth(&worldArea) + (x - vpx);
-         grid[lightGridIndex].level = self->grid[worldGridIndex].occlusion;
-         if (grid[lightGridIndex].level) {
-            ++count;
+         byte occlusionLevel = self->schemas[self->grid[worldGridIndex].schema].occlusion;
+
+         if (occlusionLevel > 0) {
+            grid[count++] = (OcclusionCell) {.level = occlusionLevel, .x = x - vpx, .y = y - vpy };
          }
       }
    }
@@ -106,23 +118,7 @@ void _destroy(GridManager *self) {
    checkedFree(self);
 }
 void _onDestroy(GridManager *self, Entity *e) {}
-void _onUpdate(GridManager *self, Entity *e) {
-   PositionComponent *pc = entityGet(PositionComponent)(e);
-   OcclusionComponent *oc = entityGet(OcclusionComponent)(e);
-
-   if (pc && oc) {
-      int x = pc->x / GRID_CELL_SIZE;
-      int y = pc->y / GRID_CELL_SIZE;
-      int gridIndex;
-
-      if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
-         return;
-      }
-
-      gridIndex = y * self->width + x;
-      self->grid[gridIndex].occlusion = 1;
-   }
-}
+void _onUpdate(GridManager *self, Entity *e) {}
 
 void gridManagerUpdate(GridManager *self) {
 

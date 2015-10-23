@@ -22,6 +22,9 @@ typedef struct OcclusionCell_t OcclusionCell;
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);
 
+//changes the schema of a given tile (world-tile coords)
+void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema);
+
 //take an area of relative to the lightgrid and a preallocated cell array (minimum size area.width * area.height)
 //fills in grid occlusion levels, returns number of occluders found
 int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid);

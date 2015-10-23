@@ -51,16 +51,18 @@ static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
 
 typedef struct LightGrid_t {
    LightData grid[LIGHT_GRID_CELL_COUNT];
-   OcclusionCell occlusion[LIGHT_GRID_CELL_COUNT];
+   OcclusionCell *occlusion;
    GridManager *parent;
 }LightGrid;
 
 LightGrid *lightGridCreate(GridManager *parent) {
    LightGrid *out = checkedCalloc(1, sizeof(LightGrid));
+   out->occlusion = checkedCalloc(LIGHT_GRID_CELL_COUNT, sizeof(OcclusionCell));
    out->parent = parent;
    return out;
 }
 void lightGridDestroy(LightGrid *self) {
+   checkedFree(self->occlusion);
    checkedFree(self);
 }
 
@@ -107,18 +109,22 @@ static void _addPoint(LightGrid *self, PointLight light) {
          int xminuso = x - light.origin.x;
          int xxyy = xminuso*xminuso + yminuso*yminuso;
 
-         if (self->occlusion[y * width + x].level > 0) {
-            lightGridAt(self, x, y)->level = 0;
-            continue;
-         }
-
          //only calc distance if we're squarely inside the radius
          if (xxyy <= r2) {
+            int i;
             int dist = MAX(0, (int)sqrtf((float)xxyy));
             byte calculatedLevel = MIN(adjLevel, adjRadius - dist);
 
             //all done, add it in
             lightGridAt(self, x, y)->level += calculatedLevel;
+
+            for (i = 0; i < occluderCount; ++i) {
+               OcclusionCell *cell = self->occlusion + i;
+               if (cell->x == x && cell->y == y) {
+                  lightGridAt(self, x, y)->level = 0;
+                  break;
+               }
+            }
          }
       }
    }

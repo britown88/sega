@@ -107,12 +107,4 @@ typedef struct {
 #define ComponentT LightComponent
 #include "Entities\ComponentDecl.h"
 
-//positioncomponent will be treated as worldposition for adding an occluder
-typedef struct {
-   EMPTY_STRUCT;
-}OcclusionComponent;
-
-#define ComponentT OcclusionComponent
-#include "Entities\ComponentDecl.h"
-
 #pragma pack(pop)

@@ -15,6 +15,7 @@ typedef struct {
 
 typedef struct OcclusionCell_t {
    byte level;
+   byte x, y;
 }OcclusionCell;
 
 typedef struct LightGrid_t LightGrid;
