@@ -51,10 +51,14 @@ static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
 
 typedef struct LightGrid_t {
    LightData grid[LIGHT_GRID_CELL_COUNT];
+   OcclusionCell occlusion[LIGHT_GRID_CELL_COUNT];
+   GridManager *parent;
 }LightGrid;
 
-LightGrid *lightGridCreate() {
-   return checkedCalloc(1, sizeof(LightGrid));
+LightGrid *lightGridCreate(GridManager *parent) {
+   LightGrid *out = checkedCalloc(1, sizeof(LightGrid));
+   out->parent = parent;
+   return out;
 }
 void lightGridDestroy(LightGrid *self) {
    checkedFree(self);
@@ -71,10 +75,12 @@ static void _addPoint(LightGrid *self, PointLight light) {
    int adjRadius, r2, adjLevel;
    int x, y;
 
+   //bound the brightness (0 - max) and radius (0 - level/radius whichever's bigger)
    adjLevel = MIN(MAX(light.level, 0), MAX_BRIGHTNESS);
-   adjRadius = MAX(light.radius, adjLevel);
+   adjRadius = MAX(0, MAX(light.radius, adjLevel));
    r2 = adjRadius * adjRadius;
    
+   //create our area bounded within the vp
    lightArea = (Recti){
       .left =   MIN(LIGHT_GRID_WIDTH - 1, MAX(0, light.origin.x - adjRadius)),
       .top =    MIN(LIGHT_GRID_HEIGHT - 1, MAX(0, light.origin.y - adjRadius)),
@@ -82,18 +88,25 @@ static void _addPoint(LightGrid *self, PointLight light) {
       .bottom = MIN(LIGHT_GRID_HEIGHT - 1, MAX(0, light.origin.y + adjRadius))
    };
 
+   //if our area has no size, its off screen and can be ignored
    if(!rectiWidth(&lightArea) && !rectiHeight(&lightArea)){
       return;
    }
 
+   //brute force the whole area, we can square-check each tile without having to sqrt a bunch
    for (y = lightArea.top; y <= lightArea.bottom; ++y) {
       int yminuso = y - light.origin.y;
       for (x = lightArea.left; x <= lightArea.right; ++x) {
          int xminuso = x - light.origin.x;
          int xxyy = xminuso*xminuso + yminuso*yminuso;
+
+         //only calc distance if we're squarely inside the radius
          if (xxyy <= r2) {
             int dist = MAX(0, (int)sqrtf((float)xxyy));
-            lightGridAt(self, x, y)->level += MIN(adjLevel, adjRadius - dist);
+            byte calculatedLevel = MIN(adjLevel, adjRadius - dist);
+
+            //all done, add it in
+            lightGridAt(self, x, y)->level += calculatedLevel;
          }
       }
    }
@@ -101,6 +114,9 @@ static void _addPoint(LightGrid *self, PointLight light) {
 
 void lightGridUpdate(LightGrid *self, EntitySystem *es, byte vpx, byte vpy) {
    memset(self->grid, 0, sizeof(self->grid));
+   memset(self->occlusion, 0, sizeof(self->occlusion));
+
+   gridManagerQueryOcclusion(self->parent, self->occlusion);
 
    COMPONENT_QUERY(es, LightComponent, lc, {
       Entity *e = componentGetParent(lc, es);

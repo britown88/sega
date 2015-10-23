@@ -55,6 +55,15 @@ static void _createTestGrid(GridManager *self) {
    }
 }
 
+void gridManagerQueryOcclusion(GridManager *self, OcclusionCell *grid) {
+   Viewport *vp = &self->view->viewport;
+
+   byte x = vp->worldPos.x / GRID_CELL_SIZE;
+   byte y = vp->worldPos.y / GRID_CELL_SIZE;
+
+
+}
+
 
 
 GridManager *createGridManager(WorldView *view) {
@@ -63,7 +72,7 @@ GridManager *createGridManager(WorldView *view) {
    out->m.vTable = CreateManagerVTable(GridManager);
 
    out->tilePalette = imageLibraryGetImage(view->imageLibrary, stringIntern("assets/img/tiles.ega"));
-   out->lightGrid = lightGridCreate();
+   out->lightGrid = lightGridCreate(out);
    _createTestSchemas(out);
    _createTestGrid(out);
 
@@ -120,11 +129,12 @@ void gridManagerRender(GridManager *self, Frame *frame) {
          short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
 
          LightData *lightLevel = lightGridAt(self->lightGrid, x - xstart, y - ystart);
-         if (lightLevel && lightLevel->level > 0) {
-            _renderTile(self, frame, renderX, renderY, imgX, imgY);
-            lightDataRender(lightLevel, frame, &vp->region, renderX, renderY);
+         if (lightLevel) {
+            if (lightLevel->level > 0) {
+               _renderTile(self, frame, renderX, renderY, imgX, imgY);
+               lightDataRender(lightLevel, frame, &vp->region, renderX, renderY);
+            }
          }
-         
       }
    }
 

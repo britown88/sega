@@ -13,12 +13,16 @@ typedef struct {
    byte level;
 }LightData;
 
+typedef struct OcclusionCell_t {
+   byte occludes;
+}OcclusionCell;
+
 typedef struct LightGrid_t LightGrid;
 typedef struct Frame_t Frame;
 typedef struct FrameRegion_t FrameRegion;
 typedef struct EntitySystem_t EntitySystem;
 
-LightGrid *lightGridCreate();
+LightGrid *lightGridCreate(GridManager *parent);
 void lightGridDestroy(LightGrid *self);
 
 //clears the light levels and recalculates

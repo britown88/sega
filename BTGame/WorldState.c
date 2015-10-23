@@ -108,8 +108,14 @@ static void _handleMouse(WorldState *state){
          COMPONENT_ADD(e, LightComponent, .radius = rad, .centerLevel = cl);
          entityUpdate(e);
       }
-
-
+      else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Right) {
+         PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
+         int x = pc->x, y = pc->y;
+         Entity *e = entityCreate(state->view->entitySystem);
+         COMPONENT_ADD(e, PositionComponent, .x = x, .y = y);
+         COMPONENT_ADD(e, OcclusionComponent, 0);
+         entityUpdate(e);
+      }
    }
 
    COMPONENT_LOCK(PositionComponent, cpos, state->mouseLight, {
