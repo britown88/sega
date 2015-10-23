@@ -88,12 +88,9 @@ void gridManagerUpdate(GridManager *self) {
 
 
 
-
-
 static void _renderTile(GridManager *self, Frame *frame, short x, short y, short imgX, short imgY) {
    FrameRegion *vp = &self->view->viewport.region;
    frameRenderImagePartial(frame, vp, x, y, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
-   //frameRenderRect(frame, vp, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, 15);
 }
 
 void gridManagerRender(GridManager *self, Frame *frame) {

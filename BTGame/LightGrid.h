@@ -21,7 +21,11 @@ typedef struct EntitySystem_t EntitySystem;
 LightGrid *lightGridCreate();
 void lightGridDestroy(LightGrid *self);
 
+//clears the light levels and recalculates
 void lightGridUpdate(LightGrid *self, EntitySystem *es, byte vpx, byte vpy);
 
+//returns null if out of bounds
 LightData *lightGridAt(LightGrid *self, byte x, byte y);
+
+//render a given lightData tile at a given x,y (grid-agnostic!)
 void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, short y);

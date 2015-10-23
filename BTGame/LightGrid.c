@@ -60,39 +60,61 @@ void lightGridDestroy(LightGrid *self) {
    checkedFree(self);
 }
 
-static void _calculateLight(LightGrid *self, int ox, int oy, byte radius, byte centerLevel) {
-   int x, y;
-   centerLevel = MIN(MAX(centerLevel, 0), MAX_BRIGHTNESS);
-   radius = MAX(radius, centerLevel);
-   for (y = -radius; y <= radius; ++y) {
-      for (x = -radius; x <= radius; ++x) {
-         if (ox + x >= 0 && ox + x < LIGHT_GRID_WIDTH &&
-            oy + y >= 0 && oy + y < LIGHT_GRID_HEIGHT) {
-            int xxyy = x*x + y*y;
-            if (xxyy <= radius * radius) {
-               int dist = MAX(0, (int)sqrtf((float)xxyy));
+typedef struct {
+   Int2 origin;
+   byte radius;
+   byte level;
+}PointLight;
 
-               lightGridAt(self, ox + x, oy + y)->level += MIN(centerLevel, radius - dist);
-            }
+static void _addPoint(LightGrid *self, PointLight light) {   
+   Recti lightArea;    
+   int adjRadius, r2, adjLevel;
+   int x, y;
+
+   adjLevel = MIN(MAX(light.level, 0), MAX_BRIGHTNESS);
+   adjRadius = MAX(light.radius, adjLevel);
+   r2 = adjRadius * adjRadius;
+   
+   lightArea = (Recti){
+      .left =   MIN(LIGHT_GRID_WIDTH - 1, MAX(0, light.origin.x - adjRadius)),
+      .top =    MIN(LIGHT_GRID_HEIGHT - 1, MAX(0, light.origin.y - adjRadius)),
+      .right =  MIN(LIGHT_GRID_WIDTH - 1, MAX(0, light.origin.x + adjRadius)),
+      .bottom = MIN(LIGHT_GRID_HEIGHT - 1, MAX(0, light.origin.y + adjRadius))
+   };
+
+   if(!rectiWidth(&lightArea) && !rectiHeight(&lightArea)){
+      return;
+   }
+
+   for (y = lightArea.top; y <= lightArea.bottom; ++y) {
+      int yminuso = y - light.origin.y;
+      for (x = lightArea.left; x <= lightArea.right; ++x) {
+         int xminuso = x - light.origin.x;
+         int xxyy = xminuso*xminuso + yminuso*yminuso;
+         if (xxyy <= r2) {
+            int dist = MAX(0, (int)sqrtf((float)xxyy));
+            lightGridAt(self, x, y)->level += MIN(adjLevel, adjRadius - dist);
          }
       }
    }
-}
-
-
-static void _updateLightEntity(LightGrid *self, EntitySystem *es, byte vpx, byte vpy, LightComponent *lc) {
-   Entity *e = componentGetParent(lc, es);
-   PositionComponent *pc = entityGet(PositionComponent)(e);
-   _calculateLight(self, (pc->x / GRID_CELL_SIZE) - vpx, (pc->y / GRID_CELL_SIZE) - vpy, lc->radius, lc->centerLevel);
 }
 
 void lightGridUpdate(LightGrid *self, EntitySystem *es, byte vpx, byte vpy) {
    memset(self->grid, 0, sizeof(self->grid));
 
    COMPONENT_QUERY(es, LightComponent, lc, {
-      _updateLightEntity(self, es, vpx, vpy, lc);
-   });
+      Entity *e = componentGetParent(lc, es);
+      PositionComponent *pc = entityGet(PositionComponent)(e);
 
+      _addPoint(self, (PointLight) {
+            .origin = {
+               .x = (pc->x / GRID_CELL_SIZE) - vpx,
+               .y = (pc->y / GRID_CELL_SIZE) - vpy
+            },
+            .radius = lc->radius,
+            .level = lc->centerLevel
+      });
+   });
 }
 
 LightData *lightGridAt(LightGrid *self, byte x, byte y) {
