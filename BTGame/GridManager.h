@@ -21,4 +21,7 @@ typedef struct OcclusionCell_t OcclusionCell;
 
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);
-void gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid);
+
+//take an area of relative to the lightgrid and a preallocated cell array (minimum size area.width * area.height)
+//fills in grid occlusion levels, returns number of occluders found
+int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid);

@@ -49,7 +49,7 @@ static void _handleKeyboard(WorldState *state){
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
    Viewport *vp = &state->view->viewport;
-   int speed = 5;
+   int speed = 2;
 
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released && e.key == SegaKey_F1) {

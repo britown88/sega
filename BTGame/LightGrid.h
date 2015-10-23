@@ -14,7 +14,7 @@ typedef struct {
 }LightData;
 
 typedef struct OcclusionCell_t {
-   byte occludes;
+   byte level;
 }OcclusionCell;
 
 typedef struct LightGrid_t LightGrid;

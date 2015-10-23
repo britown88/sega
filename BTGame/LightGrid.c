@@ -71,8 +71,10 @@ typedef struct {
 }PointLight;
 
 static void _addPoint(LightGrid *self, PointLight light) {   
-   Recti lightArea;    
+   Recti lightArea; 
+   int width, height;
    int adjRadius, r2, adjLevel;
+   int occluderCount;
    int x, y;
 
    //bound the brightness (0 - max) and radius (0 - level/radius whichever's bigger)
@@ -88,10 +90,15 @@ static void _addPoint(LightGrid *self, PointLight light) {
       .bottom = MIN(LIGHT_GRID_HEIGHT - 1, MAX(0, light.origin.y + adjRadius))
    };
 
+   width = rectiWidth(&lightArea);
+   height = rectiHeight(&lightArea);
+
    //if our area has no size, its off screen and can be ignored
-   if(!rectiWidth(&lightArea) && !rectiHeight(&lightArea)){
+   if(!width && !height){
       return;
    }
+
+   occluderCount = gridManagerQueryOcclusion(self->parent, &lightArea, self->occlusion);
 
    //brute force the whole area, we can square-check each tile without having to sqrt a bunch
    for (y = lightArea.top; y <= lightArea.bottom; ++y) {
@@ -99,6 +106,11 @@ static void _addPoint(LightGrid *self, PointLight light) {
       for (x = lightArea.left; x <= lightArea.right; ++x) {
          int xminuso = x - light.origin.x;
          int xxyy = xminuso*xminuso + yminuso*yminuso;
+
+         if (self->occlusion[y * width + x].level > 0) {
+            lightGridAt(self, x, y)->level = 0;
+            continue;
+         }
 
          //only calc distance if we're squarely inside the radius
          if (xxyy <= r2) {
@@ -114,9 +126,6 @@ static void _addPoint(LightGrid *self, PointLight light) {
 
 void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
    memset(self->grid, 0, sizeof(self->grid));
-   memset(self->occlusion, 0, sizeof(self->occlusion));
-
-   //gridManagerQueryOcclusion(self->parent, self->occlusion);
 
    COMPONENT_QUERY(es, LightComponent, lc, {
       Entity *e = componentGetParent(lc, es);

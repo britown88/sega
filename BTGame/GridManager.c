@@ -56,18 +56,31 @@ static void _createTestGrid(GridManager *self) {
    }
 }
 
-void gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid) {
+int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid) {
    Viewport *vp = &self->view->viewport;
    int x, y;
    int vpx = vp->worldPos.x / GRID_CELL_SIZE;
    int vpy = vp->worldPos.y / GRID_CELL_SIZE;
+   int count = 0;
    Recti worldArea = {
       MAX(0, MIN(self->width - 1, area->left + vpx)),
       MAX(0, MIN(self->height - 1, area->top + vpy)),
       MAX(0, MIN(self->width - 1, area->right + vpx)),
       MAX(0, MIN(self->height - 1, area->bottom + vpy))
    };
+
+   for (y = worldArea.top; y <= worldArea.bottom; ++y) {
+      for (x = worldArea.left; x <= worldArea.right; ++x) {
+         int worldGridIndex = y * self->width + x;
+         int lightGridIndex = (y - vpy) * rectiWidth(&worldArea) + (x - vpx);
+         grid[lightGridIndex].level = self->grid[worldGridIndex].occlusion;
+         if (grid[lightGridIndex].level) {
+            ++count;
+         }
+      }
+   }
    
+   return count;
 }
 
 GridManager *createGridManager(WorldView *view) {
@@ -94,8 +107,10 @@ void _destroy(GridManager *self) {
 }
 void _onDestroy(GridManager *self, Entity *e) {}
 void _onUpdate(GridManager *self, Entity *e) {
-   IF_COMPONENT(e, PositionComponent, pc, {
-   IF_COMPONENT(e, OcclusionComponent, oc,{
+   PositionComponent *pc = entityGet(PositionComponent)(e);
+   OcclusionComponent *oc = entityGet(OcclusionComponent)(e);
+
+   if (pc && oc) {
       int x = pc->x / GRID_CELL_SIZE;
       int y = pc->y / GRID_CELL_SIZE;
       int gridIndex;
@@ -106,8 +121,7 @@ void _onUpdate(GridManager *self, Entity *e) {
 
       gridIndex = y * self->width + x;
       self->grid[gridIndex].occlusion = 1;
-   });
-   });
+   }
 }
 
 void gridManagerUpdate(GridManager *self) {
