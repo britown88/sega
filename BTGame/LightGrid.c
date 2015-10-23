@@ -7,6 +7,7 @@
 #include "CoreComponents.h"
 
 #include <math.h>
+#include "segautils/Math.h"
 
 #pragma region MASKS
 
@@ -72,6 +73,55 @@ typedef struct {
    byte level;
 }PointLight;
 
+static byte _calculateSingleOccluder(byte calculatedLevel, Recti *origin, Recti *target, OcclusionCell *cell) {
+   Recti occludedArea = {
+      .left = (cell->x * GRID_CELL_SIZE),
+      .top = (cell->y * GRID_CELL_SIZE),
+      .right = (cell->x * GRID_CELL_SIZE + GRID_CELL_SIZE),
+      .bottom = (cell->y * GRID_CELL_SIZE + GRID_CELL_SIZE)
+   };
+
+   Int2 orCenter = { (origin->left) + ((GRID_CELL_SIZE) / 2), (origin->top) + ((GRID_CELL_SIZE) / 2) };
+   Int2 tarCenter = { (target->left) + ((GRID_CELL_SIZE) / 2), (target->top) + ((GRID_CELL_SIZE) / 2) };
+
+   if (lineSegmentIntersectsAABBi(orCenter, tarCenter, &occludedArea)) {
+      return 0;
+   }
+
+   return calculatedLevel;
+}
+
+static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, OcclusionCell *oList, int oCount ) {
+   int i;
+   Recti originArea = {
+      .left = origin.x * GRID_CELL_SIZE,
+      .top = origin.y * GRID_CELL_SIZE,
+      .right = origin.x * GRID_CELL_SIZE + GRID_CELL_SIZE,
+      .bottom = origin.y * GRID_CELL_SIZE + GRID_CELL_SIZE
+   };
+
+   Recti targetArea = {
+      .left = target.x * GRID_CELL_SIZE,
+      .top = target.y * GRID_CELL_SIZE,
+      .right = target.x * GRID_CELL_SIZE + GRID_CELL_SIZE,
+      .bottom = target.y * GRID_CELL_SIZE + GRID_CELL_SIZE
+   };
+
+   for (i = 0; i < oCount; ++i) {
+      OcclusionCell *oc = oList + i;
+      if (oc->x == target.x && oc->y == target.y) {
+         //occluder lies on the cell we're lighting, ignore it
+         continue;
+      }
+
+      // now we do ray vs aabb collision tests on the lighting 
+      // square vs the occluder and count up unblocked rays
+      calculatedLevel = _calculateSingleOccluder(calculatedLevel, &originArea, &targetArea, oc);
+   }
+
+   return calculatedLevel;
+}
+
 static void _addPoint(LightGrid *self, PointLight light) {   
    Recti lightArea; 
    int width, height;
@@ -111,20 +161,18 @@ static void _addPoint(LightGrid *self, PointLight light) {
 
          //only calc distance if we're squarely inside the radius
          if (xxyy <= r2) {
-            int i;
             int dist = MAX(0, (int)sqrtf((float)xxyy));
             byte calculatedLevel = MIN(adjLevel, adjRadius - dist);
 
+            //calculate occlusion!
+            calculatedLevel = _calculateOcclusionOnPoint(
+               calculatedLevel, //starting level
+               (Int2) { x, y }, //cell pos
+               (Int2) { light.origin.x , light.origin.y }, //light's origin
+               self->occlusion, occluderCount); //the occluder data
+
             //all done, add it in
             lightGridAt(self, x, y)->level += calculatedLevel;
-
-            for (i = 0; i < occluderCount; ++i) {
-               OcclusionCell *cell = self->occlusion + i;
-               if (cell->x == x && cell->y == y) {
-                  lightGridAt(self, x, y)->level = 0;
-                  break;
-               }
-            }
          }
       }
    }
