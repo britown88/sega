@@ -1,4 +1,4 @@
-#include "Math.h"
+ #include "Math.h"
 
 int pointOnLine(Int2 l1, Int2 l2, Int2 point) {
    return (l2.y - l1.y) * point.x + (l1.x - l2.x) * point.y + (l2.x * l1.y - l1.x * l2.y);

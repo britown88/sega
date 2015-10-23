@@ -91,10 +91,10 @@ static byte _calculateSingleOccluder(byte calculatedLevel, Recti *origin, Recti 
    }
 
    //inset the origin a bit
-   origin->left += 1;
-   origin->top += 1;
-   origin->right -= 1;
-   origin->bottom -= 1;
+   origin->left -= 1;
+   origin->top -= 1;
+   origin->right += 1;
+   origin->bottom += 1;
 
    target->left += 1;
    target->top += 1;
