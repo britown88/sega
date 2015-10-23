@@ -51,6 +51,9 @@
     <ClInclude Include="GridManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -82,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="GridManager.c">
       <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="LightGrid.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

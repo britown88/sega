@@ -61,7 +61,7 @@ typedef struct {
    SuperScanLine lines[MAX_IMAGE_HEIGHT];
 } SuperBitPlane;
 
-typedef struct {
+typedef struct FrameRegion_t{
    int origin_x, origin_y, width, height;
 }FrameRegion;
 static FrameRegion FrameRegionFULL_CONCRETE = { 0, 0, EGA_RES_WIDTH, EGA_RES_HEIGHT };

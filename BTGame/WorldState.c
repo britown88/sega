@@ -12,7 +12,7 @@
 #include "CoreComponents.h"
 #include "segashared\Strings.h"
 #include "GameClock.h"
-#include "GridManager.h"
+#include "LightGrid.h"
 
 #include "segautils/Lisp.h"
 

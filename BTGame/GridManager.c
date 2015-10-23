@@ -7,52 +7,11 @@
 #include "WorldView.h"
 #include "GridManager.h"
 #include "ImageLibrary.h"
+#include "LightGrid.h"
 
-#include <math.h>
+
 
 #define SCHEMA_COUNT 256;
-
-#define LIGHT_GRID_WIDTH (GRID_WIDTH + 1)
-#define LIGHT_GRID_HEIGHT (GRID_HEIGHT + 1)
-#define LIGHT_GRID_CELL_COUNT (LIGHT_GRID_WIDTH * LIGHT_GRID_HEIGHT)
-
-
-static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
-//0
-{{    1, 1, 1, 1,
-      1, 1, 1, 1,
-      1, 1, 1, 1,
-      1, 1, 1, 1 },
-//1
-{     0, 1, 1, 1,
-      1, 1, 1, 1,
-      1, 1, 1, 1,
-      1, 1, 1, 0 },
-//2
-{     0, 1, 1, 1,
-      1, 1, 0, 1,
-      1, 0, 1, 1,
-      1, 1, 1, 0 },
-//3
-{     1, 0, 1, 0,
-      0, 1, 0, 1,
-      1, 0, 1, 0,
-      0, 1, 0, 1 },
-//4
-{     1, 0, 0, 0,
-      0, 0, 1, 0,
-      0, 1, 0, 0,
-      0, 0, 0, 1 },
-//5
-{     1, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 1 },
-//6
-{     0, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0 }};
 
 typedef struct {
    short image_index;
@@ -63,10 +22,6 @@ typedef struct {
    byte collision;
 }Tile;
 
-typedef struct {
-   byte level;
-}LightData;
-
 struct GridManager_t {
    Manager m;
    WorldView *view;
@@ -75,14 +30,12 @@ struct GridManager_t {
    TileSchema *schemas;
    short height, width;
    Tile *grid;
-   LightData lightGrid[LIGHT_GRID_CELL_COUNT];
+   LightGrid *lightGrid;
 };
 
 ImplManagerVTable(GridManager)
 
-static LightData *_lightLevelAt(GridManager *self, byte x, byte y) {
-   return self->lightGrid + (y * LIGHT_GRID_WIDTH + x);
-}
+
 
 static void _createTestSchemas(GridManager *self) {
    int i;
@@ -102,24 +55,6 @@ static void _createTestGrid(GridManager *self) {
    }
 }
 
-static void _renderLight(GridManager *self, int ox, int oy, byte radius, byte centerLevel) {
-   int x, y;
-   centerLevel = MIN(MAX(centerLevel, 0), MAX_BRIGHTNESS);
-   radius = MAX(radius, centerLevel);
-   for (y = -radius; y <= radius; ++y) {
-      for (x = -radius; x <= radius; ++x) {
-         if (ox + x >= 0 && ox + x < LIGHT_GRID_WIDTH &&
-             oy + y >= 0 && oy + y < LIGHT_GRID_HEIGHT) {
-            int xxyy = x*x + y*y;
-            if (xxyy <= radius * radius) {
-               int dist = MAX(0, (int)sqrtf((float)xxyy));
-
-               _lightLevelAt(self, ox + x, oy + y)->level += MIN(centerLevel, radius - dist);
-            }
-         }
-      }
-   }
-}
 
 
 GridManager *createGridManager(WorldView *view) {
@@ -128,6 +63,7 @@ GridManager *createGridManager(WorldView *view) {
    out->m.vTable = CreateManagerVTable(GridManager);
 
    out->tilePalette = imageLibraryGetImage(view->imageLibrary, stringIntern("assets/img/tiles.ega"));
+   out->lightGrid = lightGridCreate();
    _createTestSchemas(out);
    _createTestGrid(out);
 
@@ -138,7 +74,8 @@ void _destroy(GridManager *self) {
    if (self->grid) {
       checkedFree(self->grid);
    }
-   
+   lightGridDestroy(self->lightGrid);
+
    checkedFree(self->schemas);
    checkedFree(self);
 }
@@ -149,46 +86,14 @@ void gridManagerUpdate(GridManager *self) {
 
 }
 
-static void _renderLightEntity(GridManager *self, byte vpx, byte vpy, LightComponent *lc) {
-   Entity *e = componentGetParent(lc, self->view->entitySystem);
-   PositionComponent *pc = entityGet(PositionComponent)(e);
-   _renderLight(self, (pc->x / GRID_CELL_SIZE) - vpx, (pc->y / GRID_CELL_SIZE) - vpy, lc->radius, lc->centerLevel);
-}
 
-static void _renderAllLights(GridManager *self, byte vpx, byte vpy) {
-   Viewport *vp = &self->view->viewport;
-   memset(self->lightGrid, 0, sizeof(self->lightGrid));
 
-   COMPONENT_QUERY(self->view->entitySystem, LightComponent, lc, {      
-      _renderLightEntity(self, vpx, vpy, lc);
-   });
-;
-}
 
-static void _renderTile(GridManager *self, Frame *frame, LightData *light, short x, short y, short imgX, short imgY) {
-   int shadex, shadey, pixel, darkInterval;
+
+static void _renderTile(GridManager *self, Frame *frame, short x, short y, short imgX, short imgY) {
    FrameRegion *vp = &self->view->viewport.region;
-   if (light->level == 0) {
-      return;
-   }  
-
    frameRenderImagePartial(frame, vp, x, y, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
    //frameRenderRect(frame, vp, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, 15);
-
-   if (light->level >= LIGHT_LEVEL_COUNT - 1) {
-      return;
-   }
-
-   for (shadey = 0; shadey < GRID_CELL_SIZE; ++shadey) {
-      for (shadex = 0; shadex < GRID_CELL_SIZE; ++shadex) {
-         byte maskX = shadex % 4, maskY = shadey % 4;
-         byte maskIndex = maskY * 4 + maskX;
-         
-         if (LightMasks[light->level][maskIndex]) {
-            frameRenderPoint(frame, vp, x + shadex, y + shadey, 0);
-         }
-      }
-   }
 }
 
 void gridManagerRender(GridManager *self, Frame *frame) {
@@ -205,7 +110,7 @@ void gridManagerRender(GridManager *self, Frame *frame) {
    byte xstart = x, xend = x + xcount;
    byte ystart = y, yend = y + ycount;
 
-   _renderAllLights(self, x, y);
+   lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
@@ -217,8 +122,12 @@ void gridManagerRender(GridManager *self, Frame *frame) {
          short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
          short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
 
-         LightData *lightLevel = _lightLevelAt(self, x - xstart, y - ystart);
-         _renderTile(self, frame, lightLevel, renderX, renderY, imgX, imgY);
+         LightData *lightLevel = lightGridAt(self->lightGrid, x - xstart, y - ystart);
+         if (lightLevel && lightLevel->level > 0) {
+            _renderTile(self, frame, renderX, renderY, imgX, imgY);
+            lightDataRender(lightLevel, frame, &vp->region, renderX, renderY);
+         }
+         
       }
    }
 
