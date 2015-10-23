@@ -75,51 +75,99 @@ typedef struct {
 
 static byte _calculateSingleOccluder(byte calculatedLevel, Recti *origin, Recti *target, OcclusionCell *cell) {
    Recti occludedArea = {
-      .left = (cell->x * GRID_CELL_SIZE),
-      .top = (cell->y * GRID_CELL_SIZE),
-      .right = (cell->x * GRID_CELL_SIZE + GRID_CELL_SIZE),
-      .bottom = (cell->y * GRID_CELL_SIZE + GRID_CELL_SIZE)
+      .left = (cell->x * GRID_CELL_SIZE) << 1,
+      .top = (cell->y * GRID_CELL_SIZE) << 1,
+      .right = (cell->x * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1,
+      .bottom = (cell->y * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1
    };
 
-   Int2 orCenter = { (origin->left) + ((GRID_CELL_SIZE) / 2), (origin->top) + ((GRID_CELL_SIZE) / 2) };
-   Int2 tarCenter = { (target->left) + ((GRID_CELL_SIZE) / 2), (target->top) + ((GRID_CELL_SIZE) / 2) };
+   Int2 orCenter = { origin->left + GRID_CELL_SIZE, origin->top + GRID_CELL_SIZE };
+   Int2 tarCenter = { target->left + GRID_CELL_SIZE, target->top + GRID_CELL_SIZE };
+   int occBlocks;
 
-   if (lineSegmentIntersectsAABBi(orCenter, tarCenter, &occludedArea)) {
-      return 0;
+   if (!lineSegmentIntersectsAABBi(orCenter, tarCenter, &occludedArea)) {
+      //cente risnt blocked, full light
+      return calculatedLevel;
    }
 
-   return calculatedLevel;
+   //inset the origin a bit
+   origin->left += 1;
+   origin->top += 1;
+   origin->right -= 1;
+   origin->bottom -= 1;
+
+   target->left += 1;
+   target->top += 1;
+   target->right -= 1;
+   target->bottom -= 1;
+
+   occBlocks = 1;
+
+   occBlocks += lineSegmentIntersectsAABBi(orCenter, (Int2) { target->left, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi(orCenter, (Int2) { target->right, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi(orCenter, (Int2) { target->left, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi(orCenter, (Int2) { target->right, target->bottom }, &occludedArea);
+
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->top }, (Int2) { target->left, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->top }, (Int2) { target->right, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->top }, (Int2) { target->left, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->top }, (Int2) { target->right, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->top }, tarCenter, &occludedArea);
+
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->top }, (Int2) { target->left, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->top }, (Int2) { target->right, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->top }, (Int2) { target->left, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->top }, (Int2) { target->right, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->top }, tarCenter, &occludedArea);
+
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->bottom }, (Int2) { target->left, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->bottom }, (Int2) { target->right, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->bottom }, (Int2) { target->left, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->bottom }, (Int2) { target->right, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->right, origin->bottom }, tarCenter, &occludedArea);
+
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->bottom }, (Int2) { target->left, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->bottom }, (Int2) { target->right, target->top }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->bottom }, (Int2) { target->left, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->bottom }, (Int2) { target->right, target->bottom }, &occludedArea);
+   occBlocks += lineSegmentIntersectsAABBi((Int2) { origin->left, origin->bottom }, tarCenter, &occludedArea);
+
+   //at this point occBlocks out of 25 rays were blocked from the target
+   //use this ratio to determine resultant brightness
+   return MIN(calculatedLevel, (25 - occBlocks) / 4);
 }
 
 static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, OcclusionCell *oList, int oCount ) {
    int i;
+   byte out = calculatedLevel;
+   //build our rects... shifting by 1 for precision
    Recti originArea = {
-      .left = origin.x * GRID_CELL_SIZE,
-      .top = origin.y * GRID_CELL_SIZE,
-      .right = origin.x * GRID_CELL_SIZE + GRID_CELL_SIZE,
-      .bottom = origin.y * GRID_CELL_SIZE + GRID_CELL_SIZE
+      .left = (origin.x * GRID_CELL_SIZE) << 1,
+      .top = (origin.y * GRID_CELL_SIZE) << 1,
+      .right = (origin.x * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1,
+      .bottom = (origin.y * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1
    };
 
    Recti targetArea = {
-      .left = target.x * GRID_CELL_SIZE,
-      .top = target.y * GRID_CELL_SIZE,
-      .right = target.x * GRID_CELL_SIZE + GRID_CELL_SIZE,
-      .bottom = target.y * GRID_CELL_SIZE + GRID_CELL_SIZE
+      .left = (target.x * GRID_CELL_SIZE) << 1,
+      .top = (target.y * GRID_CELL_SIZE) << 1,
+      .right = (target.x * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1,
+      .bottom = (target.y * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1
    };
 
    for (i = 0; i < oCount; ++i) {
       OcclusionCell *oc = oList + i;
       if (oc->x == target.x && oc->y == target.y) {
          //occluder lies on the cell we're lighting, ignore it
-         continue;
+         return calculatedLevel;
       }
 
       // now we do ray vs aabb collision tests on the lighting 
       // square vs the occluder and count up unblocked rays
-      calculatedLevel = _calculateSingleOccluder(calculatedLevel, &originArea, &targetArea, oc);
+      out = _calculateSingleOccluder(out, &originArea, &targetArea, oc);
    }
 
-   return calculatedLevel;
+   return out;
 }
 
 static void _addPoint(LightGrid *self, PointLight light) {   

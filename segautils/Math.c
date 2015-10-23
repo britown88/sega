@@ -7,43 +7,49 @@ int pointOnLine(Int2 l1, Int2 l2, Int2 point) {
 bool lineSegmentIntersectsAABBi(Int2 l1, Int2 l2, Recti *rect) {
    enum {
       above, 
-      below
+      below,
+      on
    };
 
    int dir = 0;
+   int online;
    bool colPossible = false;
 
-   if (pointOnLine(l1, l2, (Int2) { rect->left, rect->top }) >= 0) {
+   online = pointOnLine(l1, l2, (Int2) { rect->left, rect->top });
+   if (online > 0) {
       dir = above;
    }
-   else {
+   else if(online < 0){
       dir = below;
    }
 
-   if (pointOnLine(l1, l2, (Int2) { rect->right, rect->top }) >= 0) { 
+   online = pointOnLine(l1, l2, (Int2) { rect->right, rect->top });
+   if (online > 0) {
       if (dir == below) {
          colPossible = true;
       }
    } 
-   else if (dir == above) {
+   else if (online < 0 && dir == above) {
       colPossible = true;
    }
 
-   if (!colPossible && pointOnLine(l1, l2, (Int2) { rect->right, rect->bottom }) >= 0) {
+   online = pointOnLine(l1, l2, (Int2) { rect->right, rect->bottom });
+   if (!colPossible && online > 0) {
       if (dir == below) {
          colPossible = true;
       }
    }
-   else if (dir == above) {
+   else if (online < 0 && dir == above) {
       colPossible = true;
    }
 
-   if (!colPossible && pointOnLine(l1, l2, (Int2) { rect->left, rect->bottom }) >= 0) {
+   online = pointOnLine(l1, l2, (Int2) { rect->left, rect->bottom });
+   if (!colPossible && online > 0) {
       if (dir == below) {
          colPossible = true;
       }
    }
-   else if (dir == above) {
+   else if (online < 0 && dir == above) {
       colPossible = true;
    }
 
