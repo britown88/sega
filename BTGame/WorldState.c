@@ -168,7 +168,7 @@ static void _drawLineTest(WorldState *state, Frame *frame) {
 void _boardRender(WorldState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
 
-   _drawLineTest(state, m->frame);
+   //_drawLineTest(state, m->frame);
 
    
 }
