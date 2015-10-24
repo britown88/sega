@@ -15,6 +15,7 @@
 #include "LightGrid.h"
 
 #include "segautils/Lisp.h"
+#include "segautils/Math.h"
 
 typedef struct {
    WorldView *view;
@@ -43,6 +44,8 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
 }
+
+static Int2 testlinepos = { 0, 0 };
 
 static void _handleKeyboard(WorldState *state){
    BTManagers *managers = state->view->managers;
@@ -82,6 +85,19 @@ static void _handleKeyboard(WorldState *state){
    }
    if (keyboardIsDown(k, SegaKey_D)) {
       vp->worldPos.x += speed;
+   }
+
+   if (keyboardIsDown(k, SegaKey_Up)) {
+      testlinepos.y -= speed;
+   }
+   if (keyboardIsDown(k, SegaKey_Down)) {
+      testlinepos.y += speed;
+   }
+   if (keyboardIsDown(k, SegaKey_Left)) {
+      testlinepos.x -= speed;
+   }
+   if (keyboardIsDown(k, SegaKey_Right)) {
+      testlinepos.x += speed;
    }
 
    vp->worldPos.x = MAX(0, vp->worldPos.x);
@@ -134,8 +150,27 @@ void _boardHandleInput(WorldState *state, GameStateHandleInput *m){
    _handleMouse(state);
 }
 
+static void _drawLineTest(WorldState *state, Frame *frame) {
+   Mouse *mouse = appGetMouse(appGet());
+   Int2 pos = mouseGetPosition(mouse);
+   FrameRegion *vp = &state->view->viewport.region;
+   Int2 v1 = testlinepos;
+   Int2 v2 = { pos.x - vp->origin_x, pos.y - vp->origin_y };
+   Recti r = { 70, 70, 126, 126 };
+
+   bool intersects = lineSegmentIntersectsAABBi(v1, v2, &r);
+
+   frameRenderRect(frame, vp, r.left, r.top, r.right, r.bottom, 2);
+
+   frameRenderLine(frame, vp, v1.x, v1.y, v2.x, v2.y, intersects ? 5 : 14);
+}
+
 void _boardRender(WorldState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
+
+   _drawLineTest(state, m->frame);
+
+   
 }
 
 static void _testLisp() {

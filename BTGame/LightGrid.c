@@ -85,10 +85,12 @@ static byte _calculateSingleOccluder(byte calculatedLevel, Recti *origin, Recti 
    Int2 tarCenter = { target->left + GRID_CELL_SIZE, target->top + GRID_CELL_SIZE };
    int occBlocks;
 
-   if (!lineSegmentIntersectsAABBi(orCenter, tarCenter, &occludedArea)) {
+   if (lineSegmentIntersectsAABBi(orCenter, tarCenter, &occludedArea)) {
       //cente risnt blocked, full light
-      return calculatedLevel;
+      return 0;
    }
+
+   return calculatedLevel;
 
    //inset the origin a bit
    origin->left -= 1;
@@ -159,7 +161,7 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
       OcclusionCell *oc = oList + i;
       if (oc->x == target.x && oc->y == target.y) {
          //occluder lies on the cell we're lighting, ignore it
-         return calculatedLevel;
+         return out;
       }
 
       // now we do ray vs aabb collision tests on the lighting 
