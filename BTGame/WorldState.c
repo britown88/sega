@@ -53,6 +53,7 @@ static void _handleKeyboard(WorldState *state){
    KeyboardEvent e = { 0 };
    Viewport *vp = &state->view->viewport;
    int speed = 2;
+   static int toggle = 1;
 
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released && e.key == SegaKey_F1) {
@@ -71,6 +72,11 @@ static void _handleKeyboard(WorldState *state){
 
       if (e.action == SegaKey_Released && e.key == SegaKey_Escape) {
          appQuit(appGet());
+      }
+
+      if (e.action == SegaKey_Released && e.key == SegaKey_P) {
+         appLoadPalette(appGet(), toggle ? "assets/img/dark.pal" : "assets/img/default.pal");
+         toggle = !toggle;
       }
    }
 
