@@ -73,11 +73,22 @@ typedef struct {
    byte level;
 }PointLight;
 
-static bool _lineIsBlocked(Int2 origin, Int2 target, OcclusionCell *oList, int oCount) {
+typedef struct  {
+   Int2 targetCell;
+   bool occludedTarget;
+   OcclusionCell *oList;
+   int oCount;
+}BlockCheckData;
+
+static bool _lineIsBlocked(Int2 origin, Int2 target, BlockCheckData *data) {
    int i;
-   for (i = 0; i < oCount; ++i) {
-      OcclusionCell *oc = oList + i;
+   for (i = 0; i < data->oCount; ++i) {
+      OcclusionCell *oc = data->oList + i;
+
       if (lineSegmentIntersectsAABBi(origin, target, &oc->area)) {
+         if (data->occludedTarget/* && abs(oc->x - data->targetCell.x) + abs(oc->y - data->targetCell.y) < 2*/) {
+            continue;
+         }
          return true;
       }
    }
@@ -86,6 +97,7 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, OcclusionCell *oList, int o
 }
 
 static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, OcclusionCell *oList, int oCount ) {
+   static const float invertedThreshold = 1.0f / 13.0f;
    int i;
    //build our rects... shifting by 1 for precision
    Recti originArea = {
@@ -106,14 +118,17 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    Int2 tarCenter = { targetArea.left + GRID_CELL_SIZE, targetArea.top + GRID_CELL_SIZE };
    int occBlocks;
 
+   BlockCheckData checkData = { {target.x, target.y}, false, oList, oCount };
+
    for (i = 0; i < oCount; ++i) {
       OcclusionCell *oc = oList + i;
       if (oc->x == target.x && oc->y == target.y) {
-         return calculatedLevel;
+         checkData.occludedTarget = true;
+         break;
       }
    }
 
-   if (!_lineIsBlocked(orCenter, tarCenter, oList, oCount)) {
+   if (!_lineIsBlocked(orCenter, tarCenter, &checkData)) {
       return calculatedLevel;
    }
 
@@ -122,38 +137,43 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    originArea.right -= 1;
    originArea.bottom -= 1;
 
+   targetArea.left += 1;
+   targetArea.top += 1;
+   targetArea.right -= 1;
+   targetArea.bottom -= 1;
+
    occBlocks = 1;
 
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.bottom }, oList, oCount);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, tarCenter, oList, oCount);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, tarCenter, &checkData);
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, oList, oCount);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, &checkData);
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, oList, oCount);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, &checkData);
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, oList, oCount);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, tarCenter, oList, oCount);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, tarCenter, &checkData);
 
-   return calculatedLevel * ((25 - occBlocks) / 12.5f);
+   return (byte)(calculatedLevel * ((25 - occBlocks) * invertedThreshold));
    //return MIN(calculatedLevel, (25 - occBlocks) / 6);
 }
 
@@ -198,10 +218,10 @@ static void _addPoint(LightGrid *self, PointLight light) {
    for (i = 0; i < occluderCount; ++i) {
       OcclusionCell *oc = self->occlusion + i;
       oc->area = (Recti){
-         .left = (oc->x * GRID_CELL_SIZE) << 1,
-         .top = (oc->y * GRID_CELL_SIZE) << 1,
-         .right = (oc->x * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1,
-         .bottom = (oc->y * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1
+         .left = ((oc->x * GRID_CELL_SIZE) << 1),
+         .top = ((oc->y * GRID_CELL_SIZE) << 1),
+         .right = ((oc->x * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1),
+         .bottom = ((oc->y * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1)
       };
    }
 
