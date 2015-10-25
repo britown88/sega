@@ -86,7 +86,7 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, BlockCheckData *data) {
       OcclusionCell *oc = data->oList + i;
 
       if (lineSegmentIntersectsAABBi(origin, target, &oc->area)) {
-         if (data->occludedTarget/* && abs(oc->x - data->targetCell.x) + abs(oc->y - data->targetCell.y) < 2*/) {
+         if (data->occludedTarget && abs(data->targetCell.x - oc->x) + abs(data->targetCell.y - oc->y) < 1) {
             continue;
          }
          return true;
@@ -99,6 +99,7 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, BlockCheckData *data) {
 static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, OcclusionCell *oList, int oCount ) {
    static const float invertedThreshold = 1.0f / 13.0f;
    int i;
+   int lopLeftBlocked = 0, topRightBlocked = 0, bottomRightBlocked = 0, bottomLeftBlocked = 0;
    //build our rects... shifting by 1 for precision
    Recti originArea = {
       .left = (origin.x * GRID_CELL_SIZE) << 1,
@@ -149,32 +150,47 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
 
+   lopLeftBlocked = occBlocks;
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, tarCenter, &checkData);
+   lopLeftBlocked = occBlocks - lopLeftBlocked;
 
+   topRightBlocked = occBlocks;
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, &checkData);
+   topRightBlocked = occBlocks - topRightBlocked;
 
+   bottomRightBlocked = occBlocks;
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, &checkData);
+   bottomRightBlocked = occBlocks - bottomRightBlocked;
 
+   bottomLeftBlocked = occBlocks;
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, tarCenter, &checkData);
+   bottomLeftBlocked = occBlocks - bottomLeftBlocked;
+
+   if (checkData.occludedTarget) {
+      int threshold = 4;
+      if ((lopLeftBlocked <= threshold || bottomRightBlocked <= threshold) && 
+          (topRightBlocked <= threshold || bottomLeftBlocked <= threshold)) {
+         return calculatedLevel;
+      }
+   }
 
    return (byte)(calculatedLevel * ((25 - occBlocks) * invertedThreshold));
-   //return MIN(calculatedLevel, (25 - occBlocks) / 6);
 }
 
 static void _addPoint(LightGrid *self, PointLight light) {   
@@ -248,6 +264,39 @@ static void _addPoint(LightGrid *self, PointLight light) {
             lightGridAt(self, x, y)->level += calculatedLevel;
          }
       }
+   }
+   {
+      bool refresh = false;
+      //we want to do some post processing on occluders to shade in some that may have gotten missed
+      //if a tile is an occluder and has LIT occluders adjacent to it, it should be lit
+      do {
+         refresh = false;
+         for (i = 0; i < occluderCount; ++i) {
+            OcclusionCell *oc = self->occlusion + i;
+            LightData *light = lightGridAt(self, oc->x, oc->y);
+
+            if (light && light->level == 0) {
+               int i;
+               for (i = 0; i < occluderCount; ++i) {
+                  OcclusionCell *oc2 = self->occlusion + i;
+                  LightData *light2 = lightGridAt(self, oc2->x, oc2->y);
+                  if ((oc2->x == oc->x && oc2->y == oc->y + 1) ||
+                     (oc2->x == oc->x && oc2->y == oc->y - 1) ||
+                     (oc2->x == oc->x + 1 && oc2->y == oc->y) ||
+                     (oc2->x == oc->x - 1 && oc2->y == oc->y)) {
+                     if (light2 && light2->level > 0) {
+                        byte newLevel = MAX(light->level, (int)light2->level - 2);
+                        if (newLevel != light->level) {
+                           light->level = newLevel;
+                           refresh = true;
+                        }
+
+                     }
+                  }
+               }
+            }
+         }
+      } while (refresh);
    }
 }
 
