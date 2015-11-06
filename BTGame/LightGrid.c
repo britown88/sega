@@ -285,7 +285,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
                      (oc2->x == oc->x + 1 && oc2->y == oc->y) ||
                      (oc2->x == oc->x - 1 && oc2->y == oc->y)) {
                      if (light2 && light2->level > 0) {
-                        byte newLevel = MAX(light->level, (int)light2->level - 2);
+                        byte newLevel = MAX(0, MIN(light->level, (int)light2->level - 2));
                         if (newLevel != light->level) {
                            light->level = newLevel;
                            refresh = true;

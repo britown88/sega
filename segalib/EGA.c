@@ -169,7 +169,7 @@ void frameRenderImagePartial(Frame *self, FrameRegion *vp, short x, short y, Ima
       return;
    }
 
-   for (j = 0; j < clipSizeY && j + MAX(imgY, ignoreOffsetY) < imgHeight; ++j) {
+   for (j = 0; j < clipSizeY && j + ignoreOffsetY < imgHeight; ++j) {
       imageScanLineRender(imageGetScanLine(img, j + MAX(imgY, ignoreOffsetY), 0), alphaBuffer);//transparency
 
       for (i = 0; i < EGA_PLANES; ++i) {

@@ -13,7 +13,8 @@
 
 #pragma pack(push, 1)
 typedef struct {
-   short image_index;
+   short img[3];
+   byte imgCount;
    byte occlusion;
 }TileSchema;
 
@@ -32,6 +33,8 @@ struct GridManager_t {
    short height, width;
    Tile *grid;
    LightGrid *lightGrid;
+   byte tileAnimFrameIndex;
+   int tileAnimSecondCount;
 };
 
 ImplManagerVTable(GridManager)
@@ -44,8 +47,11 @@ static void _createTestSchemas(GridManager *self) {
    int i;
    self->schemas = checkedCalloc(6, sizeof(TileSchema));
    for (i = 0; i < 6; ++i) {
-      self->schemas[i] = (TileSchema) { .image_index = i, .occlusion = 0 };
+      self->schemas[i] = (TileSchema) { .img = { i }, .imgCount = 1, .occlusion = 0 };
    }   
+
+   self->schemas[4].img[1] = 20;
+   self->schemas[4].imgCount = 2;
 
    self->schemas[5].occlusion = 1;
 }
@@ -132,6 +138,17 @@ static void _renderTile(GridManager *self, Frame *frame, short x, short y, short
    //frameRenderRect(frame, vp, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, 15);
 }
 
+void _updateTileAnimationIndex(GridManager *self) {
+   int currentSecond = (int)t_u2s(appGetTime(appGet()));
+   if (currentSecond != self->tileAnimSecondCount) {
+      self->tileAnimSecondCount = currentSecond;
+      self->tileAnimFrameIndex = (self->tileAnimFrameIndex + 1) ;
+   }
+}
+short _getImageIndex(GridManager *self, TileSchema *schema) {
+   return schema->img[self->tileAnimFrameIndex % schema->imgCount];
+}
+
 void gridManagerRender(GridManager *self, Frame *frame) {
    Viewport *vp = &self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
@@ -145,13 +162,14 @@ void gridManagerRender(GridManager *self, Frame *frame) {
 
    int xstart = x, xend = x + xcount;
    int ystart = y, yend = y + ycount;
-
-   lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);
+   
+   _updateTileAnimationIndex(self);
+   lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);   
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
          int gridIndex = y * self->width + x;
-         short img = self->schemas[self->grid[gridIndex].schema].image_index;
+         short img = _getImageIndex(self, self->schemas + self->grid[gridIndex].schema);
          short imgX = (img % 16) * GRID_CELL_SIZE;
          short imgY = (img / 16) * GRID_CELL_SIZE;
 
