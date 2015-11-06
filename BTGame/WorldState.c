@@ -144,7 +144,7 @@ static void _handleMouse(WorldState *state){
    if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
       PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
       int x = pc->x / GRID_CELL_SIZE, y = pc->y / GRID_CELL_SIZE;
-      gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 5);
+      gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 7);
    }
 
    //vp->worldPos.x = pos.x - vp->region.origin_x - (vp->region.width / 2);

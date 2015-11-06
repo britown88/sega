@@ -166,6 +166,11 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, &checkData);
    topRightBlocked = occBlocks - topRightBlocked;
 
+   //short circuiting
+   if (occBlocks < 3 || (checkData.occludedTarget && lopLeftBlocked <= 4 && topRightBlocked <= 4)) {
+      return calculatedLevel;
+   }
+
    bottomRightBlocked = occBlocks;
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, &checkData);
@@ -174,6 +179,11 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, &checkData);
    bottomRightBlocked = occBlocks - bottomRightBlocked;
 
+   //short circuiting
+   if (occBlocks < 8 || (checkData.occludedTarget && bottomRightBlocked <= 4 && topRightBlocked <= 4)) {
+      return calculatedLevel;
+   }
+
    bottomLeftBlocked = occBlocks;
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, &checkData);
@@ -181,6 +191,10 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, &checkData);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, tarCenter, &checkData);
    bottomLeftBlocked = occBlocks - bottomLeftBlocked;
+
+   if (occBlocks < 13) {
+      return calculatedLevel;
+   }
 
    if (checkData.occludedTarget) {
       int threshold = 4;
@@ -254,11 +268,18 @@ static void _addPoint(LightGrid *self, PointLight light) {
             byte calculatedLevel = MIN(adjLevel, adjRadius - dist);
 
             //calculate occlusion!
-            calculatedLevel = _calculateOcclusionOnPoint(
-               calculatedLevel, //starting level
-               (Int2) { x, y }, //cell pos
-               (Int2) { light.origin.x , light.origin.y }, //light's origin
-               self->occlusion, occluderCount); //the occluder data
+            if (occluderCount > 0) {
+               calculatedLevel = _calculateOcclusionOnPoint(
+                  calculatedLevel, //starting level
+                  (Int2) { x, y }, //cell pos
+                  (Int2) { light.origin.x , light.origin.y }, //light's origin
+                  self->occlusion, occluderCount); //the occluder data
+            }
+            
+
+            if (calculatedLevel) {
+               lightGridAt(self, x, y)->flags |= LIGHTFLAGS_DIRECTLYLIT;
+            }
 
             //all done, add it in
             lightGridAt(self, x, y)->level += calculatedLevel;
@@ -285,12 +306,11 @@ static void _addPoint(LightGrid *self, PointLight light) {
                      (oc2->x == oc->x + 1 && oc2->y == oc->y) ||
                      (oc2->x == oc->x - 1 && oc2->y == oc->y)) {
                      if (light2 && light2->level > 0) {
-                        byte newLevel = MAX(0, MIN(light->level, (int)light2->level - 2));
+                        byte newLevel = MAX(light->level, (int)light2->level - 2);
                         if (newLevel != light->level) {
                            light->level = newLevel;
                            refresh = true;
                         }
-
                      }
                   }
                }

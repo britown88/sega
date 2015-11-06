@@ -9,8 +9,12 @@
 #define LIGHT_GRID_HEIGHT (GRID_HEIGHT + 1)
 #define LIGHT_GRID_CELL_COUNT (LIGHT_GRID_WIDTH * LIGHT_GRID_HEIGHT)
 
+#define LIGHTFLAGS_DIRECTLYLIT 1 << 0
+#define LIGHTFLAGS_FILTERED 1 << 1
+
 typedef struct {
    byte level;
+   byte flags;
 }LightData;
 
 typedef struct OcclusionCell_t {

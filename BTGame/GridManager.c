@@ -45,15 +45,15 @@ static Tile *_tileAt(GridManager *self, int x, int y) {
 
 static void _createTestSchemas(GridManager *self) {
    int i;
-   self->schemas = checkedCalloc(6, sizeof(TileSchema));
-   for (i = 0; i < 6; ++i) {
+   self->schemas = checkedCalloc(8, sizeof(TileSchema));
+   for (i = 0; i < 8; ++i) {
       self->schemas[i] = (TileSchema) { .img = { i }, .imgCount = 1, .occlusion = 0 };
    }   
 
-   self->schemas[4].img[1] = 20;
-   self->schemas[4].imgCount = 2;
+   self->schemas[5].img[1] = 21;
+   self->schemas[5].imgCount = 2;
 
-   self->schemas[5].occlusion = 1;
+   self->schemas[7].occlusion = 1;
 }
 
 static void _createTestGrid(GridManager *self) {
@@ -62,7 +62,7 @@ static void _createTestGrid(GridManager *self) {
    count = self->width * self->height;
    self->grid = checkedCalloc(count, sizeof(Tile));
    for (i = 0; i < count; ++i) {
-      self->grid[i] = (Tile) {appRand(appGet(), 1, 5), 0};
+      self->grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
    }
 }
 
