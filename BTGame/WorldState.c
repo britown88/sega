@@ -75,7 +75,7 @@ static void _handleKeyboard(WorldState *state){
       }
 
       if (e.action == SegaKey_Released && e.key == SegaKey_P) {
-         appLoadPalette(appGet(), toggle ? "assets/img/dark.pal" : "assets/img/default.pal");
+         appLoadPalette(appGet(), toggle ? "assets/img/dark2.pal" : "assets/img/default2.pal");
          toggle = !toggle;
       }
    }
@@ -207,7 +207,7 @@ static void _addTestEntities(WorldState *state) {
 }
 
 static void _enterState(WorldState *state) {
-   appLoadPalette(appGet(), "assets/img/default.pal");
+   appLoadPalette(appGet(), "assets/img/default2.pal");
    cursorManagerCreateCursor(state->view->managers->cursorManager);
 
    _addTestEntities(state);
