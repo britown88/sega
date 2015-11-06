@@ -96,8 +96,20 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, BlockCheckData *data) {
    return false;
 }
 
+/* 
+The light level of a partially-blocked tile is startingLevel * (UnblockedRayCount / FULLY_LIT_THRESHOLD)
+This means that, of the 25 ray checks, the minimum number of unblkocked rays necessary for the tile to be fully lit is FULLY_LIT_THRESHOLD
+any less than (25 - FULLY_LIT_THRESHOLD + 1) _blocked_ rays will result in no darkening, which can be used to shortcircuit the 
+counts if enough blocked rays havent been found by given intervals
+Also, if the target is an occluder itself, it only needs to verify that a single edge is lit (defined by 4 of the 5 rays hitting each of two corners)
+*/
+#define FULLY_LIT_THRESHOLD 13
+
 static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, OcclusionCell *oList, int oCount ) {
-   static const float invertedThreshold = 1.0f / 13.0f;
+   static const float invertedThreshold = 1.0f / (float)FULLY_LIT_THRESHOLD;
+   static const int minimumBlocksForShading = 25 - FULLY_LIT_THRESHOLD + 1;
+   static const int cornerBlockedThreshold = 4;
+
    int i;
    int lopLeftBlocked = 0, topRightBlocked = 0, bottomRightBlocked = 0, bottomLeftBlocked = 0;
    //build our rects... shifting by 1 for precision
@@ -166,8 +178,8 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, &checkData);
    topRightBlocked = occBlocks - topRightBlocked;
 
-   //short circuiting
-   if (occBlocks < 3 || (checkData.occludedTarget && lopLeftBlocked <= 4 && topRightBlocked <= 4)) {
+   //short circuiting, less than 3 blockers here means there wont be enough blocking to dim the light
+   if (occBlocks < (minimumBlocksForShading - 10) || (checkData.occludedTarget && lopLeftBlocked <= cornerBlockedThreshold && topRightBlocked <= cornerBlockedThreshold)) {
       return calculatedLevel;
    }
 
@@ -179,8 +191,8 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, &checkData);
    bottomRightBlocked = occBlocks - bottomRightBlocked;
 
-   //short circuiting
-   if (occBlocks < 8 || (checkData.occludedTarget && bottomRightBlocked <= 4 && topRightBlocked <= 4)) {
+   //short circuiting, same here, the minimum number of unlblocked rays for a fully lit tile is 13
+   if (occBlocks < (minimumBlocksForShading - 5) || (checkData.occludedTarget && bottomRightBlocked <= cornerBlockedThreshold && topRightBlocked <= cornerBlockedThreshold)) {
       return calculatedLevel;
    }
 
@@ -192,14 +204,13 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, tarCenter, &checkData);
    bottomLeftBlocked = occBlocks - bottomLeftBlocked;
 
-   if (occBlocks < 13) {
+   if (occBlocks < minimumBlocksForShading) {
       return calculatedLevel;
    }
 
    if (checkData.occludedTarget) {
-      int threshold = 4;
-      if ((lopLeftBlocked <= threshold || bottomRightBlocked <= threshold) && 
-          (topRightBlocked <= threshold || bottomLeftBlocked <= threshold)) {
+      if ((lopLeftBlocked <= cornerBlockedThreshold || bottomRightBlocked <= cornerBlockedThreshold) &&
+          (topRightBlocked <= cornerBlockedThreshold || bottomLeftBlocked <= cornerBlockedThreshold)) {
          return calculatedLevel;
       }
    }
@@ -286,38 +297,40 @@ static void _addPoint(LightGrid *self, PointLight light) {
          }
       }
    }
-   {
-      bool refresh = false;
-      //we want to do some post processing on occluders to shade in some that may have gotten missed
-      //if a tile is an occluder and has LIT occluders adjacent to it, it should be lit
-      do {
-         refresh = false;
-         for (i = 0; i < occluderCount; ++i) {
-            OcclusionCell *oc = self->occlusion + i;
-            LightData *light = lightGridAt(self, oc->x, oc->y);
 
-            if (light && light->level == 0) {
-               int i;
-               for (i = 0; i < occluderCount; ++i) {
-                  OcclusionCell *oc2 = self->occlusion + i;
-                  LightData *light2 = lightGridAt(self, oc2->x, oc2->y);
-                  if ((oc2->x == oc->x && oc2->y == oc->y + 1) ||
-                     (oc2->x == oc->x && oc2->y == oc->y - 1) ||
-                     (oc2->x == oc->x + 1 && oc2->y == oc->y) ||
-                     (oc2->x == oc->x - 1 && oc2->y == oc->y)) {
-                     if (light2 && light2->level > 0) {
-                        byte newLevel = MAX(light->level, (int)light2->level - 2);
-                        if (newLevel != light->level) {
-                           light->level = newLevel;
-                           refresh = true;
-                        }
-                     }
-                  }
-               }
-            }
-         }
-      } while (refresh);
-   }
+   //this is a really hacky implementation of trying to light up contiguous squares but it is bad
+   //{
+   //   bool refresh = false;
+   //   //we want to do some post processing on occluders to shade in some that may have gotten missed
+   //   //if a tile is an occluder and has LIT occluders adjacent to it, it should be lit
+   //   do {
+   //      refresh = false;
+   //      for (i = 0; i < occluderCount; ++i) {
+   //         OcclusionCell *oc = self->occlusion + i;
+   //         LightData *light = lightGridAt(self, oc->x, oc->y);
+
+   //         if (light && light->level == 0) {
+   //            int i;
+   //            for (i = 0; i < occluderCount; ++i) {
+   //               OcclusionCell *oc2 = self->occlusion + i;
+   //               LightData *light2 = lightGridAt(self, oc2->x, oc2->y);
+   //               if ((oc2->x == oc->x && oc2->y == oc->y + 1) ||
+   //                  (oc2->x == oc->x && oc2->y == oc->y - 1) ||
+   //                  (oc2->x == oc->x + 1 && oc2->y == oc->y) ||
+   //                  (oc2->x == oc->x - 1 && oc2->y == oc->y)) {
+   //                  if (light2 && light2->level > 0) {
+   //                     byte newLevel = MAX(light->level, (int)light2->level - 2);
+   //                     if (newLevel != light->level) {
+   //                        light->level = newLevel;
+   //                        refresh = true;
+   //                     }
+   //                  }
+   //               }
+   //            }
+   //         }
+   //      }
+   //   } while (refresh);
+   //}
 }
 
 void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
