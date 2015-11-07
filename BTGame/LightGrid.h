@@ -34,8 +34,12 @@ void lightGridDestroy(LightGrid *self);
 //clears the light levels and recalculates
 void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy);
 
+void lightGridSetAmbientLight(LightGrid *self, byte level);
+
 //returns null if out of bounds
 LightData *lightGridAt(LightGrid *self, byte x, byte y);
 
 //render a given lightData tile at a given x,y (grid-agnostic!)
 void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, short y);
+
+

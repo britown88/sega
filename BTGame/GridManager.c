@@ -76,6 +76,10 @@ static void _createTestGrid(GridManager *self) {
    self->grid[2] = (Tile) { 10, 0 };
 }
 
+void gridManagerSetAmbientLight(GridManager *self, byte level) {
+   lightGridSetAmbientLight(self->lightGrid, level);
+}
+
 void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema) {
    if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
       return;

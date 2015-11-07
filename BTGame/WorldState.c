@@ -54,6 +54,7 @@ static void _handleKeyboard(WorldState *state){
    Viewport *vp = &state->view->viewport;
    int speed = 2;
    static int toggle = 1;
+   static int amb = 0;
 
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released && e.key == SegaKey_F1) {
@@ -61,13 +62,13 @@ static void _handleKeyboard(WorldState *state){
       }
 
       if (e.action == SegaKey_Released && e.key == SegaKey_KeypadAdd) {
-         LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-         lc->centerLevel = MIN(lc->centerLevel + 1, MAX_BRIGHTNESS);
+         amb = MIN(amb + 1, MAX_BRIGHTNESS);
+         gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
       }
 
       if (e.action == SegaKey_Released && e.key == SegaKey_KeypadSubtract) {
-         LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-         lc->centerLevel = MAX(lc->centerLevel - 1, 0);
+         amb = MAX(amb - 1, 0);
+         gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
       }
 
       if (e.action == SegaKey_Released && e.key == SegaKey_Escape) {

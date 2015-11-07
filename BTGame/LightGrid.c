@@ -54,6 +54,7 @@ typedef struct LightGrid_t {
    LightData grid[LIGHT_GRID_CELL_COUNT];
    OcclusionCell *occlusion;
    GridManager *parent;
+   byte ambientLevel;
 }LightGrid;
 
 LightGrid *lightGridCreate(GridManager *parent) {
@@ -334,7 +335,15 @@ static void _addPoint(LightGrid *self, PointLight light) {
 }
 
 void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
+   int i = 0;
    memset(self->grid, 0, sizeof(self->grid));
+
+
+   for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
+      self->grid[i].level = self->ambientLevel;
+   }
+
+
 
    COMPONENT_QUERY(es, LightComponent, lc, {
       Entity *e = componentGetParent(lc, es);
@@ -349,6 +358,10 @@ void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
             .level = lc->centerLevel
       });
    });
+}
+
+void lightGridSetAmbientLight(LightGrid *self, byte level) {
+   self->ambientLevel = level;
 }
 
 LightData *lightGridAt(LightGrid *self, byte x, byte y) {

@@ -21,6 +21,7 @@ typedef struct OcclusionCell_t OcclusionCell;
 
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);
+void gridManagerSetAmbientLight(GridManager *self, byte level);
 
 //changes the schema of a given tile (world-tile coords)
 void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema);

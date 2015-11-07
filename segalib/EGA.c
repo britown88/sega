@@ -170,10 +170,10 @@ void frameRenderImagePartial(Frame *self, FrameRegion *vp, short x, short y, Ima
    }
 
    for (j = 0; j < clipSizeY && j + ignoreOffsetY < imgHeight; ++j) {
-      imageScanLineRender(imageGetScanLine(img, j + MAX(imgY, ignoreOffsetY), 0), alphaBuffer);//transparency
+      imageScanLineRender(imageGetScanLine(img, j + imgY + ignoreOffsetY, 0), alphaBuffer);//transparency
 
       for (i = 0; i < EGA_PLANES; ++i) {
-         imageScanLineRender(imageGetScanLine(img, j + MAX(imgY, ignoreOffsetY), i + 1), colorBuffer);
+         imageScanLineRender(imageGetScanLine(img, j + imgY + ignoreOffsetY, i + 1), colorBuffer);
 
          _scanLineRenderImageScanLine(&self->planes[i].lines[j + y + ignoreOffsetY], x + ignoreOffsetX,
             colorBuffer, alphaBuffer, imgX + ignoreOffsetX, clipSizeX);
