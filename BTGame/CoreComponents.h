@@ -135,7 +135,7 @@ typedef struct {
 
 typedef struct {
    int destX, destY;
-   Seconds time;
+   Milliseconds time;
 }InterpolationComponent;
 
 #define ComponentT InterpolationComponent

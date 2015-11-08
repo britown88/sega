@@ -90,7 +90,7 @@ void _updateEntity(InterpolationManager *self, Entity *e, Milliseconds time) {
    PositionComponent *pc = entityGet(PositionComponent)(e);
 
    if (ic && pc) {
-      double m = (time - tic->startTime) / (double)t_s2m(ic->time);
+      double m = (time - tic->startTime) / (double)ic->time;
       if (m > 1.0) {
          m = 1.0;
          vecPushBack(EntityPtr)(self->removeList, &e);

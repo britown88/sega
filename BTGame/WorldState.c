@@ -19,7 +19,7 @@
 
 typedef struct {
    WorldView *view;
-   Entity *mouseLight;
+   Entity *mouseLight, *moveTest;
 }WorldState;
 
 static void _boardStateDestroy(WorldState *self){
@@ -44,6 +44,7 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
    interpolationManagerUpdate(managers->interpolationManager);
+   gridMovementManagerUpdate(managers->gridMovementManager);
 }
 
 static Int2 testlinepos = { 0, 0 };
@@ -144,9 +145,13 @@ static void _handleMouse(WorldState *state){
    });
 
    if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
-      PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
-      int x = pc->x / GRID_CELL_SIZE, y = pc->y / GRID_CELL_SIZE;
-      gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 7);
+      //PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
+      //int x = pc->x / GRID_CELL_SIZE, y = pc->y / GRID_CELL_SIZE;
+      //gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 7);
+
+      gridMovementManagerMoveEntity(state->view->managers->gridMovementManager, state->moveTest, 
+         (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE,
+         (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE);
    }
 
    //vp->worldPos.x = pos.x - vp->region.origin_x - (vp->region.width / 2);
@@ -209,6 +214,8 @@ static void _addTestEntities(WorldState *state) {
    COMPONENT_ADD(e, GridComponent, 10, 10);
 
    entityUpdate(e);
+
+   state->moveTest = e;
 
    //e = entityCreate(view->entitySystem);
    //COMPONENT_ADD(e, PositionComponent, 0, 0);

@@ -92,5 +92,8 @@
     <ClCompile Include="InterpolationManager.c">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
+    <ClCompile Include="GridMovementManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
