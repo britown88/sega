@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 typedef struct{
-   long startTime;//ms
+   Milliseconds startTime;//ms
    int startX, startY;
    int destX, destY;
    

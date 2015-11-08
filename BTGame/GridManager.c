@@ -408,11 +408,6 @@ void gridManagerRenderLighting(GridManager *self, Frame *frame) {
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
-         int gridIndex = y * self->width + x;
-         short img = _getImageIndex(self, self->schemas + self->grid[gridIndex].schema);
-         short imgX = (img % 16) * GRID_CELL_SIZE;
-         short imgY = (img / 16) * GRID_CELL_SIZE;
-
          short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
          short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
 

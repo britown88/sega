@@ -4,11 +4,11 @@ struct LispContext_t {
    int foo;
 };
 
-LispContext *lispContextCreate() {}
+LispContext *lispContextCreate() { return NULL; }
 void lispContextDestroy(LispContext *self) {}
 
 void lispContextPush(LispContext *self) {}
 void lispContextPop(LispContext *self) {}
 void lispContextStore(LispContext *self, LispSym key, LispExpr value) {}
-LispExpr *lispContextLoad(LispContext *self, LispSym key) {}
-LispExpr lispContextEvaluate(LispContext *self, LispExpr input) {}
+LispExpr *lispContextLoad(LispContext *self, LispSym key) { return NULL; }
+LispExpr lispContextEvaluate(LispContext *self, LispExpr input) { return LispNil; }

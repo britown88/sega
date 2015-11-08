@@ -65,7 +65,7 @@ static void *_lispExprGetData(LispExpr *self) {
 
 LispExpr lispCreate() { return (LispExpr){ NULL, NULL }; }
 LispExpr lispCreateStr(const char *str) { LispString s = stringCreate(str);  return _lispCreate(RTTI_VTABLE_GET(LispString), &s); }
-LispExpr lispCreateSym(LispSym str) { return _lispCreate(RTTI_VTABLE_GET(LispSym), &str); }
+LispExpr lispCreateSym(LispSym str) { return _lispCreate(RTTI_VTABLE_GET(LispSym), (void*)&str); }
 LispExpr lispCreatef32(float f) { return _lispCreate(RTTI_VTABLE_GET(float), &f); }
 LispExpr lispCreatei32(int i) { return _lispCreate(RTTI_VTABLE_GET(int), &i); }
 LispExpr lispCreateList(LispList list) { return _lispCreate(RTTI_VTABLE_GET(LispList), &list); }
