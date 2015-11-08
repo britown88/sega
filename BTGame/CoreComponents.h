@@ -136,6 +136,7 @@ typedef struct {
 typedef struct {
    int destX, destY;
    Milliseconds time;
+   Microseconds overflow;//if this is not 0, the interpolation finished but there's leftover time to apply to the next go
 }InterpolationComponent;
 
 #define ComponentT InterpolationComponent

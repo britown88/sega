@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 typedef struct {
-   Milliseconds startTime;//ms
+   Microseconds startTime;
    int startX, startY;
    int destX, destY;
 
@@ -33,6 +33,8 @@ struct InterpolationManager_t {
 };
 
 ImplManagerVTable(InterpolationManager)
+
+
 
 InterpolationManager *createInterpolationManager(WorldView *view) {
    InterpolationManager *out = checkedCalloc(1, sizeof(InterpolationManager));
@@ -59,21 +61,26 @@ void _onUpdate(InterpolationManager *self, Entity *e) {
             //already has one
             if (ic->destX != tic->destX || ic->destY != tic->destY) {
                //destination has changed, u0date it
-               tic->startTime = gameClockGetTime(self->view->gameClock);
+               tic->startTime = gameClockGetTime(self->view->gameClock) - ic->overflow;
                tic->startX = pc->x;
                tic->startY = pc->y;
                tic->destX = ic->destX;
-               tic->destY = ic->destY;
+               tic->destY = ic->destY; 
             }
          }
          else {
             //new entry, add a transient
-            COMPONENT_ADD(e, TInterpolationComponent, .startTime = gameClockGetTime(self->view->gameClock),
+            COMPONENT_ADD(e, TInterpolationComponent, 
+               .startTime = gameClockGetTime(self->view->gameClock) - ic->overflow,
                .startX = pc->x,
                .startY = pc->y,
                .destX = ic->destX,
                .destY = ic->destY);
+
+            //_updateEntity(self, e, gameClockGetTime(self->view->gameClock));
          }
+
+         ic->overflow = 0;
       }
       else {
          if (tic) {
@@ -84,40 +91,39 @@ void _onUpdate(InterpolationManager *self, Entity *e) {
    }
 }
 
-void _updateEntity(InterpolationManager *self, Entity *e, Milliseconds time) {
+void _removeComponents(InterpolationManager *self) {
+   vecForEach(EntityPtr, e, self->removeList, {      
+      entityRemove(TInterpolationComponent)(*e);
+   });
+
+   vecClear(EntityPtr)(self->removeList);
+}
+
+void _updateEntity(InterpolationManager *self, Entity *e, Microseconds time) {
    TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
 
    if (ic && pc) {
-      double m = (time - tic->startTime) / (double)ic->time;
+      Microseconds delta = time - tic->startTime;
+      Microseconds target = t_m2u(ic->time);
+
+      double m = delta / (double)target;
       if (m > 1.0) {
          m = 1.0;
+         ic->overflow = delta - target;
          vecPushBack(EntityPtr)(self->removeList, &e);
       }
 
       pc->x = (int)((ic->destX - tic->startX) * m) + tic->startX;
       pc->y = (int)((ic->destY - tic->startY) * m) + tic->startY;
    }
-
-}
-
-void _removeComponents(InterpolationManager *self) {
-
-   vecForEach(EntityPtr, e, self->removeList, {
-      entityRemove(InterpolationComponent)(*e);
-   entityRemove(TInterpolationComponent)(*e);
-   });
-
-   vecClear(EntityPtr)(self->removeList);
 }
 
 void interpolationManagerUpdate(InterpolationManager *self) {
-   Milliseconds time = gameClockGetTime(self->view->gameClock);
-
    COMPONENT_QUERY(self->view->entitySystem, TInterpolationComponent, ic, {
       Entity *e = componentGetParent(ic, self->view->entitySystem);
-   _updateEntity(self, e, time);
+      _updateEntity(self, e, gameClockGetTime(self->view->gameClock));
    });
 
    if (!vecIsEmpty(EntityPtr)(self->removeList)) {

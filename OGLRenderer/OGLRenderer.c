@@ -124,7 +124,7 @@ static void _renderFrameTime(Scene *scene) {
          color = 3;
       }
       else if (status[i]&DUPE) {
-         color = 13;
+         color = 7;
       }      
 
       frameRenderLine(&scene->frame, FrameRegionFULL,

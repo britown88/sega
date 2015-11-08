@@ -34,7 +34,7 @@ void _destroy(GridMovementManager *self) {
 void _onDestroy(GridMovementManager *self, Entity *e) {}
 void _onUpdate(GridMovementManager *self, Entity *e) {}
 
-static void _stepMovement(Entity *e) {
+static void _stepMovement(Entity *e, Microseconds overflow) {
    GridComponent *gc = entityGet(GridComponent)(e);
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
    int dx = 0, dy = 0;
@@ -42,6 +42,12 @@ static void _stepMovement(Entity *e) {
    //we're there
    if (gc->x == tgc->destX && gc->y == tgc->destY) {
       entityRemove(TGridMovingComponent)(e);
+      
+      //make sure our interpolation gets cleaned up
+      if (entityGet(InterpolationComponent)(e)) {
+         entityRemove(InterpolationComponent)(e);
+      }
+      
       return;
    }
 
@@ -58,7 +64,8 @@ static void _stepMovement(Entity *e) {
    COMPONENT_ADD(e, InterpolationComponent, 
       .destX = tgc->nextX * GRID_CELL_SIZE,
       .destY = tgc->nextY * GRID_CELL_SIZE,
-      .time = 250);
+      .time = 250,
+      .overflow = overflow);
 
    entityUpdate(e);
 }
@@ -68,8 +75,9 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
    PositionComponent *pc = entityGet(PositionComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
+   Microseconds overflow = 0;
 
-   if (ic) {
+   if (ic && ic->overflow == 0) {
       //still moving
       return;
    }
@@ -79,7 +87,11 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
       gc->y = tgc->nextY;
    });
 
-   _stepMovement(e);
+   if (ic) {
+      overflow = ic->overflow;
+   }
+
+   _stepMovement(e, overflow);
 }
 
 void gridMovementManagerUpdate(GridMovementManager *self) {
@@ -97,7 +109,7 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
    }
    else {
       COMPONENT_ADD(e, TGridMovingComponent, x, y, 0, 0);
-      _stepMovement(e);
+      _stepMovement(e, 0);
       
    }
 }
@@ -112,7 +124,7 @@ void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e,
    }
    else {
       COMPONENT_ADD(e, TGridMovingComponent, gc->x + x, gc->y + y, 0, 0);
-      _stepMovement(e);
+      _stepMovement(e, 0);
 
    }
 }

@@ -31,10 +31,10 @@ void _onUpdate(PCManager *self, Entity *e) {}
 void pcManagerUpdate(PCManager *self) {
    Viewport *vp = &self->view->viewport;
    PositionComponent *pc = entityGet(PositionComponent)(self->pc);
-   short gridWidth = gridManagerWidth(self->view->managers->gridManager);
-   short gridHeight = gridManagerHeight(self->view->managers->gridManager);
-   short xCenter = (GRID_WIDTH / 2) * GRID_CELL_SIZE;
-   short yCenter = (GRID_HEIGHT / 2) * GRID_CELL_SIZE;
+   int gridWidth = gridManagerWidth(self->view->managers->gridManager) * GRID_CELL_SIZE;
+   int gridHeight = gridManagerHeight(self->view->managers->gridManager) * GRID_CELL_SIZE;
+   int xCenter = (GRID_WIDTH / 2) * GRID_CELL_SIZE;
+   int yCenter = (GRID_HEIGHT / 2) * GRID_CELL_SIZE;
    int xOffset = MIN(gridWidth, MAX(0, pc->x - xCenter));
    int yOffset = MIN(gridHeight, MAX(0, pc->y - yCenter));
 

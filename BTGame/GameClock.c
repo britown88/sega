@@ -24,12 +24,12 @@ static void _updateTime(GameClock *self) {
    self->appTime = newTime;
 }
 
-Milliseconds gameClockGetTime(GameClock *self) {
+Microseconds gameClockGetTime(GameClock *self) {
    if (!self->paused) {
       _updateTime(self);
    }
 
-   return t_u2m(self->time);
+   return self->time;
 }
 void gameClockPause(GameClock *self) {
    if (!self->paused) {
