@@ -141,7 +141,7 @@ void _boardRender(WorldState *state, GameStateRender *m){
 static void _addTestEntities(WorldState *state) {
    Entity *e = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid.ega"));
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid2.ega"));
    COMPONENT_ADD(e, LayerComponent, LayerBackground);
    COMPONENT_ADD(e, RenderedUIComponent, 0);
    entityUpdate(e);

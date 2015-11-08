@@ -341,11 +341,11 @@ void renderManagerRender(RenderManager *self, Frame *frame){
       _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
    }
 
-   frameRenderText(frame, "         Move        Brightness", 2, 22, fontFactoryGetFont(self->fontFactory, 0, 15));
-   frameRenderText(frame, "        Radius           Place Light", 2, 23, fontFactoryGetFont(self->fontFactory, 0, 15));
+   //frameRenderText(frame, "         Move        Brightness", 2, 22, fontFactoryGetFont(self->fontFactory, 0, 15));
+   //frameRenderText(frame, "        Radius           Place Light", 2, 23, fontFactoryGetFont(self->fontFactory, 0, 15));
 
-   frameRenderText(frame, "W,A,S,D:", 2, 22, fontFactoryGetFont(self->fontFactory, 0, 14));
-   frameRenderText(frame, "Scroll:", 2, 23, fontFactoryGetFont(self->fontFactory, 0, 14));
-   frameRenderText(frame, "+,-:", 18, 22, fontFactoryGetFont(self->fontFactory, 0, 14));
-   frameRenderText(frame, "L-Click:", 18, 23, fontFactoryGetFont(self->fontFactory, 0, 14));
+   //frameRenderText(frame, "W,A,S,D:", 2, 22, fontFactoryGetFont(self->fontFactory, 0, 14));
+   //frameRenderText(frame, "Scroll:", 2, 23, fontFactoryGetFont(self->fontFactory, 0, 14));
+   //frameRenderText(frame, "+,-:", 18, 22, fontFactoryGetFont(self->fontFactory, 0, 14));
+   //frameRenderText(frame, "L-Click:", 18, 23, fontFactoryGetFont(self->fontFactory, 0, 14));
 }

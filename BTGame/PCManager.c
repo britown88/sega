@@ -45,7 +45,10 @@ void pcManagerUpdate(PCManager *self) {
 void pcManagerCreatePC(PCManager *self) {
    self->pc = entityCreate(self->view->entitySystem);
    COMPONENT_ADD(self->pc, PositionComponent, 0, 0);
-   COMPONENT_ADD(self->pc, ImageComponent, stringIntern("assets/img/cursor.ega"));
+   COMPONENT_ADD(self->pc, SizeComponent, 14, 14);
+   COMPONENT_ADD(self->pc, RectangleComponent, 0);
+
+   COMPONENT_ADD(self->pc, ImageComponent, .filename = stringIntern("assets/img/tiles.ega"), .partial = true, .x = 56, .y = 28, .width = 14, .height = 14);
    COMPONENT_ADD(self->pc, LayerComponent, LayerGrid);
    COMPONENT_ADD(self->pc, InViewComponent, 0);
    COMPONENT_ADD(self->pc, GridComponent, 11, 6);
