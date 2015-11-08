@@ -232,6 +232,13 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    return count;
 }
 
+short gridManagerWidth(GridManager *self) {
+   return self->width;
+}
+short gridManagerHeight(GridManager *self) {
+   return self->height;
+}
+
 GridManager *createGridManager(WorldView *view) {
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
    out->view = view;
@@ -388,8 +395,6 @@ void gridManagerRender(GridManager *self, Frame *frame) {
          }
       }
    }
-
-
 }
 
 void gridManagerRenderLighting(GridManager *self, Frame *frame) {

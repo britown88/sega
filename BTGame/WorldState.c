@@ -19,7 +19,6 @@
 
 typedef struct {
    WorldView *view;
-   Entity *mouseLight, *moveTest;
 }WorldState;
 
 static void _boardStateDestroy(WorldState *self){
@@ -45,9 +44,8 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
    interpolationManagerUpdate(managers->interpolationManager);
    gridMovementManagerUpdate(managers->gridMovementManager);
+   pcManagerUpdate(managers->pcManager);
 }
-
-static Int2 testlinepos = { 0, 0 };
 
 static void _handleKeyboard(WorldState *state){
    BTManagers *managers = state->view->managers;
@@ -84,34 +82,17 @@ static void _handleKeyboard(WorldState *state){
    }
 
    if (keyboardIsDown(k, SegaKey_W)) {
-      vp->worldPos.y -= speed;
+      pcManagerMoveRelative(state->view->managers->pcManager, 0, -1);
    }
    if (keyboardIsDown(k, SegaKey_S)) {
-      vp->worldPos.y += speed;
+      pcManagerMoveRelative(state->view->managers->pcManager, 0, 1);
    }
    if (keyboardIsDown(k, SegaKey_A)) {
-      vp->worldPos.x -= speed;
+      pcManagerMoveRelative(state->view->managers->pcManager, -1, 0);
    }
    if (keyboardIsDown(k, SegaKey_D)) {
-      vp->worldPos.x += speed;
+      pcManagerMoveRelative(state->view->managers->pcManager, 1, 0);
    }
-
-   if (keyboardIsDown(k, SegaKey_Up)) {
-      testlinepos.y -= speed;
-   }
-   if (keyboardIsDown(k, SegaKey_Down)) {
-      testlinepos.y += speed;
-   }
-   if (keyboardIsDown(k, SegaKey_Left)) {
-      testlinepos.x -= speed;
-   }
-   if (keyboardIsDown(k, SegaKey_Right)) {
-      testlinepos.x += speed;
-   }
-
-   vp->worldPos.x = MAX(0, vp->worldPos.x);
-   vp->worldPos.y = MAX(0, vp->worldPos.y);
-
 }
 
 static void _handleMouse(WorldState *state){
@@ -121,41 +102,31 @@ static void _handleMouse(WorldState *state){
    MouseEvent event = { 0 };
    Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = &state->view->viewport;
-   while (mousePopEvent(mouse, &event)){
-      if (event.action == SegaMouse_Scrolled) {
-         LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-         lc->radius = MAX(0, lc->radius + event.pos.y);
-      }
-      else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Left) {
-         LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-         PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
-         int x = pc->x, y = pc->y;
-         byte rad = lc->radius, cl = lc->centerLevel;
-         Entity *e= entityCreate(state->view->entitySystem);
-         COMPONENT_ADD(e, PositionComponent, .x = x, .y = y);
-         COMPONENT_ADD(e, LightComponent, .radius = rad, .centerLevel = cl);
-         entityUpdate(e);
-      }
+   //while (mousePopEvent(mouse, &event)){
+   //   if (event.action == SegaMouse_Scrolled) {
+   //      LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
+   //      lc->radius = MAX(0, lc->radius + event.pos.y);
+   //   }
+   //   else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Left) {
+   //      LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
+   //      PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
+   //      int x = pc->x, y = pc->y;
+   //      byte rad = lc->radius, cl = lc->centerLevel;
+   //      Entity *e= entityCreate(state->view->entitySystem);
+   //      COMPONENT_ADD(e, PositionComponent, .x = x, .y = y);
+   //      COMPONENT_ADD(e, LightComponent, .radius = rad, .centerLevel = cl);
+   //      entityUpdate(e);
+   //   }
 
-   }
-
-   COMPONENT_LOCK(PositionComponent, cpos, state->mouseLight, {
-      cpos->x = pos.x - vp->region.origin_x + vp->worldPos.x;
-      cpos->y = pos.y - vp->region.origin_y + vp->worldPos.y;
-   });
+   //}
 
    if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
-      //PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
-      //int x = pc->x / GRID_CELL_SIZE, y = pc->y / GRID_CELL_SIZE;
-      //gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 7);
 
-      gridMovementManagerMoveEntity(state->view->managers->gridMovementManager, state->moveTest, 
+      pcManagerMove(state->view->managers->pcManager,
          (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE,
          (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE);
    }
 
-   //vp->worldPos.x = pos.x - vp->region.origin_x - (vp->region.width / 2);
-   //vp->worldPos.y = pos.y - vp->region.origin_y - (vp->region.height / 2);
 }
 
 void _boardHandleInput(WorldState *state, GameStateHandleInput *m){
@@ -163,34 +134,8 @@ void _boardHandleInput(WorldState *state, GameStateHandleInput *m){
    _handleMouse(state);
 }
 
-static void _drawLineTest(WorldState *state, Frame *frame) {
-   Mouse *mouse = appGetMouse(appGet());
-   Int2 pos = mouseGetPosition(mouse);
-   FrameRegion *vp = &state->view->viewport.region;
-   Int2 v1 = testlinepos;
-   Int2 v2 = { pos.x - vp->origin_x, pos.y - vp->origin_y };
-   Recti r = { 70, 70, 126, 126 };
-
-   bool intersects = lineSegmentIntersectsAABBi(v1, v2, &r);
-
-   frameRenderRect(frame, vp, r.left, r.top, r.right, r.bottom, 2);
-
-   frameRenderLine(frame, vp, v1.x, v1.y, v2.x, v2.y, intersects ? 5 : 14);
-}
-
 void _boardRender(WorldState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
-
-   //_drawLineTest(state, m->frame);
-
-   
-}
-
-static void _testLisp() {
-   LispExpr ex = lispCreatef32(1.0f);
-
-   float *f = lispf32(&ex);
-   int *i = lispi32(&ex);
 }
 
 static void _addTestEntities(WorldState *state) {
@@ -200,37 +145,14 @@ static void _addTestEntities(WorldState *state) {
    COMPONENT_ADD(e, LayerComponent, LayerBackground);
    COMPONENT_ADD(e, RenderedUIComponent, 0);
    entityUpdate(e);
-
-   state->mouseLight = entityCreate(state->view->entitySystem);
-   COMPONENT_ADD(state->mouseLight, PositionComponent, 0, 0);
-   COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 10, .centerLevel = MAX_BRIGHTNESS);
-   entityUpdate(state->mouseLight);
-
-   e = entityCreate(state->view->entitySystem);
-   COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/cursor.ega"));
-   COMPONENT_ADD(e, LayerComponent, LayerGrid);
-   COMPONENT_ADD(e, InViewComponent, 0);
-   COMPONENT_ADD(e, GridComponent, 10, 10);
-
-   entityUpdate(e);
-
-   state->moveTest = e;
-
-   //e = entityCreate(view->entitySystem);
-   //COMPONENT_ADD(e, PositionComponent, 0, 0);
-   //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/dotagrid.ega"));
-   //COMPONENT_ADD(e, InViewComponent, 0);
-   //COMPONENT_ADD(e, LayerComponent, LayerGrid);
-   //entityUpdate(e);
 }
 
 static void _enterState(WorldState *state) {
    appLoadPalette(appGet(), "assets/img/default2.pal");
    cursorManagerCreateCursor(state->view->managers->cursorManager);
+   pcManagerCreatePC(state->view->managers->pcManager);
 
    _addTestEntities(state);
-   _testLisp();
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){

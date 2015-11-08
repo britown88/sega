@@ -74,7 +74,9 @@ MyTestManager *createMyTestManager(WorldView *view){
    return out;
 }
 
-void _destroy(MyTestManager *self){}
+void _destroy(MyTestManager *self){
+   checkedFree(self);
+}
 void _onDestroy(MyTestManager *self, Entity *e){}
 void _onUpdate(MyTestManager *self, Entity *e){}
 

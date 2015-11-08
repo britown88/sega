@@ -28,6 +28,9 @@ void gridManagerRender(GridManager *self, Frame *frame);
 void gridManagerRenderLighting(GridManager *self, Frame *frame);
 void gridManagerSetAmbientLight(GridManager *self, byte level);
 
+short gridManagerWidth(GridManager *self);
+short gridManagerHeight(GridManager *self);
+
 //changes the schema of a given tile (world-tile coords)
 void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema);
 

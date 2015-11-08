@@ -101,3 +101,18 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
       
    }
 }
+
+void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e, short x, short y) {
+   TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
+   GridComponent *gc = entityGet(GridComponent)(e);
+
+   if (tgc) {
+      tgc->destX = tgc->nextX + x;
+      tgc->destY = tgc->nextY + y;
+   }
+   else {
+      COMPONENT_ADD(e, TGridMovingComponent, gc->x + x, gc->y + y, 0, 0);
+      _stepMovement(e);
+
+   }
+}

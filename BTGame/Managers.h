@@ -7,6 +7,7 @@ typedef struct CursorManager_t CursorManager;
 typedef struct GridManager_t GridManager;
 typedef struct InterpolationManager_t InterpolationManager;
 typedef struct GridMovementManager_t GridMovementManager;
+typedef struct PCManager_t PCManager;
 
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
@@ -18,6 +19,7 @@ typedef struct BTManagers_t {
    GridManager *gridManager;
    InterpolationManager *interpolationManager;
    GridMovementManager *gridMovementManager;
+   PCManager *pcManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -34,6 +36,13 @@ void interpolationManagerUpdate(InterpolationManager *self);
 GridMovementManager *createGridMovementManager(WorldView *view);
 void gridMovementManagerUpdate(GridMovementManager *self);
 void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x, short y);
+void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e, short x, short y);
+
+PCManager *createPCManager(WorldView *view);
+void pcManagerUpdate(PCManager *self);
+void pcManagerCreatePC(PCManager *self);
+void pcManagerMove(PCManager *self, short x, short y);
+void pcManagerMoveRelative(PCManager *self, short x, short y);
 
 
 
