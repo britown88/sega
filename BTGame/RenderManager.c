@@ -341,6 +341,9 @@ void renderManagerRender(RenderManager *self, Frame *frame){
       _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
    }
 
+   frameRenderText(frame, "You are likely to be", 16, 22, fontFactoryGetFont(self->fontFactory, 0, 15));
+   frameRenderText(frame, "eaten by a grue.", 16, 23, fontFactoryGetFont(self->fontFactory, 0, 15));
+
    //frameRenderText(frame, "         Move        Brightness", 2, 22, fontFactoryGetFont(self->fontFactory, 0, 15));
    //frameRenderText(frame, "        Radius           Place Light", 2, 23, fontFactoryGetFont(self->fontFactory, 0, 15));
 
