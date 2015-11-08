@@ -2,6 +2,7 @@
 
 #include "segautils/Defs.h"
 #include "segautils/Rect.h"
+#include "Entities/Entities.h"
 
 typedef struct GridManager_t GridManager;
 typedef struct Frame_t Frame;
@@ -19,8 +20,12 @@ typedef struct WorldView_t WorldView;
 
 typedef struct OcclusionCell_t OcclusionCell;
 
+//returns pointer to the entity array that contains all gridded entities currently in view
+vec(EntityPtr) *gridManagerQueryEntities(GridManager *self);
+
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);
+void gridManagerRenderLighting(GridManager *self, Frame *frame);
 void gridManagerSetAmbientLight(GridManager *self, byte level);
 
 //changes the schema of a given tile (world-tile coords)

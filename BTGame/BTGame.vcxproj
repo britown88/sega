@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GridManager.c" />
+    <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LightGrid.c" />
     <ClCompile Include="WorldState.c" />
     <ClCompile Include="BT.c" />

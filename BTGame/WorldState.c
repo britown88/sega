@@ -43,6 +43,7 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
    Int2 mousePos = mouseGetPosition(mouse);
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
+   interpolationManagerUpdate(managers->interpolationManager);
 }
 
 static Int2 testlinepos = { 0, 0 };
@@ -192,12 +193,22 @@ static void _addTestEntities(WorldState *state) {
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid.ega"));
    COMPONENT_ADD(e, LayerComponent, LayerBackground);
+   COMPONENT_ADD(e, RenderedUIComponent, 0);
    entityUpdate(e);
 
    state->mouseLight = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(state->mouseLight, PositionComponent, 0, 0);
    COMPONENT_ADD(state->mouseLight, LightComponent, .radius = 10, .centerLevel = MAX_BRIGHTNESS);
    entityUpdate(state->mouseLight);
+
+   e = entityCreate(state->view->entitySystem);
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/cursor.ega"));
+   COMPONENT_ADD(e, LayerComponent, LayerGrid);
+   COMPONENT_ADD(e, InViewComponent, 0);
+   COMPONENT_ADD(e, GridComponent, 10, 10);
+
+   entityUpdate(e);
 
    //e = entityCreate(view->entitySystem);
    //COMPONENT_ADD(e, PositionComponent, 0, 0);

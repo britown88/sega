@@ -76,6 +76,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.renderManager, createRenderManager(&self->view, &self->data.fps));
    RegisterManager(self->managers.cursorManager, createCursorManager(&self->view));
    RegisterManager(self->managers.gridManager, createGridManager(&self->view));
+   RegisterManager(self->managers.interpolationManager, createInterpolationManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){

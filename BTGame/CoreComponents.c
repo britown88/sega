@@ -40,6 +40,15 @@ static void TextComponentDestroy(TextComponent *self){
 #define ComponentT InViewComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT RenderedUIComponent
+#include "Entities\ComponentImpl.h"
+
 #define ComponentT LightComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT GridComponent
+#include "Entities\ComponentImpl.h"
+
+#define ComponentT InterpolationComponent
 #include "Entities\ComponentImpl.h"
 

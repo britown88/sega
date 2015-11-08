@@ -290,8 +290,13 @@ void _renderLayers(RenderManager *self, Frame *frame){
 
    int i = 0;
    while (first != last){  
-      if (i++ == LayerGrid) {
+      switch (i++) {
+      case LayerGrid:
          gridManagerRender(self->view->managers->gridManager, frame);
+         break;
+      case LayerGridLighting:
+         gridManagerRenderLighting(self->view->managers->gridManager, frame);
+         break;
       }
 
       _renderLayer(self, *first++, frame);  
@@ -317,10 +322,17 @@ void renderManagerRender(RenderManager *self, Frame *frame){
    frameClear(frame, FrameRegionFULL, 0);
 
    _clearLayers(self);
-   
-   COMPONENT_QUERY(self->view->entitySystem, TRenderComponent, trc, {
+
+   //Instead of iterating over all trendercomponetns we cant assume that an entity 
+   //having one means it's drawn in this frame
+   //instead we should take a more manual approach   
+   COMPONENT_QUERY(self->view->entitySystem, RenderedUIComponent, trc, {
       Entity *e = componentGetParent(trc, self->view->entitySystem);
       _addToLayers(self, e);
+   });
+
+   vecForEach(EntityPtr, e, gridManagerQueryEntities(self->view->managers->gridManager), {
+      _addToLayers(self, *e);
    });
 
    _renderLayers(self, frame);

@@ -4,6 +4,7 @@
 #include "segashared\Strings.h"
 #include "MeshRendering.h"
 #include "segautils\String.h"
+#include "segautils/Time.h"
 
 #pragma pack(push, 1)
 
@@ -34,6 +35,7 @@ typedef struct{
 typedef enum{
    LayerBackground,
    LayerGrid,
+   LayerGridLighting,
    LayerUI,
    LayerCursor,
    LayerCount
@@ -98,6 +100,14 @@ typedef struct {
 #define ComponentT InViewComponent
 #include "Entities\ComponentDecl.h"
 
+//Marks an entity as Rendererd UI (the rendermanager will always draw these if it can!)
+typedef struct {
+   EMPTY_STRUCT;
+}RenderedUIComponent;
+
+#define ComponentT RenderedUIComponent
+#include "Entities\ComponentDecl.h"
+
 //light will treat positioncomponent as worldposition
 typedef struct {
    byte radius;
@@ -106,5 +116,31 @@ typedef struct {
 
 #define ComponentT LightComponent
 #include "Entities\ComponentDecl.h"
+
+//Marks an entity as Rendererd UI (the rendermanager will always draw these if it can!)
+typedef struct {
+   EMPTY_STRUCT;
+}GriddedComponent;
+
+#define ComponentT RenderedUIComponent
+#include "Entities\ComponentDecl.h"
+
+
+typedef struct {
+   int x, y;
+}GridComponent;
+
+#define ComponentT GridComponent
+#include "Entities\ComponentDecl.h"
+
+typedef struct {
+   int destX, destY;
+   Seconds time;
+}InterpolationComponent;
+
+#define ComponentT InterpolationComponent
+#include "Entities\ComponentDecl.h"
+
+
 
 #pragma pack(pop)
