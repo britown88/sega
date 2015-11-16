@@ -55,7 +55,7 @@ AppData createData() {
       data.dcFlags |= DC_FLAG_FULLSCREEN;
    }
 
-   data.windowTitle = stringIntern("sEGA: An elegant weapon for a more civilized age.");
+   data.windowTitle = stringIntern("Ultimorrowheel");
 
    return data;
 }
