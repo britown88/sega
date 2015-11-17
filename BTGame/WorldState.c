@@ -61,24 +61,32 @@ static void _handleKeyboard(WorldState *state){
          renderManagerToggleFPS(state->view->managers->renderManager);
       }
 
-      if (e.action == SegaKey_Released && e.key == SegaKey_KeypadAdd) {
-         amb = MIN(amb + 1, MAX_BRIGHTNESS);
-         gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
+      if (e.action == SegaKey_Released) {
+         switch (e.key) {
+         case SegaKey_KeypadAdd:
+            amb = MIN(amb + 1, MAX_BRIGHTNESS);
+            gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
+            break;
+         case SegaKey_KeypadSubtract:
+            amb = MAX(amb - 1, 0);
+            gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
+            break;
+         case SegaKey_Escape:
+            appQuit(appGet());
+            break;
+         case SegaKey_P:
+            appLoadPalette(appGet(), toggle ? "assets/img/dark2.pal" : "assets/img/default2.pal");
+            toggle = !toggle;
+            break;
+         case SegaKey_W:
+         case SegaKey_A:
+         case SegaKey_S:
+         case SegaKey_D:
+            pcManagerStop(state->view->managers->pcManager);
+            break;
+         }
       }
 
-      if (e.action == SegaKey_Released && e.key == SegaKey_KeypadSubtract) {
-         amb = MAX(amb - 1, 0);
-         gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
-      }
-
-      if (e.action == SegaKey_Released && e.key == SegaKey_Escape) {
-         appQuit(appGet());
-      }
-
-      if (e.action == SegaKey_Released && e.key == SegaKey_P) {
-         appLoadPalette(appGet(), toggle ? "assets/img/dark2.pal" : "assets/img/default2.pal");
-         toggle = !toggle;
-      }
    }
 
    if (keyboardIsDown(k, SegaKey_W)) {

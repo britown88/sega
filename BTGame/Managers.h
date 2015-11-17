@@ -35,12 +35,14 @@ void interpolationManagerUpdate(InterpolationManager *self);
 
 GridMovementManager *createGridMovementManager(WorldView *view);
 void gridMovementManagerUpdate(GridMovementManager *self);
+void gridMovementManagerStopEntity(GridMovementManager *self, Entity *e);
 void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x, short y);
 void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e, short x, short y);
 
 PCManager *createPCManager(WorldView *view);
 void pcManagerUpdate(PCManager *self);
 void pcManagerCreatePC(PCManager *self);
+void pcManagerStop(PCManager *self);
 void pcManagerMove(PCManager *self, short x, short y);
 void pcManagerMoveRelative(PCManager *self, short x, short y);
 

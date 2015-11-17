@@ -183,6 +183,16 @@ void gridMovementManagerUpdate(GridMovementManager *self) {
    });
 }
 
+void gridMovementManagerStopEntity(GridMovementManager *self, Entity *e) {
+   TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
+   GridComponent *gc = entityGet(GridComponent)(e);
+
+   if (tgc && gc) {
+      tgc->destX = gc->x;
+      tgc->destY = gc->y;
+   }
+}
+
 void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x, short y) {
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
 

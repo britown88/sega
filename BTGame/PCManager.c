@@ -57,6 +57,10 @@ void pcManagerCreatePC(PCManager *self) {
    entityUpdate(self->pc);
 }
 
+void pcManagerStop(PCManager *self) {
+   gridMovementManagerStopEntity(self->view->managers->gridMovementManager, self->pc);
+}
+
 void pcManagerMove(PCManager *self, short x, short y) {
    gridMovementManagerMoveEntity(self->view->managers->gridMovementManager, self->pc, x, y);
 }
