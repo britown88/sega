@@ -10,6 +10,7 @@
 #include "Managers.h"
 #include "GameState.h"
 #include "GridManager.h"
+#include "GridSolver.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -21,6 +22,8 @@ typedef struct {
    ImageLibrary *imageLibrary;
    FSM *gameState;
    GameClock *gameClock;
+   Viewport viewport;
+   GridSolver *gridSolver;
    WorldView view;
 
 } BTGame;
@@ -94,16 +97,23 @@ VirtualApp *btCreate() {
    r->imageLibrary = imageLibraryCreate();
    r->gameState = fsmCreate();
    r->gameClock = gameClockCreate();
+   
+   r->viewport = (Viewport){   
+      .region = { GRID_POS_X, GRID_POS_Y, GRID_PX_WIDTH, GRID_PX_HEIGHT },
+      .worldPos = { 0, 0 } 
+   };
 
    //init the view
    r->view.imageLibrary = r->imageLibrary;
    r->view.gameState = r->gameState;
    r->view.managers = &r->managers;
    r->view.gameClock = r->gameClock;
-   r->view.viewport = (Viewport){   .region = { GRID_POS_X, GRID_POS_Y, GRID_PX_WIDTH, GRID_PX_HEIGHT },
-                                    .worldPos = { 0, 0 } };
+   r->view.viewport = &r->viewport;
 
    _initEntitySystem(r);
+
+   r->gridSolver = gridSolverCreate(&r->view);
+   r->view.gridSolver = r->gridSolver;
 
    return (VirtualApp*)r;
 }
@@ -114,6 +124,7 @@ void _destroy(BTGame *self){
 
    imageLibraryDestroy(self->imageLibrary);
    gameClockDestroy(self->gameClock);
+   gridSolverDestroy(self->gridSolver);
    checkedFree(self);
 }
 

@@ -7,6 +7,7 @@ typedef struct EntitySystem_t EntitySystem;
 typedef struct ImageLibrary_t ImageLibrary;
 typedef struct FSM_t FSM;
 typedef struct GameClock_t GameClock;
+typedef struct GridSolver_t GridSolver;
 
 typedef struct WorldView_t {
    BTManagers *managers;
@@ -14,5 +15,6 @@ typedef struct WorldView_t {
    ImageLibrary *imageLibrary;
    FSM *gameState;
    GameClock *gameClock;
-   Viewport viewport;
+   GridSolver *gridSolver;
+   Viewport *viewport;
 }WorldView;

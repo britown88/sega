@@ -54,6 +54,9 @@
     <ClInclude Include="LightGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GridSolver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -97,6 +100,9 @@
     </ClCompile>
     <ClCompile Include="PCManager.c">
       <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="GridSolver.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

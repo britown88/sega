@@ -8,13 +8,9 @@
 #include "GridManager.h"
 #include "ImageLibrary.h"
 #include "LightGrid.h"
-#include "segautils/IntrusiveHeap.h"
 
 #define SCHEMA_COUNT 256
 #define PARTITION_SIZE 16
-
-#define DK_SEARCH_RADIUS 32
-#define DK_NEIGHBOR_COUNT 4
 
 #pragma pack(push, 1)
 typedef struct {
@@ -22,11 +18,6 @@ typedef struct {
    byte imgCount;
    byte occlusion;
 }TileSchema;
-
-typedef struct {
-   byte schema;
-   byte collision;//use "solid" flags
-}Tile;
 
 typedef struct {
    vec(EntityPtr) *entities;
@@ -37,26 +28,7 @@ typedef struct {
    vec(size_t) *occupyingPartitions;
 }TGridComponent;
 
-typedef struct GridNode_t GridNode;
-
-//used for dijkstra's solves
-struct GridNode_t{
-   GridNodePublic data;
-   QueueNode node;
-   GridNode *parent;//the observing node
-   GridNode *neighbors[DK_NEIGHBOR_COUNT];
-   byte visited;//for node generation
-   float score;
-};
 #pragma pack(pop)
-
-float gridNodeGetScore(GridNodePublic *self) {
-   return ((GridNode*)self)->score;
-}
-
-static GridNode *_nodeCompareFunc(GridNode *n1, GridNode *n2) {
-   return n1->score < n2->score ? n1 : n2;
-}
 
 static void _partitionDestroy(Partition *p) {
    if (p->entities) {
@@ -64,80 +36,11 @@ static void _partitionDestroy(Partition *p) {
    }
 }
 
-#define ClosureTPart CLOSURE_NAME(GridProcessNeighbor)
-#include "segautils\Closure_Impl.h"
-
-#define ClosureTPart CLOSURE_NAME(GridProcessCurrent)
-#include "segautils\Closure_Impl.h"
-
-#define VectorTPart GridSolutionNode
-#include "segautils\Vector_Impl.h"
-
 #define TComponentT TGridComponent
 #include "Entities\ComponentDeclTransient.h"
 
 #define VectorT Partition
 #include "segautils/Vector_Create.h"
-
-#define VectorT GridNode
-#include "segautils/Vector_Create.h"
-
-#pragma region Dijkstra's'
-typedef struct {
-   Dijkstras inner;
-   GridProcessCurrent cFunc;
-   GridProcessNeighbor nFunc;
-   GridNode *solutionNode;
-}GridSolver;
-
-static size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
-static int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node);
-static int _solverProcessCurrent(GridSolver *self, GridNode *node);
-static void _solverDestroy(GridSolver *self);
-
-static DijkstrasVTable *_getSolverVTable() {
-   DijkstrasVTable *out = NULL;
-   if (!out) {
-      out = calloc(1, sizeof(DijkstrasVTable));
-      out->getNeighbors = (size_t(*)(Dijkstras*, QueueElem, QueueElem**))&_solverGetNeighbors;
-      out->processNeighbor = (int(*)(Dijkstras*, QueueElem, QueueElem))&_solverProcessNeighbor;
-      out->processCurrent = (int(*)(Dijkstras*, QueueElem))&_solverProcessCurrent;
-      out->destroy = (void(*)(Dijkstras*))&_solverDestroy;
-   }
-   return out;
-}
-
-size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList) {
-   *outList = node->neighbors;
-   return DK_NEIGHBOR_COUNT;
-}
-int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node) {
-   if (node && !node->visited) {
-      float newScore = closureCall(&self->nFunc, &current->data, &node->data);
-      if (newScore < node->score) {
-         node->parent = current;
-         node->score = newScore;
-         return true;
-      }
-   }
-   return false;
-}
-int _solverProcessCurrent(GridSolver *self, GridNode *node) {
-   node->visited = true;
-   GridNode *solution = (GridNode*)closureCall(&self->cFunc, &node->data);
-   if (solution) {
-      self->solutionNode = solution;
-      return true;
-   }
-
-   return false;
-}
-void _solverDestroy(GridSolver *self) {
-   priorityQueueDestroy(self->inner.queue);
-   checkedFree(self);
-}
-
-#pragma endregion
 
 struct GridManager_t {
    Manager m;
@@ -167,154 +70,9 @@ struct GridManager_t {
    short partitionWidth, partitionHeight;
    size_t partitionCount;
 
-   //dyjkstras members
-   vec(GridNode) *solvingTable;
-
-   //precompute out a few things here for ease of grabbing
-   Recti solutionSearchArea;
-   size_t startCell; //relative to the search area
-   int solveWidth, solveHeight;
-   size_t solveCount;
-
-   PriorityQueue *solveQueue;
-   GridSolver *solver;
-   vec(GridSolutionNode) *solutionMap;
 };
 
 ImplManagerVTable(GridManager)
-
-//we need to build our table to encompass our search area
-static void _clearSolutionTable(GridManager *self, size_t startCell) {
-   int x = 0, y = 0;
-   int ix, iy;
-   size_t i = 0;
-   Recti *r = &self->solutionSearchArea;
-
-   gridManagerXYFromCellID(self, startCell, &x, &y);
-
-   r->left = MAX(0, x - DK_SEARCH_RADIUS);
-   r->top = MAX(0, y - DK_SEARCH_RADIUS);
-   r->right = MIN(self->width, x + DK_SEARCH_RADIUS);
-   r->bottom = MIN(self->height, y + DK_SEARCH_RADIUS);
-
-   self->solveWidth = rectiWidth(r);
-   self->solveHeight = rectiHeight(r);
-   self->solveCount = self->solveWidth * self->solveHeight;
-
-   vecClear(GridNode)(self->solvingTable);
-   vecResize(GridNode)(self->solvingTable, self->solveCount, &(GridNode){0});
-
-   for (iy = r->top; iy < r->bottom; ++iy) {
-      for (ix = r->left; ix < r->right; ++ix) {
-         GridNode *node = vecAt(GridNode)(self->solvingTable, i++);
-         size_t ID = gridManagerCellIDFromXY(self, ix, iy);
-
-         node->data.ID = ID;
-         node->data.collision = self->grid[ID].collision;
-         node->score = INFF;
-         node->visited = false;
-         node->parent = NULL;
-         queueNodeClear(&node->node);
-      }
-   }
-
-   //here's some ostentatious bullshit, coffee give me strength
-   //set neighbors automagically based on collision
-   i = 0;
-   vecForEach(GridNode, node, self->solvingTable, {
-      int x = i%self->solveWidth;
-
-      if (i >= self->solveWidth) {// y > 0
-         GridNode *above = self->solvingTable->data + (i - self->solveWidth);
-         if (!(node->data.collision&GRID_SOLID_TOP) && !(above->data.collision&GRID_SOLID_BOTTOM)) {
-            node->neighbors[0] = above;
-         }
-      }
-
-      if (x > 0) {// x > 0
-         GridNode *right = self->solvingTable->data + i + 1;
-         if (!(node->data.collision&GRID_SOLID_RIGHT) && !(right->data.collision&GRID_SOLID_LEFT)) {
-            node->neighbors[1] = right;
-         }
-      }
-
-      if (i < self->solveCount - self->solveWidth) {// y < height - 1
-         GridNode *below = self->solvingTable->data + (i + self->solveWidth);
-         if (!(node->data.collision&GRID_SOLID_BOTTOM) && !(below->data.collision&GRID_SOLID_TOP)) {
-            node->neighbors[2] = below;
-         }
-      }
-
-      if (x < self->solveWidth - 1) {// x < width - 1
-         GridNode *left = self->solvingTable->data + i - 1;
-         if (!(node->data.collision&GRID_SOLID_LEFT) && !(left->data.collision&GRID_SOLID_RIGHT)) {
-            node->neighbors[3] = left;
-         }
-      }
-      
-      ++i;
-   });
-}
-
-static size_t _gridIDRelativeToSearchArea(GridManager *self, size_t cell) {
-   int x = 0, y = 0;
-   gridManagerXYFromCellID(self, cell, &x, &y);
-   Recti *r = &self->solutionSearchArea;
-
-   if (x < r->left || x >= r->right || y < r->top || y >= r->bottom) {
-      return INF;
-   }
-
-   return ((y - r->top) * self->solveWidth) + (x - r->left);
-}
-
-GridSolution gridManagerSolve(GridManager *self, size_t startCell, GridProcessCurrent cFunc, GridProcessNeighbor nFunc) {
-   GridSolution solution = { INFF, INF, NULL };
-
-   if (startCell < self->cellCount) {
-      GridNode *result = NULL;
-
-      _clearSolutionTable(self, startCell);
-
-      //determine the index of the startcell in the newly-made table
-      self->startCell = _gridIDRelativeToSearchArea(self, startCell);
-
-      //set the starting cell to 
-      vecAt(GridNode)(self->solvingTable, self->startCell)->score = 0.0f;
-
-      //clear the queue
-      priorityQueueClear(self->solveQueue);
-
-      vecForEach(GridNode, node, self->solvingTable, {
-         priorityQueuePush(self->solveQueue, node);
-      });
-
-      self->solver->cFunc = cFunc;
-      self->solver->nFunc = nFunc;
-
-      dijkstrasRun((Dijkstras*)self->solver);
-
-      result = self->solver->solutionNode;
-
-      if (result) {
-         solution.solutionCell = result->data.ID;
-         solution.totalCost = result->score;
-
-         vecClear(GridSolutionNode)(self->solutionMap);
-
-         while (result && result->parent) {
-            GridSolutionNode resoluteNode = { .node = result->data.ID };
-            vecPushBack(GridSolutionNode)(self->solutionMap, &resoluteNode);
-            result = result->parent;
-         }
-
-         vecReverse(GridSolutionNode)(self->solutionMap);
-         solution.path = self->solutionMap;
-      }
-   }
-
-   return solution;
-}
 
 static Tile *_tileAt(GridManager *self, int x, int y) {
    return self->grid + (y * self->width + x);
@@ -455,7 +213,7 @@ void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema) {
 }
 
 int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid) {
-   Viewport *vp = &self->view->viewport;
+   Viewport *vp = self->view->viewport;
    int x, y;
    int vpx = vp->worldPos.x / GRID_CELL_SIZE;
    int vpy = vp->worldPos.y / GRID_CELL_SIZE;
@@ -501,6 +259,12 @@ void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y) {
       *x = ID % self->height;
    }
 }
+Tile *gridManagerTileAt(GridManager *self, size_t index) {
+   if (index < self->cellCount) {
+      return self->grid + index;
+   }
+   return NULL;
+}
 
 GridManager *createGridManager(WorldView *view) {
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
@@ -516,15 +280,6 @@ GridManager *createGridManager(WorldView *view) {
 
    _registerUpdateDelegate(out, view->entitySystem);
 
-   //solving
-   out->solutionMap = vecCreate(GridSolutionNode)(NULL);
-   out->solvingTable = vecCreate(GridNode)(NULL);
-
-   out->solveQueue = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
-
-   out->solver = checkedCalloc(1, sizeof(GridSolver));
-   out->solver->inner.vTable = _getSolverVTable();
-   out->solver->inner.queue = out->solveQueue;
 
    return out;
 }
@@ -538,9 +293,7 @@ void _destroy(GridManager *self) {
    vecDestroy(Partition)(self->partitionTable);
    vecDestroy(EntityPtr)(self->inViewEntities);
    checkedFree(self->schemas);
-   vecDestroy(GridNode)(self->solvingTable);
-   vecDestroy(GridSolutionNode)(self->solutionMap);
-   dijkstrasDestroy((Dijkstras*)self->solver);
+   
    checkedFree(self);
 }
 void _onDestroy(GridManager *self, Entity *e) {
@@ -589,7 +342,7 @@ void gridManagerUpdate(GridManager *self) {
 }
 
 vec(EntityPtr) *gridManagerQueryEntities(GridManager *self) {
-   Viewport *vp = &self->view->viewport;
+   Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
    bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
 
@@ -619,7 +372,7 @@ vec(EntityPtr) *gridManagerQueryEntities(GridManager *self) {
 }
 
 static void _renderTile(GridManager *self, Frame *frame, short x, short y, short imgX, short imgY) {
-   FrameRegion *vp = &self->view->viewport.region;
+   FrameRegion *vp = &self->view->viewport->region;
    frameRenderImagePartial(frame, vp, x, y, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
    //frameRenderRect(frame, vp, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, 15);
 }
@@ -636,7 +389,7 @@ short _getImageIndex(GridManager *self, TileSchema *schema) {
 }
 
 void gridManagerRender(GridManager *self, Frame *frame) {
-   Viewport *vp = &self->view->viewport;
+   Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
    bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
 
@@ -674,7 +427,7 @@ void gridManagerRender(GridManager *self, Frame *frame) {
 }
 
 void gridManagerRenderLighting(GridManager *self, Frame *frame) {
-   Viewport *vp = &self->view->viewport;
+   Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
    bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
 

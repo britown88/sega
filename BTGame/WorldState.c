@@ -51,7 +51,7 @@ static void _handleKeyboard(WorldState *state){
    BTManagers *managers = state->view->managers;
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
-   Viewport *vp = &state->view->viewport;
+   Viewport *vp = state->view->viewport;
    int speed = 2;
    static int toggle = 1;
    static int amb = 0;
@@ -109,7 +109,7 @@ static void _handleMouse(WorldState *state){
    Keyboard *k = appGetKeyboard(appGet());
    MouseEvent event = { 0 };
    Int2 pos = mouseGetPosition(mouse);
-   Viewport *vp = &state->view->viewport;
+   Viewport *vp = state->view->viewport;
    while (mousePopEvent(mouse, &event)){
       if (event.action == SegaMouse_Scrolled) {
          //LightComponent *lc = entityGet(LightComponent)(state->mouseLight);

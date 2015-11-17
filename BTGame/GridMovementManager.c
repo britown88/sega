@@ -2,6 +2,7 @@
 #include "Entities/Entities.h"
 #include "CoreComponents.h"
 #include "GridManager.h"
+#include "GridSolver.h"
 #include "WorldView.h"
 #include <math.h>
 
@@ -16,6 +17,7 @@ typedef struct {
 
 typedef struct {
    GridManager *manager;
+   GridSolver *solver;
    size_t destination;
 
    float lowestHeuristic;
@@ -79,15 +81,15 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
    return  NULL;
 }
 
-static GridSolution solve(GridManager *manager, size_t start, size_t destination) {
+static GridSolution solve(GridManager *manager, GridSolver *solver, size_t start, size_t destination) {
    GridProcessCurrent cFunc;
    GridProcessNeighbor nFunc;
-   GridSolvingData data = { manager, destination, INFF, NULL };
+   GridSolvingData data = { manager, solver, destination, INFF, NULL };
 
    closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
    closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);
 
-   return gridManagerSolve(manager, start, cFunc, nFunc);
+   return gridSolverSolve(solver, start, cFunc, nFunc);
 }
 
 struct GridMovementManager_t {
@@ -110,7 +112,7 @@ void _destroy(GridMovementManager *self) {
 void _onDestroy(GridMovementManager *self, Entity *e) {}
 void _onUpdate(GridMovementManager *self, Entity *e) {}
 
-static void _stepMovement(GridManager *manager, Entity *e, Microseconds overflow) {
+static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, Microseconds overflow) {
    GridComponent *gc = entityGet(GridComponent)(e);
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
    int dx = 0, dy = 0;
@@ -133,7 +135,7 @@ static void _stepMovement(GridManager *manager, Entity *e, Microseconds overflow
       return;
    }
 
-   solution = solve(manager, posID, destID);
+   solution = solve(manager, solver, posID, destID);
 
    if (solution.totalCost > 0) {
       size_t dest = vecBegin(GridSolutionNode)(solution.path)->node;
@@ -174,7 +176,7 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
       overflow = ic->overflow;
    }
 
-   _stepMovement(self->view->managers->gridManager, e, overflow);
+   _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, overflow);
 }
 
 void gridMovementManagerUpdate(GridMovementManager *self) {
@@ -202,7 +204,7 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
    }
    else {
       COMPONENT_ADD(e, TGridMovingComponent, x, y);
-      _stepMovement(self->view->managers->gridManager, e, 0);
+      _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
       
    }
 }
@@ -217,7 +219,7 @@ void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e,
    }
    else {
       COMPONENT_ADD(e, TGridMovingComponent, gc->x + x, gc->y + y);
-      _stepMovement(self->view->managers->gridManager, e, 0);
+      _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
 
    }
 }

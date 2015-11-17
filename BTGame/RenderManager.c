@@ -227,7 +227,7 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    }
 
    if (trc->inView) {
-      Viewport *view = &self->view->viewport;
+      Viewport *view = self->view->viewport;
 
       x -= view->worldPos.x;
       y -= view->worldPos.y;

@@ -93,6 +93,7 @@
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GridManager.h" />
+    <ClInclude Include="GridSolver.h" />
     <ClInclude Include="ImageLibrary.h" />
     <ClInclude Include="LightGrid.h" />
     <ClInclude Include="Managers.h" />
@@ -103,6 +104,7 @@
   <ItemGroup>
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridMovementManager.c" />
+    <ClCompile Include="GridSolver.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LightGrid.c" />
     <ClCompile Include="PCManager.c" />

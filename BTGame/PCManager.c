@@ -29,7 +29,7 @@ void _onDestroy(PCManager *self, Entity *e) {}
 void _onUpdate(PCManager *self, Entity *e) {}
 
 void pcManagerUpdate(PCManager *self) {
-   Viewport *vp = &self->view->viewport;
+   Viewport *vp = self->view->viewport;
    PositionComponent *pc = entityGet(PositionComponent)(self->pc);
    int gridWidth = gridManagerWidth(self->view->managers->gridManager) * GRID_CELL_SIZE;
    int gridHeight = gridManagerHeight(self->view->managers->gridManager) * GRID_CELL_SIZE;
