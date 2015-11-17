@@ -17,6 +17,7 @@ struct GridNode_t {
    GridNode *parent;//the observing node
    GridNode *neighbors[DK_NEIGHBOR_COUNT];
    byte visited;//for node generation
+   size_t index;//index in the search area table (useful to check neighbors)
    float score;
 };
 #pragma pack(pop)
@@ -78,7 +79,38 @@ static DijkstrasVTable *_getSolverVTable() {
 }
 
 size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList) {
+   size_t i = node->index;
+   int x = i%self->solveWidth;
    *outList = node->neighbors;
+
+   if (!(node->data.collision&GRID_SOLID_TOP) && i >= self->solveWidth) {// y > 0
+      GridNode *above = self->solvingTable->data + (i - self->solveWidth);
+      if (!(above->data.collision&GRID_SOLID_BOTTOM)) {
+         node->neighbors[0] = above;
+      }
+   }
+
+   if (!(node->data.collision&GRID_SOLID_RIGHT) && x > 0) {// x > 0
+      GridNode *right = self->solvingTable->data + i + 1;
+      if (!(right->data.collision&GRID_SOLID_LEFT)) {
+         node->neighbors[1] = right;
+      }
+   }
+
+   if (!(node->data.collision&GRID_SOLID_BOTTOM) && i < self->solveCount - self->solveWidth) {// y < height - 1
+      GridNode *below = self->solvingTable->data + (i + self->solveWidth);
+      if (!(below->data.collision&GRID_SOLID_TOP)) {
+         node->neighbors[2] = below;
+      }
+   }
+
+   if (!(node->data.collision&GRID_SOLID_LEFT) && x < self->solveWidth - 1) {// x < width - 1
+      GridNode *left = self->solvingTable->data + i - 1;
+      if (!(left->data.collision&GRID_SOLID_RIGHT)) {
+         node->neighbors[3] = left;
+      }
+   }
+
    return DK_NEIGHBOR_COUNT;
 }
 int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node) {
@@ -130,7 +162,7 @@ static void _clearSolutionTable(GridSolver *self, size_t startCell) {
 
    for (iy = r->top; iy < r->bottom; ++iy) {
       for (ix = r->left; ix < r->right; ++ix) {
-         GridNode *node = vecAt(GridNode)(self->solvingTable, i++);
+         GridNode *node = vecAt(GridNode)(self->solvingTable, i);
          size_t ID = gridManagerCellIDFromXY(self->manager, ix, iy);
          Tile *t = gridManagerTileAt(self->manager, ID);
 
@@ -140,49 +172,12 @@ static void _clearSolutionTable(GridSolver *self, size_t startCell) {
 
          node->data.ID = ID;
          node->data.collision = t->collision;
+         node->index = i;
          node->score = INFF;
-         node->visited = false;
-         node->parent = NULL;
-         queueNodeClear(&node->node);
+
+         ++i;
       }
    }
-
-   //here's some ostentatious bullshit, coffee give me strength
-   //set neighbors automagically based on collision
-   i = 0;
-   vecForEach(GridNode, node, self->solvingTable, {
-      int x = i%self->solveWidth;
-
-   if (i >= self->solveWidth) {// y > 0
-      GridNode *above = self->solvingTable->data + (i - self->solveWidth);
-      if (!(node->data.collision&GRID_SOLID_TOP) && !(above->data.collision&GRID_SOLID_BOTTOM)) {
-         node->neighbors[0] = above;
-      }
-   }
-
-   if (x > 0) {// x > 0
-      GridNode *right = self->solvingTable->data + i + 1;
-      if (!(node->data.collision&GRID_SOLID_RIGHT) && !(right->data.collision&GRID_SOLID_LEFT)) {
-         node->neighbors[1] = right;
-      }
-   }
-
-   if (i < self->solveCount - self->solveWidth) {// y < height - 1
-      GridNode *below = self->solvingTable->data + (i + self->solveWidth);
-      if (!(node->data.collision&GRID_SOLID_BOTTOM) && !(below->data.collision&GRID_SOLID_TOP)) {
-         node->neighbors[2] = below;
-      }
-   }
-
-   if (x < self->solveWidth - 1) {// x < width - 1
-      GridNode *left = self->solvingTable->data + i - 1;
-      if (!(node->data.collision&GRID_SOLID_LEFT) && !(left->data.collision&GRID_SOLID_RIGHT)) {
-         node->neighbors[3] = left;
-      }
-   }
-
-   ++i;
-   });
 }
 
 static size_t _gridIDRelativeToSearchArea(GridSolver *self, size_t cell) {
@@ -213,7 +208,7 @@ void gridSolverDestroy(GridSolver *self) {
    vecDestroy(GridNode)(self->solvingTable);
    vecDestroy(GridSolutionNode)(self->solutionMap);
    dijkstrasDestroy((Dijkstras*)self);
-   checkedFree(self);
+   //checkedFree(self);
 }
 
 GridSolution gridSolverSolve(GridSolver *self, size_t startCell, GridProcessCurrent cFunc, GridProcessNeighbor nFunc) {
