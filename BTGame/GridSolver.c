@@ -81,37 +81,38 @@ static DijkstrasVTable *_getSolverVTable() {
 size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList) {
    size_t i = node->index;
    int x = i%self->solveWidth;
+   int neighborCount = 0;
    *outList = node->neighbors;
 
    if (!(node->data.collision&GRID_SOLID_TOP) && i >= self->solveWidth) {// y > 0
       GridNode *above = self->solvingTable->data + (i - self->solveWidth);
       if (!(above->data.collision&GRID_SOLID_BOTTOM)) {
-         node->neighbors[0] = above;
+         node->neighbors[neighborCount++] = above;
       }
    }
 
    if (!(node->data.collision&GRID_SOLID_RIGHT) && x > 0) {// x > 0
       GridNode *right = self->solvingTable->data + i + 1;
       if (!(right->data.collision&GRID_SOLID_LEFT)) {
-         node->neighbors[1] = right;
+         node->neighbors[neighborCount++] = right;
       }
    }
 
    if (!(node->data.collision&GRID_SOLID_BOTTOM) && i < self->solveCount - self->solveWidth) {// y < height - 1
       GridNode *below = self->solvingTable->data + (i + self->solveWidth);
       if (!(below->data.collision&GRID_SOLID_TOP)) {
-         node->neighbors[2] = below;
+         node->neighbors[neighborCount++] = below;
       }
    }
 
    if (!(node->data.collision&GRID_SOLID_LEFT) && x < self->solveWidth - 1) {// x < width - 1
       GridNode *left = self->solvingTable->data + i - 1;
       if (!(left->data.collision&GRID_SOLID_RIGHT)) {
-         node->neighbors[3] = left;
+         node->neighbors[neighborCount++] = left;
       }
    }
 
-   return DK_NEIGHBOR_COUNT;
+   return neighborCount;
 }
 int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node) {
    if (node && !node->visited) {
