@@ -3,16 +3,92 @@
 #include "CoreComponents.h"
 #include "GridManager.h"
 #include "WorldView.h"
+#include <math.h>
 
 #pragma pack(push, 1)
 typedef struct {
    short destX, destY;
-   short nextX, nextY;
 }TGridMovingComponent;
 #pragma pack(pop)
 
 #define TComponentT TGridMovingComponent
 #include "Entities\ComponentDeclTransient.h"
+
+typedef struct {
+   GridManager *manager;
+   size_t destination;
+
+   float lowestHeuristic;
+   GridNodePublic *closestNode;
+}GridSolvingData;
+
+static float _singleDistance(GridManager *manager, size_t d0, size_t d1) {
+   int x0, y0, x1, y1, dist;
+
+   gridManagerXYFromCellID(manager, d0, &x0, &y0);
+   gridManagerXYFromCellID(manager, d1, &x1, &y1);
+
+   dist = abs(x0 - x1) + abs(y0 - y1);
+
+   return dist > 1 ? SQRT2 : dist;
+}
+
+static int _distance(GridManager *manager, size_t d0, size_t d1) {
+   int x0, y0, x1, y1;
+
+   gridManagerXYFromCellID(manager, d0, &x0, &y0);
+   gridManagerXYFromCellID(manager, d1, &x1, &y1);
+
+   return abs(x0 - x1) + abs(y0 - y1);
+}
+
+static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, GridNodePublic *neighbor) {
+   //vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
+   //if (entities && !vecIsEmpty(EntityPtr)(entities)) {
+   //   return INFF;
+   //}
+   return gridNodeGetScore(current) + _singleDistance(data->manager, current->ID, neighbor->ID);
+}
+
+static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *current) {
+   float currentScore = gridNodeGetScore(current);
+   float h;
+   int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+
+   if (gridNodeGetScore(current) == INF) {
+      //cant get to destination, use closest
+      return data->closestNode;
+   }
+
+   //update heuristic
+   gridManagerXYFromCellID(data->manager, current->ID, &x1, &y1);
+   gridManagerXYFromCellID(data->manager, data->destination, &x2, &y2);
+   h = (float)abs(x1 - x2) + (float)abs(y1 - y2);
+
+   if (current->ID == data->destination) {
+      //destination found
+      return current;
+   }
+
+
+   if (h < data->lowestHeuristic) {
+      data->lowestHeuristic = h;
+      data->closestNode = current;
+   }
+
+   return  NULL;
+}
+
+static GridSolution solve(GridManager *manager, size_t start, size_t destination) {
+   GridProcessCurrent cFunc;
+   GridProcessNeighbor nFunc;
+   GridSolvingData data = { manager, destination, INFF, NULL };
+
+   closureInit(GridProcessCurrent)(&cFunc, &data, (GridProcessCurrentFunc)&_processCurrent, NULL);
+   closureInit(GridProcessNeighbor)(&nFunc, &data, (GridProcessNeighborFunc)&_processNeighbor, NULL);
+
+   return gridManagerSolve(manager, start, cFunc, nFunc);
+}
 
 struct GridMovementManager_t {
    Manager m;
@@ -34,13 +110,19 @@ void _destroy(GridMovementManager *self) {
 void _onDestroy(GridMovementManager *self, Entity *e) {}
 void _onUpdate(GridMovementManager *self, Entity *e) {}
 
-static void _stepMovement(Entity *e, Microseconds overflow) {
+static void _stepMovement(GridManager *manager, Entity *e, Microseconds overflow) {
    GridComponent *gc = entityGet(GridComponent)(e);
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
    int dx = 0, dy = 0;
+   size_t posID, destID;
+   float range = 0;
+   GridSolution solution;
+
+   posID = gridManagerCellIDFromXY(manager, gc->x, gc->y);
+   destID = gridManagerCellIDFromXY(manager, tgc->destX, tgc->destY);
 
    //we're there
-   if (gc->x == tgc->destX && gc->y == tgc->destY) {
+   if (destID == INF || _distance(manager, posID, destID) <= range) {
       entityRemove(TGridMovingComponent)(e);
       
       //make sure our interpolation gets cleaned up
@@ -51,23 +133,24 @@ static void _stepMovement(Entity *e, Microseconds overflow) {
       return;
    }
 
-   if (gc->x != tgc->destX) {
-      dx = gc->x < tgc->destX ? 1 : -1;
+   solution = solve(manager, posID, destID);
+
+   if (solution.totalCost > 0) {
+      size_t dest = vecBegin(GridSolutionNode)(solution.path)->node;
+
+      //update our grid position to the new cell
+      COMPONENT_LOCK(GridComponent, newgc, e, {
+         gridManagerXYFromCellID(manager, dest, &newgc->x, &newgc->y);
+      });
+
+      COMPONENT_ADD(e, InterpolationComponent,
+         .destX = gc->x * GRID_CELL_SIZE,
+         .destY = gc->y * GRID_CELL_SIZE,
+         .time = 250,
+         .overflow = overflow);
+
+      entityUpdate(e);
    }
-   else {
-      dy = gc->y < tgc->destY ? 1 : -1;
-   }
-
-   tgc->nextX = gc->x + dx;
-   tgc->nextY = gc->y + dy;
-
-   COMPONENT_ADD(e, InterpolationComponent, 
-      .destX = tgc->nextX * GRID_CELL_SIZE,
-      .destY = tgc->nextY * GRID_CELL_SIZE,
-      .time = 250,
-      .overflow = overflow);
-
-   entityUpdate(e);
 }
 
 static void _updateGridMovement(GridMovementManager *self, Entity *e) {
@@ -82,16 +165,16 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
       return;
    }
 
-   COMPONENT_LOCK(GridComponent, gc, e, {
+   /*COMPONENT_LOCK(GridComponent, gc, e, {
       gc->x = tgc->nextX;
       gc->y = tgc->nextY;
-   });
+   });*/
 
    if (ic) {
       overflow = ic->overflow;
    }
 
-   _stepMovement(e, overflow);
+   _stepMovement(self->view->managers->gridManager, e, overflow);
 }
 
 void gridMovementManagerUpdate(GridMovementManager *self) {
@@ -108,8 +191,8 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
       tgc->destY = y;
    }
    else {
-      COMPONENT_ADD(e, TGridMovingComponent, x, y, 0, 0);
-      _stepMovement(e, 0);
+      COMPONENT_ADD(e, TGridMovingComponent, x, y);
+      _stepMovement(self->view->managers->gridManager, e, 0);
       
    }
 }
@@ -119,12 +202,12 @@ void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e,
    GridComponent *gc = entityGet(GridComponent)(e);
 
    if (tgc) {
-      tgc->destX = tgc->nextX + x;
-      tgc->destY = tgc->nextY + y;
+      tgc->destX = gc->x + x;
+      tgc->destY = gc->y + y;
    }
    else {
-      COMPONENT_ADD(e, TGridMovingComponent, gc->x + x, gc->y + y, 0, 0);
-      _stepMovement(e, 0);
+      COMPONENT_ADD(e, TGridMovingComponent, gc->x + x, gc->y + y);
+      _stepMovement(self->view->managers->gridManager, e, 0);
 
    }
 }
