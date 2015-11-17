@@ -351,8 +351,8 @@ void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
 
       _addPoint(self, (PointLight) {
             .origin = {
-               .x = (pc->x / GRID_CELL_SIZE) - vpx,
-               .y = (pc->y / GRID_CELL_SIZE) - vpy
+               .x = ((pc->x + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpx,
+               .y = ((pc->y + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpy
             },
             .radius = lc->radius,
             .level = lc->centerLevel

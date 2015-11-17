@@ -102,23 +102,18 @@ static void _handleMouse(WorldState *state){
    MouseEvent event = { 0 };
    Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = &state->view->viewport;
-   //while (mousePopEvent(mouse, &event)){
-   //   if (event.action == SegaMouse_Scrolled) {
-   //      LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-   //      lc->radius = MAX(0, lc->radius + event.pos.y);
-   //   }
-   //   else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Left) {
-   //      LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-   //      PositionComponent *pc = entityGet(PositionComponent)(state->mouseLight);
-   //      int x = pc->x, y = pc->y;
-   //      byte rad = lc->radius, cl = lc->centerLevel;
-   //      Entity *e= entityCreate(state->view->entitySystem);
-   //      COMPONENT_ADD(e, PositionComponent, .x = x, .y = y);
-   //      COMPONENT_ADD(e, LightComponent, .radius = rad, .centerLevel = cl);
-   //      entityUpdate(e);
-   //   }
+   while (mousePopEvent(mouse, &event)){
+      if (event.action == SegaMouse_Scrolled) {
+         //LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
+         //lc->radius = MAX(0, lc->radius + event.pos.y);
+      }
+      else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Left) {
+         int x = (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE;
+         int y = (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE;
+         gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 7);
+      }
 
-   //}
+   }
 
    if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
 
