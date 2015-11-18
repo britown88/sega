@@ -112,10 +112,6 @@ static void _createTestGrid(GridManager *self) {
       }
    }
 
-   self->grid[0] = (Tile) { 8, 0 };
-   self->grid[1] = (Tile) { 9, 0 };
-   self->grid[2] = (Tile) { 10, 0 };
-
    //part table
    vecClear(Partition)(self->partitionTable);
    self->partitionWidth = self->width / PARTITION_SIZE + (self->width%PARTITION_SIZE ? 1 : 0);

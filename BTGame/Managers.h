@@ -1,6 +1,7 @@
 #pragma once
 
 #include "segautils\Preprocessor.h"
+#include "segautils/Defs.h"
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
@@ -45,6 +46,9 @@ void pcManagerCreatePC(PCManager *self);
 void pcManagerStop(PCManager *self);
 void pcManagerMove(PCManager *self, short x, short y);
 void pcManagerMoveRelative(PCManager *self, short x, short y);
+void pcManagerToggleTorch(PCManager *self);
+void pcManagerSetTorch(PCManager *self, bool torchOn);
+void pcManagerSetSneak(PCManager *self, bool sneaking);
 
 
 

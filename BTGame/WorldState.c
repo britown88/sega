@@ -61,8 +61,18 @@ static void _handleKeyboard(WorldState *state){
          renderManagerToggleFPS(state->view->managers->renderManager);
       }
 
-      if (e.action == SegaKey_Released) {
+      if (e.action == SegaKey_Pressed) {
          switch (e.key) {
+         case SegaKey_LeftControl:
+            pcManagerSetSneak(state->view->managers->pcManager, true);
+            break;
+         }
+      }
+      else if (e.action == SegaKey_Released) {
+         switch (e.key) {
+         case SegaKey_LeftControl:
+            pcManagerSetSneak(state->view->managers->pcManager, false);
+            break;
          case SegaKey_KeypadAdd:
             amb = MIN(amb + 1, MAX_BRIGHTNESS);
             gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
@@ -77,6 +87,9 @@ static void _handleKeyboard(WorldState *state){
          case SegaKey_P:
             appLoadPalette(appGet(), toggle ? "assets/img/dark2.pal" : "assets/img/default2.pal");
             toggle = !toggle;
+            break;
+         case SegaKey_T:
+            pcManagerToggleTorch(state->view->managers->pcManager);
             break;
          case SegaKey_W:
          case SegaKey_A:

@@ -11,6 +11,8 @@ struct PCManager_t {
    WorldView *view;
 
    Entity *pc;
+   bool usingTorch;
+   bool sneaking;
 };
 
 ImplManagerVTable(PCManager)
@@ -27,6 +29,35 @@ void _destroy(PCManager *self) {
 }
 void _onDestroy(PCManager *self, Entity *e) {}
 void _onUpdate(PCManager *self, Entity *e) {}
+
+static void _updateSprite(PCManager *self) {
+   ImageComponent *ic = entityGet(ImageComponent)(self->pc);
+
+   if (self->sneaking) {
+      ic->x = 28;
+      ic->y = 28;
+   }
+   else if (self->usingTorch) {
+      ic->x = 56;
+      ic->y = 28;
+   }
+   else {
+      ic->x = 42;
+      ic->y = 28;
+   }
+}
+
+static void _updateLight(PCManager *self) {
+   LightComponent *lc = entityGet(LightComponent)(self->pc);
+   
+   if (self->usingTorch && !self->sneaking) {
+      lc->centerLevel = MAX_BRIGHTNESS;
+   }
+   else {
+      lc->centerLevel = 2;
+   }
+
+}
 
 void pcManagerUpdate(PCManager *self) {
    Viewport *vp = self->view->viewport;
@@ -52,8 +83,10 @@ void pcManagerCreatePC(PCManager *self) {
    COMPONENT_ADD(self->pc, LayerComponent, LayerGrid);
    COMPONENT_ADD(self->pc, InViewComponent, 0);
    COMPONENT_ADD(self->pc, GridComponent, 11, 6);
-   COMPONENT_ADD(self->pc, LightComponent, 0, MAX_BRIGHTNESS);
+   COMPONENT_ADD(self->pc, LightComponent, 0, 0);
 
+   _updateLight(self);
+   _updateSprite(self);
    entityUpdate(self->pc);
 }
 
@@ -67,4 +100,20 @@ void pcManagerMove(PCManager *self, short x, short y) {
 
 void pcManagerMoveRelative(PCManager *self, short x, short y) {
    gridMovementManagerMoveEntityRelative(self->view->managers->gridMovementManager, self->pc, x, y);
+}
+
+void pcManagerToggleTorch(PCManager *self) {
+   self->usingTorch = !self->usingTorch;
+   _updateLight(self);
+   _updateSprite(self);
+}
+void pcManagerSetTorch(PCManager *self, bool torchOn) {
+   self->usingTorch = torchOn;
+   _updateLight(self);
+   _updateSprite(self);
+}
+void pcManagerSetSneak(PCManager *self, bool sneaking) {
+   self->sneaking = sneaking;
+   _updateLight(self);
+   _updateSprite(self);
 }
