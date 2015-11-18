@@ -23,6 +23,7 @@ typedef struct WorldView_t WorldView;
 #define GRID_SOLID_LEFT (1 << 1)
 #define GRID_SOLID_BOTTOM (1 << 2)
 #define GRID_SOLID_RIGHT (1 << 3)
+#define GRID_SOLID (GRID_SOLID_TOP|GRID_SOLID_LEFT|GRID_SOLID_BOTTOM|GRID_SOLID_RIGHT)
 
 #pragma pack(push, 1)
 typedef struct {
@@ -44,9 +45,6 @@ void gridManagerSetAmbientLight(GridManager *self, byte level);
 short gridManagerWidth(GridManager *self);
 short gridManagerHeight(GridManager *self);
 
-//changes the schema of a given tile (world-tile coords)
-void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema);
-
 //take an area of relative to the lightgrid and a preallocated cell array (minimum size area.width * area.height)
 //fills in grid occlusion levels, returns number of occluders found
 int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid);
@@ -54,5 +52,6 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
 size_t gridManagerCellIDFromXY(GridManager *self, int x, int y);
 void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y);
 Tile *gridManagerTileAt(GridManager *self, size_t index);
+Tile *gridManagerTileAtXY(GridManager *self, int x, int y);
 
 

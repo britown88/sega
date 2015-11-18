@@ -108,7 +108,7 @@ static void _createTestGrid(GridManager *self) {
    for (i = 0; i < count; ++i) {
       self->grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
       if (self->grid[i].schema == 6) {
-         self->grid[i].collision = GRID_SOLID_TOP | GRID_SOLID_BOTTOM | GRID_SOLID_LEFT | GRID_SOLID_RIGHT;
+         self->grid[i].collision = GRID_SOLID;
       }
    }
 
@@ -204,14 +204,6 @@ void gridManagerSetAmbientLight(GridManager *self, byte level) {
    lightGridSetAmbientLight(self->lightGrid, level);
 }
 
-void gridManagerSetTileSchema(GridManager *self, int x, int y, byte schema) {
-   if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
-      return;
-   }
-
-   _tileAt(self, x, y)->schema = schema;
-}
-
 int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid) {
    Viewport *vp = self->view->viewport;
    int x, y;
@@ -264,6 +256,9 @@ Tile *gridManagerTileAt(GridManager *self, size_t index) {
       return self->grid + index;
    }
    return NULL;
+}
+Tile *gridManagerTileAtXY(GridManager *self, int x, int y) {
+   return gridManagerTileAt(self, y*self->width + x);
 }
 
 GridManager *createGridManager(WorldView *view) {

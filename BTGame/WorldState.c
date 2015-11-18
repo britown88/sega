@@ -118,7 +118,11 @@ static void _handleMouse(WorldState *state){
       else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Left) {
          int x = (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE;
          int y = (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE;
-         gridManagerSetTileSchema(state->view->managers->gridManager, x, y, 7);
+         Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, x, y);
+         if (t) {
+            t->schema = 7;
+            t->collision = GRID_SOLID;
+         }
       }
 
    }

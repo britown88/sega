@@ -84,7 +84,7 @@ size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList
    int neighborCount = 0;
    *outList = node->neighbors;
 
-   if (!(node->data.collision&GRID_SOLID_TOP) && i >= self->solveWidth) {// y > 0
+   if (!(node->data.collision&GRID_SOLID_TOP) && (int)i >= self->solveWidth) {// y > 0
       GridNode *above = self->solvingTable->data + (i - self->solveWidth);
       if (!(above->data.collision&GRID_SOLID_BOTTOM)) {
          node->neighbors[neighborCount++] = above;
