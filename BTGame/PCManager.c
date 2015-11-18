@@ -52,9 +52,13 @@ static void _updateLight(PCManager *self) {
    
    if (self->usingTorch && !self->sneaking) {
       lc->centerLevel = MAX_BRIGHTNESS;
+      lc->radius = 0;
+      lc->fadeWidth = MAX_BRIGHTNESS;
    }
    else {
-      lc->centerLevel = 2;
+      lc->centerLevel = 3;
+      lc->radius = 0;
+      lc->fadeWidth = 2;
    }
 
 }
@@ -83,7 +87,7 @@ void pcManagerCreatePC(PCManager *self) {
    COMPONENT_ADD(self->pc, LayerComponent, LayerGrid);
    COMPONENT_ADD(self->pc, InViewComponent, 0);
    COMPONENT_ADD(self->pc, GridComponent, 11, 6);
-   COMPONENT_ADD(self->pc, LightComponent, 0, 0);
+   COMPONENT_ADD(self->pc, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
 
    _updateLight(self);
    _updateSprite(self);

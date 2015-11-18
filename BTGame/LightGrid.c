@@ -72,6 +72,7 @@ typedef struct {
    Int2 origin;
    byte radius;
    byte level;
+   byte fadeWidth;
 }PointLight;
 
 typedef struct  {
@@ -226,10 +227,17 @@ static void _addPoint(LightGrid *self, PointLight light) {
    int occluderCount;
    int x, y;
    int i;
+   float widthFactor = 0.0f;
 
    //bound the brightness (0 - max) and radius (0 - level/radius whichever's bigger)
    adjLevel = MIN(MAX(light.level, 0), MAX_BRIGHTNESS);
-   adjRadius = MAX(0, MAX(light.radius, adjLevel));
+   adjRadius = MAX(0, MAX(light.radius, light.fadeWidth));
+
+   if (adjLevel > 0) {
+      widthFactor = 1.0f / ((float)light.fadeWidth / adjLevel);
+   }
+
+   
    r2 = adjRadius * adjRadius;
    
    //create our area bounded within the vp
@@ -277,7 +285,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
          //only calc distance if we're squarely inside the radius
          if (xxyy <= r2) {
             int dist = MAX(0, (int)sqrtf((float)xxyy));
-            byte calculatedLevel = MIN(adjLevel, (adjRadius - dist));
+            byte calculatedLevel = (adjRadius - dist) * widthFactor;
 
             //calculate occlusion!
             if (occluderCount > 0) {
@@ -355,7 +363,8 @@ void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
                .y = ((pc->y + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpy
             },
             .radius = lc->radius,
-            .level = lc->centerLevel
+            .level = lc->centerLevel,
+            .fadeWidth = lc->fadeWidth
       });
    });
 }

@@ -112,6 +112,7 @@ typedef struct {
 typedef struct {
    byte radius;
    byte centerLevel;
+   byte fadeWidth; // number of tiles devoted to fading out... actual radius will be adjusted toa  minimum of this
 }LightComponent;
 
 #define ComponentT LightComponent
