@@ -20,7 +20,7 @@ float gridNodeGetScore(GridNodePublic *self);
 #define ClosureTPart \
     CLOSURE_RET(GridNodePublic *) /*return the solution node*/ \
     CLOSURE_NAME(GridProcessCurrent) \
-    CLOSURE_ARGS(GridNodePublic*/*current*/)
+    CLOSURE_ARGS(GridNodePublic*/*current*/, bool/*lastcheck*/)
 #include "segautils\Closure_Decl.h"
 
 typedef struct {

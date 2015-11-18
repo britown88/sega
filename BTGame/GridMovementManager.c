@@ -52,7 +52,7 @@ static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, Gr
    return gridNodeGetScore(current) + _singleDistance(data->manager, current->ID, neighbor->ID);
 }
 
-static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *current) {
+static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *current, bool last) {
    float currentScore = gridNodeGetScore(current);
    float h;
    int x1 = 0, x2 = 0, y1 = 0, y2 = 0;
@@ -72,10 +72,14 @@ static GridNodePublic *_processCurrent(GridSolvingData *data, GridNodePublic *cu
       return current;
    }
 
-
    if (h < data->lowestHeuristic) {
       data->lowestHeuristic = h;
       data->closestNode = current;
+   }
+
+   if (last) {
+      //weve exhausted the search area, use closest
+      return data->closestNode;
    }
 
    return  NULL;
@@ -137,7 +141,7 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
 
    solution = solve(manager, solver, posID, destID);
 
-   if (solution.totalCost > 0) {
+   if (solution.totalCost > 0 && solution.path) {
       size_t dest = vecBegin(GridSolutionNode)(solution.path)->node;
 
       //update our grid position to the new cell
@@ -197,6 +201,10 @@ void gridMovementManagerStopEntity(GridMovementManager *self, Entity *e) {
 
 void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x, short y) {
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
+   short w = gridManagerWidth(self->view->managers->gridManager);
+   short h = gridManagerHeight(self->view->managers->gridManager);
+   x = MAX(0, MIN(w - 1, x));
+   y = MAX(0, MIN(h - 1, y));
 
    if (tgc) {
       tgc->destX = x;
@@ -212,13 +220,17 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
 void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e, short x, short y) {
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
+   short w = gridManagerWidth(self->view->managers->gridManager);
+   short h = gridManagerHeight(self->view->managers->gridManager);
+   x = MAX(0, MIN(w - 1, gc->x + x));
+   y = MAX(0, MIN(h - 1, gc->y + y));
 
    if (tgc) {
-      tgc->destX = gc->x + x;
-      tgc->destY = gc->y + y;
+      tgc->destX = x;
+      tgc->destY = y;
    }
    else {
-      COMPONENT_ADD(e, TGridMovingComponent, gc->x + x, gc->y + y);
+      COMPONENT_ADD(e, TGridMovingComponent, x, y);
       _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
 
    }

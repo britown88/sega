@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "Defs.h"
 
 typedef void * QueueElem;
 typedef struct QueueNode_t QueueNode;
@@ -38,7 +39,7 @@ typedef struct Dijkstras_t Dijkstras;
 typedef struct {
    size_t(*getNeighbors)(Dijkstras*, QueueElem, QueueElem**);
    int(*processNeighbor)(Dijkstras*, QueueElem, QueueElem);
-   int(*processCurrent)(Dijkstras*, QueueElem);
+   int(*processCurrent)(Dijkstras*, QueueElem, bool);
    void(*destroy)(Dijkstras*);
 }DijkstrasVTable;
 
@@ -51,5 +52,5 @@ QueueElem dijkstrasRun(Dijkstras *self);
 
 size_t dijkstrasGetNeighbors(Dijkstras *self, QueueElem node, QueueElem **outList);
 int dijkstrasProcessNeighbor(Dijkstras *self, QueueElem current, QueueElem neighbor);
-int dijkstrasProcessCurrent(Dijkstras *self, QueueElem current);
+int dijkstrasProcessCurrent(Dijkstras *self, QueueElem current, bool last);
 void dijkstrasDestroy(Dijkstras *self);

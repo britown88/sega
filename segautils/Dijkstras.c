@@ -8,7 +8,7 @@ QueueElem dijkstrasRun(Dijkstras *self){
       QueueElem *nBegin = NULL, *nEnd = NULL;
       QueueElem current = priorityQueuePop(self->queue);      
 
-      if (dijkstrasProcessCurrent(self, current)){
+      if (dijkstrasProcessCurrent(self, current, priorityQueueIsEmpty(self->queue))){
          return current;
       }
 
@@ -35,8 +35,8 @@ size_t dijkstrasGetNeighbors(Dijkstras *self, QueueElem node, QueueElem **outLis
 int dijkstrasProcessNeighbor(Dijkstras *self, QueueElem current, QueueElem node){
    return self->vTable->processNeighbor(self, current, node);
 }
-int dijkstrasProcessCurrent(Dijkstras *self, QueueElem node){
-   return self->vTable->processCurrent(self, node);
+int dijkstrasProcessCurrent(Dijkstras *self, QueueElem node, bool last){
+   return self->vTable->processCurrent(self, node, last);
 }
 void dijkstrasDestroy(Dijkstras *self){
    self->vTable->destroy(self);

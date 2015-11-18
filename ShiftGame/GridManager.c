@@ -57,7 +57,7 @@ typedef struct {
 
 static size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
 static int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node);
-static int _solverProcessCurrent(GridSolver *self, GridNode *node);
+static int _solverProcessCurrent(GridSolver *self, GridNode *node, bool last);
 static void _solverDestroy(GridSolver *self);
 
 static DijkstrasVTable *_getVTable(){
@@ -66,7 +66,7 @@ static DijkstrasVTable *_getVTable(){
       out = calloc(1, sizeof(DijkstrasVTable));
       out->getNeighbors = (size_t(*)(Dijkstras*, QueueElem, QueueElem**))&_solverGetNeighbors;
       out->processNeighbor = (int(*)(Dijkstras*, QueueElem, QueueElem))&_solverProcessNeighbor;
-      out->processCurrent = (int(*)(Dijkstras*, QueueElem))&_solverProcessCurrent;
+      out->processCurrent = (int(*)(Dijkstras*, QueueElem, bool))&_solverProcessCurrent;
       out->destroy = (void(*)(Dijkstras*))&_solverDestroy;
    }
    return out;
@@ -87,7 +87,7 @@ int _solverProcessNeighbor(GridSolver *self, GridNode *current, GridNode *node){
    }
    return false;
 }
-int _solverProcessCurrent(GridSolver *self, GridNode *node){
+int _solverProcessCurrent(GridSolver *self, GridNode *node, bool last){
    node->visited = true;
    GridNode *solution = (GridNode*)closureCall(&self->cFunc, &node->data);
    if (solution){

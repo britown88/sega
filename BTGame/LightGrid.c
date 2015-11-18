@@ -277,7 +277,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
          //only calc distance if we're squarely inside the radius
          if (xxyy <= r2) {
             int dist = MAX(0, (int)sqrtf((float)xxyy));
-            byte calculatedLevel = MIN(adjLevel, adjRadius - dist);
+            byte calculatedLevel = MIN(adjLevel, (adjRadius - dist));
 
             //calculate occlusion!
             if (occluderCount > 0) {
