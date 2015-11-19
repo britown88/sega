@@ -56,7 +56,7 @@ static void _updateLight(PCManager *self) {
       lc->fadeWidth = MAX_BRIGHTNESS;
    }
    else {
-      lc->centerLevel = 3;
+      lc->centerLevel = 2;
       lc->radius = 0;
       lc->fadeWidth = 2;
    }

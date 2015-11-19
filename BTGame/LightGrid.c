@@ -233,10 +233,10 @@ static void _addPoint(LightGrid *self, PointLight light) {
    adjLevel = MIN(MAX(light.level, 0), MAX_BRIGHTNESS);
    adjRadius = MAX(0, MAX(light.radius, light.fadeWidth));
 
-   if (adjLevel > 0) {
-      widthFactor = 1.0f / ((float)light.fadeWidth / adjLevel);
+   if (light.fadeWidth > 0) {
+      //inverse ratio of the fade width to the light level it needs to traverse
+      widthFactor = adjLevel / (float)light.fadeWidth;
    }
-
    
    r2 = adjRadius * adjRadius;
    
@@ -285,7 +285,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
          //only calc distance if we're squarely inside the radius
          if (xxyy <= r2) {
             int dist = MAX(0, (int)sqrtf((float)xxyy));
-            byte calculatedLevel = (adjRadius - dist) * widthFactor;
+            byte calculatedLevel = widthFactor > 0 ? (byte)((adjRadius - dist) * widthFactor) : adjLevel;
 
             //calculate occlusion!
             if (occluderCount > 0) {
