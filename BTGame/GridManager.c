@@ -88,12 +88,8 @@ static void _createTestSchemas(GridManager *self) {
    self->schemas[5].img[1] = 21;
    self->schemas[5].imgCount = 2;
 
+   self->schemas[6].occlusion = 1;
    self->schemas[7].occlusion = 1;
-
-   self->schemas[8] = (TileSchema) { .img = { 34 }, .imgCount = 1, .occlusion = 0 };
-   self->schemas[9] = (TileSchema) { .img = { 35 }, .imgCount = 1, .occlusion = 0 };
-   self->schemas[10] = (TileSchema) { .img = { 36 }, .imgCount = 1, .occlusion = 0 };
-
 
 }
 
@@ -107,7 +103,7 @@ static void _createTestGrid(GridManager *self) {
    
    for (i = 0; i < count; ++i) {
       self->grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
-      if (self->grid[i].schema == 6) {
+      if (self->grid[i].schema == 6 || self->grid[i].schema == 5) {
          self->grid[i].collision = GRID_SOLID;
       }
    }
@@ -122,7 +118,12 @@ static void _createTestGrid(GridManager *self) {
 
 static Partition *_partitionAt(GridManager *self, size_t index) {
    if (index < self->partitionCount) {
-      return vecAt(Partition)(self->partitionTable, index);
+      Partition *p = vecAt(Partition)(self->partitionTable, index);
+      if (!p->entities) {
+         p->entities = vecCreate(EntityPtr)(NULL);
+         p->index = index;
+      }
+      return p;
    }
    else {
       return NULL;
