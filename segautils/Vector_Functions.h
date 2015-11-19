@@ -1,5 +1,6 @@
 #include "Preprocessor.h"
 
+
 #ifndef vec
 #define vec(TYPE) CONCAT(vec_, TYPE)
 #define vecCreate(TYPE) CONCAT(vecCreate_, TYPE)
@@ -23,7 +24,6 @@
 #define vecRemoveAt(TYPE) CONCAT(vecDeleteAt_, TYPE)
 
 #define vecPushStackArray(TYPE, list, ...) vecPushArray(TYPE)(list, (TYPE[])__VA_ARGS__, sizeof((TYPE[])__VA_ARGS__) / sizeof(TYPE))
-#define vecInitStackArray(TYPE, ...) vecInitArray(TYPE)((TYPE[])__VA_ARGS__, sizeof((TYPE[])__VA_ARGS__) / sizeof(TYPE))
 
 #define vecForEach(TYPE, varName, list, ...) {\
    vec(TYPE) *CONCAT(__temp_, vec(TYPE)) = list; /*cache the list before use*/ \

@@ -32,13 +32,14 @@ static void PolygonComponentDestroy(PolygonComponent *self){
 #define VectorTPart TextLine
 #include "segautils/Vector_Impl.h"
 
-static void TextComponentDestroy(TextComponent *self){
-   if (self->lines) {
-      vecForEach(TextLine, line, self->lines, {
-         stringDestroy(line->text);
-      });
-      vecDestroy(TextLine)(self->lines);
+void textLineDestroy(TextLine *self) {
+   if (self->text) {
+      stringDestroy(self->text);
    }
+}
+
+static void TextComponentDestroy(TextComponent *self){
+   vecDestroy(TextLine)(self->lines);
 }
 
 #define COMP_DESTROY_FUNC TextComponentDestroy

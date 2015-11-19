@@ -83,8 +83,8 @@ void vecPushArray(T)(VEC_NAME *self, T*arr, size_t count){
    vecResize(T)(self, self->count + count, NULL);
    memcpy(self->data + self->count - count, arr, count * sizeof(T));
 }
-VEC_NAME *vecInitArray(T)(T*arr, size_t count) {
-   VEC_NAME *out = vecCreate(T)(NULL);
+VEC_NAME *vecInitArray(T)(void(*destroy)(T*), T*arr, size_t count) {
+   VEC_NAME *out = vecCreate(T)(destroy);
    vecPushArray(T)(out, arr, count);
    return out;
 }

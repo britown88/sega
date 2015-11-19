@@ -2,6 +2,8 @@
 
 #include "segautils\Preprocessor.h"
 #include "segautils/Defs.h"
+#include "segautils/Rect.h"
+#include "segashared/Strings.h"
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
@@ -9,6 +11,7 @@ typedef struct GridManager_t GridManager;
 typedef struct InterpolationManager_t InterpolationManager;
 typedef struct GridMovementManager_t GridMovementManager;
 typedef struct PCManager_t PCManager;
+typedef struct TextBoxManager_t TextBoxManager;
 
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
@@ -19,8 +22,9 @@ typedef struct BTManagers_t {
    CursorManager *cursorManager;
    GridManager *gridManager;
    InterpolationManager *interpolationManager;
-   GridMovementManager *gridMovementManager;
+   GridMovementManager *gridMovementManager;   
    PCManager *pcManager;
+   TextBoxManager *textBoxManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -50,5 +54,7 @@ void pcManagerToggleTorch(PCManager *self);
 void pcManagerSetTorch(PCManager *self, bool torchOn);
 void pcManagerSetSneak(PCManager *self, bool sneaking);
 
-
-
+TextBoxManager *createTextBoxManager(WorldView *view);
+void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area);
+void textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg);
+void textBoxManagerUpdate(TextBoxManager *self);

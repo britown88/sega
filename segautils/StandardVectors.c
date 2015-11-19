@@ -1,5 +1,11 @@
 #include "StandardVectors.h"
 
+void stringPtrDestroy(StringPtr *self) {
+   stringDestroy(*self);
+}
+#define VectorTPart StringPtr
+#include "Vector_Impl.h"
+
 #define VectorTPart size_t
 #include "Vector_Impl.h"
 

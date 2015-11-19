@@ -2,6 +2,12 @@
 
 #include <stddef.h>
 #include "Vector.h"
+#include "String.h"
+
+typedef String* StringPtr;
+void stringPtrDestroy(StringPtr *self);
+#define VectorTPart StringPtr
+#include "Vector_Decl.h"
 
 #define VectorTPart size_t
 #include "Vector_Decl.h"

@@ -104,5 +104,8 @@
     <ClCompile Include="GridSolver.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextBoxManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

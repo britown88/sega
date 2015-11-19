@@ -87,6 +87,9 @@ typedef struct {
    String *text;
 }TextLine;
 
+//don't forget to give this to your lines vector!
+void textLineDestroy(TextLine *self);
+
 #define VectorTPart TextLine
 #include "segautils/Vector_Decl.h"
 
