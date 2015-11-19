@@ -9,8 +9,12 @@
 typedef struct {
    Entity *e;
    StringView name;
-   Recti area;
+   int width, height;   
    vec(StringPtr) *queue;
+
+   bool done;
+   int currentLine, currentChar;
+   vec(StringPtr) *lines;
 }TextBox;
 
 #define HashTableT TextBox
@@ -25,6 +29,7 @@ static size_t _textBoxHash(TextBox *p) {
 }
 
 static void _textBoxDestroy(TextBox *p) {
+   vecDestroy(StringPtr)(p->lines);
    vecDestroy(StringPtr)(p->queue);
 }
 
@@ -55,24 +60,24 @@ void _onUpdate(TextBoxManager *self, Entity *e) {}
 
 void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area) {
    TextBox box = { 0 };
+   TextComponent tc = { .bg = 0,.fg = 15,.lines = vecCreate(TextLine)(&textLineDestroy) };
+   int y;
 
-   box.e = entityCreate(self->view->entitySystem);
-   {
-      TextComponent tc = { .bg = 0,.fg = 15,.lines = vecCreate(TextLine)(&textLineDestroy) };
-      int y;
-
-      for (y = area.top; y < area.bottom; ++y) {
-         vecPushBack(TextLine)(tc.lines, &(TextLine){area.left, y, stringCreate("")});
-      }
-
-      COMPONENT_ADD(box.e, LayerComponent, LayerUI);
-      COMPONENT_ADD(box.e, RenderedUIComponent, 0);
-      entityAdd(TextComponent)(box.e, &tc);
-      entityUpdate(box.e);
+   for (y = area.top; y < area.bottom; ++y) {
+      vecPushBack(TextLine)(tc.lines, &(TextLine){area.left, y, stringCreate("")});
    }
 
-   box.area = area;
+   box.e = entityCreate(self->view->entitySystem);
+   COMPONENT_ADD(box.e, LayerComponent, LayerUI);
+   COMPONENT_ADD(box.e, RenderedUIComponent, 0);
+   entityAdd(TextComponent)(box.e, &tc);
+   entityUpdate(box.e);
+
+   box.done = true;
+   box.width = rectiWidth(&area);
+   box.height = rectiHeight(&area);
    box.name = name;
+   box.lines = vecCreate(StringPtr)(&stringPtrDestroy);
    box.queue = vecCreate(StringPtr)(&stringPtrDestroy);
 
    htInsert(TextBox)(self->boxTable, &box);
@@ -80,11 +85,47 @@ void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti ar
 void textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg) {
    TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
    if (found) {
-      TextComponent *tc = entityGet(TextComponent)(found->e);
-      stringSet(vecAt(TextLine)(tc->lines, 0)->text, msg);
+      String *msgstr = stringCreate(msg);
+      vecPushBack(StringPtr)(found->queue, &msgstr);
+   }
+}
+
+static void _clearLineEntity(Entity *e) {
+   TextComponent *tc = entityGet(TextComponent)(e);
+   vecForEach(TextLine, line, tc->lines, {
+      stringClear(line->text);
+   });
+}
+
+static void _renderToLines(TextBoxManager *self, TextBox *tb) {
+   String *msg = vecBegin(StringPtr)(tb->queue);
+
+
+
+   vecRemoveAt(StringPtr)(tb->queue, 0);
+}
+
+static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
+   
+   if (tb->done){//not scrolling
+      if (!vecIsEmpty(StringPtr)(tb->queue)) {
+         //next message!
+         _clearLineEntity(tb->e);
+         tb->currentChar = 0;
+         tb->currentLine = 0;
+         tb->done = false;
+
+         _renderToLines(self, tb);
+      }      
+   }
+   else {
+      //we're drawing so gogo
+
    }
 }
 
 void textBoxManagerUpdate(TextBoxManager *self) {
-
+   htForEach(TextBox, tb, self->boxTable, {
+      _updateTextBox(self, tb);
+   });
 }
