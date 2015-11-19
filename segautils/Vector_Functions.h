@@ -7,6 +7,7 @@
 #define vecResize(TYPE) CONCAT(vecResize_, TYPE)
 #define vecPushBack(TYPE) CONCAT(vecPushBack_, TYPE)
 #define vecPushArray(TYPE) CONCAT(vecPushArray_, TYPE)
+#define vecInitArray(TYPE) CONCAT(vecInitArray_, TYPE)
 #define vecPopBack(TYPE) CONCAT(vecPopBack_, TYPE)
 #define vecInsert(TYPE) CONCAT(vecInsert_, TYPE)
 #define vecAt(TYPE) CONCAT(vecAt_, TYPE)
@@ -22,6 +23,7 @@
 #define vecRemoveAt(TYPE) CONCAT(vecDeleteAt_, TYPE)
 
 #define vecPushStackArray(TYPE, list, ...) vecPushArray(TYPE)(list, (TYPE[])__VA_ARGS__, sizeof((TYPE[])__VA_ARGS__) / sizeof(TYPE))
+#define vecInitStackArray(TYPE, ...) vecInitArray(TYPE)((TYPE[])__VA_ARGS__, sizeof((TYPE[])__VA_ARGS__) / sizeof(TYPE))
 
 #define vecForEach(TYPE, varName, list, ...) {\
    vec(TYPE) *CONCAT(__temp_, vec(TYPE)) = list; /*cache the list before use*/ \

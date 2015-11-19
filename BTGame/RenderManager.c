@@ -273,8 +273,13 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    //text
    if (trc->hasText){
       TextComponent *tc = entityGet(TextComponent)(e);
-      frameRenderText(frame, c_str(tc->text), tc->x, tc->y,
-         fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg));
+      if (tc->lines) {
+         vecForEach(TextLine, line, tc->lines, {
+            frameRenderText(frame, c_str(line->text), line->x, line->y, fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg));
+         });
+
+      }
+      
    }
 }
 

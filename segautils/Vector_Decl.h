@@ -13,6 +13,7 @@ void vecDestroy(T)(VEC_NAME *self);
 void vecResize(T)(VEC_NAME *self, size_t size, T *initialValue);
 void vecPushBack(T)(VEC_NAME *self, T *data);
 void vecPushArray(T)(VEC_NAME *self, T*arr, size_t count);
+VEC_NAME *vecInitArray(T)(T *arr, size_t count);
 void vecPopBack(T)(VEC_NAME *self);
 void vecInsert(T)(VEC_NAME *self, size_t pos, T*data);
 T *vecAt(T)(VEC_NAME *self, size_t index);

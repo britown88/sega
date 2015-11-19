@@ -165,6 +165,19 @@ static void _addTestEntities(WorldState *state) {
    COMPONENT_ADD(e, LayerComponent, LayerBackground);
    COMPONENT_ADD(e, RenderedUIComponent, 0);
    entityUpdate(e);
+
+
+   e = entityCreate(state->view->entitySystem);
+   COMPONENT_ADD(e, LayerComponent, LayerUI);
+   COMPONENT_ADD(e, RenderedUIComponent, 0);
+   COMPONENT_ADD(e, TextComponent, 
+      .bg = 0, .fg = 15, .lines = vecInitStackArray(TextLine, { 
+         { 0, 0, stringCreate("hello") },
+         { 5, 1, stringCreate("world") },
+         { 10, 2, stringCreate("thing") },
+         { 15, 3, stringCreate("yes") }
+      }));
+   entityUpdate(e);
 }
 
 static void _enterState(WorldState *state) {

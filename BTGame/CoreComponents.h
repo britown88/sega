@@ -84,8 +84,15 @@ typedef struct {
 
 typedef struct {
    byte x, y;
-   byte fg, bg;
    String *text;
+}TextLine;
+
+#define VectorTPart TextLine
+#include "segautils/Vector_Decl.h"
+
+typedef struct {
+   vec(TextLine) *lines;
+   byte fg, bg;
 }TextComponent;
 
 #define ComponentT TextComponent

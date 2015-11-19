@@ -29,8 +29,16 @@ static void PolygonComponentDestroy(PolygonComponent *self){
 #define ComponentT VisibilityComponent
 #include "Entities\ComponentImpl.h"
 
+#define VectorTPart TextLine
+#include "segautils/Vector_Impl.h"
+
 static void TextComponentDestroy(TextComponent *self){
-   stringDestroy(self->text);
+   if (self->lines) {
+      vecForEach(TextLine, line, self->lines, {
+         stringDestroy(line->text);
+      });
+      vecDestroy(TextLine)(self->lines);
+   }
 }
 
 #define COMP_DESTROY_FUNC TextComponentDestroy

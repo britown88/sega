@@ -30,6 +30,12 @@ void stringConcat(String *self, const char*str){
    vecPushArray(char)((vec(char)*)self, (char*)str, strlen(str));
    vecPushBack(char)((vec(char)*)self, &close);
 }
+void stringSet(String *self, const char*str) {
+   static char close = 0;
+   vecClear(char)((vec(char)*)self);
+   vecPushArray(char)((vec(char)*)self, (char*)str, strlen(str));
+   vecPushBack(char)((vec(char)*)self, &close);
+}
 
 const char *c_str(String *str){
    if (!str) {
