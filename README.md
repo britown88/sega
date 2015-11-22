@@ -6,6 +6,9 @@ The goal of the project is to create a full-featured modern game engine entirely
 
 What started as a small graphics demo rendering 16 colors from a palette to bitplanes quickly turned into a whole library of EGA functions including the ability to convert PNG images to the EGA format by generating an optimal palette from the EGA color space to use.
 
+## But wait is this a game?
+Yes! Sort of... I plan on writing up some description of initial plans for the engine over on [my hot new blog](https://p4r4digm.github.io) but the long and short is that the solution contains two games, Shift and BT.  BT is my primary focus currently, a western CRPG.  I'm tracking features and milestones on a public [Trello board here](https://trello.com/b/D5Ery0Fv/ultimorrowheel)!
+
 ## How do I build it?
 [Visual Studio Community 2015 is free now!](https://www.visualstudio.com/en-us/products/vs-2015-product-editions.aspx)  I feel like not using cmake-gcc-cross-platform-super-indie-python-something-makefile-build-pattern© is a bit of a taboo and so sorry for tarnishing github's fine image with this corporate trash but really, VS2015 has some really wonderful git integration and it's been a joy to work with.
 
