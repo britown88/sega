@@ -25,9 +25,12 @@ void stringClear(String *self){
    vecClear(char)((vec(char)*)self);
 }
 void stringConcat(String *self, const char*str){
+   stringConcatEX(self, str, strlen(str));
+}
+void stringConcatEX(String *self, const char*str, size_t length) {
    static char close = 0;
    vecPopBack(char)((vec(char)*)self);//kill the terminator
-   vecPushArray(char)((vec(char)*)self, (char*)str, strlen(str));
+   vecPushArray(char)((vec(char)*)self, (char*)str, length);
    vecPushBack(char)((vec(char)*)self, &close);
 }
 void stringSet(String *self, const char*str) {

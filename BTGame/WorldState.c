@@ -45,6 +45,7 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
    interpolationManagerUpdate(managers->interpolationManager);
    gridMovementManagerUpdate(managers->gridMovementManager);
    pcManagerUpdate(managers->pcManager);
+   textBoxManagerUpdate(managers->textBoxManager);
 }
 
 static void _handleKeyboard(WorldState *state){
@@ -169,7 +170,7 @@ static void _addTestEntities(WorldState *state) {
    {
       StringView boxName = stringIntern("smallbox");
       textBoxManagerCreateTextBox(state->view->managers->textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
-      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "Hello!");
+      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "This was not the most efficient way to use the disk surface with available drive electronics;[citation needed] because the sectors have constant angular size, the 512 bytes in each sector are compressed more near the disk's center. A more space-efficient technique would be to increase the number of sectors per track toward the outer edge of the disk, from 18 to 30 for instance, thereby keeping constant the amount of physical disk space used for storing each sector; an example is zone bit recording. Apple implemented this in early Macintosh computers by spinning the disk slower when the head was at the edge, while maintaining the data rate, allowing 400 KB of storage per side and an extra 160 KB on a double-sided disk.[38] This higher capacity came with a disadvantage: the format used a unique drive mechanism and control circuitry, meaning that Mac disks could not be read on other computers. Apple eventually reverted to constant angular velocity on HD floppy disks with their later machines, still unique to Apple as they supported the older variable-speed formats.");
    }
 }
 
@@ -177,6 +178,8 @@ static void _enterState(WorldState *state) {
    appLoadPalette(appGet(), "assets/img/default2.pal");
    cursorManagerCreateCursor(state->view->managers->cursorManager);
    pcManagerCreatePC(state->view->managers->pcManager);
+
+   gridManagerSetAmbientLight(state->view->managers->gridManager, 2);
 
    _addTestEntities(state);
 }
