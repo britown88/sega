@@ -198,6 +198,19 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
       Microseconds time = gameClockGetTime(self->view->gameClock);
       if (time >= tb->nextChar) {
          String *line = *vecAt(StringPtr)(tb->lines, tb->currentLine);
+         char c = c_str(*vecAt(StringPtr)(tb->lines, tb->currentLine))[tb->currentChar];
+         Milliseconds delay = 0;
+         
+         switch (c) {
+         case ' ': break;
+         case '.': delay = 500; break;
+         case ',': delay = 250; break;
+         case ';': delay = 250; break;
+         default:  delay = 50; break;
+         }
+
+         tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(delay) - (time - tb->nextChar);
+
          ++tb->currentChar;
          if (tb->currentChar >= stringLen(line)) {  
             if (tb->currentLine + 1 >= vecSize(StringPtr)(tb->lines)) {
@@ -208,7 +221,7 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
                ++tb->currentLine;
             }
          }
-         tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(50) - (time - tb->nextChar);
+
          _updateEntityLines(self, tb);
       }      
    }
