@@ -70,9 +70,8 @@ void pcManagerUpdate(PCManager *self) {
    int gridHeight = gridManagerHeight(self->view->managers->gridManager) * GRID_CELL_SIZE;
    int xCenter = (GRID_WIDTH / 2) * GRID_CELL_SIZE;
    int yCenter = (GRID_HEIGHT / 2) * GRID_CELL_SIZE;
-   int xOffset = MIN(gridWidth, MAX(0, pc->x - xCenter));
-   int yOffset = MIN(gridHeight, MAX(0, pc->y - yCenter));
-
+   int xOffset = MIN(gridWidth - (vp->region.width), MAX(0, pc->x - xCenter));
+   int yOffset = MIN(gridHeight - (vp->region.height), MAX(0, pc->y - yCenter));
 
    vp->worldPos = (Int2) { xOffset, yOffset };
 }

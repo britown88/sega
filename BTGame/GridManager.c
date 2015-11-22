@@ -245,7 +245,7 @@ size_t gridManagerCellIDFromXY(GridManager *self, int x, int y) {
 void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y) {
    if (ID < self->cellCount) {
       *y = ID / self->width;
-      *x = ID % self->height;
+      *x = ID % self->width;
    }
 }
 Tile *gridManagerTileAt(GridManager *self, size_t index) {
@@ -393,6 +393,11 @@ void gridManagerRender(GridManager *self, Frame *frame) {
 
    int xstart = x, xend = x + xcount;
    int ystart = y, yend = y + ycount;
+
+   xstart = MAX(0, xstart);
+   ystart = MAX(0, ystart);
+   xend = MIN(self->width, xend);
+   yend = MIN(self->height, yend);
    
    _updateTileAnimationIndex(self);
    lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);   
@@ -431,6 +436,11 @@ void gridManagerRenderLighting(GridManager *self, Frame *frame) {
 
    int xstart = x, xend = x + xcount;
    int ystart = y, yend = y + ycount;
+
+   xstart = MAX(0, xstart);
+   ystart = MAX(0, ystart);
+   xend = MIN(self->width, xend);
+   yend = MIN(self->height, yend);
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {

@@ -98,9 +98,17 @@ static void _clearLineEntity(Entity *e) {
 }
 
 static void _renderToLines(TextBoxManager *self, TextBox *tb) {
-   String *msg = vecBegin(StringPtr)(tb->queue);
+   char *msg = c_str(vecBegin(StringPtr)(tb->queue));
+   char c = 0;
+   static char buff[256] = { 0 };
+   int index = 0;
+
+   vecClear(StringPtr)(tb->lines);
+
+   while (c = msg++) {
 
 
+   }
 
    vecRemoveAt(StringPtr)(tb->queue, 0);
 }
