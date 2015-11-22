@@ -131,10 +131,12 @@ static void _renderToLines(TextBoxManager *self, TextBox *tb) {
       ++index;
       if (index >= tb->width) {
          String *str;
-         buff[index] = 0;
+         buff[lastSpace] = 0;
          str = stringCreate(buff);
          vecPushBack(StringPtr)(tb->lines, &str);
-         index = lastSpace = 0;
+         index -= lastSpace + 1;
+         memcpy(buff, buff + lastSpace + 1, index);         
+         lastSpace = 0;
       }
    }
 
@@ -151,16 +153,18 @@ static void _renderToLines(TextBoxManager *self, TextBox *tb) {
 static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
    int line, i;
    TextComponent *tc = entityGet(TextComponent)(tb->e);
+   int totalLineCount = vecSize(StringPtr)(tb->lines);
+   int startLine = MAX(0, tb->currentLine - (tb->height - 1));   
 
-   for ( i = 0,          line = tb->currentLine; 
-         i < tb->height && line < vecSize(StringPtr)(tb->lines); 
+   for ( i = 0,          line = startLine;
+         i < tb->height && line < totalLineCount && line <= tb->currentLine;
          ++i,            ++line) {
 
       TextLine *tline = vecAt(TextLine)(tc->lines, i);
       String *str = *vecAt(StringPtr)(tb->lines, line);
       const char *lineToDraw = c_str(str);
 
-      if (i < tb->height - 1) {
+      if (line != tb->currentLine) {
          //already done
          stringSet(tline->text, lineToDraw);
       }
@@ -191,18 +195,20 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
    }
    else {
       //we're drawing so gogo
-      if (gameClockGetTime(self->view->gameClock) >= tb->nextChar) {
+      Microseconds time = gameClockGetTime(self->view->gameClock);
+      if (time >= tb->nextChar) {
          String *line = *vecAt(StringPtr)(tb->lines, tb->currentLine);
          ++tb->currentChar;
-         if (tb->currentChar >= stringLen(line)) {
-            tb->currentChar = 0;
-            ++tb->currentLine;
-
-            if (tb->currentLine >= vecSize(StringPtr)(tb->lines)) {
+         if (tb->currentChar >= stringLen(line)) {  
+            if (tb->currentLine + 1 >= vecSize(StringPtr)(tb->lines)) {
                tb->done = true;
             }
+            else {
+               tb->currentChar = 0;
+               ++tb->currentLine;
+            }
          }
-         tb->nextChar += t_m2u(100);
+         tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(50) - (time - tb->nextChar);
          _updateEntityLines(self, tb);
       }      
    }
