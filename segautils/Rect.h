@@ -1,5 +1,6 @@
 #pragma once
 #include "Defs.h"
+#include "Vector.h"
 
 typedef struct {
    float left, top, right, bottom;
@@ -43,6 +44,14 @@ static void rectiOffset(Recti *r, int x, int y) {
    r->right += x;
    r->top += y;
    r->bottom += y;
+}
+
+static bool rectiContains(Recti r, Int2 p) {
+   if (p.x < r.left || 
+      p.y < r.top || 
+      p.x >= r.right || 
+      p.y >= r.bottom) return false;
+   return true;
 }
 
 static bool rectiIntersects(Recti a, Recti b){

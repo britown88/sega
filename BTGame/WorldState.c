@@ -13,6 +13,7 @@
 #include "segashared\Strings.h"
 #include "GameClock.h"
 #include "LightGrid.h"
+#include "Verbs.h"
 
 #include "segautils/Lisp.h"
 #include "segautils/Math.h"
@@ -67,6 +68,19 @@ static void _handleKeyboard(WorldState *state){
          case SegaKey_LeftControl:
             pcManagerSetSneak(state->view->managers->pcManager, true);
             break;
+
+         case SegaKey_1:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Look, e.action);
+            break;
+         case SegaKey_2:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Use, e.action);
+            break;
+         case SegaKey_3:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Talk, e.action);
+            break;
+         case SegaKey_4:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Fight, e.action);
+            break;
          }
       }
       else if (e.action == SegaKey_Released) {
@@ -98,6 +112,18 @@ static void _handleKeyboard(WorldState *state){
          case SegaKey_D:
             pcManagerStop(state->view->managers->pcManager);
             break;
+         case SegaKey_1:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Look, e.action);
+            break;
+         case SegaKey_2:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Use, e.action);
+            break;
+         case SegaKey_3:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Talk, e.action);
+            break;
+         case SegaKey_4:
+            verbManagerKeyButton(state->view->managers->verbManager, Verb_Fight, e.action);
+            break;
          }
       }
 
@@ -117,6 +143,17 @@ static void _handleKeyboard(WorldState *state){
    }
 }
 
+static void _dropTestBlock(WorldState *state, Int2 pos) {
+   Viewport *vp = state->view->viewport;
+   int x = (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE;
+   int y = (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE;
+   Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, x, y);
+   if (t) {
+      t->schema = 7;
+      t->collision = GRID_SOLID;
+   }
+}
+
 static void _handleMouse(WorldState *state){
    BTManagers *managers = state->view->managers;
    Mouse *mouse = appGetMouse(appGet());
@@ -124,29 +161,49 @@ static void _handleMouse(WorldState *state){
    MouseEvent event = { 0 };
    Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = state->view->viewport;
+   Recti vpArea = { vp->region.origin_x, vp->region.origin_y, vp->region.origin_x + vp->region.width, vp->region.origin_y + vp->region.height };
+
    while (mousePopEvent(mouse, &event)){
       if (event.action == SegaMouse_Scrolled) {
          //LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
          //lc->radius = MAX(0, lc->radius + event.pos.y);
       }
-      else if (event.action == SegaMouse_Released && event.button == SegaMouseBtn_Left) {
-         int x = (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE;
-         int y = (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE;
-         Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, x, y);
-         if (t) {
-            t->schema = 7;
-            t->collision = GRID_SOLID;
+      else if (event.action == SegaMouse_Pressed) {
+         switch (event.button) {
+         case SegaMouseBtn_Left:
+            if (verbManagerMouseButton(state->view->managers->verbManager, &event)) {
+               continue;
+            }
+            break;
+         }
+      }
+      else if (event.action == SegaMouse_Released) {
+         switch (event.button) {
+         case SegaMouseBtn_Left:
+            if (verbManagerMouseButton(state->view->managers->verbManager, &event)) {
+               continue;
+            }
+            break;
          }
       }
 
    }
 
-   if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
-
-      pcManagerMove(state->view->managers->pcManager,
-         (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE,
-         (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE);
+   if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
+      if (rectiContains(vpArea, pos)) {
+         _dropTestBlock(state, pos);
+      }         
    }
+
+   if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
+      if (rectiContains(vpArea, pos)) {
+         pcManagerMove(state->view->managers->pcManager,
+            (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE,
+            (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE);
+      }
+   }
+   
+
 
 }
 
@@ -170,17 +227,20 @@ static void _addTestEntities(WorldState *state) {
    {
       StringView boxName = stringIntern("smallbox");
       textBoxManagerCreateTextBox(state->view->managers->textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
-      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "This was not the most efficient way to use the disk surface with available drive electronics;[citation needed] because the sectors have constant angular size, the 512 bytes in each sector are compressed more near the disk's center. A more space-efficient technique would be to increase the number of sectors per track toward the outer edge of the disk, from 18 to 30 for instance, thereby keeping constant the amount of physical disk space used for storing each sector; an example is zone bit recording. Apple implemented this in early Macintosh computers by spinning the disk slower when the head was at the edge, while maintaining the data rate, allowing 400 KB of storage per side and an extra 160 KB on a double-sided disk.[38] This higher capacity came with a disadvantage: the format used a unique drive mechanism and control circuitry, meaning that Mac disks could not be read on other computers. Apple eventually reverted to constant angular velocity on HD floppy disks with their later machines, still unique to Apple as they supported the older variable-speed formats.");
+      //textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "This was not the most efficient way to use the disk surface with available drive electronics;[citation needed] because the sectors have constant angular size, the 512 bytes in each sector are compressed more near the disk's center. A more space-efficient technique would be to increase the number of sectors per track toward the outer edge of the disk, from 18 to 30 for instance, thereby keeping constant the amount of physical disk space used for storing each sector; an example is zone bit recording. Apple implemented this in early Macintosh computers by spinning the disk slower when the head was at the edge, while maintaining the data rate, allowing 400 KB of storage per side and an extra 160 KB on a double-sided disk.[38] This higher capacity came with a disadvantage: the format used a unique drive mechanism and control circuitry, meaning that Mac disks could not be read on other computers. Apple eventually reverted to constant angular velocity on HD floppy disks with their later machines, still unique to Apple as they supported the older variable-speed formats.");
       //textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "supported the older variable-speed formats.");
+      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "You are likely to be eaten by a grue.");
    }
+
 }
 
 static void _enterState(WorldState *state) {
    appLoadPalette(appGet(), "assets/img/default2.pal");
    cursorManagerCreateCursor(state->view->managers->cursorManager);
    pcManagerCreatePC(state->view->managers->pcManager);
+   verbManagerCreateVerbs(state->view->managers->verbManager);
 
-   gridManagerSetAmbientLight(state->view->managers->gridManager, 2);
+   gridManagerSetAmbientLight(state->view->managers->gridManager, 2);   
 
    _addTestEntities(state);
 }

@@ -12,6 +12,7 @@ typedef struct InterpolationManager_t InterpolationManager;
 typedef struct GridMovementManager_t GridMovementManager;
 typedef struct PCManager_t PCManager;
 typedef struct TextBoxManager_t TextBoxManager;
+typedef struct VerbManager_t VerbManager;
 
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
@@ -25,6 +26,7 @@ typedef struct BTManagers_t {
    GridMovementManager *gridMovementManager;   
    PCManager *pcManager;
    TextBoxManager *textBoxManager;
+   VerbManager *verbManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -58,3 +60,5 @@ TextBoxManager *createTextBoxManager(WorldView *view);
 void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area);
 void textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg);
 void textBoxManagerUpdate(TextBoxManager *self);
+
+

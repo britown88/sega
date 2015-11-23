@@ -98,6 +98,7 @@
     <ClInclude Include="LightGrid.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
+    <ClInclude Include="Verbs.h" />
     <ClInclude Include="Viewport.h" />
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
@@ -109,6 +110,7 @@
     <ClCompile Include="LightGrid.c" />
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="TextBoxManager.c" />
+    <ClCompile Include="VerbManager.c" />
     <ClCompile Include="WorldState.c" />
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />

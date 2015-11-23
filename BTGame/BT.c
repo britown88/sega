@@ -11,6 +11,7 @@
 #include "GameState.h"
 #include "GridManager.h"
 #include "GridSolver.h"
+#include "Verbs.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -83,6 +84,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.gridMovementManager, createGridMovementManager(&self->view));
    RegisterManager(self->managers.pcManager, createPCManager(&self->view));
    RegisterManager(self->managers.textBoxManager, createTextBoxManager(&self->view));
+   RegisterManager(self->managers.verbManager, createVerbManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){

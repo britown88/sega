@@ -57,6 +57,9 @@
     <ClInclude Include="GridSolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Verbs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -105,6 +108,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextBoxManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="VerbManager.c">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
   </ItemGroup>
