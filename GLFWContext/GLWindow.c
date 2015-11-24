@@ -34,6 +34,20 @@ static GLWindow *getGLWindow(GLFWwindow *glfw){
    return NULL;
 }
 
+static void glWindowCharFun(GLFWwindow *win, unsigned int unichar) {
+   GLWindow *self = getGLWindow(win);
+
+   KeyboardEvent e = {
+      .action = SegaKey_Char,
+      .key = 0,
+      .unichar = unichar
+   };
+
+   if (e.key != SegaKey_Undefined) {
+      keyboardPushEvent(self->keyboard, &e);
+   }
+}
+
 static void glWindowKeyFunc(GLFWwindow* win, int key, int scancode, int action, int mod){
    GLWindow *self = getGLWindow(win);
 
@@ -122,6 +136,7 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
    glfwGetFramebufferSize(threadWin, &actualSize.x, &actualSize.y);
    glfwMakeContextCurrent(window);
    glfwSetKeyCallback(threadWin, &glWindowKeyFunc);
+   glfwSetCharCallback(threadWin, &glWindowCharFun);
    glfwSetMouseButtonCallback(threadWin, &glWindowMouseButtonFunc);
    glfwSetCursorPosCallback(threadWin, &glWindowMouseMoveFunc);
    glfwSetScrollCallback(threadWin, &glWindowMouseScrollFunc);

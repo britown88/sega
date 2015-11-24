@@ -27,7 +27,8 @@ typedef enum{
 typedef enum {
    SegaKey_Pressed= 0,
    SegaKey_Released,
-   SegaKey_Repeat
+   SegaKey_Repeat,
+   SegaKey_Char
 }SegaKeyActions;
 
 typedef enum{
@@ -167,6 +168,7 @@ DLL_PUBLIC void mouseFlushQueue(Mouse *self);
 typedef struct {
    SegaKeyActions action;
    SegaKeys key;
+   unsigned int unichar;
 }KeyboardEvent;
 
 typedef struct Keyboard_t Keyboard;

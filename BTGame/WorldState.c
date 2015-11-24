@@ -56,8 +56,14 @@ static void _handleKeyboardConsole(WorldState *state) {
    KeyboardEvent e = { 0 };
    
    while (keyboardPopEvent(k, &e)) {
-      if (e.action == SegaKey_Pressed) {
-         switch (e.key) {         
+      if (e.action == SegaKey_Char) {
+         if (e.unichar < 256 && e.unichar != '`' && e.unichar != '~') {
+            consoleInputChar(state->view->console, (char)e.unichar);
+         }
+      }
+      else if (e.action == SegaKey_Pressed) {
+         switch (e.key) { 
+            consoleInputKey(state->view->console, e.key);
          }
       }
       else if (e.action == SegaKey_Released) {
