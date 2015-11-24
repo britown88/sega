@@ -15,14 +15,19 @@ String *stringCreate(const char *str){
 
    return (String*)out;
 }
+String *stringCopy(String *other) {
+   return stringCreate(c_str(other));
+}
 void stringDestroy(String *self){
    vecDestroy(char)((vec(char)*)self);
 }
 size_t stringLen(String *self){
-   return vecSize(char)((vec(char)*)self);
+   return vecSize(char)((vec(char)*)self) - 1;
 }
 void stringClear(String *self){
+   static char close = 0;
    vecClear(char)((vec(char)*)self);
+   vecPushBack(char)((vec(char)*)self, &close);
 }
 void stringConcat(String *self, const char*str){
    stringConcatEX(self, str, strlen(str));

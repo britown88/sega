@@ -62,9 +62,7 @@ static void _handleKeyboardConsole(WorldState *state) {
          }
       }
       else if (e.action == SegaKey_Pressed) {
-         switch (e.key) { 
-            consoleInputKey(state->view->console, e.key);
-         }
+         consoleInputKey(state->view->console, e.key);
       }
       else if (e.action == SegaKey_Released) {
          switch (e.key) {

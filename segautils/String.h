@@ -8,6 +8,7 @@ typedef struct String_t String;
 //stringDestroy(foo);
 
 String *stringCreate(const char *str);
+String *stringCopy(String *other);
 void stringDestroy(String *self);
 size_t stringLen(String *self);
 void stringClear(String *self);
