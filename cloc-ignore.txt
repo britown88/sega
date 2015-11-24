@@ -1,3 +1,4 @@
+liblua
 libpng
 Debug
 Release
