@@ -66,7 +66,10 @@ static void _updateConsoleLines(Console *self) {
 }
 
 static void _processInput(Console *self, String *input) {
-   consolePushLine(self, c_str(input));
+   String *str = stringCreate("> ");
+   stringConcat(str, c_str(input));   
+   consolePushLine(self, c_str(str));
+   stringDestroy(str);
 }
 
 static void _commitInput(Console *self) {
@@ -110,7 +113,11 @@ void consoleCreateLines(Console *self) {
    entityAdd(TextComponent)(self->e, &tc);
    entityUpdate(self->e);
 
-   consolePushLine(self, "Welcome to the console!");
+   consolePushLine(self, "---------------------------");
+   consolePushLine(self, "| Welcome to the console! |");
+   consolePushLine(self, "---------------------------");
+   consolePushLine(self, "");
+   _updateInputLine(self);
 }
 
 void consoleSetEnabled(Console *self, bool enabled) {
