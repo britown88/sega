@@ -14,6 +14,7 @@
 #include "GameClock.h"
 #include "LightGrid.h"
 #include "Verbs.h"
+#include "Console.h"
 
 #include "segautils/Lisp.h"
 #include "segautils/Math.h"
@@ -49,6 +50,28 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
    textBoxManagerUpdate(managers->textBoxManager);
 }
 
+static void _handleKeyboardConsole(WorldState *state) {
+   BTManagers *managers = state->view->managers;
+   Keyboard *k = appGetKeyboard(appGet());
+   KeyboardEvent e = { 0 };
+   
+   while (keyboardPopEvent(k, &e)) {
+      if (e.action == SegaKey_Pressed) {
+         switch (e.key) {         
+         }
+      }
+      else if (e.action == SegaKey_Released) {
+         switch (e.key) {
+         case SegaKey_Escape:
+         case SegaKey_GraveAccent:
+            consoleSetEnabled(state->view->console, false);
+            break;
+         }
+      }
+
+   }
+}
+
 static void _handleKeyboard(WorldState *state){
    BTManagers *managers = state->view->managers;
    Keyboard *k = appGetKeyboard(appGet());
@@ -59,16 +82,12 @@ static void _handleKeyboard(WorldState *state){
    static int amb = 0;
 
    while (keyboardPopEvent(k, &e)) {
-      if (e.action == SegaKey_Released && e.key == SegaKey_F1) {
-         renderManagerToggleFPS(state->view->managers->renderManager);
-      }
 
       if (e.action == SegaKey_Pressed) {
-         switch (e.key) {
+         switch (e.key) {         
          case SegaKey_LeftControl:
             pcManagerSetSneak(state->view->managers->pcManager, true);
             break;
-
          case SegaKey_1:
             verbManagerKeyButton(state->view->managers->verbManager, Verb_Look, e.action);
             break;
@@ -85,6 +104,12 @@ static void _handleKeyboard(WorldState *state){
       }
       else if (e.action == SegaKey_Released) {
          switch (e.key) {
+         case SegaKey_F1:
+            renderManagerToggleFPS(state->view->managers->renderManager);
+            break;
+         case SegaKey_GraveAccent:
+            consoleSetEnabled(state->view->console, true);
+            break;
          case SegaKey_LeftControl:
             pcManagerSetSneak(state->view->managers->pcManager, false);
             break;
@@ -212,8 +237,14 @@ static void _handleMouse(WorldState *state){
 }
 
 void _boardHandleInput(WorldState *state, GameStateHandleInput *m){
-   _handleKeyboard(state);
-   _handleMouse(state);
+
+   if (consoleGetEnabled(state->view->console)) {
+      _handleKeyboardConsole(state);
+   }
+   else {
+      _handleKeyboard(state);
+      _handleMouse(state);
+   }   
 }
 
 void _boardRender(WorldState *state, GameStateRender *m){
@@ -264,6 +295,7 @@ static void _enterState(WorldState *state) {
    cursorManagerCreateCursor(state->view->managers->cursorManager);
    pcManagerCreatePC(state->view->managers->pcManager);
    verbManagerCreateVerbs(state->view->managers->verbManager);
+   consoleCreateLines(state->view->console);
 
    gridManagerSetAmbientLight(state->view->managers->gridManager, 2);   
 

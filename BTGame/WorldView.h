@@ -8,6 +8,7 @@ typedef struct ImageLibrary_t ImageLibrary;
 typedef struct FSM_t FSM;
 typedef struct GameClock_t GameClock;
 typedef struct GridSolver_t GridSolver;
+typedef struct Console_t Console;
 
 typedef struct WorldView_t {
    BTManagers *managers;
@@ -17,4 +18,5 @@ typedef struct WorldView_t {
    GameClock *gameClock;
    GridSolver *gridSolver;
    Viewport *viewport;
+   Console *console;
 }WorldView;

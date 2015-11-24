@@ -12,6 +12,7 @@
 #include "GridManager.h"
 #include "GridSolver.h"
 #include "Verbs.h"
+#include "Console.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -26,6 +27,7 @@ typedef struct {
    Viewport viewport;
    GridSolver *gridSolver;
    WorldView view;
+   Console *console;
 
 } BTGame;
 
@@ -118,6 +120,9 @@ VirtualApp *btCreate() {
    r->gridSolver = gridSolverCreate(&r->view);
    r->view.gridSolver = r->gridSolver;
 
+   r->console = consoleCreate(&r->view);
+   r->view.console = r->console;
+
    return (VirtualApp*)r;
 }
 
@@ -128,6 +133,7 @@ void _destroy(BTGame *self){
    imageLibraryDestroy(self->imageLibrary);
    gameClockDestroy(self->gameClock);
    gridSolverDestroy(self->gridSolver);
+   consoleDestroy(self->console);
    checkedFree(self);
 }
 

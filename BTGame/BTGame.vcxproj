@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="CoreComponents.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameState.h" />
@@ -106,6 +107,7 @@
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Console.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridMovementManager.c" />
     <ClCompile Include="GridSolver.c" />
