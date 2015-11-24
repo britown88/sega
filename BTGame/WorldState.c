@@ -67,6 +67,8 @@ static void _handleKeyboardConsole(WorldState *state) {
       else if (e.action == SegaKey_Released) {
          switch (e.key) {
          case SegaKey_Escape:
+            appQuit(appGet());
+            break;
          case SegaKey_GraveAccent:
             consoleSetEnabled(state->view->console, false);
             break;

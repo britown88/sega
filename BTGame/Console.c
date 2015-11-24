@@ -6,7 +6,11 @@
 
 #include "segautils/StandardVectors.h"
 
+#include "liblua/lauxlib.h"
+#include "liblua/lualib.h"
+
 #define LINE_COUNT 17
+#define WIDTH 36
 #define BOTTOM 19
 #define LEFT 2
 
@@ -17,6 +21,8 @@ struct Console_t {
    vec(StringPtr) *queue, *inputHistory;
    String *input;
    int historyLocation;
+
+   lua_State *L;
 };
 
 Console *consoleCreate(WorldView *view) {
@@ -25,9 +31,16 @@ Console *consoleCreate(WorldView *view) {
    out->queue = vecCreate(StringPtr)(&stringPtrDestroy);
    out->inputHistory = vecCreate(StringPtr)(&stringPtrDestroy);
    out->input = stringCreate("");
+
+   out->L = luaL_newstate();
+   luaL_openlibs(out->L);
+
    return out;
 }
 void consoleDestroy(Console *self) {
+
+   lua_close(self->L);
+
    stringDestroy(self->input);
    vecDestroy(StringPtr)(self->queue);
    vecDestroy(StringPtr)(self->inputHistory);
@@ -40,9 +53,13 @@ static String *_inputLine(Console *self) {
 
 static void _updateInputLine(Console *self) {
    static const char *cursor = "> ";
+   static int cursorlen = 0;
+   if (!cursorlen) {
+      cursorlen = strlen(cursor);
+   }
 
    int inlen = stringLen(self->input);
-   int len = MIN(34, inlen);//fuck it magic number
+   int len = MIN(WIDTH - cursorlen, inlen);
    stringSet(_inputLine(self), cursor);
 
    stringConcat(_inputLine(self), c_str(self->input) + (inlen - len));
@@ -67,9 +84,16 @@ static void _updateConsoleLines(Console *self) {
 
 static void _processInput(Console *self, String *input) {
    String *str = stringCreate("> ");
+   int error = luaL_loadbuffer(self->L, c_str(input), stringLen(input), "line") || lua_pcall(self->L, 0, 0, 0);   
+
    stringConcat(str, c_str(input));   
    consolePushLine(self, c_str(str));
    stringDestroy(str);
+
+   if (error) {
+      consolePushLine(self, lua_tostring(self->L, -1));
+      lua_pop(self->L, 1);  /* pop error message from the stack */
+   }
 }
 
 static void _commitInput(Console *self) {
@@ -159,6 +183,14 @@ static void _historyDown(Console *self) {
    }
 }
 
+static void _backspace(Console *self) {
+   size_t len = stringLen(self->input);
+   if (len > 0) {
+      stringSubStr(self->input, 0, len - 1);
+      _updateInputLine(self);
+   }
+}
+
 void consoleInputKey(Console *self, SegaKeys key) {
    switch (key) {
    case SegaKey_Enter:
@@ -169,11 +201,22 @@ void consoleInputKey(Console *self, SegaKeys key) {
       break;
    case SegaKey_Down:
       _historyDown(self);      
-      break;      
+      break; 
+   case SegaKey_Backspace:
+      _backspace(self);
+      break;
    }
 }
 void consolePushLine(Console *self, const char *line) {
-   String *str = stringCreate(line);
-   vecInsert(StringPtr)(self->queue, 0, &str);
+   size_t len = strlen(line);
+   size_t i = 0;
+
+   while (i < len) {
+      String *str = stringCreate("");
+      stringConcatEX(str, line + i, MIN(WIDTH, len - i));
+      vecInsert(StringPtr)(self->queue, 0, &str);
+      i += WIDTH;
+   }
+   
    _updateConsoleLines(self);
 }
