@@ -42,6 +42,10 @@ typedef enum {
 void _btnState(VerbManager *self, Verbs v, VerbActions action) {
    ImageComponent *ic = entityGet(ImageComponent)(self->buttons[v]);
    ic->y = action == Pressed ? BTN_SIZE : 0;
+
+   if (action == Released) {
+      cursorManagerSetVerb(self->view->managers->cursorManager, v);
+   }
 }
 
 void verbManagerCreateVerbs(VerbManager *self) {

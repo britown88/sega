@@ -183,6 +183,10 @@ static void _handleMouse(WorldState *state){
             if (verbManagerMouseButton(state->view->managers->verbManager, &event)) {
                continue;
             }
+            cursorManagerClearVerb(state->view->managers->cursorManager);
+            break;
+         case SegaMouseBtn_Right:
+            cursorManagerClearVerb(state->view->managers->cursorManager);
             break;
          }
       }

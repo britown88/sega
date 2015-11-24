@@ -4,6 +4,7 @@
 #include "segautils/Defs.h"
 #include "segautils/Rect.h"
 #include "segashared/Strings.h"
+#include "Verbs.h"
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
@@ -36,6 +37,8 @@ void renderManagerToggleFPS(RenderManager *self);
 CursorManager *createCursorManager(WorldView *view);
 void cursorManagerCreateCursor(CursorManager *self);
 void cursorManagerUpdate(CursorManager *self, int x, int y);
+void cursorManagerSetVerb(CursorManager *self, Verbs v);
+void cursorManagerClearVerb(CursorManager *self);
 
 InterpolationManager *createInterpolationManager(WorldView *view);
 void interpolationManagerUpdate(InterpolationManager *self);
