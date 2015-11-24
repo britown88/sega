@@ -6,7 +6,9 @@
 
 #include "segautils/StandardVectors.h"
 
-#define LINE_COUNT (EGA_TEXT_RES_HEIGHT)
+#define LINE_COUNT 17
+#define BOTTOM 19
+#define LEFT 2
 
 struct Console_t {
    WorldView *view;
@@ -37,13 +39,34 @@ static String *_inputLine(Console *self) {
 }
 
 static void _updateInputLine(Console *self) {
-   int inlen = stringLen(self->input);
-   int len = MIN(EGA_TEXT_RES_WIDTH - 1, inlen);
+   static const char *cursor = "> ";
 
-   stringSet(_inputLine(self), c_str(self->input) + (inlen - len));
+   int inlen = stringLen(self->input);
+   int len = MIN(34, inlen);//fuck it magic number
+   stringSet(_inputLine(self), cursor);
+
+   stringConcat(_inputLine(self), c_str(self->input) + (inlen - len));
+}
+
+static void _updateConsoleLines(Console *self) {
+   size_t i;
+   size_t queuelen = vecSize(StringPtr)(self->queue);
+   TextComponent *tc = entityGet(TextComponent)(self->e);
+   
+   for (i = 0; i < LINE_COUNT; ++i) {
+      TextLine *line = vecAt(TextLine)(tc->lines, i + 1);
+      if (queuelen > 0 && i < queuelen) {
+         String *queueline = *vecAt(StringPtr)(self->queue, i);
+         stringSet(line->text, c_str(queueline));
+      }
+      else {
+         stringClear(line->text);
+      }
+   }
 }
 
 static void _processInput(Console *self, String *input) {
+   consolePushLine(self, c_str(input));
 }
 
 static void _commitInput(Console *self) {
@@ -72,20 +95,22 @@ void consoleCreateLines(Console *self) {
    int y;
    Entity *e = entityCreate(self->view->entitySystem);
    TextComponent tc = { .bg = 0, .fg = 15, .lines = vecCreate(TextLine)(&textLineDestroy) };
-   int bottomLine = EGA_TEXT_RES_HEIGHT - 1;//last line on screen
-   int topLine = bottomLine - LINE_COUNT;
+   int bottomLine = BOTTOM;//last line on screen
+   int topLine = bottomLine - (LINE_COUNT + 1);//account for input line
 
    for (y = bottomLine; y > topLine; --y) {
       String *str = stringCreate("");
-      vecPushBack(TextLine)(tc.lines, &(TextLine){0, y, str});
+      vecPushBack(TextLine)(tc.lines, &(TextLine){LEFT, y, str});
    }
 
    self->e = entityCreate(self->view->entitySystem);
-   COMPONENT_ADD(self->e, LayerComponent, LayerUI);
+   COMPONENT_ADD(self->e, LayerComponent, LayerConsole);
    COMPONENT_ADD(self->e, RenderedUIComponent, 0);
    COMPONENT_ADD(self->e, VisibilityComponent, .shown = self->enabled);
    entityAdd(TextComponent)(self->e, &tc);
    entityUpdate(self->e);
+
+   consolePushLine(self, "Welcome to the console!");
 }
 
 void consoleSetEnabled(Console *self, bool enabled) {
@@ -111,11 +136,18 @@ static void _historyUp(Console *self) {
    }
 }
 static void _historyDown(Console *self) {
-   size_t historyLen = vecSize(StringPtr)(self->inputHistory);
+   int historyLen = vecSize(StringPtr)(self->inputHistory);
 
-   if (historyLen > 0 && self->historyLocation < historyLen - 1) {
-      ++self->historyLocation;
-      stringSet(self->input, c_str(*vecAt(StringPtr)(self->inputHistory, self->historyLocation)));
+   if (historyLen > 0){
+      if (self->historyLocation < historyLen - 1) {
+         ++self->historyLocation;
+         stringSet(self->input, c_str(*vecAt(StringPtr)(self->inputHistory, self->historyLocation)));         
+      }
+      else if (self->historyLocation == historyLen - 1){
+         ++self->historyLocation;
+         stringClear(self->input);
+      }
+
       _updateInputLine(self);
    }
 }
@@ -130,10 +162,11 @@ void consoleInputKey(Console *self, SegaKeys key) {
       break;
    case SegaKey_Down:
       _historyDown(self);      
-      break;
-      
+      break;      
    }
 }
 void consolePushLine(Console *self, const char *line) {
-
+   String *str = stringCreate(line);
+   vecInsert(StringPtr)(self->queue, 0, &str);
+   _updateConsoleLines(self);
 }

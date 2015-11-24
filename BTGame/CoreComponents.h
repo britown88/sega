@@ -37,6 +37,7 @@ typedef enum{
    LayerGrid,
    LayerGridLighting,
    LayerUI,
+   LayerConsole,
    LayerCursor,
    LayerCount
 } Layer;
