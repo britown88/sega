@@ -10,11 +10,11 @@
 typedef struct {
    Entity *e;
    StringView name;
-   int width, height;   
+   size_t width, height;   
    vec(StringPtr) *queue;
 
    bool done;
-   int currentLine, currentChar;
+   size_t currentLine, currentChar;
    vec(StringPtr) *lines;
 
    Microseconds nextChar;
@@ -105,8 +105,8 @@ static void _renderToLines(TextBoxManager *self, TextBox *tb) {
    char *msg = (char*)c_str(*vecBegin(StringPtr)(tb->queue));
    char c = 0;
    static char buff[256] = { 0 };
-   int index = 0;
-   int lastSpace = 0;
+   size_t index = 0;
+   size_t lastSpace = 0;
 
    vecClear(StringPtr)(tb->lines);   
 
@@ -151,10 +151,10 @@ static void _renderToLines(TextBoxManager *self, TextBox *tb) {
 }
 
 static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
-   int line, i;
+   size_t line, i;
    TextComponent *tc = entityGet(TextComponent)(tb->e);
-   int totalLineCount = vecSize(StringPtr)(tb->lines);
-   int startLine = MAX(0, tb->currentLine - (tb->height - 1));   
+   size_t totalLineCount = vecSize(StringPtr)(tb->lines);
+   size_t startLine = MAX(0, tb->currentLine - (tb->height - 1));
 
    for ( i = 0,          line = startLine;
          i < tb->height && line < totalLineCount && line <= tb->currentLine;

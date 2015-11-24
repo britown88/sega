@@ -220,6 +220,10 @@ void _boardRender(WorldState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
+static void _testLUA(WorldState *state) {
+
+}
+
 static void _addTestEntities(WorldState *state) {
    Entity *e = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
@@ -247,6 +251,8 @@ static void _enterState(WorldState *state) {
    gridManagerSetAmbientLight(state->view->managers->gridManager, 2);   
 
    _addTestEntities(state);
+
+   _testLUA(state);
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){
