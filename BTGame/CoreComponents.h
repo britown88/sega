@@ -86,7 +86,7 @@ typedef struct {
 
 typedef struct {
    byte x, y;
-   vec(Span) *line;
+   RichTextLine line;
 }TextLine;
 
 //don't forget to give this to your lines vector!

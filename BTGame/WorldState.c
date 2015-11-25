@@ -264,7 +264,26 @@ void _boardRender(WorldState *state, GameStateRender *m){
 
 static void _testLUA(WorldState *state) {
    RichText *rt = richTextCreateFromRaw("[c=1,3]This is a test of the      emergency[i]broadcast [/c]system[/i]  which should work [    c  =  12      15     ] yessir");
+   vec(RichTextLine) *output = vecCreate(RichTextLine)(&richTextLineDestroy);
+   FILE *f = fopen("testout.txt", "wb");
+   String *str = stringCreate("");
 
+
+   richTextRenderToLines(rt, 5, output);
+   fprintf(f, "->|");
+   vecForEach(RichTextLine, line, output, {
+      vecForEach(Span, span, *line,{
+         stringClear(str);
+         spanRenderToString(span, str);
+         fprintf(f, c_str(str));
+      });
+      fprintf(f, "|<-\n\n->|");
+   });
+
+   fclose(f);
+
+   stringDestroy(str);
+   vecDestroy(RichTextLine)(output);
    richTextDestroy(rt);
 }
 

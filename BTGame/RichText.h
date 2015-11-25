@@ -20,16 +20,13 @@ typedef struct {
    String *string;
 } Span;
 
+void spanRenderToString(Span *self, String *out);
 void spanDestroy(Span *self);
 
 #define VectorTPart Span
 #include "segautils/Vector_Decl.h"
 
-#pragma pack(push, 1)
-typedef struct  {
-   vec(Span) *spans;
-}RichTextLine;
-#pragma pack(pop)
+typedef vec(Span) *RichTextLine;
 
 #define VectorTPart RichTextLine
 #include "segautils/Vector_Decl.h"

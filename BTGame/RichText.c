@@ -15,11 +15,11 @@ static void _spanCreate(char *str, size_t len, SpanStyles style, byte bg, byte f
    stringConcatEX(out->string, str, len);
 }
 
-static void _spanRenderToString(Span *self, String *out) {
+void spanRenderToString(Span *self, String *out) {
    static char buff[32] = { 0 };
 
    if (self->style.flags&Style_Color) {
-      sprintf(buff, "[c%c%c]", asciiFrom4BitHex(self->style.bg), asciiFrom4BitHex(self->style.fg));
+      sprintf(buff, "[c=%d,%d]", self->style.bg, self->style.fg);
       stringConcat(out, buff);
    }
 
@@ -29,12 +29,12 @@ static void _spanRenderToString(Span *self, String *out) {
 
    stringConcat(out, c_str(self->string));
 
-   if (self->style.flags&Style_Color) {
-      stringConcat(out, "[\\c]");
-   }
-
    if (self->style.flags&Style_Invert) {
       stringConcat(out, "[\\i]");
+   }
+
+   if (self->style.flags&Style_Color) {
+      stringConcat(out, "[\\c]");
    }
 }
 
@@ -48,7 +48,7 @@ static void _spanRenderToString(Span *self, String *out) {
 #include "segautils/Vector_Create.h"
 
 void richTextLineDestroy(RichTextLine *self) {
-   vecDestroy(Span)(self->spans);
+   vecDestroy(Span)(*self);
 }
 
 struct RichText_t {
@@ -325,7 +325,70 @@ void richTextGetRaw(RichText *self, String *out) {
 //pushes lines in order to a string vector with the specified width restriction
 //linewidth of 0 will function the same as INF
 void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *outList) {
+   Span *iter = NULL;
+   Span newSpan = { 0 };
 
+   size_t currentWidth = 0;
+   size_t lastSpace = 0;
+
+   RichTextLine workingLine = vecCreate(Span)(&spanDestroy);
+
+   //loop over every span
+   for ( iter = vecBegin(Span)(self->spanTable); 
+         iter < vecEnd(Span)(self->spanTable); ++iter) {
+      size_t spanWidth = stringLen(iter->string);
+      const char *str = c_str(iter->string);
+      size_t i = 0;
+      size_t splitPoint = 0;
+
+      //skip empty spans
+      if (spanWidth == 0) {
+         continue;
+      }
+
+      //loop over every character
+      for (i = 0; i < spanWidth; ++i, ++currentWidth) {
+         if (str[i] == ' ') {
+            lastSpace = i;
+         }
+         else if (str[i] == '\n') {            
+            _spanCreate(str + splitPoint, i - splitPoint, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
+            vecPushBack(Span)(workingLine, &newSpan);
+            vecPushBack(RichTextLine)(outList, &workingLine);
+            workingLine = vecCreate(Span)(&spanDestroy);
+
+            splitPoint = i;
+            currentWidth = 0;
+
+            //split
+         }
+
+         if (currentWidth >= lineWidth) {
+            size_t subLen = i - splitPoint;
+
+            _spanCreate(str + splitPoint, i - splitPoint, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
+            vecPushBack(Span)(workingLine, &newSpan);
+            vecPushBack(RichTextLine)(outList, &workingLine);
+            workingLine = vecCreate(Span)(&spanDestroy);
+
+            splitPoint = i;
+            currentWidth = 0;
+         }
+      }
+
+      //push the remaining portions of this span onto the current working line
+      if (splitPoint < spanWidth) {
+         _spanCreate(str + splitPoint, spanWidth - splitPoint, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
+         vecPushBack(Span)(workingLine, &newSpan);
+      }
+   }
+
+   if (!vecIsEmpty(Span)(workingLine)) {
+      vecPushBack(RichTextLine)(outList, &workingLine);
+      workingLine = vecCreate(Span)(&spanDestroy);
+   }
+
+   vecDestroy(Span)(workingLine);
 }
 
 //// >=D
