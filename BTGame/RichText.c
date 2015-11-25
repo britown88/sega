@@ -111,26 +111,28 @@ static void _commitSpan(RichText *self, RTParse *p) {
 static void _skipWhitespace(RTParse *p) {
    char c = 0;
    while (c = *p->str++) {
-      switch (c) {
-      case ' ':
-      case '\n':
-      case '\t':
+      if (c == ' ') {
          continue;
-      default:
-         break;
       }
+      --p->str;
+      break;
    }
 }
 
 #define BUFF_SIZE 8
 
 static int _readNumber(RTParse *p) {
-   char c = 0;
+   char c;
    static char buff[BUFF_SIZE] = { 0 };
    size_t buffLen = 0;
    int out = 0;
-   while (c = *p->str++ && buffLen < BUFF_SIZE) {
+   while ((c = *p->str++) && buffLen < BUFF_SIZE) {
       if (c == ' ' || c == ',') {
+         break;
+      }
+
+      if (c == ']') {
+         --p->str;
          break;
       }
 

@@ -16,6 +16,8 @@
 #include "Verbs.h"
 #include "Console.h"
 
+#include "RichText.h"
+
 #include "segautils/Lisp.h"
 #include "segautils/Math.h"
 
@@ -261,6 +263,9 @@ void _boardRender(WorldState *state, GameStateRender *m){
 #include "liblua/lualib.h"
 
 static void _testLUA(WorldState *state) {
+   RichText *rt = richTextCreateFromRaw("[c=1,3]This is a test of the      emergency[i]broadcast system[/i]  which should work [    c  =  12      15     ] yessir");
+
+   richTextDestroy(rt);
 }
 
 static void _addTestEntities(WorldState *state) {
