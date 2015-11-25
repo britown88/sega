@@ -25,6 +25,24 @@ void keyboardPushEvent(Keyboard *self, KeyboardEvent *event){
    vecPushBack(KeyboardEvent)(self->eventQueue, event);
 }
 
+SegaKeyMods _getMods(Keyboard *self) {
+   SegaKeyMods out = 0;
+   
+   if (keyboardIsDown(self, SegaKey_LeftShift) || keyboardIsDown(self, SegaKey_RightShift)) {
+      out |= SegaKey_ModShift;
+   }
+
+   if (keyboardIsDown(self, SegaKey_LeftAlt) || keyboardIsDown(self, SegaKey_RightAlt)) {
+      out |= SegaKey_ModAlt;
+   }
+
+   if (keyboardIsDown(self, SegaKey_LeftControl) || keyboardIsDown(self, SegaKey_RightControl)) {
+      out |= SegaKey_ModCtrl;
+   }
+
+   return out;
+}
+
 //return if succeeded (false if empty)
 int keyboardPopEvent(Keyboard *self, KeyboardEvent *eventOut){
    if (self->queuePos == vecSize(KeyboardEvent)(self->eventQueue)){
@@ -32,6 +50,7 @@ int keyboardPopEvent(Keyboard *self, KeyboardEvent *eventOut){
    }
 
    *eventOut = *vecAt(KeyboardEvent)(self->eventQueue, self->queuePos++);
+   eventOut->mods = _getMods(self);
 
    if (eventOut->action == SegaKey_Pressed){
       self->heldMap[eventOut->key] = true;

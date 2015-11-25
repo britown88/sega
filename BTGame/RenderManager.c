@@ -9,6 +9,7 @@
 #include "MeshRendering.h"
 #include "WorldView.h"
 #include "GridManager.h"
+#include "TextHelpers.h"
 
 #include <stdio.h>
 
@@ -210,6 +211,38 @@ void _renderPolygon(Frame *frame, FrameRegion *vp, vec(Int2) *pList, byte color,
    }   
 }
 
+void _renderText(RenderManager *self, Frame *frame, const char *text, short x, short y, Font **fontptr) {
+   size_t charCount;
+   size_t i;
+
+   if (!text) {
+      return;
+   }
+
+   charCount = strlen(text);
+
+   for (i = 0; i < charCount; ++i) {
+      char c = *(char*)(text + i);
+
+      if (x >= EGA_TEXT_RES_WIDTH)
+         break;
+
+      if (c == '\\') {
+         c = *(char*)(text + ++i);
+         if (c == 'c') {
+            byte fg, bg;
+            c = *(char*)(text + ++i);
+            textExtractColorCode(c, &bg, &fg);
+            *fontptr = fontFactoryGetFont(self->fontFactory, bg, fg);
+         }
+      }
+      else {
+         frameRenderTextSingleChar(frame, c, x++, y, *fontptr);
+      }
+   }
+}
+
+
 void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    TRenderComponent *trc = entityGet(TRenderComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
@@ -274,8 +307,9 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    if (trc->hasText){
       TextComponent *tc = entityGet(TextComponent)(e);
       if (tc->lines) {
+         Font *font = fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg);
          vecForEach(TextLine, line, tc->lines, {
-            frameRenderText(frame, c_str(line->text), line->x, line->y, fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg));
+            _renderText(self, frame, c_str(line->text), line->x, line->y, &font);
          });
 
       }

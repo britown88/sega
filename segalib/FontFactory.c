@@ -86,10 +86,27 @@ Font *fontFactoryGetFont(FontFactory *self, byte backgroundColor, byte foregroun
    return &self->fonts[index];
 }
 
+void frameRenderTextSingleChar(Frame *frame, const char c, short x, short y, Font *font) {
+   int i, iy;
+   byte charY = c / FONT_CHAR_WIDTH;
+   byte charX = c % FONT_CHAR_WIDTH;
+
+   if (x >= EGA_TEXT_RES_WIDTH) {
+      return;
+   }
+
+   for (iy = 0; iy < EGA_TEXT_CHAR_HEIGHT; ++iy) {
+      for (i = 0; i < EGA_PLANES; ++i) {
+         short linePos = y * EGA_TEXT_CHAR_HEIGHT + iy;
+         short charLinePos = charY * EGA_TEXT_CHAR_HEIGHT + iy;
+         frame->planes[i].lines[linePos].pixels[x] = font->planes[i].lines[charLinePos].pixels[charX];
+      }
+   }
+}
+
 void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font){
    size_t charCount;
    size_t c;
-   int i, iy;
 
    if (!text){
       return;
@@ -98,23 +115,9 @@ void frameRenderText(Frame *frame, const char *text, short x, short y, Font *fon
    charCount = strlen(text);
 
    for(c = 0; c < charCount; ++c) {
-      byte uc = *(unsigned char*)&text[c];
-      byte charY = uc / FONT_CHAR_WIDTH;
-      byte charX = uc % FONT_CHAR_WIDTH;
-
       if(x >= EGA_TEXT_RES_WIDTH)
          break;
 
-      for(iy = 0; iy < EGA_TEXT_CHAR_HEIGHT; ++iy) {
-         for(i = 0; i < EGA_PLANES; ++i) {
-            short linePos = y * EGA_TEXT_CHAR_HEIGHT + iy;
-            short charLinePos = charY * EGA_TEXT_CHAR_HEIGHT + iy;
-
-            frame->planes[i].lines[linePos].pixels[x] = font->planes[i].lines[charLinePos].pixels[charX];
-         }
-      }
-
-      ++x;
+      frameRenderTextSingleChar(frame, *(unsigned char*)&text[c], x++, y, font);
    }
-
 }

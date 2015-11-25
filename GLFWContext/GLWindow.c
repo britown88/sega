@@ -53,7 +53,7 @@ static void glWindowKeyFunc(GLFWwindow* win, int key, int scancode, int action, 
 
    KeyboardEvent e = { 
       .action = getSegaAction(action), 
-      .key = getSegaKey(key) 
+      .key = getSegaKey(key)
    };
 
    if (e.key != SegaKey_Undefined) {

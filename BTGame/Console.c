@@ -9,6 +9,8 @@
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
+#include "TextHelpers.h"
+
 #define LINE_COUNT 17
 #define WIDTH 36
 #define BOTTOM 19
@@ -48,7 +50,7 @@ void consoleDestroy(Console *self) {
 }
 
 static String *_inputLine(Console *self) {
-   return vecAt(TextLine)(entityGet(TextComponent)(self->e)->lines, 0)->text;
+   return (vecEnd(TextLine)(entityGet(TextComponent)(self->e)->lines) - 1)->text;
 }
 
 static void _updateInputLine(Console *self) {
@@ -68,31 +70,59 @@ static void _updateInputLine(Console *self) {
 static void _updateConsoleLines(Console *self) {
    size_t i;
    size_t queuelen = vecSize(StringPtr)(self->queue);
+   size_t drawnCount = MIN(LINE_COUNT, queuelen);
+   size_t skipCount = LINE_COUNT - drawnCount;
    TextComponent *tc = entityGet(TextComponent)(self->e);
    
    for (i = 0; i < LINE_COUNT; ++i) {
       TextLine *line = vecAt(TextLine)(tc->lines, i + 1);
-      if (queuelen > 0 && i < queuelen) {
-         String *queueline = *vecAt(StringPtr)(self->queue, i);
-         stringSet(line->text, c_str(queueline));
-      }
-      else {
+
+      if (i < skipCount) {
          stringClear(line->text);
+      }
+      else{
+         String *queueline = *(vecEnd(StringPtr)(self->queue) - (LINE_COUNT - skipCount) + (i - skipCount));
+         stringSet(line->text, c_str(queueline));
       }
    }
 }
 
-static void _processInput(Console *self, String *input) {
-   String *str = stringCreate("> ");
-   int error = luaL_loadbuffer(self->L, c_str(input), stringLen(input), "line") || lua_pcall(self->L, 0, 0, 0);   
+static void _printStackItem(Console *self, int index) {
+   int t = lua_type(self->L, index);
+   switch (t) {
 
-   stringConcat(str, c_str(input));   
-   consolePushLine(self, c_str(str));
-   stringDestroy(str);
+   case LUA_TSTRING:  /* strings */
+      consolePrintLine(self, "Returned: \\c05'%s'\\c0F", lua_tostring(self->L, index));
+      break;
+
+   case LUA_TBOOLEAN:  /* booleans */
+      consolePrintLine(self, "Returned: \\c05%s\\c0F", lua_toboolean(self->L, index) ? "true" : "false");
+      break;
+
+   case LUA_TNUMBER:  /* numbers */
+      consolePrintLine(self, "Returned: \\c05%g\\c0F", lua_tonumber(self->L, index));
+      break;
+
+   default:  /* other values */
+      consolePrintLine(self, "Returned: \\c05%s\\c0F", lua_typename(self->L, t));
+      break;
+   }
+}
+
+static void _processInput(Console *self, String *input) {
+   int error = luaL_loadbuffer(self->L, c_str(input), stringLen(input), "line") || lua_pcall(self->L, 0, LUA_MULTRET, 0);
+
+   consolePrintLine(self, "> %s", c_str(input));
 
    if (error) {
-      consolePushLine(self, lua_tostring(self->L, -1));
-      lua_pop(self->L, 1);  /* pop error message from the stack */
+      consolePrintLine(self, "\\c0D%s\\c0F", lua_tostring(self->L, -1));
+      lua_pop(self->L, 1);
+   }
+   else {
+      while (lua_gettop(self->L)) {
+         _printStackItem(self, 1);
+         lua_pop(self->L, 1);
+      }
    }
 }
 
@@ -123,9 +153,9 @@ void consoleCreateLines(Console *self) {
    Entity *e = entityCreate(self->view->entitySystem);
    TextComponent tc = { .bg = 0, .fg = 15, .lines = vecCreate(TextLine)(&textLineDestroy) };
    int bottomLine = BOTTOM;//last line on screen
-   int topLine = bottomLine - (LINE_COUNT + 1);//account for input line
+   int topLine = bottomLine - LINE_COUNT - 1;//account for input line
 
-   for (y = bottomLine; y > topLine; --y) {
+   for (y = topLine; y <= bottomLine; ++y) {
       String *str = stringCreate("");
       vecPushBack(TextLine)(tc.lines, &(TextLine){LEFT, y, str});
    }
@@ -138,7 +168,7 @@ void consoleCreateLines(Console *self) {
    entityUpdate(self->e);
 
    consolePushLine(self, "---------------------------");
-   consolePushLine(self, "| Welcome to the console! |");
+   consolePushLine(self, "| \\c0EWelcome to the console! \\c0F|");
    consolePushLine(self, "---------------------------");
    consolePushLine(self, "");
    _updateInputLine(self);
@@ -191,7 +221,7 @@ static void _backspace(Console *self) {
    }
 }
 
-void consoleInputKey(Console *self, SegaKeys key) {
+void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
    switch (key) {
    case SegaKey_Enter:
       _commitInput(self);
@@ -207,16 +237,8 @@ void consoleInputKey(Console *self, SegaKeys key) {
       break;
    }
 }
-void consolePushLine(Console *self, const char *line) {
-   size_t len = strlen(line);
-   size_t i = 0;
 
-   while (i < len) {
-      String *str = stringCreate("");
-      stringConcatEX(str, line + i, MIN(WIDTH, len - i));
-      vecInsert(StringPtr)(self->queue, 0, &str);
-      i += WIDTH;
-   }
-   
+void consolePushLine(Console *self, const char *line) {
+   stringRenderToArea(line, WIDTH, self->queue);   
    _updateConsoleLines(self);
 }

@@ -6,15 +6,16 @@
 #include "GameClock.h"
 #include "segautils/StandardVectors.h"
 #include "segautils/BitTwiddling.h"
+#include "TextHelpers.h"
 
 typedef struct {
    Entity *e;
    StringView name;
-   size_t width, height;   
+   int width, height;
    vec(StringPtr) *queue;
 
    bool done;
-   size_t currentLine, currentChar;
+   int currentLine, currentChar;
    vec(StringPtr) *lines;
 
    Microseconds nextChar;
@@ -102,59 +103,16 @@ static void _clearLineEntity(Entity *e) {
 }
 
 static void _renderToLines(TextBoxManager *self, TextBox *tb) {
-   char *msg = (char*)c_str(*vecBegin(StringPtr)(tb->queue));
-   char c = 0;
-   static char buff[256] = { 0 };
-   size_t index = 0;
-   size_t lastSpace = 0;
-
-   vecClear(StringPtr)(tb->lines);   
-
-   while (c = *msg++) {
-      switch (c) {
-      case '\r':
-         break;
-      case '\\':
-         break;
-      case '\n':
-         lastSpace = index;
-         break;
-      case '\t':
-         lastSpace = index;
-         break;      
-      case ' ':
-         lastSpace = index;
-      default:
-         buff[index] = c;
-         break;
-      }
-      ++index;
-      if (index >= tb->width) {
-         String *str;
-         buff[lastSpace] = 0;
-         str = stringCreate(buff);
-         vecPushBack(StringPtr)(tb->lines, &str);
-         index -= lastSpace + 1;
-         memcpy(buff, buff + lastSpace + 1, index);         
-         lastSpace = 0;
-      }
-   }
-
-   if (index > 0) {
-      String *str;
-      buff[index] = 0;
-      str = stringCreate(buff);
-      vecPushBack(StringPtr)(tb->lines, &str);
-   }
-
+   vecClear(StringPtr)(tb->lines);
+   stringRenderToArea(c_str(*vecBegin(StringPtr)(tb->queue)), tb->width, tb->lines);
    vecRemoveAt(StringPtr)(tb->queue, 0);
 }
 
 static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
-   size_t line, i;
+   int line, i;
    TextComponent *tc = entityGet(TextComponent)(tb->e);
-   size_t totalLineCount = vecSize(StringPtr)(tb->lines);
-   size_t startLine = MAX(0, tb->currentLine - (tb->height - 1));
+   int totalLineCount = vecSize(StringPtr)(tb->lines);
+   int startLine = MAX(0, tb->currentLine - (tb->height - 1));
 
    for ( i = 0,          line = startLine;
          i < tb->height && line < totalLineCount && line <= tb->currentLine;
@@ -198,11 +156,17 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
       Microseconds time = gameClockGetTime(self->view->gameClock);
       if (time >= tb->nextChar) {
          String *line = *vecAt(StringPtr)(tb->lines, tb->currentLine);
-         char c = c_str(*vecAt(StringPtr)(tb->lines, tb->currentLine))[tb->currentChar];
+         char *c = (char*)c_str(*vecAt(StringPtr)(tb->lines, tb->currentLine)) + tb->currentChar;
          Milliseconds delay = 0;
+
          
-         switch (c) {
+         switch (*c) {
          case ' ': break;
+         case '\\':
+            if (c[1] == 'c') {
+               tb->currentChar += 3;
+            }
+            break;
          case '.': delay = 500; break;
          case ',': delay = 250; break;
          case ';': delay = 250; break;
@@ -212,8 +176,8 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
          tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(delay) - (time - tb->nextChar);
 
          ++tb->currentChar;
-         if (tb->currentChar >= stringLen(line)) {  
-            if (tb->currentLine + 1 >= vecSize(StringPtr)(tb->lines)) {
+         if (tb->currentChar >= (int)stringLen(line)) {  
+            if (tb->currentLine + 1 >= (int)vecSize(StringPtr)(tb->lines)) {
                tb->done = true;
             }
             else {

@@ -31,6 +31,12 @@ typedef enum {
    SegaKey_Char
 }SegaKeyActions;
 
+typedef enum {
+   SegaKey_ModShift = 1 << 0,
+   SegaKey_ModCtrl =  1 << 1,
+   SegaKey_ModAlt =   1 << 2
+}SegaKeyMods;
+
 typedef enum{
    SegaKey_Space = 0,
    SegaKey_Apostrophe,
@@ -169,6 +175,7 @@ typedef struct {
    SegaKeyActions action;
    SegaKeys key;
    unsigned int unichar;
+   SegaKeyMods mods;
 }KeyboardEvent;
 
 typedef struct Keyboard_t Keyboard;

@@ -62,7 +62,7 @@ static void _handleKeyboardConsole(WorldState *state) {
          }
       }
       else if (e.action == SegaKey_Pressed) {
-         consoleInputKey(state->view->console, e.key);
+         consoleInputKey(state->view->console, e.key, e.mods);
       }
       else if (e.action == SegaKey_Released) {
          switch (e.key) {
@@ -261,21 +261,6 @@ void _boardRender(WorldState *state, GameStateRender *m){
 #include "liblua/lualib.h"
 
 static void _testLUA(WorldState *state) {
-   char buff[256];
-   int error;
-   lua_State *L = luaL_newstate();   /* opens Lua */
-   luaL_openlibs(L);
-
-   while (fgets(buff, sizeof(buff), stdin) != NULL) {
-      error = luaL_loadbuffer(L, buff, strlen(buff), "line") ||
-         lua_pcall(L, 0, 0, 0);
-      if (error) {
-         fprintf(stderr, "%s", lua_tostring(L, -1));
-         lua_pop(L, 1);  /* pop error message from the stack */
-      }
-   }
-
-   lua_close(L);
 }
 
 static void _addTestEntities(WorldState *state) {
@@ -289,9 +274,9 @@ static void _addTestEntities(WorldState *state) {
    {
       StringView boxName = stringIntern("smallbox");
       textBoxManagerCreateTextBox(state->view->managers->textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
-      //textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "This was not the most efficient way to use the disk surface with available drive electronics;[citation needed] because the sectors have constant angular size, the 512 bytes in each sector are compressed more near the disk's center. A more space-efficient technique would be to increase the number of sectors per track toward the outer edge of the disk, from 18 to 30 for instance, thereby keeping constant the amount of physical disk space used for storing each sector; an example is zone bit recording. Apple implemented this in early Macintosh computers by spinning the disk slower when the head was at the edge, while maintaining the data rate, allowing 400 KB of storage per side and an extra 160 KB on a double-sided disk.[38] This higher capacity came with a disadvantage: the format used a unique drive mechanism and control circuitry, meaning that Mac disks could not be read on other computers. Apple eventually reverted to constant angular velocity on HD floppy disks with their later machines, still unique to Apple as they supported the older variable-speed formats.");
+      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "\\c0EThis \\c0Fwas \\c0Enot \\c0Fthe \\c0Emost \\c0Fefficient \\c0Eway \\c0Fto \\c0Euse \\c0Fthe \\c0Edisk \\c0Fsurface \\c0Ewith \\c0Favailable \\c0Edrive \\c0Felectronics;\\c0E[citation needed] \\c0Fbecause the sectors have constant angular size, the 512 bytes in each sector are compressed more near the disk's center. A more space-efficient technique would be to increase the number of sectors per track toward the outer edge of the disk, from 18 to 30 for instance, thereby keeping constant the amount of physical disk space used for storing each sector; an example is zone bit recording. Apple implemented this in early Macintosh computers by spinning the disk slower when the head was at the edge, while maintaining the data rate, allowing 400 KB of storage per side and an extra 160 KB on a double-sided disk.[38] This higher capacity came with a disadvantage: the format used a unique drive mechanism and control circuitry, meaning that Mac disks could not be read on other computers. Apple eventually reverted to constant angular velocity on HD floppy disks with their later machines, still unique to Apple as they supported the older variable-speed formats.");
       //textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "supported the older variable-speed formats.");
-      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "You are likely to be eaten by a grue.");
+      //textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "You are likely to be eaten by a grue.");
    }
 
 }

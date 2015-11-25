@@ -14,5 +14,11 @@ void consoleCreateLines(Console *self);
 void consoleSetEnabled(Console *self, bool enabled);
 bool consoleGetEnabled(Console *self);
 void consoleInputChar(Console *self, char c);
-void consoleInputKey(Console *self, SegaKeys key);
+void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods);
 void consolePushLine(Console *self, const char *line);
+
+#define consolePrintLine(CONSOLE, STR, ...) {\
+   char buffer[256] = {0}; \
+   sprintf(buffer, STR, __VA_ARGS__ ); \
+   consolePushLine(CONSOLE, buffer); \
+}

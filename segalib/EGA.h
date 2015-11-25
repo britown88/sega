@@ -189,6 +189,7 @@ void fontFactoryDestroy(FontFactory *self);
 
 Font *fontFactoryGetFont(FontFactory *self, byte backGroundColor, byte foregroundColor);
 
+void frameRenderTextSingleChar(Frame *frame, const char c, short x, short y, Font *font);
 void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font);
 
 
