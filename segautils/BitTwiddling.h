@@ -17,6 +17,8 @@ void setBitInArray(byte *dest, int pos, byte value/*0-1*/);
 byte getBit(byte dest, byte pos/*0-7*/);
 byte getBitFromArray(const byte *dest, int pos);
 
+byte asciiFrom4BitHex(byte b);
+
 //returns 0 if compressed size is larger than inBitCount
 int compressBitsRLE(const byte *in, const int inBitCount, byte *out);
 void decompressRLE(byte *src, int compressedBitCount, byte *dest);

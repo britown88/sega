@@ -6,7 +6,7 @@
 #include "GameClock.h"
 #include "segautils/StandardVectors.h"
 #include "segautils/BitTwiddling.h"
-#include "TextHelpers.h"
+#include "RichText.h"
 
 typedef struct {
    Entity *e;
@@ -104,7 +104,7 @@ static void _clearLineEntity(Entity *e) {
 
 static void _renderToLines(TextBoxManager *self, TextBox *tb) {
    vecClear(StringPtr)(tb->lines);
-   stringRenderToArea(c_str(*vecBegin(StringPtr)(tb->queue)), tb->width, tb->lines);
+   //stringRenderToArea(c_str(*vecBegin(StringPtr)(tb->queue)), tb->width, tb->lines);
    vecRemoveAt(StringPtr)(tb->queue, 0);
 }
 
@@ -151,7 +151,7 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
          _renderToLines(self, tb);
       }      
    }
-   else {
+   else if(!vecIsEmpty(StringPtr)(tb->lines)){
       //we're drawing so gogo
       Microseconds time = gameClockGetTime(self->view->gameClock);
       if (time >= tb->nextChar) {

@@ -63,7 +63,7 @@
     <ClInclude Include="Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextHelpers.h">
+    <ClInclude Include="RichText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -122,7 +122,7 @@
     <ClCompile Include="Console.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextHelpers.c">
+    <ClCompile Include="RichText.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

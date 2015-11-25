@@ -9,7 +9,7 @@
 #include "MeshRendering.h"
 #include "WorldView.h"
 #include "GridManager.h"
-#include "TextHelpers.h"
+#include "RichText.h"
 
 #include <stdio.h>
 
@@ -230,9 +230,9 @@ void _renderText(RenderManager *self, Frame *frame, const char *text, short x, s
       if (c == '\\') {
          c = *(char*)(text + ++i);
          if (c == 'c') {
-            byte fg, bg;
+            byte fg = 0, bg = 0;
             c = *(char*)(text + ++i);
-            textExtractColorCode(c, &bg, &fg);
+            //textExtractColorCode(c, &bg, &fg);
             *fontptr = fontFactoryGetFont(self->fontFactory, bg, fg);
          }
       }

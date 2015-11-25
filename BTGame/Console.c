@@ -9,7 +9,7 @@
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
-#include "TextHelpers.h"
+#include "RichText.h"
 
 #define LINE_COUNT 17
 #define WIDTH 36
@@ -239,6 +239,6 @@ void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
 }
 
 void consolePushLine(Console *self, const char *line) {
-   stringRenderToArea(line, WIDTH, self->queue);   
+   //stringRenderToArea(line, WIDTH, self->queue);   
    _updateConsoleLines(self);
 }

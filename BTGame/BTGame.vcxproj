@@ -102,7 +102,7 @@
     <ClInclude Include="LightGrid.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
-    <ClInclude Include="TextHelpers.h" />
+    <ClInclude Include="RichText.h" />
     <ClInclude Include="Verbs.h" />
     <ClInclude Include="Viewport.h" />
     <ClInclude Include="WorldView.h" />
@@ -115,7 +115,7 @@
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LightGrid.c" />
     <ClCompile Include="PCManager.c" />
-    <ClCompile Include="TextHelpers.c" />
+    <ClCompile Include="RichText.c" />
     <ClCompile Include="TextBoxManager.c" />
     <ClCompile Include="VerbManager.c" />
     <ClCompile Include="WorldState.c" />

@@ -8,6 +8,12 @@
 
 #define MAX_BUFFER_WIDTH 1024
 
+// '0-9 A-F' from 0-15 value
+byte asciiFrom4BitHex(byte b) {
+   b &= 15;
+   return b > 9 ? (b - 10 + 'A') : b;
+}
+
 size_t hashPtr(void* ptr){
    size_t out = 5031;
    int i;
