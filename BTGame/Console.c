@@ -49,8 +49,8 @@ void consoleDestroy(Console *self) {
    checkedFree(self);
 }
 
-static String *_inputLine(Console *self) {
-   return (vecEnd(TextLine)(entityGet(TextComponent)(self->e)->lines) - 1)->text;
+static vec(Span) *_inputLine(Console *self) {
+   return (vecEnd(TextLine)(entityGet(TextComponent)(self->e)->lines) - 1)->line;
 }
 
 static void _updateInputLine(Console *self) {
@@ -62,9 +62,9 @@ static void _updateInputLine(Console *self) {
 
    int inlen = stringLen(self->input);
    int len = MIN(WIDTH - cursorlen, inlen);
-   stringSet(_inputLine(self), cursor);
 
-   stringConcat(_inputLine(self), c_str(self->input) + (inlen - len));
+   //stringSet(_inputLine(self), cursor);
+   //stringConcat(_inputLine(self), c_str(self->input) + (inlen - len));
 }
 
 static void _updateConsoleLines(Console *self) {
@@ -78,11 +78,12 @@ static void _updateConsoleLines(Console *self) {
       TextLine *line = vecAt(TextLine)(tc->lines, i + 1);
 
       if (i < skipCount) {
-         stringClear(line->text);
+         vecClear(Span)(line->line);
       }
       else{
-         String *queueline = *(vecEnd(StringPtr)(self->queue) - (LINE_COUNT - skipCount) + (i - skipCount));
-         stringSet(line->text, c_str(queueline));
+         //render the spans onto the component
+         //String *queueline = *(vecEnd(StringPtr)(self->queue) - (LINE_COUNT - skipCount) + (i - skipCount));
+         //stringSet(line->text, c_str(queueline));
       }
    }
 }
@@ -151,13 +152,15 @@ static void _commitInput(Console *self) {
 void consoleCreateLines(Console *self) {
    int y;
    Entity *e = entityCreate(self->view->entitySystem);
-   TextComponent tc = { .bg = 0, .fg = 15, .lines = vecCreate(TextLine)(&textLineDestroy) };
+   TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    int bottomLine = BOTTOM;//last line on screen
    int topLine = bottomLine - LINE_COUNT - 1;//account for input line
 
    for (y = topLine; y <= bottomLine; ++y) {
-      String *str = stringCreate("");
-      vecPushBack(TextLine)(tc.lines, &(TextLine){LEFT, y, str});
+      vecPushBack(TextLine)(tc.lines, &(TextLine){
+         .x = LEFT, .y = y,
+         .line = vecCreate(Span)(&spanDestroy)
+      });
    }
 
    self->e = entityCreate(self->view->entitySystem);

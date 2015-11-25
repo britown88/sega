@@ -16,7 +16,7 @@ typedef struct {
 
    bool done;
    int currentLine, currentChar;
-   vec(StringPtr) *lines;
+   vec(RichTextLine) *lines;
 
    Microseconds nextChar;
 }TextBox;
@@ -33,7 +33,7 @@ static size_t _textBoxHash(TextBox *p) {
 }
 
 static void _textBoxDestroy(TextBox *p) {
-   vecDestroy(StringPtr)(p->lines);
+   vecDestroy(RichTextLine)(p->lines);
    vecDestroy(StringPtr)(p->queue);
 }
 
@@ -64,12 +64,14 @@ void _onUpdate(TextBoxManager *self, Entity *e) {}
 
 void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area) {
    TextBox box = { 0 };
-   TextComponent tc = { .bg = 0,.fg = 15,.lines = vecCreate(TextLine)(&textLineDestroy) };
+   TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    int y;
 
    for (y = area.top; y < area.bottom; ++y) {
-      String *str = stringCreate("");
-      vecPushBack(TextLine)(tc.lines, &(TextLine){area.left, y, str});
+      vecPushBack(TextLine)(tc.lines, &(TextLine){
+         .x = area.left, .y = y, 
+         .line = vecCreate(Span)(&spanDestroy)
+      });
    }
 
    box.e = entityCreate(self->view->entitySystem);
@@ -82,7 +84,7 @@ void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti ar
    box.width = rectiWidth(&area);
    box.height = rectiHeight(&area);
    box.name = name;
-   box.lines = vecCreate(StringPtr)(&stringPtrDestroy);
+   box.lines = vecCreate(RichTextLine)(&richTextLineDestroy);
    box.queue = vecCreate(StringPtr)(&stringPtrDestroy);
 
    htInsert(TextBox)(self->boxTable, &box);
@@ -98,12 +100,12 @@ void textBoxManagerPushText(TextBoxManager *self, StringView name, const char *m
 static void _clearLineEntity(Entity *e) {
    TextComponent *tc = entityGet(TextComponent)(e);
    vecForEach(TextLine, line, tc->lines, {
-      stringClear(line->text);
+      vecClear(Span)(line->line);
    });
 }
 
 static void _renderToLines(TextBoxManager *self, TextBox *tb) {
-   vecClear(StringPtr)(tb->lines);
+   vecClear(RichTextLine)(tb->lines);
    //stringRenderToArea(c_str(*vecBegin(StringPtr)(tb->queue)), tb->width, tb->lines);
    vecRemoveAt(StringPtr)(tb->queue, 0);
 }
@@ -111,7 +113,7 @@ static void _renderToLines(TextBoxManager *self, TextBox *tb) {
 static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
    int line, i;
    TextComponent *tc = entityGet(TextComponent)(tb->e);
-   int totalLineCount = vecSize(StringPtr)(tb->lines);
+   int totalLineCount = vecSize(RichTextLine)(tb->lines);
    int startLine = MAX(0, tb->currentLine - (tb->height - 1));
 
    for ( i = 0,          line = startLine;
@@ -119,21 +121,24 @@ static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
          ++i,            ++line) {
 
       TextLine *tline = vecAt(TextLine)(tc->lines, i);
-      String *str = *vecAt(StringPtr)(tb->lines, line);
-      const char *lineToDraw = c_str(str);
 
-      if (line != tb->currentLine) {
-         //already done
-         stringSet(tline->text, lineToDraw);
-      }
-      else {
-         //midline
-         if (tline->text) {
-            stringClear(tline->text);
-            stringConcatEX(tline->text, lineToDraw, tb->currentChar);
-         }
-         
-      }
+      //concat the spans into the component here
+
+      //String *str = *vecAt(StringPtr)(tb->lines, line);
+      //const char *lineToDraw = c_str(str);
+
+      //if (line != tb->currentLine) {
+      //   //already done
+      //   stringSet(tline->text, lineToDraw);
+      //}
+      //else {
+      //   //midline
+      //   if (tline->text) {
+      //      stringClear(tline->text);
+      //      stringConcatEX(tline->text, lineToDraw, tb->currentChar);
+      //   }
+      //   
+      //}
    }
 }
 
@@ -151,42 +156,42 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
          _renderToLines(self, tb);
       }      
    }
-   else if(!vecIsEmpty(StringPtr)(tb->lines)){
+   else if(!vecIsEmpty(RichTextLine)(tb->lines)){
       //we're drawing so gogo
       Microseconds time = gameClockGetTime(self->view->gameClock);
       if (time >= tb->nextChar) {
-         String *line = *vecAt(StringPtr)(tb->lines, tb->currentLine);
-         char *c = (char*)c_str(*vecAt(StringPtr)(tb->lines, tb->currentLine)) + tb->currentChar;
-         Milliseconds delay = 0;
+         //String *line = *vecAt(StringPtr)(tb->lines, tb->currentLine);
+         //char *c = (char*)c_str(*vecAt(StringPtr)(tb->lines, tb->currentLine)) + tb->currentChar;
+         //Milliseconds delay = 0;
 
-         
-         switch (*c) {
-         case ' ': break;
-         case '\\':
-            if (c[1] == 'c') {
-               tb->currentChar += 3;
-            }
-            break;
-         case '.': delay = 500; break;
-         case ',': delay = 250; break;
-         case ';': delay = 250; break;
-         default:  delay = 50; break;
-         }
+         //
+         //switch (*c) {
+         //case ' ': break;
+         //case '\\':
+         //   if (c[1] == 'c') {
+         //      tb->currentChar += 3;
+         //   }
+         //   break;
+         //case '.': delay = 500; break;
+         //case ',': delay = 250; break;
+         //case ';': delay = 250; break;
+         //default:  delay = 50; break;
+         //}
 
-         tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(delay) - (time - tb->nextChar);
+         //tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(delay) - (time - tb->nextChar);
 
-         ++tb->currentChar;
-         if (tb->currentChar >= (int)stringLen(line)) {  
-            if (tb->currentLine + 1 >= (int)vecSize(StringPtr)(tb->lines)) {
-               tb->done = true;
-            }
-            else {
-               tb->currentChar = 0;
-               ++tb->currentLine;
-            }
-         }
+         //++tb->currentChar;
+         //if (tb->currentChar >= (int)stringLen(line)) {  
+         //   if (tb->currentLine + 1 >= (int)vecSize(StringPtr)(tb->lines)) {
+         //      tb->done = true;
+         //   }
+         //   else {
+         //      tb->currentChar = 0;
+         //      ++tb->currentLine;
+         //   }
+         //}
 
-         _updateEntityLines(self, tb);
+         //_updateEntityLines(self, tb);
       }      
    }
 }

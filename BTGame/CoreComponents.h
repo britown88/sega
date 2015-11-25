@@ -5,6 +5,7 @@
 #include "MeshRendering.h"
 #include "segautils\String.h"
 #include "segautils/Time.h"
+#include "RichText.h"
 
 #pragma pack(push, 1)
 
@@ -85,7 +86,7 @@ typedef struct {
 
 typedef struct {
    byte x, y;
-   String *text;
+   vec(Span) *line;
 }TextLine;
 
 //don't forget to give this to your lines vector!
@@ -96,7 +97,6 @@ void textLineDestroy(TextLine *self);
 
 typedef struct {
    vec(TextLine) *lines;
-   byte fg, bg;
 }TextComponent;
 
 #define ComponentT TextComponent

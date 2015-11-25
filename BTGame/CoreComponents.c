@@ -33,9 +33,7 @@ static void PolygonComponentDestroy(PolygonComponent *self){
 #include "segautils/Vector_Impl.h"
 
 void textLineDestroy(TextLine *self) {
-   if (self->text) {
-      stringDestroy(self->text);
-   }
+   vecDestroy(Span)(self->line);
 }
 
 static void TextComponentDestroy(TextComponent *self){

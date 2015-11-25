@@ -3,25 +3,10 @@
 
 #include "segashared/CheckedMemory.h"
 #include "segautils/BitTwiddling.h"
+
 #include <stdio.h>
 
-typedef enum {
-   Style_Color = (1 << 0),
-   Style_Invert = (1 << 1)
-}SpanStyles;
-
-typedef struct {
-   SpanStyles flags;
-   byte fg, bg;
-}SpanStyle;
-
-typedef struct {
-   SpanStyle style;
-   String *string;
-} Span;
-
-
-static void _spanDestroy(Span *self) {
+void spanDestroy(Span *self) {
    stringDestroy(self->string);
 }
 
@@ -53,12 +38,18 @@ static void _spanRenderToString(Span *self, String *out) {
    }
 }
 
+#define VectorTPart Span
+#include "segautils/Vector_Impl.h"
 
-#define VectorT Span
-#include "segautils/Vector_Create.h"
+#define VectorTPart RichTextLine
+#include "segautils/Vector_Impl.h"
 
 #define VectorT SpanStyle
 #include "segautils/Vector_Create.h"
+
+void richTextLineDestroy(RichTextLine *self) {
+   vecDestroy(Span)(self->spans);
+}
 
 struct RichText_t {
    String *inner;
@@ -294,7 +285,7 @@ static void _rebuildSpans(RichText *self) {
 RichText *richTextCreate(String *string) {
    RichText *out = checkedCalloc(1, sizeof(RichText));
    out->inner = string;
-   out->spanTable = vecCreate(Span)(&_spanDestroy);
+   out->spanTable = vecCreate(Span)(&spanDestroy);
    out->styleStack = vecCreate(SpanStyle)(NULL);
    _rebuildSpans(out);
    return out;
@@ -333,16 +324,7 @@ void richTextGetRaw(RichText *self, String *out) {
 
 //pushes lines in order to a string vector with the specified width restriction
 //linewidth of 0 will function the same as INF
-void richTextRenderToLines(RichText *self, size_t lineWidth, vec(StringPtr) *outList) {
-
-}
-
-//same as renderToLines but leaves out any markdown tagging... useful for manual manipulation
-void richTextRenderRawToLines(RichText *self, size_t lineWidth, vec(StringPtr) *outList) {
-
-}
-
-void richTextRenderToFrame(Frame *frame, FontFactory *fontFactory, TextComponent *tc) {
+void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *outList) {
 
 }
 
