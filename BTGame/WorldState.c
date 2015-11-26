@@ -264,7 +264,7 @@ void _boardRender(WorldState *state, GameStateRender *m){
 #include "liblua/lualib.h"
 
 static void _testLUA(WorldState *state) {
-   RichText *rt = richTextCreateFromRaw("[i]AA A[/i]AAAA");
+   RichText *rt = richTextCreateFromRaw("[c=0,1]The [i]lua_pushvalue function [/c]pushes on the [/i]top of the st[i]ack[/i] a copy of the element at the given index; lua_remove removes the element at the given index, shifting down all elements on top of that position to fill in the gap; lua_insert moves the top element into the given position, shifting up all elements on top of that position to open space; finally, lua_replace pops a value from the top and sets it as the value of the given index, without moving anything. Notice that the following operations have no effect on the stack:");
    //RichText *rt = richTextCreateFromRaw("the      emergencybroadcast system");
    vec(RichTextLine) *output = vecCreate(RichTextLine)(&richTextLineDestroy);
    FILE *f = fopen("testout.txt", "wb");
@@ -340,7 +340,7 @@ static void _enterState(WorldState *state) {
 
    _addTestEntities(state);
 
-   _testLUA(state);
+   //_testLUA(state);
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){
