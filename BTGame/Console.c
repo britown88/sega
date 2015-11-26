@@ -5,6 +5,7 @@
 #include "CoreComponents.h"
 
 #include "segautils/StandardVectors.h"
+#include "GameClock.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -27,6 +28,9 @@ struct Console_t {
    vec(RichTextLine) *queue;
 
    int historyLocation;
+   int cursorPos, selectionWidth;
+   Microseconds cursorClock;
+   int invertCursor;
    
    lua_State *L;
 };
@@ -59,25 +63,31 @@ static RichTextLine _inputLine(Console *self) {
 }
 
 static void _updateInputLine(Console *self) {
-   static const char *cursor = "> ";
-   static int cursorlen = 0;
-   if (!cursorlen) {
-      cursorlen = strlen(cursor);
-   }
+   static const char *prefix = "> ";
+   static const int prefixlen = 2;
 
    int inlen = stringLen(self->input);
-   int len = MIN(WIDTH - cursorlen, inlen);
+   int len = MIN(WIDTH - prefixlen - 1, inlen);
    RichTextLine input = _inputLine(self);
-   String *innerString;
+   String *innerString = stringCreate("");
 
-   if (vecIsEmpty(Span)(input))  {
-      vecPushBack(Span)(input, &(Span){.style = { 0 }, .string = stringCreate("")});
+   stringSet(innerString, prefix);
+   stringConcat(innerString, c_str(self->input) + (inlen - len));
+
+   if (self->invertCursor) {
+      stringConcat(innerString, "[i] [/i]");
    }
 
-   innerString = vecAt(Span)(input, 0)->string;
+   richTextReset(self->rt, innerString);
 
-   stringSet(innerString, cursor);
-   stringConcat(innerString, c_str(self->input) + (inlen - len));
+   vecClear(Span)(input);
+   vecForEach(Span, span, richTextGetSpans(self->rt), {
+      Span newSpan = {
+         .style = { span->style.flags, span->style.fg, span->style.bg },
+         .string = stringCopy(span->string)
+      };
+      vecPushBack(Span)(input, &newSpan);
+   });   
 }
 
 static void _updateConsoleLines(Console *self) {
@@ -208,6 +218,7 @@ bool consoleGetEnabled(Console *self) {
 
 void consoleInputChar(Console *self, char c) {
    stringConcatEX(self->input, &c, 1);
+   self->cursorPos += 1;
    _updateInputLine(self);
 }
 static void _historyUp(Console *self) {
@@ -265,4 +276,15 @@ void consolePushLine(Console *self, const char *line) {
    richTextResetFromRaw(self->rt, line);
    richTextRenderToLines(self->rt, WIDTH, self->queue); 
    _updateConsoleLines(self);
+}
+
+void consoleUpdate(Console *self) {
+   if (!self->cursorClock) {
+      self->cursorClock = gameClockGetTime(self->view->gameClock);
+   }
+   else if (gameClockGetTime(self->view->gameClock) > self->cursorClock) {
+      self->cursorClock += t_m2u(500);
+      self->invertCursor = !self->invertCursor;
+      _updateInputLine(self);
+   }
 }

@@ -9,6 +9,7 @@ typedef struct Console_t Console;
 
 Console *consoleCreate(WorldView *view);
 void consoleDestroy(Console *self);
+void consoleUpdate(Console *self);
 
 void consoleCreateLines(Console *self);
 void consoleSetEnabled(Console *self, bool enabled);

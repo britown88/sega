@@ -47,6 +47,8 @@ void richTextGetRaw(RichText *self, String *out);
 void richTextReset(RichText *self, String *string);
 void richTextResetFromRaw(RichText *self, const char *string);
 
+RichTextLine richTextGetSpans(RichText *self);
+
 //pushes lines in order to a string vector with the specified width restriction
 //linewidth of 0 will function the same as INF
 void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *outList);

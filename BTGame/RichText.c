@@ -327,6 +327,10 @@ RichText *richTextCreateFromRaw(const char *string) {
    return richTextCreate(stringCreate(string));
 }
 
+RichTextLine richTextGetSpans(RichText *self) {
+   return self->spanTable;
+}
+
 void richTextDestroy(RichText *self) {
    stringDestroy(self->inner);
    vecDestroy(Span)(self->spanTable);

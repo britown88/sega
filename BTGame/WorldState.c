@@ -53,6 +53,10 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
    gridMovementManagerUpdate(managers->gridMovementManager);
    pcManagerUpdate(managers->pcManager);
    textBoxManagerUpdate(managers->textBoxManager);
+
+   if (consoleGetEnabled(state->view->console)) {
+      consoleUpdate(state->view->console);
+   }
 }
 
 static void _handleKeyboardConsole(WorldState *state) {
