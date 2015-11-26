@@ -263,22 +263,46 @@ void _boardRender(WorldState *state, GameStateRender *m){
 #include "liblua/lualib.h"
 
 static void _testLUA(WorldState *state) {
-   RichText *rt = richTextCreateFromRaw("[c=1,3]This is a test of the      emergency[i]broadcast [/c]system[/i]  which should work [    c  =  12      15     ] yessir");
+   RichText *rt = richTextCreateFromRaw("[c=1,3]This is a [i]12345656765765789[/i]test of the      emer\\ngency[i]broad\ncast [/c]system[/i]  which should work [    c  =  12      15     ] yessir\n");
+   //RichText *rt = richTextCreateFromRaw("the      emergencybroadcast system");
    vec(RichTextLine) *output = vecCreate(RichTextLine)(&richTextLineDestroy);
    FILE *f = fopen("testout.txt", "wb");
    String *str = stringCreate("");
 
+   richTextGet(rt, str);
+   fprintf(f, c_str(str));
+   fprintf(f, "\n\n");
+   
+   stringClear(str);
+   richTextGetRaw(rt, str);
+   fprintf(f, c_str(str));
+   fprintf(f, "\n\n-------------------------\n\n\n");
+   
+   richTextRenderToLines(rt, 6, output);
 
-   richTextRenderToLines(rt, 5, output);
-   fprintf(f, "->|");
+   
+   fprintf(f, "->| ");
+   vecForEach(RichTextLine, line, output, {
+      vecForEach(Span, span, *line,{
+         fprintf(f, c_str(span->string));
+      });
+   fprintf(f, " |<-\n\n->| ");
+   });
+
+   fprintf(f, "\n\n-----------WITH TAGS--------------\n\n\n");
+
+   fprintf(f, "->| ");
    vecForEach(RichTextLine, line, output, {
       vecForEach(Span, span, *line,{
          stringClear(str);
          spanRenderToString(span, str);
          fprintf(f, c_str(str));
       });
-      fprintf(f, "|<-\n\n->|");
+      fprintf(f, " |<-\n\n->| ");
    });
+
+
+   
 
    fclose(f);
 

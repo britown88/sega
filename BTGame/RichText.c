@@ -211,6 +211,7 @@ static void _parseTag(RichText *self, RTParse *p) {
          if (end && c == ']') {            
             //end color
             _popColor(self, p);
+            return;
          }
          else if (c != '=') {
             return;
@@ -329,17 +330,19 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
    Span newSpan = { 0 };
 
    size_t currentWidth = 0;
-   size_t lastSpace = 0;
+
+   //store the last widthpos of a space
+   int lastSpace = 0;
 
    RichTextLine workingLine = vecCreate(Span)(&spanDestroy);
 
    //loop over every span
    for ( iter = vecBegin(Span)(self->spanTable); 
          iter < vecEnd(Span)(self->spanTable); ++iter) {
-      size_t spanWidth = stringLen(iter->string);
+      int spanWidth = stringLen(iter->string);
       const char *str = c_str(iter->string);
-      size_t i = 0;
-      size_t splitPoint = 0;
+      int i = 0;
+      int splitPoint = 0;
 
       //skip empty spans
       if (spanWidth == 0) {
@@ -348,32 +351,57 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
 
       //loop over every character
       for (i = 0; i < spanWidth; ++i, ++currentWidth) {
-         if (str[i] == ' ') {
-            lastSpace = i;
-         }
-         else if (str[i] == '\n') {            
+
+         if (str[i] == '\n') {
             _spanCreate(str + splitPoint, i - splitPoint, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
             vecPushBack(Span)(workingLine, &newSpan);
             vecPushBack(RichTextLine)(outList, &workingLine);
             workingLine = vecCreate(Span)(&spanDestroy);
+            
+            if (++i == spanWidth) {
+               break;
+            }
 
-            splitPoint = i;
             currentWidth = 0;
-
-            //split
+            splitPoint = i;            
          }
 
+         //we're over our line length, need to split
          if (currentWidth >= lineWidth) {
-            size_t subLen = i - splitPoint;
 
-            _spanCreate(str + splitPoint, i - splitPoint, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
+            int subStringWidth = i - splitPoint; // number of characters in the current working span segment
+            int subStringStartPos = currentWidth - subStringWidth; //line index of the first character in our current substring
+
+            int segmentLength = 0;// number of characters we are going to copy out into a span
+
+            if (lastSpace >= subStringStartPos) {
+               segmentLength = lastSpace - subStringStartPos + 1;//add one to include the space
+            } 
+            else {
+               segmentLength = subStringWidth;
+            }
+
+            //create that span, push it to the workingline, and push the workingline
+            _spanCreate(str + splitPoint, segmentLength, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
             vecPushBack(Span)(workingLine, &newSpan);
             vecPushBack(RichTextLine)(outList, &workingLine);
             workingLine = vecCreate(Span)(&spanDestroy);
 
-            splitPoint = i;
-            currentWidth = 0;
+            //and then move width forward the number of characters that got carried over onto the next line
+            currentWidth = subStringWidth - segmentLength;
+
+            //our alst space on a new line is always 0
+            lastSpace = -1;
+
+            //and lastly move our split index forward by the number of character we carved out
+            splitPoint += segmentLength;
+
          }
+
+         if (str[i] == ' ') {
+            lastSpace = currentWidth;
+         }
+         
       }
 
       //push the remaining portions of this span onto the current working line
