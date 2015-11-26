@@ -17,6 +17,7 @@ typedef struct {
    bool done;
    int currentLine, currentChar;
    vec(RichTextLine) *lines;
+   String *workingLine;
 
    Microseconds nextChar;
 }TextBox;
@@ -35,6 +36,7 @@ static size_t _textBoxHash(TextBox *p) {
 static void _textBoxDestroy(TextBox *p) {
    vecDestroy(RichTextLine)(p->lines);
    vecDestroy(StringPtr)(p->queue);
+   stringDestroy(p->workingLine);
 }
 
 struct TextBoxManager_t {
@@ -42,6 +44,7 @@ struct TextBoxManager_t {
    WorldView *view;
 
    ht(TextBox) *boxTable;
+   RichText *rt;
 };
 
 ImplManagerVTable(TextBoxManager)
@@ -52,11 +55,13 @@ TextBoxManager *createTextBoxManager(WorldView *view) {
    out->m.vTable = CreateManagerVTable(TextBoxManager);
 
    out->boxTable = htCreate(TextBox)(_textBoxCompare, _textBoxHash, _textBoxDestroy);
+   out->rt = richTextCreateFromRaw("");
    return out;
 }
 
 void _destroy(TextBoxManager *self) {
    htDestroy(TextBox)(self->boxTable);
+   richTextDestroy(self->rt);
    checkedFree(self);
 }
 void _onDestroy(TextBoxManager *self, Entity *e) {}
@@ -86,6 +91,7 @@ void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti ar
    box.name = name;
    box.lines = vecCreate(RichTextLine)(&richTextLineDestroy);
    box.queue = vecCreate(StringPtr)(&stringPtrDestroy);
+   box.workingLine = stringCreate("");
 
    htInsert(TextBox)(self->boxTable, &box);
 }
@@ -105,8 +111,12 @@ static void _clearLineEntity(Entity *e) {
 }
 
 static void _renderToLines(TextBoxManager *self, TextBox *tb) {
+   const char *str = c_str(*vecBegin(StringPtr)(tb->queue));
    vecClear(RichTextLine)(tb->lines);
-   //stringRenderToArea(c_str(*vecBegin(StringPtr)(tb->queue)), tb->width, tb->lines);
+
+   richTextResetFromRaw(self->rt, str);
+   richTextRenderToLines(self->rt, tb->width, tb->lines);
+
    vecRemoveAt(StringPtr)(tb->queue, 0);
 }
 
@@ -119,26 +129,55 @@ static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
    for ( i = 0,          line = startLine;
          i < tb->height && line < totalLineCount && line <= tb->currentLine;
          ++i,            ++line) {
-
+      
       TextLine *tline = vecAt(TextLine)(tc->lines, i);
+      RichTextLine rtline = *vecAt(RichTextLine)(tb->lines, line);
 
-      //concat the spans into the component here
+      vecClear(Span)(tline->line);
 
-      //String *str = *vecAt(StringPtr)(tb->lines, line);
-      //const char *lineToDraw = c_str(str);
+      if (line != tb->currentLine) {
+         //copy over the full line
+         vecForEach(Span, span, rtline, {
+               Span newSpan = {
+               .style = { span->style.flags, span->style.fg, span->style.bg },
+               .string = stringCopy(span->string)
+            };
+            vecPushBack(Span)(tline->line, &newSpan);
+         });
+      }
+      else {
+         //midline, copy partial
+         Span *iter = NULL;
+         size_t current = 0;
 
-      //if (line != tb->currentLine) {
-      //   //already done
-      //   stringSet(tline->text, lineToDraw);
-      //}
-      //else {
-      //   //midline
-      //   if (tline->text) {
-      //      stringClear(tline->text);
-      //      stringConcatEX(tline->text, lineToDraw, tb->currentChar);
-      //   }
-      //   
-      //}
+         for (iter = vecBegin(Span)(rtline); 
+            iter != vecEnd(Span)(rtline); ++iter) {
+
+            size_t spanLen = stringLen(iter->string);
+            if (current + spanLen < tb->currentChar) {
+               //the full span fits so add it
+               vecPushBack(Span)(tline->line, &(Span){
+                  .style = { iter->style.flags, iter->style.fg, iter->style.bg },
+                  .string = stringCopy(iter->string)
+               });
+               current += spanLen;
+            }
+            else {
+               //partial, build a partial of the string and add a span for it
+               size_t partialLen = tb->currentChar - current;
+               String *partial = stringCreate("");
+
+               stringConcatEX(partial, c_str(iter->string), partialLen);
+               vecPushBack(Span)(tline->line, &(Span){
+                  .style = { iter->style.flags, iter->style.fg, iter->style.bg },
+                  .string = partial
+               });
+
+               //last one, bail out
+               break;
+            }
+         }
+      }
    }
 }
 
@@ -160,38 +199,41 @@ static void _updateTextBox(TextBoxManager *self, TextBox *tb) {
       //we're drawing so gogo
       Microseconds time = gameClockGetTime(self->view->gameClock);
       if (time >= tb->nextChar) {
-         //String *line = *vecAt(StringPtr)(tb->lines, tb->currentLine);
-         //char *c = (char*)c_str(*vecAt(StringPtr)(tb->lines, tb->currentLine)) + tb->currentChar;
-         //Milliseconds delay = 0;
+         RichTextLine rtline = *vecAt(RichTextLine)(tb->lines, tb->currentLine);
+         String *line = tb->workingLine;
+         char *c = NULL;
+         Milliseconds delay = 0;
 
-         //
-         //switch (*c) {
-         //case ' ': break;
-         //case '\\':
-         //   if (c[1] == 'c') {
-         //      tb->currentChar += 3;
-         //   }
-         //   break;
-         //case '.': delay = 500; break;
-         //case ',': delay = 250; break;
-         //case ';': delay = 250; break;
-         //default:  delay = 50; break;
-         //}
+         richTextLineGetRaw(rtline, tb->workingLine);
+         c = (char*)c_str(tb->workingLine) + tb->currentChar;
 
-         //tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(delay) - (time - tb->nextChar);
+         switch (*c) {
+         case ' ': break;
+         case '\\':
+            if (c[1] == 'c') {
+               tb->currentChar += 3;
+            }
+            break;
+         case '.': delay = 500; break;
+         case ',': delay = 250; break;
+         case ';': delay = 250; break;
+         default:  delay = 50; break;
+         }
 
-         //++tb->currentChar;
-         //if (tb->currentChar >= (int)stringLen(line)) {  
-         //   if (tb->currentLine + 1 >= (int)vecSize(StringPtr)(tb->lines)) {
-         //      tb->done = true;
-         //   }
-         //   else {
-         //      tb->currentChar = 0;
-         //      ++tb->currentLine;
-         //   }
-         //}
+         tb->nextChar = gameClockGetTime(self->view->gameClock) + t_m2u(delay) - (time - tb->nextChar);
 
-         //_updateEntityLines(self, tb);
+         ++tb->currentChar;
+         if (tb->currentChar >= (int)stringLen(line)) {  
+            if (tb->currentLine + 1 >= (int)vecSize(RichTextLine)(tb->lines)) {
+               tb->done = true;
+            }
+            else {
+               tb->currentChar = 0;
+               ++tb->currentLine;
+            }
+         }
+
+         _updateEntityLines(self, tb);
       }      
    }
 }

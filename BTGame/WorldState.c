@@ -117,6 +117,7 @@ static void _handleKeyboard(WorldState *state){
             break;
          case SegaKey_GraveAccent:
             consoleSetEnabled(state->view->console, true);
+            textBoxManagerPushText(state->view->managers->textBoxManager, stringIntern("smallbox"), "[i]meme[/i]:\nan [c=0,13]element[/c] of a [c=0,7]culture[/c] or [c=0,6]system[/c] of [c=0,5]behavior[/c] that [c=0,4]may[/c] be considered to be passed from [c=0,3]one individual[/c] to another by nongenetic means, [c=0,5]especially imitation.[/c]");
             break;
          case SegaKey_LeftControl:
             pcManagerSetSneak(state->view->managers->pcManager, false);
@@ -263,7 +264,7 @@ void _boardRender(WorldState *state, GameStateRender *m){
 #include "liblua/lualib.h"
 
 static void _testLUA(WorldState *state) {
-   RichText *rt = richTextCreateFromRaw("[c=1,3]This is a [i]12345656765765789[/i]test of the      emer\\ngency[i]broad\ncast [/c]system[/i]  which should work [    c  =  12      15     ] yessir\n");
+   RichText *rt = richTextCreateFromRaw("[i]AA A[/i]AAAA");
    //RichText *rt = richTextCreateFromRaw("the      emergencybroadcast system");
    vec(RichTextLine) *output = vecCreate(RichTextLine)(&richTextLineDestroy);
    FILE *f = fopen("testout.txt", "wb");
@@ -278,7 +279,7 @@ static void _testLUA(WorldState *state) {
    fprintf(f, c_str(str));
    fprintf(f, "\n\n-------------------------\n\n\n");
    
-   richTextRenderToLines(rt, 6, output);
+   richTextRenderToLines(rt, 5, output);
 
    
    fprintf(f, "->| ");
@@ -322,9 +323,8 @@ static void _addTestEntities(WorldState *state) {
    {
       StringView boxName = stringIntern("smallbox");
       textBoxManagerCreateTextBox(state->view->managers->textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
-      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "\\c0EThis \\c0Fwas \\c0Enot \\c0Fthe \\c0Emost \\c0Fefficient \\c0Eway \\c0Fto \\c0Euse \\c0Fthe \\c0Edisk \\c0Fsurface \\c0Ewith \\c0Favailable \\c0Edrive \\c0Felectronics;\\c0E[citation needed] \\c0Fbecause the sectors have constant angular size, the 512 bytes in each sector are compressed more near the disk's center. A more space-efficient technique would be to increase the number of sectors per track toward the outer edge of the disk, from 18 to 30 for instance, thereby keeping constant the amount of physical disk space used for storing each sector; an example is zone bit recording. Apple implemented this in early Macintosh computers by spinning the disk slower when the head was at the edge, while maintaining the data rate, allowing 400 KB of storage per side and an extra 160 KB on a double-sided disk.[38] This higher capacity came with a disadvantage: the format used a unique drive mechanism and control circuitry, meaning that Mac disks could not be read on other computers. Apple eventually reverted to constant angular velocity on HD floppy disks with their later machines, still unique to Apple as they supported the older variable-speed formats.");
-      //textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "supported the older variable-speed formats.");
-      //textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "You are likely to be eaten by a grue.");
+      textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "You are likely to be eaten by a [c=0,13]grue[/c].");
+      
    }
 
 }
@@ -340,7 +340,7 @@ static void _enterState(WorldState *state) {
 
    _addTestEntities(state);
 
-   //_testLUA(state);
+   _testLUA(state);
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){

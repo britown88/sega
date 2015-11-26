@@ -33,6 +33,7 @@ typedef vec(Span) *RichTextLine;
 
 void richTextLineDestroy(RichTextLine *self);
 RichTextLine richTextLineCopy(RichTextLine self);
+void richTextLineGetRaw(RichTextLine self, String *out);
 
 typedef struct RichText_t RichText;
 

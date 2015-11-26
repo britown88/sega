@@ -65,6 +65,14 @@ RichTextLine richTextLineCopy(RichTextLine self) {
    return out;
 }
 
+void richTextLineGetRaw(RichTextLine self, String *out) {
+   stringClear(out);
+
+   vecForEach(Span, span, self, {
+      stringConcat(out, c_str(span->string));
+   });
+}
+
 struct RichText_t {
    String *inner;
    vec(Span) *spanTable;
@@ -296,6 +304,10 @@ static void _rebuildSpans(RichText *self) {
       default:
          p.buffer[p.bufferLen++] = c;
          break;
+      }
+
+      if (p.bufferLen >= 256) {
+         _commitSpan(self, &p);
       }
    }
 
