@@ -51,6 +51,20 @@ void richTextLineDestroy(RichTextLine *self) {
    vecDestroy(Span)(*self);
 }
 
+RichTextLine richTextLineCopy(RichTextLine self) {
+   RichTextLine out = vecCreate(Span)(&spanDestroy);
+   vecForEach(Span, span, self, {
+      Span newSpan = {
+         .style = {span->style.flags, span->style.fg, span->style.bg},
+         .string = stringCopy(span->string)
+      };
+
+      vecPushBack(Span)(out, &newSpan);
+   });
+
+   return out;
+}
+
 struct RichText_t {
    String *inner;
    vec(Span) *spanTable;
@@ -173,7 +187,7 @@ static void _pushColor(RichText *self, RTParse *p, byte bg, byte fg) {
 }
 
 //parse a single tag
-static void _parseTag(RichText *self, RTParse *p) {
+static int _parseTag(RichText *self, RTParse *p) {
    char c = 0, cmd = 0;
    bool end = false;
    _skipWhitespace(p);
@@ -187,8 +201,8 @@ static void _parseTag(RichText *self, RTParse *p) {
          //invert command
          _skipWhitespace(p);
          c = *p->str++;
-         if (c != ']') {
-            return;
+         if (c != ']') { 
+            return 1;
          }
          else {
             //commit the invert
@@ -200,6 +214,7 @@ static void _parseTag(RichText *self, RTParse *p) {
             else {
                style->flags |= Style_Invert;
             }
+            return 0;
          }
       }
       else if (cmd == 'c' || cmd == 'C') {
@@ -211,46 +226,47 @@ static void _parseTag(RichText *self, RTParse *p) {
          if (end && c == ']') {            
             //end color
             _popColor(self, p);
-            return;
+            return 0;
          }
          else if (c != '=') {
-            return;
+            return 1;
          }
 
          //get bg
          _skipWhitespace(p);
          bg = _readNumber(p);
          if (bg < 0) {
-            return;
+            return 1;
          }
 
          //get fg
          _skipWhitespace(p);
          fg = _readNumber(p);
          if (fg < 0) {
-            return;
+            return 1;
          }
          //get closing bracket
          _skipWhitespace(p);
          c = *p->str++;
          if (c != ']') {
-            return;
+            return 1;
          }
          else {
             //commit the color
             _pushColor(self, p, bg, fg);
+            return 0;
          }
       }
-      else {
-         return;
-      }      
    }
+
+   return 1;//bad char
 }
 
 //rebuild span table from scratch based on current inner
 static void _rebuildSpans(RichText *self) {
    RTParse p = { (char*)c_str(self->inner) , 0 };
    char c = 0;
+   char *startStr = NULL;
    
    vecClear(Span)(self->spanTable);
    vecClear(SpanStyle)(self->styleStack);
@@ -261,7 +277,11 @@ static void _rebuildSpans(RichText *self) {
       switch (c) {
       case '[':
          _commitSpan(self, &p);
-         _parseTag(self, &p);
+         startStr = p.str;
+         if (_parseTag(self, &p)) {
+            p.str = startStr;
+            p.buffer[p.bufferLen++] = '[';
+         }
          break;
       case '\\':
          if(c = *p.str++) {
@@ -340,7 +360,7 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
    for ( iter = vecBegin(Span)(self->spanTable); 
          iter < vecEnd(Span)(self->spanTable); ++iter) {
       int spanWidth = stringLen(iter->string);
-      const char *str = c_str(iter->string);
+      char *str = (char*)c_str(iter->string);
       int i = 0;
       int splitPoint = 0;
 

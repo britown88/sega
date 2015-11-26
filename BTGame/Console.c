@@ -20,19 +20,24 @@ struct Console_t {
    WorldView *view;
    Entity *e;
    bool enabled;
-   vec(StringPtr) *queue, *inputHistory;
+   vec(StringPtr) *inputHistory;   
    String *input;
-   int historyLocation;
 
+   RichText *rt;
+   vec(RichTextLine) *queue;
+
+   int historyLocation;
+   
    lua_State *L;
 };
 
 Console *consoleCreate(WorldView *view) {
    Console *out = checkedCalloc(1, sizeof(Console));
    out->view = view;
-   out->queue = vecCreate(StringPtr)(&stringPtrDestroy);
+   out->queue = vecCreate(RichTextLine)(&richTextLineDestroy);
    out->inputHistory = vecCreate(StringPtr)(&stringPtrDestroy);
    out->input = stringCreate("");
+   out->rt = richTextCreateFromRaw("");
 
    out->L = luaL_newstate();
    luaL_openlibs(out->L);
@@ -42,14 +47,14 @@ Console *consoleCreate(WorldView *view) {
 void consoleDestroy(Console *self) {
 
    lua_close(self->L);
-
+   richTextDestroy(self->rt);
    stringDestroy(self->input);
-   vecDestroy(StringPtr)(self->queue);
+   vecDestroy(RichTextLine)(self->queue);
    vecDestroy(StringPtr)(self->inputHistory);
    checkedFree(self);
 }
 
-static vec(Span) *_inputLine(Console *self) {
+static RichTextLine _inputLine(Console *self) {
    return (vecEnd(TextLine)(entityGet(TextComponent)(self->e)->lines) - 1)->line;
 }
 
@@ -62,28 +67,41 @@ static void _updateInputLine(Console *self) {
 
    int inlen = stringLen(self->input);
    int len = MIN(WIDTH - cursorlen, inlen);
+   RichTextLine input = _inputLine(self);
+   String *innerString;
 
-   //stringSet(_inputLine(self), cursor);
-   //stringConcat(_inputLine(self), c_str(self->input) + (inlen - len));
+   if (vecIsEmpty(Span)(input))  {
+      vecPushBack(Span)(input, &(Span){.style = { 0 }, .string = stringCreate("")});
+   }
+
+   innerString = vecAt(Span)(input, 0)->string;
+
+   stringSet(innerString, cursor);
+   stringConcat(innerString, c_str(self->input) + (inlen - len));
 }
 
 static void _updateConsoleLines(Console *self) {
    size_t i;
-   size_t queuelen = vecSize(StringPtr)(self->queue);
+   size_t queuelen = vecSize(RichTextLine)(self->queue);
    size_t drawnCount = MIN(LINE_COUNT, queuelen);
    size_t skipCount = LINE_COUNT - drawnCount;
    TextComponent *tc = entityGet(TextComponent)(self->e);
    
    for (i = 0; i < LINE_COUNT; ++i) {
       TextLine *line = vecAt(TextLine)(tc->lines, i + 1);
-
-      if (i < skipCount) {
-         vecClear(Span)(line->line);
-      }
-      else{
+      vecClear(Span)(line->line);
+      if (i >= skipCount) {
          //render the spans onto the component
-         //String *queueline = *(vecEnd(StringPtr)(self->queue) - (LINE_COUNT - skipCount) + (i - skipCount));
-         //stringSet(line->text, c_str(queueline));
+         RichTextLine queueline = *(vecEnd(RichTextLine)(self->queue) - (LINE_COUNT - skipCount) + (i - skipCount));
+
+         //push the queueline spans into the console entity
+         vecForEach(Span, span, queueline, {
+            Span newSpan = {
+               .style = { span->style.flags, span->style.fg, span->style.bg },
+               .string = stringCopy(span->string)
+            };
+            vecPushBack(Span)(line->line, &newSpan);
+         });
       }
    }
 }
@@ -93,19 +111,19 @@ static void _printStackItem(Console *self, int index) {
    switch (t) {
 
    case LUA_TSTRING:  /* strings */
-      consolePrintLine(self, "Returned: \\c05'%s'\\c0F", lua_tostring(self->L, index));
+      consolePrintLine(self, "Returned: [c=0,5]'%s'[/c]", lua_tostring(self->L, index));
       break;
 
    case LUA_TBOOLEAN:  /* booleans */
-      consolePrintLine(self, "Returned: \\c05%s\\c0F", lua_toboolean(self->L, index) ? "true" : "false");
+      consolePrintLine(self, "Returned: [c=0,5]%s[/c]", lua_toboolean(self->L, index) ? "true" : "false");
       break;
 
    case LUA_TNUMBER:  /* numbers */
-      consolePrintLine(self, "Returned: \\c05%g\\c0F", lua_tonumber(self->L, index));
+      consolePrintLine(self, "Returned: [c=0,5]%g[/c]", lua_tonumber(self->L, index));
       break;
 
    default:  /* other values */
-      consolePrintLine(self, "Returned: \\c05%s\\c0F", lua_typename(self->L, t));
+      consolePrintLine(self, "Returned: [c=0,5]%s[/c]", lua_typename(self->L, t));
       break;
    }
 }
@@ -116,7 +134,7 @@ static void _processInput(Console *self, String *input) {
    consolePrintLine(self, "> %s", c_str(input));
 
    if (error) {
-      consolePrintLine(self, "\\c0D%s\\c0F", lua_tostring(self->L, -1));
+      consolePrintLine(self, "[c=0,13]%s[/c]", lua_tostring(self->L, -1));
       lua_pop(self->L, 1);
    }
    else {
@@ -170,9 +188,11 @@ void consoleCreateLines(Console *self) {
    entityAdd(TextComponent)(self->e, &tc);
    entityUpdate(self->e);
 
-   consolePushLine(self, "---------------------------");
-   consolePushLine(self, "| \\c0EWelcome to the console! \\c0F|");
-   consolePushLine(self, "---------------------------");
+   consolePushLine(self, 
+      "---------------------------\n"
+      "| [i][c=0,14]Welcome[/i] to the console![/c] |\n"
+      "---------------------------");
+
    consolePushLine(self, "");
    _updateInputLine(self);
 }
@@ -242,6 +262,7 @@ void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
 }
 
 void consolePushLine(Console *self, const char *line) {
-   //stringRenderToArea(line, WIDTH, self->queue);   
+   richTextResetFromRaw(self->rt, line);
+   richTextRenderToLines(self->rt, WIDTH, self->queue); 
    _updateConsoleLines(self);
 }

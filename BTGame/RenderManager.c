@@ -211,35 +211,45 @@ void _renderPolygon(Frame *frame, FrameRegion *vp, vec(Int2) *pList, byte color,
    }   
 }
 
-void _renderText(RenderManager *self, Frame *frame, const char *text, short x, short y, Font **fontptr) {
-   size_t charCount;
-   size_t i;
+void _renderRichTextLine(RenderManager *self, Frame *frame, byte *x, byte *y, Span *span) {
+   Font *font;
+   byte bg = 0, fg = 15;//default colors
 
-   if (!text) {
-      return;
+   if (span->style.flags&Style_Color) {
+      bg = span->style.bg;
+      fg = span->style.fg;
    }
 
-   charCount = strlen(text);
-
-   for (i = 0; i < charCount; ++i) {
-      char c = *(char*)(text + i);
-
-      if (x >= EGA_TEXT_RES_WIDTH)
-         break;
-
-      if (c == '\\') {
-         c = *(char*)(text + ++i);
-         if (c == 'c') {
-            byte fg = 0, bg = 0;
-            c = *(char*)(text + ++i);
-            //textExtractColorCode(c, &bg, &fg);
-            *fontptr = fontFactoryGetFont(self->fontFactory, bg, fg);
-         }
-      }
-      else {
-         frameRenderTextSingleChar(frame, c, x++, y, *fontptr);
-      }
+   if (span->style.flags&Style_Invert) {
+      bg |= (fg<<4);
+      fg = bg&15;
+      bg >>= 4;
    }
+
+   font = fontFactoryGetFont(self->fontFactory, bg, fg);
+
+   frameRenderText(frame, c_str(span->string), *x, *y, font);
+   *x += (byte)stringLen(span->string);
+}
+
+void _renderEntityText(RenderManager *self, Frame *frame, Entity *e) {
+   //Font *font = fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg);
+   
+
+   TextComponent *tc = entityGet(TextComponent)(e);
+   if (tc->lines) {
+      //default font
+      Font *defaultFont = fontFactoryGetFont(self->fontFactory, 0, 15);
+
+      vecForEach(TextLine, line, tc->lines, {
+         byte x = line->x;
+         byte y = line->y;
+         vecForEach(Span, span, line->line,{
+            _renderRichTextLine(self, frame, &x, &y, span);
+         });
+      });
+   }
+
 }
 
 
@@ -305,14 +315,7 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
 
    //text
    if (trc->hasText){
-      TextComponent *tc = entityGet(TextComponent)(e);
-      if (tc->lines) {
-         //Font *font = fontFactoryGetFont(self->fontFactory, tc->bg, tc->fg);
-         //vecForEach(TextLine, line, tc->lines, {
-         //   _renderText(self, frame, c_str(line->text), line->x, line->y, &font);
-         //});
-
-      }
+      _renderEntityText(self, frame, e);         
       
    }
 }

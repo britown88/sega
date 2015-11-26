@@ -340,7 +340,7 @@ static void _enterState(WorldState *state) {
 
    _addTestEntities(state);
 
-   _testLUA(state);
+   //_testLUA(state);
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){
