@@ -457,7 +457,7 @@ void gridManagerRender(GridManager *self, Frame *frame) {
       }
    }
 
-   _hideEntitySquares(self, frame, xstart, xend, ystart, yend);
+  // _hideEntitySquares(self, frame, xstart, xend, ystart, yend);
 }
 
 void gridManagerRenderLighting(GridManager *self, Frame *frame) {

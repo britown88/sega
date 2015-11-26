@@ -6,7 +6,7 @@
 #include "WorldView.h"
 #include <math.h>
 
-#define MOVE_TIME 150
+#define MOVE_TIME 250
 #define WAIT_TIME 200
 
 #pragma pack(push, 1)
@@ -190,18 +190,22 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
       return;//waiting or moving
    }
 
-   if (ic) {      
-      COMPONENT_ADD(e, WaitComponent,
-         .time = WAIT_TIME,
-         .overflow = ic->overflow);
+   //if (ic) {      
+   //   COMPONENT_ADD(e, WaitComponent,
+   //      .time = WAIT_TIME,
+   //      .overflow = ic->overflow);
 
-      entityRemove(InterpolationComponent)(e);
-      entityUpdate(e);
-      return;
-   }
+   //   entityRemove(InterpolationComponent)(e);
+   //   entityUpdate(e);
+   //   return;
+   //}
 
-   if (wc) {
-      overflow = wc->overflow;
+   //if (wc) {
+   //   overflow = wc->overflow;
+   //}
+
+   if (ic) {
+      overflow = ic->overflow;
    }
 
    _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, overflow);
