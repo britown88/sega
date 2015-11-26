@@ -32,7 +32,7 @@ typedef vec(Span) *RichTextLine;
 #include "segautils/Vector_Decl.h"
 
 void richTextLineDestroy(RichTextLine *self);
-RichTextLine richTextLineCopy(RichTextLine self);
+void richTextLineCopy(RichTextLine self, RichTextLine other);
 void richTextLineGetRaw(RichTextLine self, String *out);
 
 typedef struct RichText_t RichText;

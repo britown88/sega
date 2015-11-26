@@ -81,13 +81,7 @@ static void _updateInputLine(Console *self) {
    richTextReset(self->rt, innerString);
 
    vecClear(Span)(input);
-   vecForEach(Span, span, richTextGetSpans(self->rt), {
-      Span newSpan = {
-         .style = { span->style.flags, span->style.fg, span->style.bg },
-         .string = stringCopy(span->string)
-      };
-      vecPushBack(Span)(input, &newSpan);
-   });   
+   richTextLineCopy(richTextGetSpans(self->rt), input);  
 }
 
 static void _updateConsoleLines(Console *self) {
@@ -105,13 +99,7 @@ static void _updateConsoleLines(Console *self) {
          RichTextLine queueline = *(vecEnd(RichTextLine)(self->queue) - (LINE_COUNT - skipCount) + (i - skipCount));
 
          //push the queueline spans into the console entity
-         vecForEach(Span, span, queueline, {
-            Span newSpan = {
-               .style = { span->style.flags, span->style.fg, span->style.bg },
-               .string = stringCopy(span->string)
-            };
-            vecPushBack(Span)(line->line, &newSpan);
-         });
+         richTextLineCopy(queueline, line->line);
       }
    }
 }

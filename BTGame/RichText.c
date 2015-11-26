@@ -51,18 +51,15 @@ void richTextLineDestroy(RichTextLine *self) {
    vecDestroy(Span)(*self);
 }
 
-RichTextLine richTextLineCopy(RichTextLine self) {
-   RichTextLine out = vecCreate(Span)(&spanDestroy);
+void richTextLineCopy(RichTextLine self, RichTextLine other) {
    vecForEach(Span, span, self, {
       Span newSpan = {
          .style = {span->style.flags, span->style.fg, span->style.bg},
          .string = stringCopy(span->string)
       };
 
-      vecPushBack(Span)(out, &newSpan);
+      vecPushBack(Span)(other, &newSpan);
    });
-
-   return out;
 }
 
 void richTextLineGetRaw(RichTextLine self, String *out) {

@@ -137,13 +137,7 @@ static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
 
       if (line != tb->currentLine) {
          //copy over the full line
-         vecForEach(Span, span, rtline, {
-               Span newSpan = {
-               .style = { span->style.flags, span->style.fg, span->style.bg },
-               .string = stringCopy(span->string)
-            };
-            vecPushBack(Span)(tline->line, &newSpan);
-         });
+         richTextLineCopy(rtline, tline->line);
       }
       else {
          //midline, copy partial
