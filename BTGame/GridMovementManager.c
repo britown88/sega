@@ -6,9 +6,13 @@
 #include "WorldView.h"
 #include <math.h>
 
+#define MOVE_TIME 150
+#define WAIT_TIME 200
+
 #pragma pack(push, 1)
 typedef struct {
    short destX, destY;
+   short lastX, lastY;
 }TGridMovingComponent;
 #pragma pack(pop)
 
@@ -135,6 +139,11 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
       if (entityGet(InterpolationComponent)(e)) {
          entityRemove(InterpolationComponent)(e);
       }
+
+      //make sure our wait gets cleaned up
+      if (entityGet(WaitComponent)(e)) {
+         entityRemove(WaitComponent)(e);
+      }
       
       return;
    }
@@ -143,6 +152,8 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
 
    if (solution.totalCost > 0 && solution.path) {
       size_t dest = vecBegin(GridSolutionNode)(solution.path)->node;
+      tgc->lastX = gc->x;
+      tgc->lastY = gc->y;
 
       //update our grid position to the new cell
       COMPONENT_LOCK(GridComponent, newgc, e, {
@@ -152,7 +163,7 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
       COMPONENT_ADD(e, InterpolationComponent,
          .destX = gc->x * GRID_CELL_SIZE,
          .destY = gc->y * GRID_CELL_SIZE,
-         .time = 250,
+         .time = MOVE_TIME,
          .overflow = overflow);
 
       entityUpdate(e);
@@ -165,19 +176,32 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
    Microseconds overflow = 0;
+   WaitComponent *wc = entityGet(WaitComponent)(e);
 
-   if (ic && ic->overflow == 0) {
-      //still moving
+   /*
+   if we're moving, return
+   if we're waiting return
+   if we're not moving, start the wait
+   if we're done waiting, move
+   */
+
+   if ((wc && wc->overflow == 0) || 
+      (ic && ic->overflow == 0)) {
+      return;//waiting or moving
+   }
+
+   if (ic) {      
+      COMPONENT_ADD(e, WaitComponent,
+         .time = WAIT_TIME,
+         .overflow = ic->overflow);
+
+      entityRemove(InterpolationComponent)(e);
+      entityUpdate(e);
       return;
    }
 
-   /*COMPONENT_LOCK(GridComponent, gc, e, {
-      gc->x = tgc->nextX;
-      gc->y = tgc->nextY;
-   });*/
-
-   if (ic) {
-      overflow = ic->overflow;
+   if (wc) {
+      overflow = wc->overflow;
    }
 
    _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, overflow);
@@ -234,4 +258,15 @@ void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e,
       _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
 
    }
+}
+
+//if an entity is moving, this returns the cell ID they were in befofre their last movement
+//returns INF if not moving, useful for drawing
+size_t gridMovementManagerGetEntityLastPosition(GridMovementManager *self, Entity *e) {
+   TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
+   if (tgc) {
+      return gridManagerCellIDFromXY(self->view->managers->gridManager, tgc->lastX, tgc->lastY);
+   }
+
+   return INF;
 }

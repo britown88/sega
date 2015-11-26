@@ -118,6 +118,7 @@
     <ClCompile Include="RichText.c" />
     <ClCompile Include="TextBoxManager.c" />
     <ClCompile Include="VerbManager.c" />
+    <ClCompile Include="WaitManager.c" />
     <ClCompile Include="WorldState.c" />
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />

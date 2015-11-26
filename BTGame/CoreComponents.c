@@ -59,3 +59,6 @@ static void TextComponentDestroy(TextComponent *self){
 #define ComponentT InterpolationComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT WaitComponent
+#include "Entities\ComponentImpl.h"
+

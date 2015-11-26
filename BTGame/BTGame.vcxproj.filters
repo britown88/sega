@@ -125,5 +125,8 @@
     <ClCompile Include="RichText.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WaitManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

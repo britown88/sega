@@ -83,6 +83,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.cursorManager, createCursorManager(&self->view));
    RegisterManager(self->managers.gridManager, createGridManager(&self->view));
    RegisterManager(self->managers.interpolationManager, createInterpolationManager(&self->view));
+   RegisterManager(self->managers.waitManager, createWaitManager(&self->view));
    RegisterManager(self->managers.gridMovementManager, createGridMovementManager(&self->view));
    RegisterManager(self->managers.pcManager, createPCManager(&self->view));
    RegisterManager(self->managers.textBoxManager, createTextBoxManager(&self->view));

@@ -364,9 +364,20 @@ vec(EntityPtr) *gridManagerQueryEntities(GridManager *self) {
 }
 
 static void _renderTile(GridManager *self, Frame *frame, short x, short y, short imgX, short imgY) {
-   FrameRegion *vp = &self->view->viewport->region;
-   frameRenderImagePartial(frame, vp, x, y, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
+   Viewport *vp = self->view->viewport;
+   FrameRegion *region = &self->view->viewport->region;
+   short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
+   short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
+   frameRenderImagePartial(frame, region, renderX, renderY, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
    //frameRenderRect(frame, vp, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, 15);
+}
+
+static void _renderBlank(GridManager *self, Frame *frame, short x, short y) {
+   Viewport *vp = self->view->viewport;
+   FrameRegion *region = &self->view->viewport->region;
+   short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
+   short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
+   frameRenderRect(frame, region, renderX, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 0);
 }
 
 void _updateTileAnimationIndex(GridManager *self) {
@@ -378,6 +389,31 @@ void _updateTileAnimationIndex(GridManager *self) {
 }
 short _getImageIndex(GridManager *self, TileSchema *schema) {
    return schema->img[self->tileAnimFrameIndex % schema->imgCount];
+}
+
+void _hideEntitySquare(GridManager *self, Frame *frame, Entity *e, int xstart, int xend, int ystart, int yend) {
+   GridComponent *gc = entityGet(GridComponent)(e);
+   //size_t lastindex = gridMovementManagerGetEntityLastPosition(self->view->managers->gridMovementManager, e);
+   //int lastX = 0, lastY = 0;
+
+   if (gc->x >= xstart && gc->x < xend && gc->y >= ystart && gc->y < yend) {
+      _renderBlank(self, frame, gc->x, gc->y);
+   }   
+
+   //if (lastindex < INF) {
+   //   gridManagerXYFromCellID(self, lastindex, &lastX, &lastY);
+   //   if (lastX >= xstart && lastX < xend && lastY >= ystart && lastY < yend) {
+   //      _renderBlank(self, frame, lastX, lastY);
+   //   }
+   //}
+}
+
+void _hideEntitySquares(GridManager *self, Frame *frame, int xstart, int xend, int ystart, int yend) {
+   gridManagerQueryEntities(self);
+
+   vecForEach(EntityPtr, e, self->inViewEntities, {
+      _hideEntitySquare(self, frame, *e, xstart, xend, ystart, yend);
+   });
 }
 
 void gridManagerRender(GridManager *self, Frame *frame) {
@@ -398,9 +434,9 @@ void gridManagerRender(GridManager *self, Frame *frame) {
    ystart = MAX(0, ystart);
    xend = MIN(self->width, xend);
    yend = MIN(self->height, yend);
-   
+
    _updateTileAnimationIndex(self);
-   lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);   
+   lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
@@ -409,18 +445,19 @@ void gridManagerRender(GridManager *self, Frame *frame) {
          short imgX = (img % 16) * GRID_CELL_SIZE;
          short imgY = (img / 16) * GRID_CELL_SIZE;
 
-         short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
-         short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
+         
 
          LightData *lightLevel = lightGridAt(self->lightGrid, x - xstart, y - ystart);
          if (lightLevel) {
             if (lightLevel->level > 0) {
-               _renderTile(self, frame, renderX, renderY, imgX, imgY);
+               _renderTile(self, frame, x, y, imgX, imgY);
                //lightDataRender(lightLevel, frame, &vp->region, renderX, renderY);
             }
          }
       }
    }
+
+   _hideEntitySquares(self, frame, xstart, xend, ystart, yend);
 }
 
 void gridManagerRenderLighting(GridManager *self, Frame *frame) {

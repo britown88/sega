@@ -154,6 +154,14 @@ typedef struct {
 #define ComponentT InterpolationComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   Milliseconds time;
+   Microseconds overflow;//if this is not 0, the wait finished but there's leftover time to apply to the next go
+}WaitComponent;
+
+#define ComponentT WaitComponent
+#include "Entities\ComponentDecl.h"
+
 
 
 #pragma pack(pop)

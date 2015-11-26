@@ -10,6 +10,7 @@ typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
 typedef struct GridManager_t GridManager;
 typedef struct InterpolationManager_t InterpolationManager;
+typedef struct WaitManager_t WaitManager;
 typedef struct GridMovementManager_t GridMovementManager;
 typedef struct PCManager_t PCManager;
 typedef struct TextBoxManager_t TextBoxManager;
@@ -24,6 +25,7 @@ typedef struct BTManagers_t {
    CursorManager *cursorManager;
    GridManager *gridManager;
    InterpolationManager *interpolationManager;
+   WaitManager *waitManager;
    GridMovementManager *gridMovementManager;   
    PCManager *pcManager;
    TextBoxManager *textBoxManager;
@@ -43,11 +45,18 @@ void cursorManagerClearVerb(CursorManager *self);
 InterpolationManager *createInterpolationManager(WorldView *view);
 void interpolationManagerUpdate(InterpolationManager *self);
 
+WaitManager *createWaitManager(WorldView *view);
+void waitManagerUpdate(WaitManager *self);
+
 GridMovementManager *createGridMovementManager(WorldView *view);
 void gridMovementManagerUpdate(GridMovementManager *self);
 void gridMovementManagerStopEntity(GridMovementManager *self, Entity *e);
 void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x, short y);
 void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e, short x, short y);
+
+//if an entity is moving, this returns the cell ID they were in befofre their last movement
+//returns INF if not moving, useful for drawing
+size_t gridMovementManagerGetEntityLastPosition(GridMovementManager *self, Entity *e);
 
 PCManager *createPCManager(WorldView *view);
 void pcManagerUpdate(PCManager *self);

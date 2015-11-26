@@ -1,8 +1,5 @@
 #include "Managers.h"
 
-#include "Managers.h"
-#include "ImageLibrary.h"
-
 #include "Entities\Entities.h"
 
 #include "CoreComponents.h"
@@ -54,7 +51,7 @@ void _onUpdate(InterpolationManager *self, Entity *e) {
    TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);
-
+   
    if (pc) {
       if (ic) {
          if (tic) {
@@ -91,7 +88,7 @@ void _onUpdate(InterpolationManager *self, Entity *e) {
    }
 }
 
-void _removeComponents(InterpolationManager *self) {
+static void _removeComponents(InterpolationManager *self) {
    vecForEach(EntityPtr, e, self->removeList, {      
       entityRemove(TInterpolationComponent)(*e);
    });
@@ -99,7 +96,7 @@ void _removeComponents(InterpolationManager *self) {
    vecClear(EntityPtr)(self->removeList);
 }
 
-void _updateEntity(InterpolationManager *self, Entity *e, Microseconds time) {
+static void _updateEntity(InterpolationManager *self, Entity *e, Microseconds time) {
    TInterpolationComponent *tic = entityGet(TInterpolationComponent)(e);
    InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
    PositionComponent *pc = entityGet(PositionComponent)(e);

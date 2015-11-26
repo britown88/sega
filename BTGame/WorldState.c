@@ -21,6 +21,8 @@
 #include "segautils/Lisp.h"
 #include "segautils/Math.h"
 
+#include <stdio.h>
+
 typedef struct {
    WorldView *view;
 }WorldState;
@@ -47,6 +49,7 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
    interpolationManagerUpdate(managers->interpolationManager);
+   waitManagerUpdate(managers->waitManager);
    gridMovementManagerUpdate(managers->gridMovementManager);
    pcManagerUpdate(managers->pcManager);
    textBoxManagerUpdate(managers->textBoxManager);
@@ -260,10 +263,7 @@ void _boardRender(WorldState *state, GameStateRender *m){
    renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
-#include "liblua/lauxlib.h"
-#include "liblua/lualib.h"
-
-static void _testLUA(WorldState *state) {
+static void _testWordWrap(WorldState *state) {
    RichText *rt = richTextCreateFromRaw("[c=0,1]The [i]lua_pushvalue function [/c]pushes on the [/i]top of the st[i]ack[/i] a copy of the element at the given index; lua_remove removes the element at the given index, shifting down all elements on top of that position to fill in the gap; lua_insert moves the top element into the given position, shifting up all elements on top of that position to open space; finally, lua_replace pops a value from the top and sets it as the value of the given index, without moving anything. Notice that the following operations have no effect on the stack:");
    //RichText *rt = richTextCreateFromRaw("the      emergencybroadcast system");
    vec(RichTextLine) *output = vecCreate(RichTextLine)(&richTextLineDestroy);
@@ -301,10 +301,7 @@ static void _testLUA(WorldState *state) {
       });
       fprintf(f, " |<-\n\n->| ");
    });
-
-
    
-
    fclose(f);
 
    stringDestroy(str);
@@ -340,7 +337,7 @@ static void _enterState(WorldState *state) {
 
    _addTestEntities(state);
 
-   //_testLUA(state);
+   //_testWordWrap(state);
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){
