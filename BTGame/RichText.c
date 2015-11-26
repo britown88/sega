@@ -394,6 +394,7 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
                break;
             }
 
+            lastSpace = -1;
             currentWidth = 0;
             splitPoint = i;            
          }
@@ -409,7 +410,7 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
             if (lastSpace >= subStringStartPos) {
                segmentLength = lastSpace - subStringStartPos + 1;//add one to include the space
             } 
-            else {
+            else if(lastSpace < 0){
                segmentLength = subStringWidth;
             }
 
