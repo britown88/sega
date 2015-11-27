@@ -6,6 +6,7 @@
 
 #include "segautils/StandardVectors.h"
 #include "GameClock.h"
+#include "Managers.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -40,6 +41,47 @@ struct Console_t {
    lua_State *L;
 };
 
+static int lsega_consolePrint(lua_State *L) {
+   char *str = luaL_checkstring(L, 1);
+   WorldView *view;
+
+   lua_getglobal(L, "View");
+   view = lua_touserdata(L, -1);
+
+   consolePushLine(view->console, str);
+   return 0;
+}
+
+static int lsega_pushText(lua_State *L) {
+   char *boxName = luaL_checkstring(L, 1);
+   char *str = luaL_checkstring(L, 2);
+   WorldView *view;
+
+   lua_getglobal(L, "View");
+   view = lua_touserdata(L, -1);
+
+   textBoxManagerPushText(view->managers->textBoxManager, stringIntern(boxName), str);
+   return 0;
+}
+
+static void _initLua(Console *self) {
+
+   self->L = luaL_newstate();
+   luaL_openlibs(self->L);
+
+   lua_pushlightuserdata(self->L, self->view);
+   lua_setglobal(self->L, "View");
+
+   lua_pushcfunction(self->L, &lsega_consolePrint);
+   lua_setglobal(self->L, "consolePrint");
+
+   lua_pushcfunction(self->L, &lsega_pushText);
+   lua_setglobal(self->L, "pushText");
+
+}
+
+
+
 Console *consoleCreate(WorldView *view) {
    Console *out = checkedCalloc(1, sizeof(Console));
    out->view = view;
@@ -48,8 +90,7 @@ Console *consoleCreate(WorldView *view) {
    out->input = stringCreate("");
    out->rt = richTextCreateFromRaw("");
 
-   out->L = luaL_newstate();
-   luaL_openlibs(out->L);
+   _initLua(out);
 
    return out;
 }
@@ -150,9 +191,10 @@ static void _printStackItem(Console *self, int index) {
 }
 
 static void _processInput(Console *self, String *input) {
-   int error = luaL_loadbuffer(self->L, c_str(input), stringLen(input), "line") || lua_pcall(self->L, 0, LUA_MULTRET, 0);
+   int error;
 
    consolePrintLine(self, "> %s", c_str(input));
+   error = luaL_loadbuffer(self->L, c_str(input), stringLen(input), "line") || lua_pcall(self->L, 0, LUA_MULTRET, 0);
 
    if (error) {
       consolePrintLine(self, "[c=0,13]%s[/c]", lua_tostring(self->L, -1));
@@ -251,6 +293,12 @@ static void _historyUp(Console *self) {
    if (historyLen > 0 && self->historyLocation > 0) {
       --self->historyLocation;
       stringSet(self->input, c_str(*vecAt(StringPtr)(self->inputHistory, self->historyLocation)));
+
+      self->cursorPos = stringLen(self->input);
+      if (self->cursorPos > self->skippedChars + SHOWN_INPUT_LEN) {
+         self->skippedChars = self->cursorPos - SHOWN_INPUT_LEN;
+      }
+      self->invertCursor = true;
       _updateInputLine(self);
    }
 }
@@ -267,6 +315,11 @@ static void _historyDown(Console *self) {
          stringClear(self->input);
       }
 
+      self->cursorPos = stringLen(self->input);
+      if (self->cursorPos > self->skippedChars + SHOWN_INPUT_LEN) {
+         self->skippedChars = self->cursorPos - SHOWN_INPUT_LEN;
+      }
+      self->invertCursor = true;
       _updateInputLine(self);
    }
 }
@@ -279,7 +332,7 @@ static void _backspace(Console *self) {
          stringErase(self->input, len - 1);
       }
       else {
-         stringErase(self->input, self->cursorPos);
+         stringErase(self->input, self->cursorPos - 1);
       }
       
       _cursorMove(self, -1);
