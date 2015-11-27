@@ -64,19 +64,66 @@ static int lsega_pushText(lua_State *L) {
    return 0;
 }
 
+static int lsega_playerMove(lua_State *L) {
+   int x = (int)luaL_checkinteger(L, 1);
+   int y = (int)luaL_checkinteger(L, 2);
+   WorldView *view;
+
+   lua_getglobal(L, "View");
+   view = lua_touserdata(L, -1);
+
+   pcManagerMove(view->managers->pcManager, x, y);
+
+   return 0;
+}
+
+static int lsega_cls(lua_State *L) {
+   WorldView *view;
+   Console *self;
+
+   lua_getglobal(L, "View");
+   view = lua_touserdata(L, -1);
+
+   self = view->console;
+
+   vecClear(RichTextLine)(self->queue);
+   consolePushLine(self,
+      "---------------------------\n"
+      "| [i][c=0,14]Welcome[/i] to the console![/c] |\n"
+      "---------------------------");
+
+   consolePushLine(self, "");
+
+   return 0;
+}
+
 static void _initLua(Console *self) {
 
    self->L = luaL_newstate();
-   luaL_openlibs(self->L);
+   luaL_openlibs(self->L);   
 
    lua_pushlightuserdata(self->L, self->view);
    lua_setglobal(self->L, "View");
 
+   lua_newtable(self->L);
+   lua_pushstring(self->L, "print");
    lua_pushcfunction(self->L, &lsega_consolePrint);
-   lua_setglobal(self->L, "consolePrint");
+   lua_rawset(self->L, -3);
+
+   lua_setglobal(self->L, "console");
+
+   lua_newtable(self->L);
+   lua_pushstring(self->L, "move");
+   lua_pushcfunction(self->L, &lsega_playerMove);
+   lua_rawset(self->L, -3);
+
+   lua_setglobal(self->L, "player");
 
    lua_pushcfunction(self->L, &lsega_pushText);
    lua_setglobal(self->L, "pushText");
+
+   lua_pushcfunction(self->L, &lsega_cls);
+   lua_setglobal(self->L, "cls");
 
 }
 
@@ -109,7 +156,6 @@ static RichTextLine _inputLine(Console *self) {
 }
 
 static void _updateInputLine(Console *self) {
-   
 
    int inlen = stringLen(self->input);
    int len = MIN(SHOWN_INPUT_LEN, inlen);
