@@ -17,6 +17,10 @@
 #define BOTTOM 19
 #define LEFT 2
 
+#define PREFIX     "> "
+#define PREFIX_LEN 2
+#define SHOWN_INPUT_LEN (WIDTH - PREFIX_LEN - 1)
+
 struct Console_t {
    WorldView *view;
    Entity *e;
@@ -29,8 +33,9 @@ struct Console_t {
 
    int historyLocation;
    int cursorPos, selectionWidth;
+   int skippedChars;
    Microseconds cursorClock;
-   int invertCursor;
+   bool invertCursor;
    
    lua_State *L;
 };
@@ -63,19 +68,37 @@ static RichTextLine _inputLine(Console *self) {
 }
 
 static void _updateInputLine(Console *self) {
-   static const char *prefix = "> ";
-   static const int prefixlen = 2;
+   
 
    int inlen = stringLen(self->input);
-   int len = MIN(WIDTH - prefixlen - 1, inlen);
+   int len = MIN(SHOWN_INPUT_LEN, inlen);
+   int skippedChars = self->skippedChars;
+   int cursorPos = self->cursorPos - skippedChars;
    RichTextLine input = _inputLine(self);
    String *innerString = stringCreate("");
 
-   stringSet(innerString, prefix);
-   stringConcat(innerString, c_str(self->input) + (inlen - len));
+   stringSet(innerString, PREFIX);
+   
+   if (self->cursorPos == inlen) {
+      //cursor is at the end so draw the whole string and a highlighted space
+      stringConcat(innerString, c_str(self->input) + skippedChars);
 
-   if (self->invertCursor) {
-      stringConcat(innerString, "[i] [/i]");
+      if (self->invertCursor) {
+         stringConcat(innerString, "[i] [/i]");
+      }
+   }
+   else {
+      //cusor is mid-word so split it upand highlight the cusor pos
+      stringConcatEX(innerString, c_str(self->input) + skippedChars, cursorPos);
+      if (self->invertCursor) {
+         stringConcat(innerString, "[i]");
+      }
+      stringConcatEX(innerString, c_str(self->input) + skippedChars + cursorPos, 1);
+      if (self->invertCursor) {
+         stringConcat(innerString, "[/i]");
+      }
+
+      stringConcatEX(innerString, c_str(self->input) + skippedChars + cursorPos + 1, len - cursorPos - 1);
    }
 
    richTextReset(self->rt, innerString);
@@ -163,6 +186,8 @@ static void _commitInput(Console *self) {
    //update the history
    vecPushBack(StringPtr)(self->inputHistory, &input);
    self->historyLocation = vecSize(StringPtr)(self->inputHistory);
+   self->cursorPos = 0;
+   self->skippedChars = 0;
 }
 
 void consoleCreateLines(Console *self) {
@@ -204,9 +229,19 @@ bool consoleGetEnabled(Console *self) {
    return self->enabled;
 }
 
+static void _cursorMove(Console *self, int delta) {
+   self->cursorPos = MIN(stringLen(self->input), MAX(0, self->cursorPos + delta));
+   self->invertCursor = true;
+   self->skippedChars = MIN(self->cursorPos, self->skippedChars);
+
+   if (self->cursorPos > self->skippedChars + SHOWN_INPUT_LEN) {
+      self->skippedChars = self->cursorPos - SHOWN_INPUT_LEN;
+   }
+}
+
 void consoleInputChar(Console *self, char c) {
-   stringConcatEX(self->input, &c, 1);
-   self->cursorPos += 1;
+   stringInsert(self->input, c, self->cursorPos);
+   _cursorMove(self, 1);
    _updateInputLine(self);
 }
 static void _historyUp(Console *self) {
@@ -237,8 +272,16 @@ static void _historyDown(Console *self) {
 
 static void _backspace(Console *self) {
    size_t len = stringLen(self->input);
-   if (len > 0) {
-      stringSubStr(self->input, 0, len - 1);
+   if (len > 0 && self->cursorPos > 0) {
+      stringErase(self->input, self->cursorPos);
+      _cursorMove(self, -1);
+      _updateInputLine(self);
+   }
+}
+static void _delete(Console *self) {
+   size_t len = stringLen(self->input);
+   if (len > 0 && self->cursorPos < len) {
+      stringErase(self->input, self->cursorPos);
       _updateInputLine(self);
    }
 }
@@ -253,9 +296,34 @@ void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
       break;
    case SegaKey_Down:
       _historyDown(self);      
-      break; 
+      break;
+   case SegaKey_Left:
+      _cursorMove(self, -1);
+      _updateInputLine(self);
+      break;
+   case SegaKey_Right:
+      _cursorMove(self, 1);
+      _updateInputLine(self);
+      break;
    case SegaKey_Backspace:
       _backspace(self);
+      break;
+   case SegaKey_Delete:
+      _delete(self);
+      break;
+   case SegaKey_Home:
+      self->cursorPos = 0;
+      self->skippedChars = 0;
+      self->invertCursor = true;
+      _updateInputLine(self);
+      break;
+   case SegaKey_End:
+      self->cursorPos = stringLen(self->input);
+      if (self->cursorPos > self->skippedChars + SHOWN_INPUT_LEN) {
+         self->skippedChars = self->cursorPos - SHOWN_INPUT_LEN;
+      }
+      self->invertCursor = true;
+      _updateInputLine(self);
       break;
    }
 }

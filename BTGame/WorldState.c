@@ -70,7 +70,7 @@ static void _handleKeyboardConsole(WorldState *state) {
             consoleInputChar(state->view->console, (char)e.unichar);
          }
       }
-      else if (e.action == SegaKey_Pressed) {
+      else if (e.action == SegaKey_Pressed || e.action == SegaKey_Repeat) {
          consoleInputKey(state->view->console, e.key, e.mods);
       }
       else if (e.action == SegaKey_Released) {

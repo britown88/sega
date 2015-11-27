@@ -16,4 +16,6 @@ void stringSubStr(String *self, size_t start, size_t len);
 void stringConcat(String *self, const char*str);
 void stringConcatEX(String *self, const char*str, size_t length);
 void stringSet(String *self, const char*str);
+void stringInsert(String *self, char c, size_t pos);
+void stringErase(String *self, size_t pos);
 const char *c_str(String *str);

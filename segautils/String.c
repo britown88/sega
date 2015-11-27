@@ -62,3 +62,14 @@ const char *c_str(String *str){
    }
    return vecAt(char)((vec(char)*)str, 0);
 }
+
+void stringInsert(String *self, char c, size_t pos) {
+   if (pos <= stringLen(self)) {      
+      vecInsert(char)((vec(char)*)self, pos, &c);
+   }
+}
+void stringErase(String *self, size_t pos) {
+   if (pos < stringLen(self)) {
+      vecRemoveAt(char)((vec(char)*)self, pos);
+   }
+}
