@@ -181,13 +181,14 @@ static void _commitInput(Console *self) {
    
    //clear the console
    stringClear(self->input);
+   self->cursorPos = 0;
+   self->skippedChars = 0;
    _updateInputLine(self);
 
    //update the history
    vecPushBack(StringPtr)(self->inputHistory, &input);
    self->historyLocation = vecSize(StringPtr)(self->inputHistory);
-   self->cursorPos = 0;
-   self->skippedChars = 0;
+   
 }
 
 void consoleCreateLines(Console *self) {
@@ -273,7 +274,14 @@ static void _historyDown(Console *self) {
 static void _backspace(Console *self) {
    size_t len = stringLen(self->input);
    if (len > 0 && self->cursorPos > 0) {
-      stringErase(self->input, self->cursorPos);
+
+      if (self->cursorPos == len) {
+         stringErase(self->input, len - 1);
+      }
+      else {
+         stringErase(self->input, self->cursorPos);
+      }
+      
       _cursorMove(self, -1);
       _updateInputLine(self);
    }
