@@ -81,7 +81,7 @@ typedef struct {
 
    char buffer[256];
    size_t bufferLen;
-   bool currentInvert;
+   bool currentInvert, ignoring;
 }RTParse;
 
 static void _pushStyle(RichText *self, SpanStyle style) {
@@ -202,7 +202,21 @@ static int _parseTag(RichText *self, RTParse *p) {
          cmd = *p->str++;
       }
 
-      if (cmd == 'i' || cmd == 'I') {
+      if (cmd == '=') {
+         _skipWhitespace(p);
+         c = *p->str++;
+         if (c != ']') {            
+            return 1;
+         }
+         else {
+            p->ignoring = !end;
+            return 0;
+         }
+      }
+      else if (p->ignoring) {
+         return 1;
+      }
+      else if (cmd == 'i' || cmd == 'I') {
          //invert command
          _skipWhitespace(p);
          c = *p->str++;

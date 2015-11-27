@@ -42,7 +42,7 @@ struct Console_t {
 };
 
 static int lsega_consolePrint(lua_State *L) {
-   char *str = luaL_checkstring(L, 1);
+   const char *str = luaL_checkstring(L, 1);
    WorldView *view;
 
    lua_getglobal(L, "View");
@@ -53,8 +53,8 @@ static int lsega_consolePrint(lua_State *L) {
 }
 
 static int lsega_pushText(lua_State *L) {
-   char *boxName = luaL_checkstring(L, 1);
-   char *str = luaL_checkstring(L, 2);
+   const char *boxName = luaL_checkstring(L, 1);
+   const char *str = luaL_checkstring(L, 2);
    WorldView *view;
 
    lua_getglobal(L, "View");
@@ -119,28 +119,31 @@ static void _updateInputLine(Console *self) {
    String *innerString = stringCreate("");
 
    stringSet(innerString, PREFIX);
+   stringConcat(innerString, "[=]");
    
    if (self->cursorPos == inlen) {
       //cursor is at the end so draw the whole string and a highlighted space
       stringConcat(innerString, c_str(self->input) + skippedChars);
 
       if (self->invertCursor) {
-         stringConcat(innerString, "[i] [/i]");
+         stringConcat(innerString, "[/=][i] [/i][=]");
       }
    }
    else {
       //cusor is mid-word so split it upand highlight the cusor pos
       stringConcatEX(innerString, c_str(self->input) + skippedChars, cursorPos);
       if (self->invertCursor) {
-         stringConcat(innerString, "[i]");
+         stringConcat(innerString, "[/=][i]");
       }
       stringConcatEX(innerString, c_str(self->input) + skippedChars + cursorPos, 1);
       if (self->invertCursor) {
-         stringConcat(innerString, "[/i]");
+         stringConcat(innerString, "[/i][=]");
       }
 
       stringConcatEX(innerString, c_str(self->input) + skippedChars + cursorPos + 1, len - cursorPos - 1);
    }
+
+   stringConcat(innerString, "[/=]");
 
    richTextReset(self->rt, innerString);
 
