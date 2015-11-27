@@ -100,6 +100,7 @@
     <ClInclude Include="GridSolver.h" />
     <ClInclude Include="ImageLibrary.h" />
     <ClInclude Include="LightGrid.h" />
+    <ClInclude Include="Lua.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="RichText.h" />
@@ -114,6 +115,11 @@
     <ClCompile Include="GridSolver.c" />
     <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LightGrid.c" />
+    <ClCompile Include="Lua.c" />
+    <ClCompile Include="Lua_ActorLibrary.c" />
+    <ClCompile Include="Lua_AllLibraries.c" />
+    <ClCompile Include="Lua_StandardLibrary.c" />
+    <ClCompile Include="Lua_UILibrary.c" />
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="RichText.c" />
     <ClCompile Include="TextBoxManager.c" />

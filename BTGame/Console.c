@@ -10,6 +10,7 @@
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
+#include "Lua.h"
 
 #include "RichText.h"
 
@@ -37,96 +38,17 @@ struct Console_t {
    int skippedChars;
    Microseconds cursorClock;
    bool invertCursor;
-   
-   lua_State *L;
 };
-
-static int lsega_consolePrint(lua_State *L) {
-   const char *str = luaL_checkstring(L, 1);
-   WorldView *view;
-
-   lua_getglobal(L, "View");
-   view = lua_touserdata(L, -1);
-
-   consolePushLine(view->console, str);
-   return 0;
-}
-
-static int lsega_pushText(lua_State *L) {
-   const char *boxName = luaL_checkstring(L, 1);
-   const char *str = luaL_checkstring(L, 2);
-   WorldView *view;
-
-   lua_getglobal(L, "View");
-   view = lua_touserdata(L, -1);
-
-   textBoxManagerPushText(view->managers->textBoxManager, stringIntern(boxName), str);
-   return 0;
-}
 
 static int lsega_playerMove(lua_State *L) {
    int x = (int)luaL_checkinteger(L, 1);
    int y = (int)luaL_checkinteger(L, 2);
-   WorldView *view;
-
-   lua_getglobal(L, "View");
-   view = lua_touserdata(L, -1);
+   WorldView *view = luaGetWorldView(L);
 
    pcManagerMove(view->managers->pcManager, x, y);
 
    return 0;
 }
-
-static int lsega_cls(lua_State *L) {
-   WorldView *view;
-   Console *self;
-
-   lua_getglobal(L, "View");
-   view = lua_touserdata(L, -1);
-
-   self = view->console;
-
-   vecClear(RichTextLine)(self->queue);
-   consolePushLine(self,
-      "---------------------------\n"
-      "| [i][c=0,14]Welcome[/i] to the console![/c] |\n"
-      "---------------------------");
-
-   consolePushLine(self, "");
-
-   return 0;
-}
-
-static void _initLua(Console *self) {
-
-   self->L = luaL_newstate();
-   luaL_openlibs(self->L);   
-
-   lua_pushlightuserdata(self->L, self->view);
-   lua_setglobal(self->L, "View");
-
-   lua_newtable(self->L);
-   lua_pushstring(self->L, "print");
-   lua_pushcfunction(self->L, &lsega_consolePrint);
-   lua_rawset(self->L, -3);
-
-   lua_setglobal(self->L, "console");
-
-   lua_newtable(self->L);
-   lua_pushstring(self->L, "move");
-   lua_pushcfunction(self->L, &lsega_playerMove);
-   lua_rawset(self->L, -3);
-
-   lua_setglobal(self->L, "player");
-
-   lua_pushcfunction(self->L, &lsega_pushText);
-   lua_setglobal(self->L, "pushText");
-
-   lua_pushcfunction(self->L, &lsega_cls);
-   lua_setglobal(self->L, "cls");
-
-}
-
 
 
 Console *consoleCreate(WorldView *view) {
@@ -137,13 +59,10 @@ Console *consoleCreate(WorldView *view) {
    out->input = stringCreate("");
    out->rt = richTextCreateFromRaw("");
 
-   _initLua(out);
-
    return out;
 }
 void consoleDestroy(Console *self) {
 
-   lua_close(self->L);
    richTextDestroy(self->rt);
    stringDestroy(self->input);
    vecDestroy(RichTextLine)(self->queue);
@@ -217,42 +136,43 @@ static void _updateConsoleLines(Console *self) {
    }
 }
 
-static void _printStackItem(Console *self, int index) {
-   int t = lua_type(self->L, index);
+static void _printStackItem(lua_State *L, Console *self, int index) {
+   int t = lua_type(L, index);
    switch (t) {
 
    case LUA_TSTRING:  /* strings */
-      consolePrintLine(self, "Returned: [c=0,5]'%s'[/c]", lua_tostring(self->L, index));
+      consolePrintLine(self, "Returned: [c=0,5]'%s'[/c]", lua_tostring(L, index));
       break;
 
    case LUA_TBOOLEAN:  /* booleans */
-      consolePrintLine(self, "Returned: [c=0,5]%s[/c]", lua_toboolean(self->L, index) ? "true" : "false");
+      consolePrintLine(self, "Returned: [c=0,5]%s[/c]", lua_toboolean(L, index) ? "true" : "false");
       break;
 
    case LUA_TNUMBER:  /* numbers */
-      consolePrintLine(self, "Returned: [c=0,5]%g[/c]", lua_tonumber(self->L, index));
+      consolePrintLine(self, "Returned: [c=0,5]%g[/c]", lua_tonumber(L, index));
       break;
 
    default:  /* other values */
-      consolePrintLine(self, "Returned: [c=0,5]%s[/c]", lua_typename(self->L, t));
+      consolePrintLine(self, "Returned: [c=0,5]%s[/c]", lua_typename(L, t));
       break;
    }
 }
 
 static void _processInput(Console *self, String *input) {
    int error;
+   lua_State *L = self->view->L;
 
    consolePrintLine(self, "> %s", c_str(input));
-   error = luaL_loadbuffer(self->L, c_str(input), stringLen(input), "line") || lua_pcall(self->L, 0, LUA_MULTRET, 0);
+   error = luaL_loadbuffer(L, c_str(input), stringLen(input), "line") || lua_pcall(L, 0, LUA_MULTRET, 0);
 
    if (error) {
-      consolePrintLine(self, "[c=0,13]%s[/c]", lua_tostring(self->L, -1));
-      lua_pop(self->L, 1);
+      consolePrintLine(self, "[c=0,13]%s[/c]", lua_tostring(L, -1));
+      lua_pop(L, 1);
    }
    else {
-      while (lua_gettop(self->L)) {
-         _printStackItem(self, 1);
-         lua_pop(self->L, 1);
+      while (lua_gettop(L)) {
+         _printStackItem(L, self, 1);
+         lua_pop(L, 1);
       }
    }
 }
@@ -303,13 +223,18 @@ void consoleCreateLines(Console *self) {
    entityAdd(TextComponent)(self->e, &tc);
    entityUpdate(self->e);
 
-   consolePushLine(self, 
+   consoleClear(self);
+   _updateInputLine(self);
+}
+
+void consoleClear(Console *self) {
+   vecClear(RichTextLine)(self->queue);
+   consolePushLine(self,
       "---------------------------\n"
       "| [i][c=0,14]Welcome[/i] to the console![/c] |\n"
       "---------------------------");
 
    consolePushLine(self, "");
-   _updateInputLine(self);
 }
 
 void consoleSetEnabled(Console *self, bool enabled) {

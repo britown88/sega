@@ -13,6 +13,7 @@
 #include "GridSolver.h"
 #include "Verbs.h"
 #include "Console.h"
+#include "Lua.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -28,6 +29,8 @@ typedef struct {
    GridSolver *gridSolver;
    WorldView view;
    Console *console;
+
+   lua_State *L;
 
 } BTGame;
 
@@ -124,10 +127,13 @@ VirtualApp *btCreate() {
    r->console = consoleCreate(&r->view);
    r->view.console = r->console;
 
+   r->L = luaCreate();
+
    return (VirtualApp*)r;
 }
 
 void _destroy(BTGame *self){
+   luaDestroy(self->L);
    fsmDestroy(self->gameState);
    _destroyEntitySystem(self);
 
@@ -139,6 +145,9 @@ void _destroy(BTGame *self){
 }
 
 void _onStart(BTGame *self){
+   self->view.L = self->L;
+   luaLoadAllLibraries(self->L, &self->view);
+
    //push the opening state
    fsmPush(self->gameState, gameStateCreateWorld(&self->view));
 
