@@ -27,7 +27,7 @@ struct Console_t {
    WorldView *view;
    Entity *e;
    bool enabled;
-   vec(StringPtr) *inputHistory;   
+   vec(StringPtr) *inputHistory, *shiftLines;   
    String *input;
 
    RichText *rt;
@@ -56,6 +56,7 @@ Console *consoleCreate(WorldView *view) {
    out->view = view;
    out->queue = vecCreate(RichTextLine)(&richTextLineDestroy);
    out->inputHistory = vecCreate(StringPtr)(&stringPtrDestroy);
+   out->shiftLines = vecCreate(StringPtr)(&stringPtrDestroy);
    out->input = stringCreate("");
    out->rt = richTextCreateFromRaw("");
 
@@ -67,6 +68,7 @@ void consoleDestroy(Console *self) {
    stringDestroy(self->input);
    vecDestroy(RichTextLine)(self->queue);
    vecDestroy(StringPtr)(self->inputHistory);
+   vecDestroy(StringPtr)(self->shiftLines);
    checkedFree(self);
 }
 
@@ -162,7 +164,6 @@ static void _processInput(Console *self, String *input) {
    int error;
    lua_State *L = self->view->L;
 
-   consolePrintLine(self, "> %s", c_str(input));
    error = luaL_loadbuffer(L, c_str(input), stringLen(input), "line") || lua_pcall(L, 0, LUA_MULTRET, 0);
 
    if (error) {
@@ -171,13 +172,13 @@ static void _processInput(Console *self, String *input) {
    }
    else {
       while (lua_gettop(L)) {
-         _printStackItem(L, self, 1);
+         _printStackItem(L, self, -1);
          lua_pop(L, 1);
       }
    }
 }
 
-static void _commitInput(Console *self) {
+static void _commitInput(Console *self, bool shift) {
    String *input;
    
    if (stringLen(self->input) == 0) {
@@ -187,8 +188,36 @@ static void _commitInput(Console *self) {
    //copy out the input
    input = stringCopy(self->input);
 
-   //process the input...
-   _processInput(self, input);
+   if (shift) {
+      String *shiftLine = stringCopy(input);
+      if (vecIsEmpty(StringPtr)(self->shiftLines)) {
+         consolePrintLine(self, ">.%s", c_str(input));
+      }
+      else {
+         consolePrintLine(self, "... %s", c_str(input));
+      }
+      
+      vecPushBack(StringPtr)(self->shiftLines, &shiftLine);
+   }
+   else {
+      if (vecIsEmpty(StringPtr)(self->shiftLines)) {
+         consolePrintLine(self, "> %s", c_str(input));
+         _processInput(self, input);
+      }
+      else {
+         String *finalInput = stringCreate("");
+         vecForEach(StringPtr, line, self->shiftLines, {
+            stringConcat(finalInput, c_str(*line));
+         stringConcat(finalInput, "\n");
+         });
+         stringConcat(finalInput, c_str(input));
+
+         vecClear(StringPtr)(self->shiftLines);
+         consolePrintLine(self, "..%s", c_str(input));
+         _processInput(self, finalInput);
+         stringDestroy(finalInput);
+      }
+   }
    
    //clear the console
    stringClear(self->input);
@@ -324,7 +353,7 @@ static void _delete(Console *self) {
 void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
    switch (key) {
    case SegaKey_Enter:
-      _commitInput(self);
+      _commitInput(self, mods&SegaKey_ModShift);
       break;
    case SegaKey_Up:
       _historyUp(self);

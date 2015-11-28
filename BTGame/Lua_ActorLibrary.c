@@ -3,11 +3,13 @@
 #include "WorldView.h"
 #include "Managers.h"
 #include "Entities/Entities.h"
+#include "CoreComponents.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
 static int slua_actorMove(lua_State *L);
+static int slua_actorPosition(lua_State *L);
 
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    //push the class
@@ -39,6 +41,7 @@ void luaLoadActorLibrary(lua_State *L) {
 
    luaPushFunctionTable(L, "new", &luaNewObject);
    luaPushFunctionTable(L, "move", &slua_actorMove);
+   luaPushFunctionTable(L, "position", &slua_actorPosition);
 
    lua_setglobal(L, "Actor");
 }
@@ -64,4 +67,34 @@ int slua_actorMove(lua_State *L) {
 
    gridMovementManagerMoveEntity(view->managers->gridMovementManager, e, x, y);
    return 0;
+}
+
+int slua_actorPosition(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   Entity *e = NULL;
+   luaL_checktype(L, 1, LUA_TTABLE);
+   GridComponent *gc;
+
+   lua_pushliteral(L, "entity");
+   lua_gettable(L, 1);
+   if (lua_isuserdata(L, -1)) {
+      e = lua_touserdata(L, -1);
+   }
+   lua_pop(L, 1);
+
+   if (!e) {
+      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_error(L);
+   }
+
+   gc = entityGet(GridComponent)(e);
+   if (!gc) {
+      lua_pushliteral(L, "Actor Entity has no Grid Component.");
+      lua_error(L);
+   }
+
+   lua_pushnumber(L, gc->x);
+   lua_pushnumber(L, gc->y);
+
+   return 2;
 }
