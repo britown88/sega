@@ -162,6 +162,11 @@ typedef struct {
 #define ComponentT WaitComponent
 #include "Entities\ComponentDecl.h"
 
+typedef struct {
+   EMPTY_STRUCT;
+}ActorComponent;
 
+#define ComponentT ActorComponent
+#include "Entities\ComponentDecl.h"
 
 #pragma pack(pop)

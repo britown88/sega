@@ -264,6 +264,11 @@ void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e,
    }
 }
 
+bool gridMovementManagerEntityIsMoving(GridMovementManager *self, Entity *e) {
+   TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
+   return tgc ? true : false;
+}
+
 //if an entity is moving, this returns the cell ID they were in befofre their last movement
 //returns INF if not moving, useful for drawing
 size_t gridMovementManagerGetEntityLastPosition(GridMovementManager *self, Entity *e) {

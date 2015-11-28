@@ -8,11 +8,13 @@
 
 static int slua_consolePrint(lua_State *L);
 static int slua_consoleClear(lua_State *L);
+static int slua_consoleReloadAll(lua_State *L);
 
 void luaLoadStandardLibrary(lua_State *L) {
    lua_newtable(L);
    luaPushFunctionTable(L, "print", &slua_consolePrint);
    luaPushFunctionTable(L, "clear", &slua_consoleClear);
+   luaPushFunctionTable(L, "reload", &slua_consoleReloadAll);
    lua_setglobal(L, "Console");
 
    if (luaL_dofile(L, "assets/lua/lib/standard.lua")) {
@@ -24,6 +26,12 @@ int slua_consolePrint(lua_State *L) {
    const char *str = luaL_checkstring(L, 1);
    WorldView *view = luaGetWorldView(L);
    consolePushLine(view->console, str);
+   return 0;
+}
+
+int slua_consoleReloadAll(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   consoleReloadLibraries(view->console);
    return 0;
 }
 

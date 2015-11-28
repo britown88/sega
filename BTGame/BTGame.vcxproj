@@ -109,6 +109,7 @@
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ActorManager.c" />
     <ClCompile Include="Console.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridMovementManager.c" />

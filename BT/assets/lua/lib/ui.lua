@@ -1,6 +1,4 @@
-TextArea = {
-  name = nil,
-  new = New
-}
-
+TextArea = {}
 TextAreas = {}
+
+TextArea.new = New

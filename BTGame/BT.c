@@ -91,6 +91,7 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.pcManager, createPCManager(&self->view));
    RegisterManager(self->managers.textBoxManager, createTextBoxManager(&self->view));
    RegisterManager(self->managers.verbManager, createVerbManager(&self->view));
+   RegisterManager(self->managers.actorManager, createActorManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){

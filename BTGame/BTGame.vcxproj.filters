@@ -149,5 +149,8 @@
     <ClCompile Include="Lua_ActorLibrary.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
+    <ClCompile Include="ActorManager.c">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

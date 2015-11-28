@@ -62,3 +62,5 @@ static void TextComponentDestroy(TextComponent *self){
 #define ComponentT WaitComponent
 #include "Entities\ComponentImpl.h"
 
+#define ComponentT ActorComponent
+#include "Entities\ComponentImpl.h"

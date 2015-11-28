@@ -53,6 +53,7 @@ void _boardUpdate(WorldState *state, GameStateUpdate *m){
    gridMovementManagerUpdate(managers->gridMovementManager);
    pcManagerUpdate(managers->pcManager);
    textBoxManagerUpdate(managers->textBoxManager);
+   actorManagerUpdate(managers->actorManager);
 
    if (consoleGetEnabled(state->view->console)) {
       consoleUpdate(state->view->console);
