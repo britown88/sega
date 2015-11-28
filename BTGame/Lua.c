@@ -24,7 +24,7 @@ WorldView *luaGetWorldView(lua_State *L) {
 int luaNewObject(lua_State *L) {
 
    luaL_checktype(L, 1, LUA_TTABLE);
-   if (lua_gettop(L) < 2) {
+   if (lua_isnoneornil(L, 2)){
       lua_newtable(L);
    }
    //copy self to top

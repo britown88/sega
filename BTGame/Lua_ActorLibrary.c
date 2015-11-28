@@ -12,38 +12,22 @@ static int slua_actorMove(lua_State *L);
 static int slua_actorPosition(lua_State *L);
 
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
-   //push the class
-   lua_getglobal(L, "Actor"); // 1
-
-   lua_pushliteral(L, "new");
-   lua_gettable(L, -2);
-   lua_pushvalue(L, -2);
-
-   lua_call(L, 1, 1);
-
-   //set the name
-   lua_pushliteral(L, "entity");
-   lua_pushlightuserdata(L, e);
-   lua_rawset(L, -3);
-
+   if (luaL_dostring(L, "return New(Actor)")) { lua_error(L); }
+   luaPushUserDataTable(L, "entity", e);
    lua_setglobal(L, name);
-
-   //pop the class and collection
-   lua_pop(L, 1);
 }
 
 void luaLoadActorLibrary(lua_State *L) {
-   lua_newtable(L);
+   if (luaL_dofile(L, "assets/lua/lib/actor.lua")) {
+      lua_pop(L, 1);
+      return;
+   }
 
-   lua_pushliteral(L, "entity");
-   lua_pushlightuserdata(L, NULL);
-   lua_rawset(L, -3);
-
-   luaPushFunctionTable(L, "new", &luaNewObject);
+   lua_getglobal(L, "Actor");
+   luaPushUserDataTable(L, "entity", NULL);
    luaPushFunctionTable(L, "move", &slua_actorMove);
    luaPushFunctionTable(L, "position", &slua_actorPosition);
-
-   lua_setglobal(L, "Actor");
+   lua_pop(L, 1);
 }
 
 int slua_actorMove(lua_State *L) {

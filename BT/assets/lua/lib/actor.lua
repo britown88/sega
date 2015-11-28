@@ -1,0 +1,3 @@
+Actor = {
+  new = New
+}

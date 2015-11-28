@@ -9,51 +9,26 @@
 static int slua_textAreaPush(lua_State *L);
 
 void luaUIAddTextArea(lua_State *L, StringView name) {
-   //push the class
-   lua_getglobal(L, "TextArea"); // 1
 
-   //push the collection
-   lua_getglobal(L, "TextAreas"); // 2
+   lua_getglobal(L, "TextAreas");
+   lua_pushstring(L, name); 
 
-   //push the name of the one we're making
-   lua_pushstring(L, name); // 3
+   if (luaL_dostring(L, "return New(TextArea)")) { lua_error(L);}
+   luaPushUserDataTable(L, "name", (void*)name);
 
-   //push the name of the get function and pull that funciton from the class
-   lua_pushliteral(L, "new");
-   lua_gettable(L, -4); // 4
-
-   //copy the class to the first argument
-   lua_pushvalue(L, -4);
-
-   //call get
-   lua_call(L, 1, 1);
-
-   //set the name
-   lua_pushliteral(L, "name");
-   lua_pushlightuserdata(L, (void*)name);
    lua_rawset(L, -3);
-
-   //set this new table under the wanted name inside the main table
-   lua_rawset(L, -3);
-
-   //pop the class and collection
-   lua_pop(L, 2);
+   lua_pop(L, 1);
 }
 
 void luaLoadUILibrary(lua_State *L) {
-   lua_newtable(L);
+   if (luaL_dofile(L, "assets/lua/lib/ui.lua")) {
+      lua_pop(L, 1);
+      return;
+   }
 
-   lua_pushliteral(L, "name");
-   lua_pushlightuserdata(L, NULL);
-   lua_rawset(L, -3);
-
-   luaPushFunctionTable(L, "new", &luaNewObject);
+   lua_getglobal(L, "TextArea");
    luaPushFunctionTable(L, "push", &slua_textAreaPush);
-
-   lua_setglobal(L, "TextArea");
-
-   lua_newtable(L);
-   lua_setglobal(L, "TextAreas");
+   lua_pop(L, 1);
 }
 
 int slua_textAreaPush(lua_State *L) {
@@ -61,11 +36,6 @@ int slua_textAreaPush(lua_State *L) {
    const char *msg = luaL_checkstring(L, 2);
    StringView name = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
-
-   //if (lua_gettop(L) != 2) {
-   //   lua_pushliteral(L, "Arguments: (TextArea Self, String message)");
-   //   lua_error(L);
-   //}
 
    //get name
    lua_pushliteral(L, "name");

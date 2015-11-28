@@ -164,9 +164,7 @@ static void _processInput(Console *self, String *input) {
    int error;
    lua_State *L = self->view->L;
 
-   error = luaL_loadbuffer(L, c_str(input), stringLen(input), "line") || lua_pcall(L, 0, LUA_MULTRET, 0);
-
-   if (error) {
+   if (luaL_dostring(L, c_str(input))) {
       consolePrintLine(self, "[c=0,13]%s[/c]", lua_tostring(L, -1));
       lua_pop(L, 1);
    }
