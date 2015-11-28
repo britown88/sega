@@ -65,11 +65,6 @@ void luaActorStepAllScripts(lua_State *L) {
 }
 
 void luaLoadActorLibrary(lua_State *L) {
-   if (luaL_dofile(L, "assets/lua/lib/actor.lua")) {
-      const char* err = lua_tostring(L, -1);
-      lua_error(L);
-   }
-
    lua_getglobal(L, "Actor");
    luaPushUserDataTable(L, "entity", NULL);
    luaPushFunctionTable(L, "move", &slua_actorMove);

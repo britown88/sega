@@ -10,6 +10,9 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view) {
    luaPushUserDataGlobal(L, "View", view);
 
    luaLoadStandardLibrary(L);
+
+   luaRequire(L, "lib");
+
    luaLoadUILibrary(L);
    luaLoadActorLibrary(L);
 }

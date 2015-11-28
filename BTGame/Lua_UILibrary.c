@@ -21,11 +21,6 @@ void luaUIAddTextArea(lua_State *L, StringView name) {
 }
 
 void luaLoadUILibrary(lua_State *L) {
-   if (luaL_dofile(L, "assets/lua/lib/ui.lua")) {
-      lua_pop(L, 1);
-      return;
-   }
-
    lua_getglobal(L, "TextArea");
    luaPushFunctionTable(L, "push", &slua_textAreaPush);
    lua_pop(L, 1);

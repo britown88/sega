@@ -22,6 +22,8 @@ void *luaGetUserDataFromTable(lua_State *L, int tableIndex, const char *index);
 
 int luaNewObject(lua_State *L);
 
+void luaRequire(lua_State *L, const char *modname);
+
 //library functions
 void luaLoadAllLibraries(lua_State *L, WorldView *view);
 

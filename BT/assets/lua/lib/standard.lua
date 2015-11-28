@@ -14,3 +14,13 @@ function dir(o)
     Console.print(string.format("[%q: %q]", k, type(v)))
   end
 end
+
+function reload(m)
+  if(not package.loaded[m]) then
+    error("Module is not loaded!")
+  end
+
+  package.loaded[m] = nil
+  require(m)
+  Console.print("Module reloaded!")
+end

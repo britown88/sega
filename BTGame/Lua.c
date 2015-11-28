@@ -69,3 +69,19 @@ void *luaGetUserDataFromTable(lua_State *L, int tableIndex, const char *index) {
    lua_pop(L, 1);
    return out;
 }
+
+void luaRequire(lua_State *L, const char *modname) {
+   int success;
+   lua_getglobal(L, "require");
+   lua_pushstring(L, modname);
+   if (lua_pcall(L, 1, LUA_MULTRET, 0)) {
+      const char *err = lua_tostring(L, -1);
+      lua_error(L);
+   }
+
+   success = lua_toboolean(L, -1);
+   if (!success) {
+      lua_error(L);
+   }
+   lua_pop(L, 1);
+}
