@@ -2,6 +2,7 @@
 
 #include "segashared/Strings.h"
 
+typedef struct Entity_t Entity;
 typedef struct lua_State lua_State;
 typedef int(*lua_CFunction) (lua_State *L);
 typedef struct WorldView_t WorldView;
@@ -23,7 +24,9 @@ int luaNewObject(lua_State *L);
 void luaLoadAllLibraries(lua_State *L, WorldView *view);
 
 void luaLoadStandardLibrary(lua_State *L);
+
 void luaLoadActorLibrary(lua_State *L);
+void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e);
 
 void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name);

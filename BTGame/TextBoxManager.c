@@ -151,7 +151,7 @@ static void _updateEntityLines(TextBoxManager *self, TextBox *tb) {
             iter != vecEnd(Span)(rtline); ++iter) {
 
             size_t spanLen = stringLen(iter->string);
-            if (current + spanLen < tb->currentChar) {
+            if ((int)current + (int)spanLen < tb->currentChar) {
                //the full span fits so add it
                vecPushBack(Span)(tline->line, &(Span){
                   .style = { iter->style.flags, iter->style.fg, iter->style.bg },

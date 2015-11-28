@@ -4,6 +4,7 @@
 #include "WorldView.h"
 #include "LightGrid.h"
 #include "segashared/CheckedMemory.h"
+#include "Lua.h"
 
 
 struct PCManager_t {
@@ -91,6 +92,8 @@ void pcManagerCreatePC(PCManager *self) {
    _updateLight(self);
    _updateSprite(self);
    entityUpdate(self->pc);
+
+   luaActorAddGlobalActor(self->view->L, "Player", self->pc);
 }
 
 void pcManagerStop(PCManager *self) {

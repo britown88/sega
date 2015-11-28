@@ -247,7 +247,7 @@ bool consoleGetEnabled(Console *self) {
 }
 
 static void _cursorMove(Console *self, int delta) {
-   self->cursorPos = MIN(stringLen(self->input), MAX(0, self->cursorPos + delta));
+   self->cursorPos = MIN((int)stringLen(self->input), MAX(0, self->cursorPos + delta));
    self->invertCursor = true;
    self->skippedChars = MIN(self->cursorPos, self->skippedChars);
 
@@ -315,7 +315,7 @@ static void _backspace(Console *self) {
 }
 static void _delete(Console *self) {
    size_t len = stringLen(self->input);
-   if (len > 0 && self->cursorPos < len) {
+   if (len > 0 && self->cursorPos < (int)len) {
       stringErase(self->input, self->cursorPos);
       _updateInputLine(self);
    }

@@ -30,7 +30,7 @@ void luaUIAddTextArea(lua_State *L, StringView name) {
 
    //set the name
    lua_pushliteral(L, "name");
-   lua_pushlightuserdata(L, name);
+   lua_pushlightuserdata(L, (void*)name);
    lua_rawset(L, -3);
 
    //set this new table under the wanted name inside the main table
@@ -41,8 +41,6 @@ void luaUIAddTextArea(lua_State *L, StringView name) {
 }
 
 void luaLoadUILibrary(lua_State *L) {
-   int result;
-
    lua_newtable(L);
 
    lua_pushliteral(L, "name");
