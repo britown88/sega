@@ -1,5 +1,7 @@
 #pragma once
 
+#include "segashared/Strings.h"
+
 typedef struct lua_State lua_State;
 typedef int(*lua_CFunction) (lua_State *L);
 typedef struct WorldView_t WorldView;
@@ -22,7 +24,9 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view);
 
 void luaLoadStandardLibrary(lua_State *L);
 void luaLoadActorLibrary(lua_State *L);
+
 void luaLoadUILibrary(lua_State *L);
+void luaUIAddTextArea(lua_State *L, StringView name);
 
 
 

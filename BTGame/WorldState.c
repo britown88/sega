@@ -124,7 +124,7 @@ static void _handleKeyboard(WorldState *state){
             break;
          case SegaKey_GraveAccent:
             consoleSetEnabled(state->view->console, true);
-            textBoxManagerPushText(state->view->managers->textBoxManager, stringIntern("smallbox"), "[i]meme[/i]:\nan [c=0,13]element[/c] of a [c=0,7]culture[/c] or [c=0,6]system[/c] of [c=0,5]behavior[/c] that [c=0,4]may[/c] be considered to be passed from [c=0,3]one individual[/c] to another by nongenetic means, [c=0,5]especially imitation.[/c]");
+            //textBoxManagerPushText(state->view->managers->textBoxManager, stringIntern("smallbox"), "[i]meme[/i]:\nan [c=0,13]element[/c] of a [c=0,7]culture[/c] or [c=0,6]system[/c] of [c=0,5]behavior[/c] that [c=0,4]may[/c] be considered to be passed from [c=0,3]one individual[/c] to another by nongenetic means, [c=0,5]especially imitation.[/c]");
             break;
          case SegaKey_LeftControl:
             pcManagerSetSneak(state->view->managers->pcManager, false);

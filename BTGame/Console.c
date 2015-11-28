@@ -105,7 +105,7 @@ static void _updateInputLine(Console *self) {
          stringConcat(innerString, "[/i][=]");
       }
 
-      stringConcatEX(innerString, c_str(self->input) + skippedChars + cursorPos + 1, len - cursorPos - 1);
+      stringConcatEX(innerString, c_str(self->input) + skippedChars + cursorPos + 1, MAX(0, len - cursorPos - 1));
    }
 
    stringConcat(innerString, "[/=]");
@@ -251,7 +251,7 @@ static void _cursorMove(Console *self, int delta) {
    self->invertCursor = true;
    self->skippedChars = MIN(self->cursorPos, self->skippedChars);
 
-   if (self->cursorPos > self->skippedChars + SHOWN_INPUT_LEN) {
+   if (self->cursorPos >= self->skippedChars + SHOWN_INPUT_LEN) {
       self->skippedChars = self->cursorPos - SHOWN_INPUT_LEN;
    }
 }

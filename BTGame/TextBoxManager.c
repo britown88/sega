@@ -7,6 +7,7 @@
 #include "segautils/StandardVectors.h"
 #include "segautils/BitTwiddling.h"
 #include "RichText.h"
+#include "Lua.h"
 
 typedef struct {
    Entity *e;
@@ -71,6 +72,8 @@ void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti ar
    TextBox box = { 0 };
    TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    int y;
+
+   luaUIAddTextArea(self->view->L, name);
 
    for (y = area.top; y < area.bottom; ++y) {
       vecPushBack(TextLine)(tc.lines, &(TextLine){
