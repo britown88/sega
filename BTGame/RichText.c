@@ -303,14 +303,24 @@ static void _rebuildSpans(RichText *self) {
          }
          break;
       case '\\':
-         if(c = *p.str++) {
-            if (c == 'n' || c == 'N') {
-               p.buffer[p.bufferLen++] = '\n';
-            }
-            else {
-               p.buffer[p.bufferLen++] = c;
+         if (p.ignoring) {
+            p.buffer[p.bufferLen++] = c;
+         }
+         else {
+            if (c = *p.str++) {
+               if (c == 'n' || c == 'N') {
+                  p.buffer[p.bufferLen++] = '\n';
+               }
+               else {
+                  p.buffer[p.bufferLen++] = c;
+               }
             }
          }
+         break;
+      case '\t':
+         p.buffer[p.bufferLen++] = ' ';
+         p.buffer[p.bufferLen++] = ' ';
+         p.buffer[p.bufferLen++] = ' ';
          break;
       default:
          p.buffer[p.bufferLen++] = c;

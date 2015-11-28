@@ -37,12 +37,7 @@ int slua_actorMove(lua_State *L) {
    Entity *e = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
 
-   lua_pushliteral(L, "entity");
-   lua_gettable(L, 1);
-   if (lua_isuserdata(L, -1)) {
-      e = lua_touserdata(L, -1);
-   }
-   lua_pop(L, 1);
+   e = luaGetUserDataFromTable(L, 1, "entity");
 
    if (!e) {
       lua_pushliteral(L, "Actor Entity not valid.");
@@ -59,12 +54,7 @@ int slua_actorPosition(lua_State *L) {
    luaL_checktype(L, 1, LUA_TTABLE);
    GridComponent *gc;
 
-   lua_pushliteral(L, "entity");
-   lua_gettable(L, 1);
-   if (lua_isuserdata(L, -1)) {
-      e = lua_touserdata(L, -1);
-   }
-   lua_pop(L, 1);
+   e = luaGetUserDataFromTable(L, 1, "entity");
 
    if (!e) {
       lua_pushliteral(L, "Actor Entity not valid.");

@@ -58,3 +58,14 @@ void luaPushUserDataTable(lua_State *L, const char *index, void *data) {
    lua_pushlightuserdata(L, data);
    lua_rawset(L, -3);
 }
+
+void *luaGetUserDataFromTable(lua_State *L, int tableIndex, const char *index) {
+   void *out = NULL;
+   lua_pushstring(L, index);
+   lua_gettable(L, tableIndex);
+   if (lua_isuserdata(L, -1)) {
+      out = lua_touserdata(L, -1);
+   }
+   lua_pop(L, 1);
+   return out;
+}

@@ -18,6 +18,7 @@ void consoleInputChar(Console *self, char c);
 void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods);
 void consolePushLine(Console *self, const char *line);
 void consoleClear(Console *self);
+void consoleScrollLog(Console *self, int direction);
 
 #define consolePrintLine(CONSOLE, STR, ...) {\
    char buffer[256] = {0}; \

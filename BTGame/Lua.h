@@ -18,6 +18,8 @@ void luaPushFunctionTable(lua_State *L, const char *index, lua_CFunction func);
 void luaPushUserDataGlobal(lua_State *L, const char *name, void *data);
 void luaPushUserDataTable(lua_State *L, const char *index, void *data);
 
+void *luaGetUserDataFromTable(lua_State *L, int tableIndex, const char *index);
+
 int luaNewObject(lua_State *L);
 
 //library functions

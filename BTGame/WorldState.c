@@ -83,7 +83,20 @@ static void _handleKeyboardConsole(WorldState *state) {
             break;
          }
       }
+   }
+}
 
+static void _handleMouseConsole(WorldState *state) {
+   Mouse *mouse = appGetMouse(appGet());
+   MouseEvent event = { 0 };
+
+   while (mousePopEvent(mouse, &event)) {
+      if (event.action == SegaMouse_Scrolled) {
+         //LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
+         //lc->radius = MAX(0, lc->radius + event.pos.y);
+
+         consoleScrollLog(state->view->console, event.pos.y);
+      }
    }
 }
 
@@ -256,6 +269,7 @@ void _boardHandleInput(WorldState *state, GameStateHandleInput *m){
 
    if (consoleGetEnabled(state->view->console)) {
       _handleKeyboardConsole(state);
+      _handleMouseConsole(state);
    }
    else {
       _handleKeyboard(state);

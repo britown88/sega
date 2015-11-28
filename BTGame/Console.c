@@ -38,18 +38,9 @@ struct Console_t {
    int skippedChars;
    Microseconds cursorClock;
    bool invertCursor;
+
+   int queuePos;
 };
-
-static int lsega_playerMove(lua_State *L) {
-   int x = (int)luaL_checkinteger(L, 1);
-   int y = (int)luaL_checkinteger(L, 2);
-   WorldView *view = luaGetWorldView(L);
-
-   pcManagerMove(view->managers->pcManager, x, y);
-
-   return 0;
-}
-
 
 Console *consoleCreate(WorldView *view) {
    Console *out = checkedCalloc(1, sizeof(Console));
@@ -120,7 +111,7 @@ static void _updateInputLine(Console *self) {
 
 static void _updateConsoleLines(Console *self) {
    size_t i;
-   size_t queuelen = vecSize(RichTextLine)(self->queue);
+   size_t queuelen = vecSize(RichTextLine)(self->queue) - self->queuePos;
    size_t drawnCount = MIN(LINE_COUNT, queuelen);
    size_t skipCount = LINE_COUNT - drawnCount;
    TextComponent *tc = entityGet(TextComponent)(self->e);
@@ -130,7 +121,7 @@ static void _updateConsoleLines(Console *self) {
       vecClear(Span)(line->line);
       if (i >= skipCount) {
          //render the spans onto the component
-         RichTextLine queueline = *(vecEnd(RichTextLine)(self->queue) - (LINE_COUNT - skipCount) + (i - skipCount));
+         RichTextLine queueline = *(vecEnd(RichTextLine)(self->queue) - (LINE_COUNT - skipCount) - self->queuePos + (i - skipCount));
 
          //push the queueline spans into the console entity
          richTextLineCopy(queueline, line->line);
@@ -165,7 +156,19 @@ static void _processInput(Console *self, String *input) {
    lua_State *L = self->view->L;
 
    if (luaL_dostring(L, c_str(input))) {
-      consolePrintLine(self, "[c=0,13]%s[/c]", lua_tostring(L, -1));
+      size_t len = lua_rawlen(L, -1);
+      if (lua_rawlen(L, -1) > 256) {
+         char *buffer = checkedCalloc(1, len + 24);
+         sprintf(buffer, "[c=0,13][=]%s[/=][/c]", lua_tostring(L, -1));
+         consolePushLine(self, buffer); 
+         checkedFree(buffer);
+         consolePrintLine(self, "[c=0,13]Error was really long! :([/c]");
+      }
+      else {
+         consolePrintLine(self, "[c=0,13][=]%s[/=][/c]", lua_tostring(L, -1));
+      }
+
+      
       lua_pop(L, 1);
    }
    else {
@@ -180,9 +183,24 @@ static void _commitInput(Console *self, bool shift) {
    String *input;
    
    if (stringLen(self->input) == 0) {
-      //input is empty, do nothing
-      return;
+      if (!vecIsEmpty(StringPtr)(self->shiftLines)) {
+         String *finalInput = stringCreate("");
+         vecForEach(StringPtr, line, self->shiftLines, {
+            stringConcat(finalInput, c_str(*line));
+         stringConcat(finalInput, "\n");
+         });
+
+         vecClear(StringPtr)(self->shiftLines);
+         _processInput(self, finalInput);
+         stringDestroy(finalInput);
+         return;
+      }
+      else {
+         return;
+      }
+      
    }
+
    //copy out the input
    input = stringCopy(self->input);
 
@@ -206,7 +224,7 @@ static void _commitInput(Console *self, bool shift) {
          String *finalInput = stringCreate("");
          vecForEach(StringPtr, line, self->shiftLines, {
             stringConcat(finalInput, c_str(*line));
-         stringConcat(finalInput, "\n");
+            stringConcat(finalInput, "\n");
          });
          stringConcat(finalInput, c_str(input));
 
@@ -393,6 +411,7 @@ void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
 void consolePushLine(Console *self, const char *line) {
    richTextResetFromRaw(self->rt, line);
    richTextRenderToLines(self->rt, WIDTH, self->queue); 
+   self->queuePos = 0;
    _updateConsoleLines(self);
 }
 
@@ -405,4 +424,14 @@ void consoleUpdate(Console *self) {
       self->invertCursor = !self->invertCursor;
       _updateInputLine(self);
    }
+}
+
+void consoleScrollLog(Console *self, int direction) {
+   int upperlimit = MAX(LINE_COUNT, vecSize(RichTextLine)(self->queue)) - LINE_COUNT;
+   if (self->queuePos + direction >= 0 && self->queuePos + direction <= upperlimit) {
+      self->queuePos += direction;
+      _updateConsoleLines(self);
+   }
+
+   
 }
