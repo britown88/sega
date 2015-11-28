@@ -89,6 +89,9 @@ static void _handleKeyboardConsole(WorldState *state) {
 static void _handleMouseConsole(WorldState *state) {
    Mouse *mouse = appGetMouse(appGet());
    MouseEvent event = { 0 };
+   Int2 pos = mouseGetPosition(mouse);
+   Viewport *vp = state->view->viewport;
+   Recti vpArea = { vp->region.origin_x, vp->region.origin_y, vp->region.origin_x + vp->region.width, vp->region.origin_y + vp->region.height };
 
    while (mousePopEvent(mouse, &event)) {
       if (event.action == SegaMouse_Scrolled) {
@@ -96,6 +99,14 @@ static void _handleMouseConsole(WorldState *state) {
          //lc->radius = MAX(0, lc->radius + event.pos.y);
 
          consoleScrollLog(state->view->console, event.pos.y);
+      }
+      else if (event.action == SegaMouse_Pressed) {
+         if (rectiContains(vpArea, pos)) {
+            int x = (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE;
+            int y = (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE;
+
+            consoleMacroGridPos(state->view->console, x, y);
+         }
       }
    }
 }

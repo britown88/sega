@@ -10,8 +10,6 @@ static int slua_consolePrint(lua_State *L);
 static int slua_consoleClear(lua_State *L);
 
 void luaLoadStandardLibrary(lua_State *L) {
-   int error;
-
    lua_newtable(L);
    luaPushFunctionTable(L, "print", &slua_consolePrint);
    luaPushFunctionTable(L, "clear", &slua_consoleClear);

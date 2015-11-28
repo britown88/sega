@@ -268,18 +268,20 @@ void consoleCreateLines(Console *self) {
    entityAdd(TextComponent)(self->e, &tc);
    entityUpdate(self->e);
 
-   consoleClear(self);
-   _updateInputLine(self);
-}
-
-void consoleClear(Console *self) {
-   vecClear(RichTextLine)(self->queue);
    consolePushLine(self,
       "---------------------------\n"
       "| [i][c=0,14]Welcome[/i] to the console![/c] |\n"
       "---------------------------");
 
    consolePushLine(self, "");
+   _updateInputLine(self);
+}
+
+void consoleClear(Console *self) {
+   vecClear(RichTextLine)(self->queue);
+   self->queuePos = 0;
+   _updateConsoleLines(self);
+   
 }
 
 void consoleSetEnabled(Console *self, bool enabled) {
@@ -432,6 +434,18 @@ void consoleScrollLog(Console *self, int direction) {
       self->queuePos += direction;
       _updateConsoleLines(self);
    }
+}
 
+void consoleMacroGridPos(Console *self, short x, short y) {
+   char buff[32];
+   int len, i;
+   sprintf(buff, "%d, %d", x, y);
+   len = strlen(buff);
+
+   for (i = 0; i < len; ++i) {
+      stringInsert(self->input, buff[i], self->cursorPos);
+      _cursorMove(self, 1);
+   }
    
+   _updateInputLine(self);
 }
