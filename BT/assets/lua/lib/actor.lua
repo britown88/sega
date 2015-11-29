@@ -2,7 +2,10 @@ Actor = {}
 
 function Actor:pushScript(script, ...)
   local co = coroutine.create(script)
-  coroutine.resume(co, self, ...)
+  status, err = coroutine.resume(co, self, ...)
+  if(not status) then
+    error(err)
+  end
   self.scripts[#self.scripts+1] = co
 end
 
@@ -16,7 +19,11 @@ function Actor:stepScript()
   local index = #self.scripts;
   if(index > 0) then
     local co = self.scripts[index];
-    coroutine.resume(co)
+    status, err = coroutine.resume(co)
+    if(not status) then
+      table.remove(self.scripts, index)
+      error(err)
+    end
     if(coroutine.status(co) == "dead") then
       table.remove(self.scripts, index)
     end

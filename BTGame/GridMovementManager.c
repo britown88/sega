@@ -48,6 +48,10 @@ static int _distance(GridManager *manager, size_t d0, size_t d1) {
    return abs(x0 - x1) + abs(y0 - y1);
 }
 
+int gridDistance(int x0, int y0, int x1, int y1) {
+   return abs(x0 - x1) + abs(y0 - y1);
+}
+
 static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, GridNodePublic *neighbor) {
    //vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
    //if (entities && !vecIsEmpty(EntityPtr)(entities)) {

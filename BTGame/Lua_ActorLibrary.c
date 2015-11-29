@@ -13,6 +13,7 @@ static int slua_actorMoveRelative(lua_State *L);
 static int slua_actorPosition(lua_State *L);
 static int slua_actorStop(lua_State *L);
 static int slua_actorIsMoving(lua_State *L);
+static int slua_actorDistanceTo(lua_State *L);
 
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    //call new
@@ -45,6 +46,11 @@ void luaActorAddActor(lua_State *L, Entity *e) {
    lua_call(L, 1, 1);
 
    luaPushUserDataTable(L, "entity", e);
+
+   lua_pushliteral(L, "scripts");
+   lua_newtable(L);
+   lua_rawset(L, -3);
+
    lua_call(L, 2, 0);
    lua_pop(L, 1);
 }
@@ -94,6 +100,7 @@ void luaLoadActorLibrary(lua_State *L) {
    luaPushFunctionTable(L, "position", &slua_actorPosition);
    luaPushFunctionTable(L, "stop", &slua_actorStop);
    luaPushFunctionTable(L, "isMoving", &slua_actorIsMoving);
+   luaPushFunctionTable(L, "distanceTo", &slua_actorDistanceTo);
    lua_pop(L, 1);
 }
 
@@ -131,6 +138,31 @@ int slua_actorMoveRelative(lua_State *L) {
 
    gridMovementManagerMoveEntityRelative(view->managers->gridMovementManager, e, x, y);
    return 0;
+}
+
+int slua_actorDistanceTo(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   Entity *e = NULL;
+   int x = (int)luaL_checknumber(L, 2);
+   int y = (int)luaL_checknumber(L, 3);
+   luaL_checktype(L, 1, LUA_TTABLE);
+   GridComponent *gc;
+
+   e = luaGetUserDataFromTable(L, 1, "entity");
+
+   if (!e) {
+      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_error(L);
+   }
+
+   gc = entityGet(GridComponent)(e);
+   if (!gc) {
+      lua_pushliteral(L, "Actor Entity has no Grid Component.");
+      lua_error(L);
+   }
+
+   lua_pushinteger(L, gridDistance(gc->x, gc->y, x, y));
+   return 1;
 }
 
 int slua_actorPosition(lua_State *L) {

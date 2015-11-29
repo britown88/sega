@@ -59,6 +59,7 @@ void gridMovementManagerStopEntity(GridMovementManager *self, Entity *e);
 void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x, short y);
 void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e, short x, short y);
 bool gridMovementManagerEntityIsMoving(GridMovementManager *self, Entity *e);
+int gridDistance(int x0, int y0, int x1, int y1);
 
 //if an entity is moving, this returns the cell ID they were in befofre their last movement
 //returns INF if not moving, useful for drawing

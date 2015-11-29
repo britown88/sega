@@ -26,3 +26,9 @@ void consoleMacroGridPos(Console *self, short x, short y);
    sprintf(buffer, STR, __VA_ARGS__ ); \
    consolePushLine(CONSOLE, buffer); \
 }
+
+#define consolePrintError(CONSOLE, STR, ...) {\
+   char buffer[256] = {0}; \
+   sprintf(buffer, STR, __VA_ARGS__ ); \
+   consolePrintLine(CONSOLE, "[c=0,13][=]%s[/=][/c]", buffer); \
+}
