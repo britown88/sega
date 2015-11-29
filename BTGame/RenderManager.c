@@ -119,7 +119,7 @@ ImplManagerVTable(RenderManager)
 
 RenderManager *createRenderManager(WorldView *view, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
-   Image *fontImage = imageDeserializeOptimized("assets/img/cga8bold.ega");
+   Image *fontImage = imageDeserializeOptimized("assets/img/font.ega");
    out->view = view;
    out->m.vTable = CreateManagerVTable(RenderManager);
    out->fontFactory = fontFactoryCreate(fontImage);
@@ -382,15 +382,4 @@ void renderManagerRender(RenderManager *self, Frame *frame){
    if (self->showFPS) {
       _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
    }
-
-   //frameRenderText(frame, "You are likely to be", 16, 22, fontFactoryGetFont(self->fontFactory, 0, 15));
-   //frameRenderText(frame, "eaten by a grue.", 16, 23, fontFactoryGetFont(self->fontFactory, 0, 15));
-
-   //frameRenderText(frame, "         Move        Brightness", 2, 22, fontFactoryGetFont(self->fontFactory, 0, 15));
-   //frameRenderText(frame, "        Radius           Place Light", 2, 23, fontFactoryGetFont(self->fontFactory, 0, 15));
-
-   //frameRenderText(frame, "W,A,S,D:", 2, 22, fontFactoryGetFont(self->fontFactory, 0, 14));
-   //frameRenderText(frame, "Scroll:", 2, 23, fontFactoryGetFont(self->fontFactory, 0, 14));
-   //frameRenderText(frame, "+,-:", 18, 22, fontFactoryGetFont(self->fontFactory, 0, 14));
-   //frameRenderText(frame, "L-Click:", 18, 23, fontFactoryGetFont(self->fontFactory, 0, 14));
 }

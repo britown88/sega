@@ -342,7 +342,7 @@ static void _testWordWrap(WorldState *state) {
 static void _addTestEntities(WorldState *state) {
    Entity *e = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/grid.ega"));
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/bg.ega"));
    COMPONENT_ADD(e, LayerComponent, LayerBackground);
    COMPONENT_ADD(e, RenderedUIComponent, 0);
    entityUpdate(e);
@@ -357,7 +357,7 @@ static void _addTestEntities(WorldState *state) {
 }
 
 static void _enterState(WorldState *state) {
-   appLoadPalette(appGet(), "assets/img/default2.pal");
+   appLoadPalette(appGet(), "assets/pal/default.pal");
    cursorManagerCreateCursor(state->view->managers->cursorManager);
    pcManagerCreatePC(state->view->managers->pcManager);
    verbManagerCreateVerbs(state->view->managers->verbManager);
