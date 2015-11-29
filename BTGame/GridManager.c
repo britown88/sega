@@ -104,7 +104,7 @@ static void _createTestGrid(GridManager *self) {
    for (i = 0; i < count; ++i) {
       self->grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
       if (self->grid[i].schema == 6 || self->grid[i].schema == 5) {
-         //self->grid[i].collision = GRID_SOLID;
+         self->grid[i].collision = GRID_SOLID;
       }
    }
 

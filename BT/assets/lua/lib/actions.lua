@@ -1,13 +1,17 @@
 Actions = {}
 
-function Actions.move(actor, x, y, range)
+function Actions.persistentMove(actor, x, y, range)
   range = range or 0
   repeat
-    actor:move(x, y)
-    while(actor:isMoving()) do
-      coroutine.yield()
-    end
+    Actions.move(actor, x, y)
   until(actor:distanceTo(x, y) <= range)
+end
+
+function Actions.move(actor, x, y)
+  actor:move(x, y)
+  while(actor:isMoving()) do
+    coroutine.yield()
+  end
 end
 
 function Actions.moveRelative(actor, x, y)

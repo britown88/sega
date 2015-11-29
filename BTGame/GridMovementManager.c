@@ -125,6 +125,20 @@ void _destroy(GridMovementManager *self) {
 void _onDestroy(GridMovementManager *self, Entity *e) {}
 void _onUpdate(GridMovementManager *self, Entity *e) {}
 
+static void _cleanupEntity(Entity *e) {
+   entityRemove(TGridMovingComponent)(e);
+
+   //make sure our interpolation gets cleaned up
+   if (entityGet(InterpolationComponent)(e)) {
+      entityRemove(InterpolationComponent)(e);
+   }
+
+   //make sure our wait gets cleaned up
+   if (entityGet(WaitComponent)(e)) {
+      entityRemove(WaitComponent)(e);
+   }
+}
+
 static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, Microseconds overflow) {
    GridComponent *gc = entityGet(GridComponent)(e);
    TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
@@ -138,43 +152,22 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
 
    //we're there
    if (destID == INF || _distance(manager, posID, destID) <= range) {
-      entityRemove(TGridMovingComponent)(e);
-      
-      //make sure our interpolation gets cleaned up
-      if (entityGet(InterpolationComponent)(e)) {
-         entityRemove(InterpolationComponent)(e);
-      }
-
-      //make sure our wait gets cleaned up
-      if (entityGet(WaitComponent)(e)) {
-         entityRemove(WaitComponent)(e);
-      }
-      
+      _cleanupEntity(e);      
       return;
    }
 
    solution = solve(manager, solver, posID, destID);
 
-   if (solution.totalCost > 0 && solution.path) {
+   if (solution.totalCost <= 0) {
+      _cleanupEntity(e);
+      return;
+   }
+   else if (solution.path) {
       size_t dest = vecBegin(GridSolutionNode)(solution.path)->node;
+      size_t lastPos = gridManagerCellIDFromXY(manager, tgc->lastX, tgc->lastY);
 
-      if (dest == gridManagerCellIDFromXY(manager, tgc->lastX, tgc->lastY)) {
-         //we're returning to a tile we've already been to
-         //which _probably_ means we cant get to our desination
-         //its possible this might get tripped by an npc moving in the way
-         //but the coroutine governing the move should pick up that slack
-         entityRemove(TGridMovingComponent)(e);
-
-         //make sure our interpolation gets cleaned up
-         if (entityGet(InterpolationComponent)(e)) {
-            entityRemove(InterpolationComponent)(e);
-         }
-
-         //make sure our wait gets cleaned up
-         if (entityGet(WaitComponent)(e)) {
-            entityRemove(WaitComponent)(e);
-         }
-
+      if (dest == posID || dest == lastPos) {
+         _cleanupEntity(e);
          return;
       }
 
