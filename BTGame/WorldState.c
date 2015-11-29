@@ -17,6 +17,7 @@
 #include "Console.h"
 
 #include "RichText.h"
+#include "Lua.h"
 
 #include "segautils/Lisp.h"
 #include "segautils/Math.h"
@@ -119,7 +120,7 @@ static void _handleKeyboard(WorldState *state){
    Viewport *vp = state->view->viewport;
    int speed = 2;
    static int toggle = 1;
-   static int amb = 0;
+   static int amb = 2;
 
    while (keyboardPopEvent(k, &e)) {
 
@@ -166,7 +167,7 @@ static void _handleKeyboard(WorldState *state){
             appQuit(appGet());
             break;
          case SegaKey_P:
-            appLoadPalette(appGet(), toggle ? "assets/img/dark2.pal" : "assets/img/default2.pal");
+            appLoadPalette(appGet(), toggle ? "assets/pal/dark.pal" : "assets/pal/default.pal");
             toggle = !toggle;
             break;
          case SegaKey_T:
@@ -339,7 +340,25 @@ static void _testWordWrap(WorldState *state) {
    richTextDestroy(rt);
 }
 
+static void _addActor(WorldState *state, int x, int y, int imgX, int imgY) {
+   Entity *e = entityCreate(state->view->entitySystem);
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, SizeComponent, 14, 14);
+   COMPONENT_ADD(e, RectangleComponent, 0);
+
+   COMPONENT_ADD(e, ImageComponent, .filename = stringIntern("assets/img/tiles.ega"), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
+   COMPONENT_ADD(e, LayerComponent, LayerGrid);
+   COMPONENT_ADD(e, InViewComponent, 0);
+   COMPONENT_ADD(e, GridComponent, x, y);
+   COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
+
+   entityUpdate(e);
+
+   luaActorAddActor(state->view->L, e);
+}
+
 static void _addTestEntities(WorldState *state) {
+   int i;
    Entity *e = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/bg.ega"));
@@ -352,6 +371,14 @@ static void _addTestEntities(WorldState *state) {
       textBoxManagerCreateTextBox(state->view->managers->textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
       textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "You are likely to be eaten by a [c=0,13]grue[/c].");
       
+   }
+
+   for (i = 0; i < 15; ++i) {
+      int x = appRand(appGet(), 0, 22);
+      int y = appRand(appGet(), 0, 11);
+      int sprite = appRand(appGet(), 0, 3);
+
+      _addActor(state, x, y, 70 + (sprite*14), 28);
    }
 
 }

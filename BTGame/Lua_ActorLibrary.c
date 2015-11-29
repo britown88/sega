@@ -78,7 +78,7 @@ void luaActorStepAllScripts(lua_State *L) {
 }
 
 void luaLoadActorLibrary(lua_State *L) {
-   lua_newtable(L);
+   lua_getglobal(L, "Actor");
 
    //Entity*
    luaPushUserDataTable(L, "entity", NULL);
@@ -94,7 +94,7 @@ void luaLoadActorLibrary(lua_State *L) {
    luaPushFunctionTable(L, "position", &slua_actorPosition);
    luaPushFunctionTable(L, "stop", &slua_actorStop);
    luaPushFunctionTable(L, "isMoving", &slua_actorIsMoving);
-   lua_setglobal(L, "Actor");
+   lua_pop(L, 1);
 }
 
 int slua_actorMove(lua_State *L) {
