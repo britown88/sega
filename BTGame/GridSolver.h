@@ -1,11 +1,14 @@
 #pragma once
 #include "WorldView.h"
 
+typedef struct Entity_t Entity;
+
 //this is the public-facing grid data, ID is y*width+x, 
 //collision holds 4-directional collisiondata
 typedef struct {
    size_t ID;
    byte collision;
+   Entity *e;
 }GridNodePublic;
 
 //get the score of a gidnode (only known by gridmanager.c)

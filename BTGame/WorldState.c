@@ -341,6 +341,7 @@ static void _testWordWrap(WorldState *state) {
 }
 
 static void _addActor(WorldState *state, int x, int y, int imgX, int imgY) {
+   Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, x, y);
    Entity *e = entityCreate(state->view->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, SizeComponent, 14, 14);
@@ -352,6 +353,11 @@ static void _addActor(WorldState *state, int x, int y, int imgX, int imgY) {
    COMPONENT_ADD(e, GridComponent, x, y);
    COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
    COMPONENT_ADD(e, ActorComponent, 0);
+
+   if (t) {
+      t->schema = 3;
+      t->collision = 0;
+   }
 
    entityUpdate(e);
 }

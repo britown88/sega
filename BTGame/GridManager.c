@@ -104,7 +104,7 @@ static void _createTestGrid(GridManager *self) {
    for (i = 0; i < count; ++i) {
       self->grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
       if (self->grid[i].schema == 6 || self->grid[i].schema == 5) {
-         self->grid[i].collision = GRID_SOLID;
+         //self->grid[i].collision = GRID_SOLID;
       }
    }
 
@@ -344,23 +344,28 @@ vec(EntityPtr) *gridManagerQueryEntities(GridManager *self) {
    int x = vp->worldPos.x / GRID_CELL_SIZE;
    int y = vp->worldPos.y / GRID_CELL_SIZE;
 
-   int xstart = x / PARTITION_SIZE, xend = (x + xcount) / PARTITION_SIZE;
-   int ystart = y / PARTITION_SIZE, yend = (y + ycount) / PARTITION_SIZE;
+   Recti area = { x, y, x + xcount, y + ycount };
 
    vecClear(EntityPtr)(self->inViewEntities);
+   gridManagerQueryEntitiesRect(self, area, self->inViewEntities);
+   return self->inViewEntities;
+}
+
+void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) *outlist) {
+   int x, y;
+   int xstart = area.left / PARTITION_SIZE, xend = area.right / PARTITION_SIZE;
+   int ystart = area.top / PARTITION_SIZE, yend = area.bottom / PARTITION_SIZE;
 
    for (y = ystart; y <= yend; ++y) {
       for (x = xstart; x <= xend; ++x) {
          Partition *p = _partitionAt(self, y * self->partitionWidth + x);
          if (p && p->entities) {
             vecForEach(EntityPtr, e, p->entities, {
-               vecPushBack(EntityPtr)(self->inViewEntities, e);
+               vecPushBack(EntityPtr)(outlist, e);
             });
          }
       }
    }
-
-   return self->inViewEntities;
 }
 
 static void _renderTile(GridManager *self, Frame *frame, short x, short y, short imgX, short imgY) {

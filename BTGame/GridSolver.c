@@ -1,6 +1,7 @@
 #include "Managers.h"
 #include "GridManager.h"
 #include "GridSolver.h"
+#include "CoreComponents.h"
 
 #include "segautils/IntrusiveHeap.h"
 
@@ -58,6 +59,7 @@ struct GridSolver_t{
    size_t solveCount;
 
    vec(GridSolutionNode) *solutionMap;
+   vec(EntityPtr) *eList;
 };
 
 static size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList);
@@ -141,6 +143,27 @@ void _solverDestroy(GridSolver *self) {
    checkedFree(self);
 }
 
+static void _processSingleEntityCollision(GridSolver *self, Entity *e, Recti *r) {
+   GridComponent *gc = entityGet(GridComponent)(e);
+   int localX = gc->x - r->left;
+   int localY = gc->y - r->top;
+   if (localX >= 0 && localX < self->solveWidth &&
+      localY >= 0 && localY < self->solveHeight) {
+
+      GridNode *node = vecAt(GridNode)(self->solvingTable, localY * self->solveWidth + localX);
+      node->data.e = e;
+   }
+}
+
+static void _processEntityCollision(GridSolver *self, Recti *r) {
+   //get entities in the area and mark solid collision
+   vecClear(EntityPtr)(self->eList);
+   gridManagerQueryEntitiesRect(self->manager, *r, self->eList);
+   vecForEach(EntityPtr, e, self->eList, {
+      _processSingleEntityCollision(self, *e, r);
+   });
+}
+
 //we need to build our table to encompass our search area
 static void _clearSolutionTable(GridSolver *self, size_t startCell) {
    int x = 0, y = 0;
@@ -162,6 +185,12 @@ static void _clearSolutionTable(GridSolver *self, size_t startCell) {
    vecClear(GridNode)(self->solvingTable);
    vecResize(GridNode)(self->solvingTable, self->solveCount, &(GridNode){0});
 
+   vecForEach(GridNode, node, self->solvingTable, {
+      node->data.e = NULL;
+   });
+
+   _processEntityCollision(self, r);
+
    //clear the queue
    priorityQueueClear(self->inner.queue);
 
@@ -175,9 +204,10 @@ static void _clearSolutionTable(GridSolver *self, size_t startCell) {
             continue;
          }
 
-         node->data.ID = ID;
-         node->data.collision = t->collision;
+         node->data.ID = ID;         
          node->index = i;
+
+         node->data.collision |= t->collision;
 
          //target cell will be left as 0
          if (ix != x || iy != y) {
@@ -188,6 +218,7 @@ static void _clearSolutionTable(GridSolver *self, size_t startCell) {
          ++i;
       }
    }
+   
 }
 
 GridSolver *gridSolverCreate(WorldView *view) {
@@ -196,6 +227,7 @@ GridSolver *gridSolverCreate(WorldView *view) {
    out->manager = view->managers->gridManager;
    out->solutionMap = vecCreate(GridSolutionNode)(NULL);
    out->solvingTable = vecCreate(GridNode)(NULL);
+   out->eList = vecCreate(EntityPtr)(NULL);
 
    out->inner.vTable = _getSolverVTable();
    out->inner.queue = priorityQueueCreate(offsetof(GridNode, node), (PQCompareFunc)&_nodeCompareFunc);
@@ -205,6 +237,7 @@ GridSolver *gridSolverCreate(WorldView *view) {
 void gridSolverDestroy(GridSolver *self) {
    vecDestroy(GridNode)(self->solvingTable);
    vecDestroy(GridSolutionNode)(self->solutionMap);
+   vecDestroy(EntityPtr)(self->eList);
    dijkstrasDestroy((Dijkstras*)self);
    //checkedFree(self);
 }

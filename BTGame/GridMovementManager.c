@@ -27,6 +27,7 @@ typedef struct {
 
    float lowestHeuristic;
    GridNodePublic *closestNode;
+   Entity *entity;//the entity doing the solution
 }GridSolvingData;
 
 static float _singleDistance(GridManager *manager, size_t d0, size_t d1) {
@@ -54,10 +55,10 @@ int gridDistance(int x0, int y0, int x1, int y1) {
 }
 
 static float _processNeighbor(GridSolvingData *data, GridNodePublic *current, GridNodePublic *neighbor) {
-   //vec(EntityPtr) *entities = gridManagerEntitiesAt(data->manager, neighbor->ID);
-   //if (entities && !vecIsEmpty(EntityPtr)(entities)) {
-   //   return INFF;
-   //}
+   if (neighbor->e) {
+      return INFF;
+   }
+
    return gridNodeGetScore(current) + _singleDistance(data->manager, current->ID, neighbor->ID);
 }
 
