@@ -7,12 +7,13 @@
 #include <math.h>
 
 #define MOVE_TIME 250
-#define WAIT_TIME 200
+#define WAIT_TIME 0
 
 #pragma pack(push, 1)
 typedef struct {
    short destX, destY;
    short lastX, lastY;
+   Milliseconds moveTime, moveDelay;
 }TGridMovingComponent;
 #pragma pack(pop)
 
@@ -188,7 +189,7 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
       COMPONENT_ADD(e, InterpolationComponent,
          .destX = gc->x * GRID_CELL_SIZE,
          .destY = gc->y * GRID_CELL_SIZE,
-         .time = MOVE_TIME,
+         .time = tgc->moveTime,
          .overflow = overflow);
 
       entityUpdate(e);
@@ -215,22 +216,25 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
       return;//waiting or moving
    }
 
-   //if (ic) {      
-   //   COMPONENT_ADD(e, WaitComponent,
-   //      .time = WAIT_TIME,
-   //      .overflow = ic->overflow);
+   if (tgc->moveDelay > 0) {
+      if (ic) {
+         COMPONENT_ADD(e, WaitComponent,
+            .time = tgc->moveDelay,
+            .overflow = ic->overflow);
 
-   //   entityRemove(InterpolationComponent)(e);
-   //   entityUpdate(e);
-   //   return;
-   //}
+         entityRemove(InterpolationComponent)(e);
+         entityUpdate(e);
+         return;
+      }
 
-   //if (wc) {
-   //   overflow = wc->overflow;
-   //}
-
-   if (ic) {
-      overflow = ic->overflow;
+      if (wc) {
+         overflow = wc->overflow;
+      }
+   }
+   else {
+      if (ic) {
+         overflow = ic->overflow;
+      }
    }
 
    _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, overflow);
@@ -265,7 +269,10 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
       tgc->lastX = tgc->lastY = 0;
    }
    else {
-      COMPONENT_ADD(e, TGridMovingComponent, x, y);
+      COMPONENT_ADD(e, TGridMovingComponent,
+         .destX = x, .destY = y,
+         .lastX = 0, .lastY = 0,
+         .moveTime = MOVE_TIME, .moveDelay = WAIT_TIME);
       _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
       
    }
@@ -285,7 +292,10 @@ void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e,
       tgc->lastX = tgc->lastY = 0;
    }
    else {
-      COMPONENT_ADD(e, TGridMovingComponent, x, y);
+      COMPONENT_ADD(e, TGridMovingComponent, 
+         .destX = x, .destY = y,
+         .lastX = 0, .lastY = 0,
+         .moveTime = MOVE_TIME, .moveDelay = WAIT_TIME);
       _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
 
    }
