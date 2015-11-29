@@ -8,7 +8,6 @@
 #include "liblua/lualib.h"
 
 static int slua_consolePrint(lua_State *L);
-static int slua_consoleError(lua_State *L);
 static int slua_consoleClear(lua_State *L);
 static int slua_rand(lua_State *L);
 
@@ -16,7 +15,6 @@ void luaLoadStandardLibrary(lua_State *L) {
 
    lua_newtable(L);
    luaPushFunctionTable(L, "print", &slua_consolePrint);
-   luaPushFunctionTable(L, "error", &slua_consoleError);
    luaPushFunctionTable(L, "clear", &slua_consoleClear);
    lua_setglobal(L, "Console");
 
@@ -28,12 +26,6 @@ int slua_consolePrint(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    consolePushLine(view->console, str);
    return 0;
-}
-
-int slua_consoleError(lua_State *L) {
-   const char *str = luaL_checkstring(L, 1);
-   WorldView *view = luaGetWorldView(L);
-   consolePrintError(view->console, str);
 }
 
 int slua_consoleClear(lua_State *L) {

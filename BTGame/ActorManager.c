@@ -30,5 +30,5 @@ static void _updateActor(ActorManager *self, Entity *e) {
 }
 
 void actorManagerUpdate(ActorManager *self) {
-   luaActorStepAllScripts(self->view->L);
+   luaActorStepAllScripts(self->view, self->view->L);
 }

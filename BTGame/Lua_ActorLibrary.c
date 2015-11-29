@@ -4,20 +4,20 @@
 #include "Managers.h"
 #include "Entities/Entities.h"
 #include "CoreComponents.h"
+#include "Console.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
+static int slua_actorPushScript(lua_State *L);
+static int slua_actorPopScript(lua_State *L);
+static int slua_actorStepScript(lua_State *L);
 static int slua_actorMove(lua_State *L);
 static int slua_actorMoveRelative(lua_State *L);
 static int slua_actorPosition(lua_State *L);
 static int slua_actorStop(lua_State *L);
 static int slua_actorIsMoving(lua_State *L);
 static int slua_actorDistanceTo(lua_State *L);
-
-static int slua_actorPushScript(lua_State *L);
-static int slua_actorPopScript(lua_State *L);
-static int slua_actorStepScript(lua_State *L);
 
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    //call new
@@ -42,7 +42,6 @@ void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
 
    lua_pop(L, 1);   
 }
-
 void luaActorAddActor(lua_State *L, Entity *e) {
    lua_getglobal(L, "Actors");
    lua_pushliteral(L, "add");
@@ -63,7 +62,6 @@ void luaActorAddActor(lua_State *L, Entity *e) {
    lua_call(L, 2, 0);
    lua_pop(L, 1);
 }
-
 void luaActorRemoveActor(lua_State *L, Entity *e) {
    lua_getglobal(L, "Actors");
    lua_pushliteral(L, "remove");
@@ -79,17 +77,34 @@ void luaActorRemoveActor(lua_State *L, Entity *e) {
    lua_call(L, 2, 0);
    lua_pop(L, 1);
 }
-
-void luaActorStepAllScripts(lua_State *L) {
+void luaActorStepAllScripts(WorldView *view, lua_State *L) {
+   int aCount, i;
    lua_getglobal(L, "Actors");
-   lua_pushliteral(L, "stepScripts");
-   lua_gettable(L, -2);
-   lua_pushvalue(L, -2);
-   if (lua_pcall(L, 1, 0, 0)) {
-      const char* err = lua_tostring(L, -1);
-      lua_error(L);
-   }
+   
+   lua_len(L, -1);
+   aCount = (int)luaL_checkinteger(L, -1);
    lua_pop(L, 1);
+   
+   for (i = 0; i < aCount; ++i) {
+      lua_pushcfunction(L, &slua_actorStepScript);
+
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, -3);//push the actor
+
+      if (lua_pcall(L, 1, 0, 0)) {
+         if (lua_type(L, -1) == LUA_TSTRING) {
+            const char *err = lua_tostring(L, -1);
+            consolePrintLine(view->console, "[c=0,13]Error stepping script:\n[=]%s[/=][/c]", err);
+         }
+         else {
+            consolePrintLine(view->console, "[c=0,13]Unspecified error stepping script.[/c]");
+         }
+
+         lua_pop(L, 1);
+      }
+   }
+
+   lua_pop(L, 1); //pop actors
 }
 
 void luaLoadActorLibrary(lua_State *L) {
@@ -227,7 +242,6 @@ int slua_actorStepScript(lua_State *L) {
    lua_pop(L, 1);//pop the scripts table  
    return 0;
 }
-
 int slua_actorMove(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    int x = (int)luaL_checknumber(L, 2);
@@ -245,7 +259,6 @@ int slua_actorMove(lua_State *L) {
    gridMovementManagerMoveEntity(view->managers->gridMovementManager, e, x, y);
    return 0;
 }
-
 int slua_actorMoveRelative(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    int x = (int)luaL_checknumber(L, 2);
@@ -263,7 +276,6 @@ int slua_actorMoveRelative(lua_State *L) {
    gridMovementManagerMoveEntityRelative(view->managers->gridMovementManager, e, x, y);
    return 0;
 }
-
 int slua_actorDistanceTo(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    Entity *e = NULL;
@@ -288,7 +300,6 @@ int slua_actorDistanceTo(lua_State *L) {
    lua_pushinteger(L, gridDistance(gc->x, gc->y, x, y));
    return 1;
 }
-
 int slua_actorPosition(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    Entity *e = NULL;
@@ -313,7 +324,6 @@ int slua_actorPosition(lua_State *L) {
 
    return 2;
 }
-
 int slua_actorStop(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    Entity *e = NULL;
@@ -330,8 +340,6 @@ int slua_actorStop(lua_State *L) {
 
    return 0;
 }
-
-
 int slua_actorIsMoving(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    Entity *e = NULL;

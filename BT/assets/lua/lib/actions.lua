@@ -10,6 +10,7 @@ function Actions.persistentMove(actor, x, y, range)
   range = range or 0
   repeat
     Actions.move(actor, x, y)
+    coroutine.yield()
   until(actor:distanceTo(x, y) <= range)
 end
 
@@ -38,6 +39,7 @@ function Actions.wander(actor, width, height)
   while(true) do
     local posx, posy = rand(left, right), rand(top, bottom)
     Actions.move(actor, posx, posy, x - left)
+    coroutine.yield()
   end
 end
 
@@ -48,8 +50,4 @@ function Actions.scatter()
       actor:pushScript(Actions.move, rand(0,21), rand(0,11))
     end
   end
-end
-
-function test(index)
-  Actors[index]:pushScript(Actions.move, rand(0,21), rand(0,11))
 end

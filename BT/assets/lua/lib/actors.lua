@@ -23,18 +23,3 @@ function Actors:get(a)
   end
   return nil
 end
-
-function Actors:stepScripts()
-  for i=1, #self do
-
-    status, err = pcall(self[i].stepScript, self[i])
-    if(not status) then
-      if(type(err) ~= "string") then
-        Console.print("[c=0,13][=]Unspecified Error stepping coroutine[/=][/c]")
-      else
-        Console.print(string.format("[c=0,13][=]Error stepping coroutine:\n%q[/=][/c]", err))
-      end
-    end
-
-  end
-end

@@ -152,7 +152,6 @@ static void _printStackItem(lua_State *L, Console *self, int index) {
 }
 
 static void _processInput(Console *self, String *input) {
-   int error;
    lua_State *L = self->view->L;
 
    if (luaL_dostring(L, c_str(input))) {

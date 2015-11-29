@@ -33,7 +33,7 @@ void luaLoadActorLibrary(lua_State *L);
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e);
 void luaActorAddActor(lua_State *L, Entity *e);
 void luaActorRemoveActor(lua_State *L, Entity *e);
-void luaActorStepAllScripts(lua_State *L);
+void luaActorStepAllScripts(WorldView *view, lua_State *L);
 
 void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name);
