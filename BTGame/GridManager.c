@@ -8,6 +8,7 @@
 #include "GridManager.h"
 #include "ImageLibrary.h"
 #include "LightGrid.h"
+#include "GameHelpers.h"
 
 #define SCHEMA_COUNT 256
 #define PARTITION_SIZE 16
@@ -346,7 +347,7 @@ vec(EntityPtr) *gridManagerQueryEntities(GridManager *self) {
 
    Recti area = { x, y, x + xcount, y + ycount };
 
-   vecClear(EntityPtr)(self->inViewEntities);
+   
    gridManagerQueryEntitiesRect(self, area, self->inViewEntities);
    return self->inViewEntities;
 }
@@ -355,6 +356,7 @@ void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) 
    int x, y;
    int xstart = area.left / PARTITION_SIZE, xend = area.right / PARTITION_SIZE;
    int ystart = area.top / PARTITION_SIZE, yend = area.bottom / PARTITION_SIZE;
+   vecClear(EntityPtr)(outlist);
 
    for (y = ystart; y <= yend; ++y) {
       for (x = xstart; x <= xend; ++x) {
@@ -366,6 +368,22 @@ void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) 
          }
       }
    }
+}
+
+Entity *gridMangerEntityFromScreenPosition(GridManager *self, Int2 pos) {
+   Int2 worldPos = screenToWorld(self->view, pos);
+
+   gridManagerQueryEntities(self);
+
+   vecForEach(EntityPtr, e, self->inViewEntities, {
+      PositionComponent *pc = entityGet(PositionComponent)(*e);
+      Recti area = { pc->x, pc->y, pc->x + GRID_CELL_SIZE, pc->y + GRID_CELL_SIZE };
+      if (rectiContains(area, worldPos)) {
+         return *e;
+      }
+   });
+
+   return NULL;
 }
 
 static void _renderTile(GridManager *self, Frame *frame, short x, short y, short imgX, short imgY) {

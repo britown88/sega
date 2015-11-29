@@ -17,6 +17,7 @@
 #include "Console.h"
 
 #include "RichText.h"
+#include "GameHelpers.h"
 #include "Lua.h"
 
 #include "segautils/Lisp.h"
@@ -104,10 +105,19 @@ static void _handleMouseConsole(WorldState *state) {
       }
       else if (event.action == SegaMouse_Pressed) {
          if (rectiContains(vpArea, pos)) {
-            int x = (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE;
-            int y = (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE;
+            Entity *e = gridMangerEntityFromScreenPosition(state->view->managers->gridManager, pos);
 
-            consoleMacroGridPos(state->view->console, x, y);
+
+            if (e && entityGet(ActorComponent)(e)) {
+               consoleMacroActor(state->view->console, e);
+            }
+            else {
+               Int2 worldPos = screenToWorld(state->view, pos);
+               consoleMacroGridPos(state->view->console, 
+                  worldPos.x / GRID_CELL_SIZE,
+                  worldPos.y / GRID_CELL_SIZE);
+            }
+            
          }
       }
    }
@@ -247,9 +257,11 @@ static void _handleMouse(WorldState *state){
       else if (event.action == SegaMouse_Released) {
          switch (event.button) {
          case SegaMouseBtn_Left:
+            
             if (verbManagerMouseButton(state->view->managers->verbManager, &event)) {
                continue;
             }
+
             cursorManagerClearVerb(state->view->managers->cursorManager);
             break;
          case SegaMouseBtn_Right:
@@ -260,11 +272,11 @@ static void _handleMouse(WorldState *state){
 
    }
 
-   if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
-      if (rectiContains(vpArea, pos)) {
-         _dropTestBlock(state, pos);
-      }         
-   }
+   //if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
+   //   if (rectiContains(vpArea, pos)) {
+   //      _dropTestBlock(state, pos);
+   //   }         
+   //}
 
    if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
       if (rectiContains(vpArea, pos)) {

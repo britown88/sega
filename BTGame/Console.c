@@ -435,16 +435,28 @@ void consoleScrollLog(Console *self, int direction) {
    }
 }
 
-void consoleMacroGridPos(Console *self, short x, short y) {
-   char buff[32];
-   int len, i;
-   sprintf(buff, "%d, %d", x, y);
-   len = strlen(buff);
-
+static void _insertInput(Console *self, const char *str) {
+   size_t i;
+   size_t len = strlen(str);
    for (i = 0; i < len; ++i) {
-      stringInsert(self->input, buff[i], self->cursorPos);
+      stringInsert(self->input, str[i], self->cursorPos);
       _cursorMove(self, 1);
    }
-   
+
    _updateInputLine(self);
+}
+
+void consoleMacroGridPos(Console *self, short x, short y) {
+   char buff[32];
+   sprintf(buff, "%d, %d", x, y);
+   _insertInput(self, buff);   
+}
+
+void consoleMacroActor(Console *self, Entity *e) {
+   int i = luaActorGetIndex(self->view->L, e);
+   char buff[32];
+   if (i > 0) {
+      sprintf(buff, "actors[%d]", i);
+      _insertInput(self, buff);
+   }
 }

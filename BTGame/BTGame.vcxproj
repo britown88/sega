@@ -95,6 +95,7 @@
     <ClInclude Include="Console.h" />
     <ClInclude Include="CoreComponents.h" />
     <ClInclude Include="GameClock.h" />
+    <ClInclude Include="GameHelpers.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GridManager.h" />
     <ClInclude Include="GridSolver.h" />
@@ -111,6 +112,7 @@
   <ItemGroup>
     <ClCompile Include="ActorManager.c" />
     <ClCompile Include="Console.c" />
+    <ClCompile Include="GameHelpers.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridMovementManager.c" />
     <ClCompile Include="GridSolver.c" />

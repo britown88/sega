@@ -23,3 +23,12 @@ function actors:get(a)
   end
   return nil
 end
+
+function actors:indexOf(a)
+  for i=1, #self do
+    if(self[i].entity == a.entity) then
+      return i
+    end
+  end
+  return 0
+end

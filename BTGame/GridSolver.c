@@ -157,7 +157,6 @@ static void _processSingleEntityCollision(GridSolver *self, Entity *e, Recti *r)
 
 static void _processEntityCollision(GridSolver *self, Recti *r) {
    //get entities in the area and mark solid collision
-   vecClear(EntityPtr)(self->eList);
    gridManagerQueryEntitiesRect(self->manager, *r, self->eList);
    vecForEach(EntityPtr, e, self->eList, {
       _processSingleEntityCollision(self, *e, r);

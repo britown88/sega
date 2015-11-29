@@ -84,6 +84,25 @@ void luaActorPushActor(lua_State *L, Entity *e) {
    lua_remove(L, -2);//remove the Actors table
 }
 
+//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
+int luaActorGetIndex(lua_State *L, Entity *e) {
+   int out;
+   lua_getglobal(L, LLIB_ACTORS);//push actors
+   lua_pushliteral(L, "indexOf");
+   lua_gettable(L, -2);
+   lua_pushvalue(L, -2);
+
+   lua_newtable(L);
+   luaPushUserDataTable(L, "entity", e);
+   if (lua_pcall(L, 2, 1, 0)) {//push the index
+      return 0;
+   }
+
+   out = (int)luaL_checkinteger(L, -1);
+   lua_pop(L, 2);//remove the Actors table and index
+   return out;
+}
+
 //calls stepScript on every loaded actor
 void luaActorStepAllScripts(WorldView *view, lua_State *L) {
    int aCount, i;

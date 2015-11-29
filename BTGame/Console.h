@@ -6,6 +6,7 @@
 
 typedef struct Frame_t Frame;
 typedef struct Console_t Console;
+typedef struct Entity_t Entity;
 
 Console *consoleCreate(WorldView *view);
 void consoleDestroy(Console *self);
@@ -20,6 +21,7 @@ void consolePushLine(Console *self, const char *line);
 void consoleClear(Console *self);
 void consoleScrollLog(Console *self, int direction);
 void consoleMacroGridPos(Console *self, short x, short y);
+void consoleMacroActor(Console *self, Entity *e);
 
 #define consolePrintLine(CONSOLE, STR, ...) {\
    char buffer[256] = {0}; \

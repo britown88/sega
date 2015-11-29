@@ -37,6 +37,7 @@ typedef struct OcclusionCell_t OcclusionCell;
 //returns pointer to the entity array that contains all gridded entities currently in view
 vec(EntityPtr) *gridManagerQueryEntities(GridManager *self);
 void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) *outlist);
+Entity *gridMangerEntityFromScreenPosition(GridManager *self, Int2 pos);
 
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);
