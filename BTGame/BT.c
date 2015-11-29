@@ -133,8 +133,7 @@ VirtualApp *btCreate() {
    return (VirtualApp*)r;
 }
 
-void _destroy(BTGame *self){
-   luaDestroy(self->L);
+void _destroy(BTGame *self){   
    fsmDestroy(self->gameState);
    _destroyEntitySystem(self);
 
@@ -142,6 +141,7 @@ void _destroy(BTGame *self){
    gameClockDestroy(self->gameClock);
    gridSolverDestroy(self->gridSolver);
    consoleDestroy(self->console);
+   luaDestroy(self->L);
    checkedFree(self);
 }
 

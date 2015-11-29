@@ -88,12 +88,13 @@ void pcManagerCreatePC(PCManager *self) {
    COMPONENT_ADD(self->pc, InViewComponent, 0);
    COMPONENT_ADD(self->pc, GridComponent, 7, 2);
    COMPONENT_ADD(self->pc, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
+   COMPONENT_ADD(self->pc, ActorComponent, 0);
 
    _updateLight(self);
    _updateSprite(self);
    entityUpdate(self->pc);
 
-   luaActorAddGlobalActor(self->view->L, "Player", self->pc);
+   luaActorMakeActorGlobal(self->view->L, self->pc, "Player");
 }
 
 void pcManagerStop(PCManager *self) {

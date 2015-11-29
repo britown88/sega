@@ -30,10 +30,11 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view);
 void luaLoadStandardLibrary(lua_State *L);
 
 void luaLoadActorLibrary(lua_State *L);
-void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e);
-void luaActorAddActor(lua_State *L, Entity *e);
-void luaActorRemoveActor(lua_State *L, Entity *e);
-void luaActorStepAllScripts(WorldView *view, lua_State *L);
+void luaActorAddActor(lua_State *L, Entity *e);//add an entity to the actors table (called by adding an ActorComponent)
+void luaActorRemoveActor(lua_State *L, Entity *e);//remove an added actor from the actors table (called by removing an actorComponent)
+void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name);//make an ALREADY_ADDED actor global (ie: player)
+void luaActorPushActor(lua_State *L, Entity *e);//push the corresponding actor table to the stack, pushes nil if it doesnt exist
+void luaActorStepAllScripts(WorldView *view, lua_State *L);//calls stepScript on every loaded actor
 
 void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name);

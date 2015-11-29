@@ -19,6 +19,102 @@ static int slua_actorStop(lua_State *L);
 static int slua_actorIsMoving(lua_State *L);
 static int slua_actorDistanceTo(lua_State *L);
 
+//add an entity to the actors table (called by adding an ActorComponent)
+void luaActorAddActor(lua_State *L, Entity *e) {
+   lua_getglobal(L, "Actors");
+   lua_pushliteral(L, "add");
+   lua_gettable(L, -2);
+   lua_pushvalue(L, -2);
+
+   //call new
+   lua_pushcfunction(L, &luaNewObject);
+   lua_getglobal(L, "Actor");
+   lua_call(L, 1, 1);
+
+   luaPushUserDataTable(L, "entity", e);
+
+   lua_pushliteral(L, "scripts");
+   lua_newtable(L);
+   lua_rawset(L, -3);
+
+   lua_call(L, 2, 0);
+   lua_pop(L, 1);
+}
+
+//remove an added actor from the actors table (called by removing an actorComponent)
+void luaActorRemoveActor(lua_State *L, Entity *e) {
+   lua_getglobal(L, "Actors");
+   lua_pushliteral(L, "remove");
+   lua_gettable(L, -2);
+   lua_pushvalue(L, -2);
+
+   lua_newtable(L);
+   luaPushUserDataTable(L, "entity", e);
+   lua_call(L, 2, 0);
+
+   lua_pop(L, 1);
+}
+
+//make an ALREADY_ADDED actor global (ie: player)
+void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name) {
+   int len = lua_gettop(L);
+   int len2;
+   luaActorPushActor(L, e);
+   len2 = lua_gettop(L);
+
+   if (!lua_isnil(L, -1)) {
+      lua_setglobal(L, name);
+   }
+   else {
+      lua_pop(L, 1);
+   }
+}
+
+//push the corresponding actor table to the stack, pushes nil if it doesnt exist
+void luaActorPushActor(lua_State *L, Entity *e) {
+   lua_getglobal(L, "Actors");//push actors
+   lua_pushliteral(L, "get");
+   lua_gettable(L, -2);
+   lua_pushvalue(L, -2);
+
+   lua_newtable(L);
+   luaPushUserDataTable(L, "entity", e);
+   lua_call(L, 2, 1);//push the actor
+
+   lua_remove(L, -2);//remove the Actors table
+}
+
+//calls stepScript on every loaded actor
+void luaActorStepAllScripts(WorldView *view, lua_State *L) {
+   int aCount, i;
+   lua_getglobal(L, "Actors");
+
+   lua_len(L, -1);
+   aCount = (int)luaL_checkinteger(L, -1);
+   lua_pop(L, 1);
+
+   for (i = 0; i < aCount; ++i) {
+      lua_pushcfunction(L, &slua_actorStepScript);
+
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, -3);//push the actor
+
+      if (lua_pcall(L, 1, 0, 0)) {
+         if (lua_type(L, -1) == LUA_TSTRING) {
+            const char *err = lua_tostring(L, -1);
+            consolePrintLine(view->console, "[c=0,13]Error stepping script:\n[=]%s[/=][/c]", err);
+         }
+         else {
+            consolePrintLine(view->console, "[c=0,13]Unspecified error stepping script.[/c]");
+         }
+
+         lua_pop(L, 1);
+      }
+   }
+
+   lua_pop(L, 1); //pop actors
+}
+
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    //call new
    lua_pushcfunction(L, &luaNewObject);
@@ -41,70 +137,6 @@ void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    lua_call(L, 2, 0);
 
    lua_pop(L, 1);   
-}
-void luaActorAddActor(lua_State *L, Entity *e) {
-   lua_getglobal(L, "Actors");
-   lua_pushliteral(L, "add");
-   lua_gettable(L, -2);
-   lua_pushvalue(L, -2);
-   
-   //call new
-   lua_pushcfunction(L, &luaNewObject);
-   lua_getglobal(L, "Actor");
-   lua_call(L, 1, 1);
-
-   luaPushUserDataTable(L, "entity", e);
-
-   lua_pushliteral(L, "scripts");
-   lua_newtable(L);
-   lua_rawset(L, -3);
-
-   lua_call(L, 2, 0);
-   lua_pop(L, 1);
-}
-void luaActorRemoveActor(lua_State *L, Entity *e) {
-   lua_getglobal(L, "Actors");
-   lua_pushliteral(L, "remove");
-   lua_gettable(L, -2);
-   lua_pushvalue(L, -2);
-
-   //call new
-   lua_pushcfunction(L, &luaNewObject);
-   lua_getglobal(L, "Actor");
-   lua_call(L, 1, 1);
-
-   luaPushUserDataTable(L, "entity", e);
-   lua_call(L, 2, 0);
-   lua_pop(L, 1);
-}
-void luaActorStepAllScripts(WorldView *view, lua_State *L) {
-   int aCount, i;
-   lua_getglobal(L, "Actors");
-   
-   lua_len(L, -1);
-   aCount = (int)luaL_checkinteger(L, -1);
-   lua_pop(L, 1);
-   
-   for (i = 0; i < aCount; ++i) {
-      lua_pushcfunction(L, &slua_actorStepScript);
-
-      lua_pushinteger(L, i + 1);
-      lua_gettable(L, -3);//push the actor
-
-      if (lua_pcall(L, 1, 0, 0)) {
-         if (lua_type(L, -1) == LUA_TSTRING) {
-            const char *err = lua_tostring(L, -1);
-            consolePrintLine(view->console, "[c=0,13]Error stepping script:\n[=]%s[/=][/c]", err);
-         }
-         else {
-            consolePrintLine(view->console, "[c=0,13]Unspecified error stepping script.[/c]");
-         }
-
-         lua_pop(L, 1);
-      }
-   }
-
-   lua_pop(L, 1); //pop actors
 }
 
 void luaLoadActorLibrary(lua_State *L) {

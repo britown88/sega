@@ -351,10 +351,9 @@ static void _addActor(WorldState *state, int x, int y, int imgX, int imgY) {
    COMPONENT_ADD(e, InViewComponent, 0);
    COMPONENT_ADD(e, GridComponent, x, y);
    COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
+   COMPONENT_ADD(e, ActorComponent, 0);
 
    entityUpdate(e);
-
-   luaActorAddActor(state->view->L, e);
 }
 
 static void _addTestEntities(WorldState *state) {
