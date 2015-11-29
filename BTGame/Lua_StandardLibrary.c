@@ -16,7 +16,7 @@ void luaLoadStandardLibrary(lua_State *L) {
    lua_newtable(L);
    luaPushFunctionTable(L, "print", &slua_consolePrint);
    luaPushFunctionTable(L, "clear", &slua_consoleClear);
-   lua_setglobal(L, "Console");
+   lua_setglobal(L, LLIB_CONSOLE);
 
    luaPushFunctionGlobal(L, "rand", &slua_rand);
 }

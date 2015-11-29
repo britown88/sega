@@ -6,12 +6,12 @@ function new(self, o)
 end
 
 function cls()
-  Console.clear()
+  console.clear()
 end
 
 function dir(o)
   for k,v in pairs(o) do
-    Console.print(string.format("[%q: %q]", k, type(v)))
+    console.print(string.format("[%q: %q]", k, type(v)))
   end
 end
 
@@ -22,5 +22,5 @@ function reload(m)
 
   package.loaded[m] = nil
   require(m)
-  Console.print("Module reloaded!")
+  console.print("Module reloaded!")
 end

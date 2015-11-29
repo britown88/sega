@@ -94,7 +94,7 @@ void pcManagerCreatePC(PCManager *self) {
    _updateSprite(self);
    entityUpdate(self->pc);
 
-   luaActorMakeActorGlobal(self->view->L, self->pc, "Player");
+   luaActorMakeActorGlobal(self->view->L, self->pc, LLIB_PLAYER);
 }
 
 void pcManagerStop(PCManager *self) {

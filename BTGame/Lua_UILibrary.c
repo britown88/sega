@@ -6,26 +6,30 @@
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
+
 static int slua_textAreaPush(lua_State *L);
 
 void luaUIAddTextArea(lua_State *L, StringView name) {
 
-   lua_getglobal(L, "TextAreas");
+   lua_getglobal(L, LLIB_TEXT_AREAS);
    lua_pushstring(L, name); 
 
    lua_pushcfunction(L, &luaNewObject);
-   lua_getglobal(L, "TextArea");
+   lua_getglobal(L, LLIB_TEXT_AREA);
    lua_call(L, 1, 1);
    luaPushUserDataTable(L, "name", (void*)name);
 
-   lua_rawset(L, -3);
+   lua_settable(L, -3);
    lua_pop(L, 1);
 }
 
 void luaLoadUILibrary(lua_State *L) {
    lua_newtable(L);
+   lua_setglobal(L, LLIB_TEXT_AREAS);
+   
+   lua_newtable(L);
    luaPushFunctionTable(L, "push", &slua_textAreaPush);
-   lua_setglobal(L, "TextArea");
+   lua_setglobal(L, LLIB_TEXT_AREA);
 }
 
 int slua_textAreaPush(lua_State *L) {

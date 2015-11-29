@@ -21,14 +21,14 @@ static int slua_actorDistanceTo(lua_State *L);
 
 //add an entity to the actors table (called by adding an ActorComponent)
 void luaActorAddActor(lua_State *L, Entity *e) {
-   lua_getglobal(L, "Actors");
+   lua_getglobal(L, LLIB_ACTORS);
    lua_pushliteral(L, "add");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
 
    //call new
    lua_pushcfunction(L, &luaNewObject);
-   lua_getglobal(L, "Actor");
+   lua_getglobal(L, LLIB_ACTOR);
    lua_call(L, 1, 1);
 
    luaPushUserDataTable(L, "entity", e);
@@ -43,7 +43,7 @@ void luaActorAddActor(lua_State *L, Entity *e) {
 
 //remove an added actor from the actors table (called by removing an actorComponent)
 void luaActorRemoveActor(lua_State *L, Entity *e) {
-   lua_getglobal(L, "Actors");
+   lua_getglobal(L, LLIB_ACTORS);
    lua_pushliteral(L, "remove");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
@@ -72,7 +72,7 @@ void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name) {
 
 //push the corresponding actor table to the stack, pushes nil if it doesnt exist
 void luaActorPushActor(lua_State *L, Entity *e) {
-   lua_getglobal(L, "Actors");//push actors
+   lua_getglobal(L, LLIB_ACTORS);//push actors
    lua_pushliteral(L, "get");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
@@ -87,7 +87,7 @@ void luaActorPushActor(lua_State *L, Entity *e) {
 //calls stepScript on every loaded actor
 void luaActorStepAllScripts(WorldView *view, lua_State *L) {
    int aCount, i;
-   lua_getglobal(L, "Actors");
+   lua_getglobal(L, LLIB_ACTORS);
 
    lua_len(L, -1);
    aCount = (int)luaL_checkinteger(L, -1);
@@ -118,7 +118,7 @@ void luaActorStepAllScripts(WorldView *view, lua_State *L) {
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    //call new
    lua_pushcfunction(L, &luaNewObject);
-   lua_getglobal(L, "Actor");
+   lua_getglobal(L, LLIB_ACTOR);
    lua_call(L, 1, 1);
 
    luaPushUserDataTable(L, "entity", e);
@@ -129,11 +129,11 @@ void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
 
    lua_setglobal(L, name);
 
-   lua_getglobal(L, "Actors");
+   lua_getglobal(L, LLIB_ACTORS);
    lua_pushliteral(L, "add");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
-   lua_getglobal(L, "Player");
+   lua_getglobal(L, LLIB_PLAYER);
    lua_call(L, 2, 0);
 
    lua_pop(L, 1);   
@@ -161,7 +161,7 @@ void luaLoadActorLibrary(lua_State *L) {
    luaPushFunctionTable(L, "isMoving", &slua_actorIsMoving);
    luaPushFunctionTable(L, "distanceTo", &slua_actorDistanceTo);
    
-   lua_setglobal(L, "Actor");
+   lua_setglobal(L, LLIB_ACTOR);
 }
 
 int slua_actorPushScript(lua_State *L) {

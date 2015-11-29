@@ -1,12 +1,12 @@
-Actors = {}
-function Actors:add(a)
+actors = {}
+function actors:add(a)
   for i=1, #self do
     if(self[i].entity == a.entity) then return end
   end
   self[#self + 1] = a
 end
 
-function Actors:remove(a)
+function actors:remove(a)
   for i=1, #self do
     if(self[i].entity == a.entity) then
       table.remove(self, i)
@@ -15,7 +15,7 @@ function Actors:remove(a)
   end
 end
 
-function Actors:get(a)
+function actors:get(a)
   for i=1, #self do
     if(self[i].entity == a.entity) then
       return self[i]

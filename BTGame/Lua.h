@@ -25,6 +25,16 @@ int luaNewObject(lua_State *L);
 void luaRequire(lua_State *L, const char *modname);
 
 //library functions
+
+#define LLIB_TEXT_AREA "textArea"
+#define LLIB_TEXT_AREAS "textAreas"
+
+#define LLIB_CONSOLE "console"
+#define LLIB_VIEW "view"
+#define LLIB_ACTOR "actor"
+#define LLIB_ACTORS "actors"
+#define LLIB_PLAYER "player"
+
 void luaLoadAllLibraries(lua_State *L, WorldView *view);
 
 void luaLoadStandardLibrary(lua_State *L);

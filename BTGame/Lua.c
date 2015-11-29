@@ -15,7 +15,7 @@ void luaDestroy(lua_State *self) {
 
 WorldView *luaGetWorldView(lua_State *L) {
    WorldView *view;
-   lua_getglobal(L, "View");
+   lua_getglobal(L, LLIB_VIEW);
    view = lua_touserdata(L, -1);
    lua_pop(L, 1);
    return view;
