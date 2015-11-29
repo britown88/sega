@@ -24,7 +24,6 @@ void luaUIAddTextArea(lua_State *L, StringView name) {
 
 void luaLoadUILibrary(lua_State *L) {
    lua_newtable(L);
-   luaPushFunctionTable(L, "new", &luaNewObject);
    luaPushFunctionTable(L, "push", &slua_textAreaPush);
    lua_setglobal(L, "TextArea");
 }

@@ -29,7 +29,11 @@ function Actors:stepScripts()
 
     status, err = pcall(self[i].stepScript, self[i])
     if(not status) then
-      Console.print(string.format("[c=0,13][=]Error stepping coroutine:\n%q[/=][/c]", err))
+      if(type(err) ~= "string") then
+        Console.print("[c=0,13][=]Unspecified Error stepping coroutine[/=][/c]")
+      else
+        Console.print(string.format("[c=0,13][=]Error stepping coroutine:\n%q[/=][/c]", err))
+      end
     end
 
   end

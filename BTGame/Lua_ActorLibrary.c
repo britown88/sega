@@ -15,6 +15,10 @@ static int slua_actorStop(lua_State *L);
 static int slua_actorIsMoving(lua_State *L);
 static int slua_actorDistanceTo(lua_State *L);
 
+static int slua_actorPushScript(lua_State *L);
+static int slua_actorPopScript(lua_State *L);
+static int slua_actorStepScript(lua_State *L);
+
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    //call new
    lua_pushcfunction(L, &luaNewObject);
@@ -22,6 +26,11 @@ void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    lua_call(L, 1, 1);
 
    luaPushUserDataTable(L, "entity", e);
+
+   lua_pushliteral(L, "scripts");
+   lua_newtable(L);
+   lua_rawset(L, -3);
+
    lua_setglobal(L, name);
 
    lua_getglobal(L, "Actors");
@@ -84,7 +93,7 @@ void luaActorStepAllScripts(lua_State *L) {
 }
 
 void luaLoadActorLibrary(lua_State *L) {
-   lua_getglobal(L, "Actor");
+   lua_newtable(L);
 
    //Entity*
    luaPushUserDataTable(L, "entity", NULL);
@@ -94,14 +103,129 @@ void luaLoadActorLibrary(lua_State *L) {
    lua_newtable(L);
    lua_rawset(L, -3);
 
-   luaPushFunctionTable(L, "new", &luaNewObject);
+   luaPushFunctionTable(L, "pushScript", &slua_actorPushScript);
+   luaPushFunctionTable(L, "popScript", &slua_actorPopScript);
+   luaPushFunctionTable(L, "stepScript", &slua_actorStepScript);
+
    luaPushFunctionTable(L, "move", &slua_actorMove);
    luaPushFunctionTable(L, "moveRelative", &slua_actorMoveRelative);
    luaPushFunctionTable(L, "position", &slua_actorPosition);
    luaPushFunctionTable(L, "stop", &slua_actorStop);
    luaPushFunctionTable(L, "isMoving", &slua_actorIsMoving);
    luaPushFunctionTable(L, "distanceTo", &slua_actorDistanceTo);
+   
+   lua_setglobal(L, "Actor");
+}
+
+int slua_actorPushScript(lua_State *L) {
+   int n = lua_gettop(L);
+   int i, result, index;
+   lua_State *thread;
+
+   luaL_checktype(L, 1, LUA_TTABLE);//1 - actor, self
+   luaL_checktype(L, 2, LUA_TFUNCTION);//2 - script
+
+   //create our thread and push script, actor, ...
+   thread = lua_newthread(L);// n+1: thread
+   lua_pushvalue(L, 2);
+   lua_pushvalue(L, 1);
+   for (i = 0; i < n - 2; ++i) {
+      lua_pushvalue(L, 3 + i);
+   }
+   lua_xmove(L, thread, n);
+
+   //start the thread
+   result = lua_resume(thread, NULL, n - 1);
+
+   if (result != LUA_YIELD) {
+      //function executed or yielded,  pop the thread and return
+      lua_pop(L, 1);
+
+      if (result != LUA_OK) {
+         const char *err = luaL_checkstring(L, -1);
+         lua_pushvalue(L, -1);
+         lua_error(L);
+      }    
+
+      return 0;
+   }
+
+   //now store the thread in the actor's scripts
+   lua_pushvalue(L, 1);//push the actor
+   lua_pushliteral(L, "scripts");
+   lua_gettable(L, -2);//push the actor's script table
+   
+   //get the len, add 1 and push it
+   lua_len(L, -1);//push the len
+   index = (int)lua_tointeger(L, -1) + 1;
    lua_pop(L, 1);
+   lua_pushinteger(L, index);
+
+   lua_pushvalue(L, n + 1);//push the thread
+   lua_settable(L, -3);//commit script[#scripts] = thread
+
+   lua_pop(L, 3);//pop the scripts, actor, and thread
+   return 0;
+}
+int slua_actorPopScript(lua_State *L) {
+   luaL_checktype(L, 1, LUA_TTABLE);//1 - actor, self
+
+   lua_pushliteral(L, "scripts");
+   lua_gettable(L, -2);//push the actor's script table
+
+   lua_len(L, -1);
+   if (lua_tointeger(L, -1) > 0) {
+      lua_pushnil(L);//index is pushed, push nil and set it
+      lua_settable(L, -3);
+   }
+   else {
+      lua_pop(L, 1);//pop the len
+   }
+
+   lua_pop(L, 1);//pop the scripts table  
+   return 0;
+}
+int slua_actorStepScript(lua_State *L) {
+   int index;
+   int n = lua_gettop(L);
+   luaL_checktype(L, 1, LUA_TTABLE);//1 - actor, self
+
+   lua_pushliteral(L, "scripts");
+   lua_gettable(L, -2);//push the actor's script table
+
+   lua_len(L, -1);
+   index = (int)lua_tointeger(L, -1);
+
+   if (index > 0) {
+      int result;
+      lua_gettable(L, -2);//push the thread
+      result = lua_resume(lua_tothread(L, -1), NULL, 0);
+
+      if (result != LUA_YIELD) {       
+
+         //now we need to call table.remove ._.
+         lua_getglobal(L, "table");
+         lua_pushliteral(L, "remove");
+         lua_gettable(L, -2);
+         lua_pushvalue(L, n + 1);//push the scripts table
+         lua_pushinteger(L, index);
+         lua_call(L, 2, 0);//call the remove
+         lua_pop(L, 1);//pop table
+
+         if (result != LUA_OK) {
+            const char *err = lua_tostring(L, -1);
+            lua_pushvalue(L, -1);
+            lua_error(L);
+         }
+      }
+      lua_pop(L, 1);//pop the thread
+   }
+   else {
+      lua_pop(L, 1);//pop the len
+   }
+
+   lua_pop(L, 1);//pop the scripts table  
+   return 0;
 }
 
 int slua_actorMove(lua_State *L) {

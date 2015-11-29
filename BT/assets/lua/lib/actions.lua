@@ -1,5 +1,11 @@
 Actions = {}
 
+function Actions.waitForStop(actor)
+  while(actor:isMoving()) do
+    coroutine.yield()
+  end
+end
+
 function Actions.persistentMove(actor, x, y, range)
   range = range or 0
   repeat
@@ -9,23 +15,17 @@ end
 
 function Actions.move(actor, x, y)
   actor:move(x, y)
-  while(actor:isMoving()) do
-    coroutine.yield()
-  end
+  Actions.waitForStop(actor)
 end
 
 function Actions.moveRelative(actor, x, y)
     actor:moveRelative(x, y)
-    while(actor:isMoving()) do
-      coroutine.yield()
-    end
+    Actions.waitForStop(actor)
 end
 
 function Actions.stop(actor)
   actor:stop()
-  while(actor:isMoving()) do
-    coroutine.yield()
-  end
+  Actions.waitForStop(actor)
 end
 
 function Actions.wander(actor, width, height)
@@ -38,7 +38,6 @@ function Actions.wander(actor, width, height)
   while(true) do
     local posx, posy = rand(left, right), rand(top, bottom)
     Actions.move(actor, posx, posy, x - left)
-    coroutine.yield()
   end
 end
 
@@ -49,4 +48,8 @@ function Actions.scatter()
       actor:pushScript(Actions.move, rand(0,21), rand(0,11))
     end
   end
+end
+
+function test(index)
+  Actors[index]:pushScript(Actions.move, rand(0,21), rand(0,11))
 end
