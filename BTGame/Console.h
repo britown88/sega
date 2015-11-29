@@ -20,7 +20,6 @@ void consolePushLine(Console *self, const char *line);
 void consoleClear(Console *self);
 void consoleScrollLog(Console *self, int direction);
 void consoleMacroGridPos(Console *self, short x, short y);
-void consoleReloadLibraries(Console *self);
 
 #define consolePrintLine(CONSOLE, STR, ...) {\
    char buffer[256] = {0}; \

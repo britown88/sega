@@ -152,6 +152,27 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
 
    if (solution.totalCost > 0 && solution.path) {
       size_t dest = vecBegin(GridSolutionNode)(solution.path)->node;
+
+      if (dest == gridManagerCellIDFromXY(manager, tgc->lastX, tgc->lastY)) {
+         //we're returning to a tile we've already been to
+         //which _probably_ means we cant get to our desination
+         //its possible this might get tripped by an npc moving in the way
+         //but the coroutine governing the move should pick up that slack
+         entityRemove(TGridMovingComponent)(e);
+
+         //make sure our interpolation gets cleaned up
+         if (entityGet(InterpolationComponent)(e)) {
+            entityRemove(InterpolationComponent)(e);
+         }
+
+         //make sure our wait gets cleaned up
+         if (entityGet(WaitComponent)(e)) {
+            entityRemove(WaitComponent)(e);
+         }
+
+         return;
+      }
+
       tgc->lastX = gc->x;
       tgc->lastY = gc->y;
 
@@ -237,6 +258,7 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
    if (tgc) {
       tgc->destX = x;
       tgc->destY = y;
+      tgc->lastX = tgc->lastY = 0;
    }
    else {
       COMPONENT_ADD(e, TGridMovingComponent, x, y);
@@ -256,6 +278,7 @@ void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e,
    if (tgc) {
       tgc->destX = x;
       tgc->destY = y;
+      tgc->lastX = tgc->lastY = 0;
    }
    else {
       COMPONENT_ADD(e, TGridMovingComponent, x, y);

@@ -40,12 +40,7 @@ struct Console_t {
    bool invertCursor;
 
    int queuePos;
-   bool reloadAll;
 };
-
-void consoleReloadLibraries(Console *self) {
-   self->reloadAll = true;
-}
 
 Console *consoleCreate(WorldView *view) {
    Console *out = checkedCalloc(1, sizeof(Console));
@@ -180,10 +175,6 @@ static void _processInput(Console *self, String *input) {
       while (lua_gettop(L)) {
          _printStackItem(L, self, -1);
          lua_pop(L, 1);
-      }
-
-      if (self->reloadAll) {
-         //not sure how to do this right so everything gets reloaded
       }
    }
 }

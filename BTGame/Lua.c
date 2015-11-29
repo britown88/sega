@@ -21,6 +21,7 @@ WorldView *luaGetWorldView(lua_State *L) {
    return view;
 }
 
+//this was a proof of concept
 int luaNewObject(lua_State *L) {
 
    luaL_checktype(L, 1, LUA_TTABLE);

@@ -9,6 +9,12 @@ function Actor:pushScript(script, ...)
   self.scripts[#self.scripts+1] = co
 end
 
+function Actor:popScript(script, ...)
+  if(#self.scripts > 0) then
+      self.scripts[#self.scripts] = nil
+  end
+end
+
 function Actor:stepScript()
   local index = #self.scripts;
   if(index > 0) then
