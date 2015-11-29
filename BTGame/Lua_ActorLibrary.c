@@ -15,19 +15,22 @@ static int slua_actorStop(lua_State *L);
 static int slua_actorIsMoving(lua_State *L);
 
 void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
-   if (luaL_dostring(L, "return Actor:new()")) { 
-      const char* err = lua_tostring(L, -1);
-      lua_error(L); 
-   }
+   //call new
+   lua_pushcfunction(L, &luaNewObject);
+   lua_getglobal(L, "Actor");
+   lua_call(L, 1, 1);
+
    luaPushUserDataTable(L, "entity", e);
    lua_setglobal(L, name);
 
-   {
-      char buff[32];
-      sprintf(buff, "Actors:add(%s)", name);
-      if (luaL_dostring(L, buff)) { lua_error(L); }
-   }
-   
+   lua_getglobal(L, "Actors");
+   lua_pushliteral(L, "add");
+   lua_gettable(L, -2);
+   lua_pushvalue(L, -2);
+   lua_getglobal(L, "Player");
+   lua_call(L, 2, 0);
+
+   lua_pop(L, 1);   
 }
 
 void luaActorAddActor(lua_State *L, Entity *e) {
@@ -35,7 +38,12 @@ void luaActorAddActor(lua_State *L, Entity *e) {
    lua_pushliteral(L, "add");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
-   if (luaL_dostring(L, "return New(Actor)")) { lua_error(L); }
+   
+   //call new
+   lua_pushcfunction(L, &luaNewObject);
+   lua_getglobal(L, "Actor");
+   lua_call(L, 1, 1);
+
    luaPushUserDataTable(L, "entity", e);
    lua_call(L, 2, 0);
    lua_pop(L, 1);
@@ -46,7 +54,12 @@ void luaActorRemoveActor(lua_State *L, Entity *e) {
    lua_pushliteral(L, "remove");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
-   if (luaL_dostring(L, "return New(Actor)")) { lua_error(L); }
+
+   //call new
+   lua_pushcfunction(L, &luaNewObject);
+   lua_getglobal(L, "Actor");
+   lua_call(L, 1, 1);
+
    luaPushUserDataTable(L, "entity", e);
    lua_call(L, 2, 0);
    lua_pop(L, 1);
@@ -65,14 +78,23 @@ void luaActorStepAllScripts(lua_State *L) {
 }
 
 void luaLoadActorLibrary(lua_State *L) {
-   lua_getglobal(L, "Actor");
+   lua_newtable(L);
+
+   //Entity*
    luaPushUserDataTable(L, "entity", NULL);
+
+   //add empty scripts table
+   lua_pushliteral(L, "scripts");
+   lua_newtable(L);
+   lua_rawset(L, -3);
+
+   luaPushFunctionTable(L, "new", &luaNewObject);
    luaPushFunctionTable(L, "move", &slua_actorMove);
    luaPushFunctionTable(L, "moveRelative", &slua_actorMoveRelative);
    luaPushFunctionTable(L, "position", &slua_actorPosition);
    luaPushFunctionTable(L, "stop", &slua_actorStop);
    luaPushFunctionTable(L, "isMoving", &slua_actorIsMoving);
-   lua_pop(L, 1);
+   lua_setglobal(L, "Actor");
 }
 
 int slua_actorMove(lua_State *L) {

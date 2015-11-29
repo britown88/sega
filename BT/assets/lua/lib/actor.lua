@@ -1,8 +1,5 @@
 Actor = {}
 
-Actor.new = New
-Actor.scripts = {}
-
 function Actor:pushScript(script, ...)
   local co = coroutine.create(script)
   coroutine.resume(co, self, ...)

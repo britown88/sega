@@ -13,7 +13,9 @@ void luaUIAddTextArea(lua_State *L, StringView name) {
    lua_getglobal(L, "TextAreas");
    lua_pushstring(L, name); 
 
-   if (luaL_dostring(L, "return New(TextArea)")) { lua_error(L);}
+   lua_pushcfunction(L, &luaNewObject);
+   lua_getglobal(L, "TextArea");
+   lua_call(L, 1, 1);
    luaPushUserDataTable(L, "name", (void*)name);
 
    lua_rawset(L, -3);
@@ -21,9 +23,10 @@ void luaUIAddTextArea(lua_State *L, StringView name) {
 }
 
 void luaLoadUILibrary(lua_State *L) {
-   lua_getglobal(L, "TextArea");
+   lua_newtable(L);
+   luaPushFunctionTable(L, "new", &luaNewObject);
    luaPushFunctionTable(L, "push", &slua_textAreaPush);
-   lua_pop(L, 1);
+   lua_setglobal(L, "TextArea");
 }
 
 int slua_textAreaPush(lua_State *L) {
