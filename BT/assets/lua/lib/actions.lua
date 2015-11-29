@@ -20,3 +20,12 @@ function Actions.stop(actor)
     coroutine.yield()
   end
 end
+
+function Actions.scatter()
+  for a=1, #Actors do
+    local actor = Actors[a]
+    if(actor ~= Player) then
+      actor:pushScript(Actions.move, rand(0,21), rand(0,11))
+    end
+  end
+end

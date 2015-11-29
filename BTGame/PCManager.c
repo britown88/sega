@@ -86,7 +86,7 @@ void pcManagerCreatePC(PCManager *self) {
    COMPONENT_ADD(self->pc, ImageComponent, .filename = stringIntern("assets/img/tiles.ega"), .partial = true, .x = 56, .y = 28, .width = 14, .height = 14);
    COMPONENT_ADD(self->pc, LayerComponent, LayerGrid);
    COMPONENT_ADD(self->pc, InViewComponent, 0);
-   COMPONENT_ADD(self->pc, GridComponent, 11, 6);
+   COMPONENT_ADD(self->pc, GridComponent, 7, 2);
    COMPONENT_ADD(self->pc, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
 
    _updateLight(self);

@@ -27,10 +27,10 @@ end
 function Actors:stepScripts()
   for i=1, #self do
 
-    --status, err = pcall(self[i].stepScript, self[i])
-    --if(not status) then
-      --Console.print(string.format("[c=0,13][=]Error stepping coroutine:\n%q[/=][/c]", err))
-    --end
+    status, err = pcall(self[i].stepScript, self[i])
+    if(not status) then
+      Console.print(string.format("[c=0,13][=]Error stepping coroutine:\n%q[/=][/c]", err))
+    end
 
   end
 end

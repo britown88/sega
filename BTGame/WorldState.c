@@ -374,7 +374,7 @@ static void _addTestEntities(WorldState *state) {
    }
 
    for (i = 0; i < 15; ++i) {
-      int x = appRand(appGet(), 0, 22);
+      int x = appRand(appGet(), 0, 21);
       int y = appRand(appGet(), 0, 11);
       int sprite = appRand(appGet(), 0, 3);
 
