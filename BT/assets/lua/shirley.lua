@@ -23,7 +23,7 @@ function shirley.toLook(actor)
     textAreas.smallbox:push("[c=15,4]SMAAAASH!![/c]")
     local ptime, pdelay = player:moveSpeed()
     player:setMoveSpeed(0, 0)
-    actions.moveRelative(player, dx, dy)
+    player:pushScript(actions.moveRelative, dx, dy)
     player:setMoveSpeed(ptime, pdelay)
   else
     textAreas.smallbox:push("*slap*")

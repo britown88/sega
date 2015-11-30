@@ -152,12 +152,17 @@ static void _printStackItem(lua_State *L, Console *self, int index) {
 }
 
 void consolePrintLuaError(Console *self, const char *tag) {
-   lua_State *L = self->view->L;
+   lua_State *L;
    const char *fmt = "[c=0,13]%s:\n [=]%s[/=][/c]";
-   size_t len = lua_rawlen(L, -1);
+   size_t len;
    size_t tagLen = strlen(tag);
    size_t fmtLen = strlen(fmt);
-   size_t fullLen = len + tagLen + fmtLen;
+   size_t fullLen;
+
+   if (!self) { return; }
+   L = self->view->L;
+   len = lua_rawlen(L, -1);
+   fullLen = len + tagLen + fmtLen;
 
    if (fullLen >= 100) {
       char *buffer = checkedCalloc(1, fullLen);
@@ -323,6 +328,7 @@ static void _historyUp(Console *self) {
       stringSet(self->input, c_str(*vecAt(StringPtr)(self->inputHistory, self->historyLocation)));
 
       self->cursorPos = stringLen(self->input);
+      self->skippedChars = 0;
       if (self->cursorPos > self->skippedChars + SHOWN_INPUT_LEN) {
          self->skippedChars = self->cursorPos - SHOWN_INPUT_LEN;
       }
@@ -344,6 +350,7 @@ static void _historyDown(Console *self) {
       }
 
       self->cursorPos = stringLen(self->input);
+      self->skippedChars = 0;
       if (self->cursorPos > self->skippedChars + SHOWN_INPUT_LEN) {
          self->skippedChars = self->cursorPos - SHOWN_INPUT_LEN;
       }

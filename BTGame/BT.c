@@ -133,14 +133,19 @@ VirtualApp *btCreate() {
    return (VirtualApp*)r;
 }
 
-void _destroy(BTGame *self){   
+void _destroy(BTGame *self){
    fsmDestroy(self->gameState);
+
+   //kill the console before the entity system tries throwing errors to it
+   consoleDestroy(self->console);
+   self->console = self->view.console = NULL;
+   
    _destroyEntitySystem(self);
 
    imageLibraryDestroy(self->imageLibrary);
    gameClockDestroy(self->gameClock);
    gridSolverDestroy(self->gridSolver);
-   consoleDestroy(self->console);
+   
    luaDestroy(self->L);
    checkedFree(self);
 }
