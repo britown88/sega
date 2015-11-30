@@ -5,6 +5,8 @@
 #include "WorldView.h"
 #include "segashared/CheckedMemory.h"
 #include "segautils/Defs.h"
+#include "Lua.h"
+#include "GridManager.h"
 
 #define BTN_SIZE 22
 #define BTN_SPACE 1
@@ -15,7 +17,7 @@ struct VerbManager_t {
    Manager m;
    WorldView *view;
    Entity *buttons[Verb_COUNT];
-   Verbs focus;
+   Verbs focus, current;
 };
 
 ImplManagerVTable(VerbManager)
@@ -24,7 +26,7 @@ VerbManager *createVerbManager(WorldView *view) {
    VerbManager *out = checkedCalloc(1, sizeof(VerbManager));
    out->view = view;
    out->m.vTable = CreateManagerVTable(VerbManager);
-   out->focus = Verb_COUNT;
+   out->focus = out->current = Verb_COUNT;
    return out;
 }
 
@@ -45,6 +47,7 @@ void _btnState(VerbManager *self, Verbs v, VerbActions action) {
 
    if (action == Released) {
       cursorManagerSetVerb(self->view->managers->cursorManager, v);
+      self->current = v;
    }
 }
 
@@ -69,6 +72,14 @@ void verbManagerCreateVerbs(VerbManager *self) {
    }
 }
 int verbManagerMouseButton(VerbManager *self, MouseEvent *e) {
+   Viewport *vp = self->view->viewport;
+   Recti vpArea = { 
+      vp->region.origin_x, 
+      vp->region.origin_y, 
+      vp->region.origin_x + vp->region.width, 
+      vp->region.origin_y + vp->region.height 
+   };
+
    static Recti btnArea = {
       BTN_LEFT, 
       BTN_TOP, 
@@ -97,29 +108,40 @@ int verbManagerMouseButton(VerbManager *self, MouseEvent *e) {
       }
    }
 
-   if (!rectiContains(btnArea, e->pos)) {
-      return 0;
-   }
+   if (rectiContains(btnArea, e->pos)) {
+      for (i = 0; i < Verb_COUNT; ++i) {
+         if (rectiContains(singleArea, e->pos)) {
+            if (e->action == SegaMouse_Pressed) {
+               _btnState(self, i, Pressed);
+               self->focus = i;
+            }
+            else if (e->action == SegaMouse_Released) {
+               _btnState(self, i, Released);
+            }
+            else {
+               //we were given an action that we dont care about
+               return 0;
+            }
+            return 1;
+         }
 
-   for (i = 0; i < Verb_COUNT; ++i) { 
-      if (rectiContains(singleArea, e->pos)) {
-         if (e->action == SegaMouse_Pressed) {
-            _btnState(self, i, Pressed);
-            self->focus = i;
-         }
-         else if(e->action == SegaMouse_Released) {
-            _btnState(self, i, Released);
-         }
-         else {
-            //we were given an action that we dont care about
-            return 0;
-         }
-         return 1;
+         singleArea.left += BTN_SIZE + BTN_SPACE;
+         singleArea.right += BTN_SIZE + BTN_SPACE;
       }
-
-      singleArea.left += BTN_SIZE + BTN_SPACE;
-      singleArea.right += BTN_SIZE + BTN_SPACE;
    }
+   else if (rectiContains(vpArea, e->pos)) {
+      if (e->action == SegaMouse_Released) {
+         if (self->current < Verb_COUNT) {
+            Entity *entity = gridMangerEntityFromScreenPosition(self->view->managers->gridManager, e->pos);
+            if (entity) {
+               luaActorInteract(self->view->L, entity, self->current);
+            }
+            self->current = Verb_COUNT;
+            cursorManagerClearVerb(self->view->managers->cursorManager);
+            return 1;
+         }
+      }
+   }  
 
    return 0;
 }

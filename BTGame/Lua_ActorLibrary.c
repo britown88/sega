@@ -123,8 +123,6 @@ void luaActorStepAllScripts(WorldView *view, lua_State *L) {
       if (lua_pcall(L, 1, 0, 0)) {
          const char *err = lua_tostring(L, -1);
          consolePrintLine(view->console, "[c=0,13]Error stepping script:\n [=]%s[/=][/c]", err);
-
-
          lua_pop(L, 1);
       }
    }
@@ -154,6 +152,56 @@ void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
    lua_call(L, 2, 0);
 
    lua_pop(L, 1);   
+}
+
+void luaActorInteract(lua_State *L, Entity *e, Verbs v) {
+   luaActorPushActor(L, e);//1: the actor
+   if (lua_isnoneornil(L, -1)) {
+      lua_pop(L, 1);
+      return;
+   }
+
+   lua_pushliteral(L, "response");
+   lua_gettable(L, -2);//2: the  responses table
+
+   if (lua_type(L, -1) != LUA_TTABLE) {
+      lua_pop(L, 2);
+      return;//no responses table
+   }
+
+   switch (v) {
+   case Verb_Look:
+      lua_pushliteral(L, "toLook");
+      break;
+   case Verb_Talk:
+      lua_pushliteral(L, "toTalk");
+      break;
+   case Verb_Use:
+      lua_pushliteral(L, "toUse");
+      break;
+   case Verb_Fight:
+      lua_pushliteral(L, "toFight");
+      break;
+   }
+
+   lua_gettable(L, -2);//3: the response function
+   if (lua_type(L, -1) != LUA_TFUNCTION) {
+      lua_pop(L, 3);
+      return;//does not have this response
+   }
+
+   
+   lua_pushcfunction(L, &slua_actorPushScript);//2: push the pushscript function
+   lua_pushvalue(L, 1);//copy the actor to the front
+   lua_pushvalue(L, 3);//copy the funciton to the top
+   if (lua_pcall(L, 2, 0, 0)) {
+      WorldView *view = luaGetWorldView(L);
+      const char *err = lua_tostring(L, -1);
+      consolePrintLine(view->console, "[c=0,13]Response Error:\n [=]%s[/=][/c]", err);
+      lua_pop(L, 1);
+   }
+
+   lua_pop(L, 3);//actor, response table, and response function
 }
 
 void luaLoadActorLibrary(lua_State *L) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Verbs.h"
 #include "segashared/Strings.h"
 
 typedef struct Entity_t Entity;
@@ -46,6 +47,7 @@ void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name);//make a
 void luaActorPushActor(lua_State *L, Entity *e);//push the corresponding actor table to the stack, pushes nil if it doesnt exist
 int luaActorGetIndex(lua_State *L, Entity *e);//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
 void luaActorStepAllScripts(WorldView *view, lua_State *L);//calls stepScript on every loaded actor
+void luaActorInteract(lua_State *L, Entity *e, Verbs v);//actor:pushScript(actor.responses.verb) if it is available
 
 void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name);

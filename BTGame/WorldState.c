@@ -25,6 +25,8 @@
 
 #include <stdio.h>
 
+#define STARTING_AMBIENT_LEVEL MAX_BRIGHTNESS
+
 typedef struct {
    WorldView *view;
 }WorldState;
@@ -130,7 +132,7 @@ static void _handleKeyboard(WorldState *state){
    Viewport *vp = state->view->viewport;
    int speed = 2;
    static int toggle = 1;
-   static int amb = 2;
+   static int amb = STARTING_AMBIENT_LEVEL;
 
    while (keyboardPopEvent(k, &e)) {
 
@@ -261,11 +263,9 @@ static void _handleMouse(WorldState *state){
             if (verbManagerMouseButton(state->view->managers->verbManager, &event)) {
                continue;
             }
-
-            cursorManagerClearVerb(state->view->managers->cursorManager);
             break;
          case SegaMouseBtn_Right:
-            cursorManagerClearVerb(state->view->managers->cursorManager);
+
             break;
          }
       }
@@ -407,7 +407,7 @@ static void _enterState(WorldState *state) {
    verbManagerCreateVerbs(state->view->managers->verbManager);
    consoleCreateLines(state->view->console);
 
-   gridManagerSetAmbientLight(state->view->managers->gridManager, 2);   
+   gridManagerSetAmbientLight(state->view->managers->gridManager, STARTING_AMBIENT_LEVEL);
 
    _addTestEntities(state);
 
