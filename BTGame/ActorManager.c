@@ -27,7 +27,7 @@ static void _registerUpdateDelegate(ActorManager *self, EntitySystem *system) {
    ComponentUpdate update;
 
    closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_actorComponentUpdate, NULL);
-   compRegisterUpdateDelegate(GridComponent)(system, update);
+   compRegisterUpdateDelegate(ActorComponent)(system, update);
 }
 
 

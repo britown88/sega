@@ -159,7 +159,7 @@ void consolePrintLuaError(Console *self, const char *tag) {
    size_t fmtLen = strlen(fmt);
    size_t fullLen = len + tagLen + fmtLen;
 
-   if (fullLen >= 256) {
+   if (fullLen >= 100) {
       char *buffer = checkedCalloc(1, fullLen);
       sprintf(buffer, fmt, tag, lua_tostring(L, -1));
       consolePushLine(self, buffer);
@@ -418,6 +418,7 @@ void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
 }
 
 void consolePushLine(Console *self, const char *line) {
+   //printf("%s", line);
    richTextResetFromRaw(self->rt, line);
    richTextRenderToLines(self->rt, WIDTH, self->queue); 
    self->queuePos = 0;

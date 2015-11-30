@@ -127,15 +127,16 @@ static int slua_actorStepAllScripts(lua_State *L) {
    return 0;
 }
 static int slua_actorInteract(lua_State *L) {
-   Entity *e = lua_touserdata(L, 1);
-   Verbs v = (Verbs)lua_tointeger(L, 2);
+   Entity *e = lua_touserdata(L, 1); //1, the entity
+   Verbs v = (Verbs)lua_tointeger(L, 2); // 2, the v
 
    lua_pushcfunction(L, &slua_actorPushActor);
-   lua_pushvalue(L, 1);//copy the entiry
+   lua_pushvalue(L, 1);//copy the entity
    lua_call(L, 1, 1);
+   //3, the actor
 
    lua_pushliteral(L, "response");
-   lua_gettable(L, -2);//2: the  responses table
+   lua_gettable(L, -2);//4: the  responses table
 
    if (lua_type(L, -1) != LUA_TTABLE) {
       lua_pop(L, 2);
@@ -157,15 +158,15 @@ static int slua_actorInteract(lua_State *L) {
       break;
    }
 
-   lua_gettable(L, -2);//3: the response function
+   lua_gettable(L, -2);//5: the response function
    if (lua_type(L, -1) != LUA_TFUNCTION) {
       lua_pop(L, 3);
       return 0;//does not have this response
    }
 
-   lua_pushcfunction(L, &slua_actorPushScript);//2: push the pushscript function
-   lua_pushvalue(L, 1);//copy the actor to the front
-   lua_pushvalue(L, 3);//copy the funciton to the top
+   lua_pushcfunction(L, &slua_actorPushScript);//push the pushscript function
+   lua_pushvalue(L, 3);//copy the actor to the front
+   lua_pushvalue(L, 5);//copy the funciton to the top
    lua_call(L, 2, 0);
    lua_pop(L, 3);//actor, response table, and response function
    return 0;

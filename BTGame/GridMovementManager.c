@@ -123,7 +123,7 @@ static void _registerUpdateDelegate(GridMovementManager *self, EntitySystem *sys
    ComponentUpdate update;
 
    closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_actorComponentUpdate, NULL);
-   compRegisterUpdateDelegate(GridComponent)(system, update);
+   compRegisterUpdateDelegate(ActorComponent)(system, update);
 }
 
 GridMovementManager *createGridMovementManager(WorldView *view) {
@@ -274,9 +274,16 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
    y = MAX(0, MIN(h - 1, y));
 
    if (tgc) {
+      InterpolationComponent *ic = entityGet(InterpolationComponent)(e);
+      WaitComponent *wc = entityGet(WaitComponent)(e);
+
       tgc->destX = x;
       tgc->destY = y;
       tgc->lastX = tgc->lastY = 0;
+      //make sure our interpolation gets cleaned up
+      if (ic) { ic->time = tgc->moveTime; }
+      if (wc) { wc->time = tgc->moveDelay;  }
+
    }
    else {
       Milliseconds moveTime = DEFAULT_MOVE_SPEED;

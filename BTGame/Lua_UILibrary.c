@@ -11,8 +11,8 @@
 static int slua_textAreaPush(lua_State *L);
 
 static int slua_textAreaAddTextArea(lua_State *L) {
-   StringView *sv = lua_touserdata(L, 1);
-   const char *name = lua_tostring(L, 2);
+   const char *name = lua_tostring(L, 1);
+   StringView *sv = lua_touserdata(L, 2);   
    
    lua_getglobal(L, LLIB_TEXT_AREAS);
    lua_pushstring(L, name);
