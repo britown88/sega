@@ -119,13 +119,9 @@ void luaActorStepAllScripts(WorldView *view, lua_State *L) {
       lua_gettable(L, -3);//push the actor
 
       if (lua_pcall(L, 1, 0, 0)) {
-         if (lua_type(L, -1) == LUA_TSTRING) {
-            const char *err = lua_tostring(L, -1);
-            consolePrintLine(view->console, "[c=0,13]Error stepping script:\n[=]%s[/=][/c]", err);
-         }
-         else {
-            consolePrintLine(view->console, "[c=0,13]Unspecified error stepping script.[/c]");
-         }
+         const char *err = lua_tostring(L, -1);
+         consolePrintLine(view->console, "[c=0,13]Error stepping script:\n [=]%s[/=][/c]", err);
+
 
          lua_pop(L, 1);
       }
@@ -204,14 +200,14 @@ int slua_actorPushScript(lua_State *L) {
    result = lua_resume(thread, NULL, n - 1);
 
    if (result != LUA_YIELD) {
-      //function executed or yielded,  pop the thread and return
-      lua_pop(L, 1);
+      //function error'd or finished,  pop the thread and return      
 
       if (result != LUA_OK) {
-         const char *err = luaL_checkstring(L, -1);
-         lua_pushvalue(L, -1);
+         lua_xmove(thread, L, 1);//xfer the error to the main thread
          lua_error(L);
       }    
+
+      lua_pop(L, 1);
 
       return 0;
    }
@@ -264,10 +260,13 @@ int slua_actorStepScript(lua_State *L) {
 
    if (index > 0) {
       int result;
+      lua_State *thread;
       lua_gettable(L, -2);//push the thread
-      result = lua_resume(lua_tothread(L, -1), NULL, 0);
 
-      if (result != LUA_YIELD) {       
+      thread = lua_tothread(L, -1);
+      result = lua_resume(thread, NULL, 0);
+
+      if (result != LUA_YIELD) {   
 
          //now we need to call table.remove ._.
          lua_getglobal(L, "table");
@@ -279,8 +278,7 @@ int slua_actorStepScript(lua_State *L) {
          lua_pop(L, 1);//pop table
 
          if (result != LUA_OK) {
-            const char *err = lua_tostring(L, -1);
-            lua_pushvalue(L, -1);
+            lua_xmove(thread, L, 1);
             lua_error(L);
          }
       }
