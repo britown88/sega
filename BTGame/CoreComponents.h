@@ -163,7 +163,7 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct {
-   EMPTY_STRUCT;
+   Milliseconds moveTime, moveDelay;
 }ActorComponent;
 
 #define ComponentT ActorComponent

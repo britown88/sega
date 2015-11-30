@@ -19,10 +19,25 @@ struct ActorManager_t {
 
 ImplManagerVTable(ActorManager)
 
+static void _actorComponentUpdate(ActorManager *self, Entity *e, ActorComponent *oldAC) {
+
+}
+
+static void _registerUpdateDelegate(ActorManager *self, EntitySystem *system) {
+   ComponentUpdate update;
+
+   closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_actorComponentUpdate, NULL);
+   compRegisterUpdateDelegate(GridComponent)(system, update);
+}
+
+
 ActorManager *createActorManager(WorldView *view) {
    ActorManager *out = checkedCalloc(1, sizeof(ActorManager));
    out->view = view;
    out->m.vTable = CreateManagerVTable(ActorManager);
+
+   _registerUpdateDelegate(out, view->entitySystem);
+
    return out;
 }
 

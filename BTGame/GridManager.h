@@ -18,6 +18,10 @@ typedef struct WorldView_t WorldView;
 #define GRID_PX_WIDTH (GRID_WIDTH * GRID_CELL_SIZE)
 #define GRID_PX_HEIGHT (GRID_HEIGHT * GRID_CELL_SIZE)
 
+//in milliseconds, for grid traversal
+#define DEFAULT_MOVE_SPEED 250
+#define DEFAULT_MOVE_DELAY 0
+
 //collision flags
 #define GRID_SOLID_TOP (1 << 0)
 #define GRID_SOLID_LEFT (1 << 1)

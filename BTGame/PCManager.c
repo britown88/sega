@@ -88,7 +88,7 @@ void pcManagerCreatePC(PCManager *self) {
    COMPONENT_ADD(self->pc, InViewComponent, 0);
    COMPONENT_ADD(self->pc, GridComponent, 7, 2);
    COMPONENT_ADD(self->pc, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
-   COMPONENT_ADD(self->pc, ActorComponent, 0);
+   COMPONENT_ADD(self->pc, ActorComponent, .moveTime = DEFAULT_MOVE_SPEED, .moveDelay = DEFAULT_MOVE_DELAY);
 
    _updateLight(self);
    _updateSprite(self);

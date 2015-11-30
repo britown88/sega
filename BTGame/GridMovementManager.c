@@ -6,9 +6,6 @@
 #include "WorldView.h"
 #include <math.h>
 
-#define MOVE_TIME 250
-#define WAIT_TIME 0
-
 #pragma pack(push, 1)
 typedef struct {
    short destX, destY;
@@ -113,10 +110,29 @@ struct GridMovementManager_t {
 
 ImplManagerVTable(GridMovementManager)
 
+static void _actorComponentUpdate(GridMovementManager *self, Entity *e, ActorComponent *oldAC) {
+   TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
+   ActorComponent *ac = entityGet(ActorComponent)(e);
+   if (tgc) {
+      tgc->moveDelay = ac->moveDelay;
+      tgc->moveTime = ac->moveTime;
+   }
+}
+
+static void _registerUpdateDelegate(GridMovementManager *self, EntitySystem *system) {
+   ComponentUpdate update;
+
+   closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_actorComponentUpdate, NULL);
+   compRegisterUpdateDelegate(GridComponent)(system, update);
+}
+
 GridMovementManager *createGridMovementManager(WorldView *view) {
    GridMovementManager *out = checkedCalloc(1, sizeof(GridMovementManager));
    out->view = view;
    out->m.vTable = CreateManagerVTable(GridMovementManager);
+
+   _registerUpdateDelegate(out, view->entitySystem);
+
    return out;
 }
 
@@ -263,36 +279,28 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
       tgc->lastX = tgc->lastY = 0;
    }
    else {
+      Milliseconds moveTime = DEFAULT_MOVE_SPEED;
+      Milliseconds waitTime = DEFAULT_MOVE_DELAY;
+      ActorComponent *ac = entityGet(ActorComponent)(e);
+
+      if (ac) {
+         moveTime = ac->moveTime;
+         waitTime = ac->moveDelay;
+      }
+
       COMPONENT_ADD(e, TGridMovingComponent,
          .destX = x, .destY = y,
          .lastX = 0, .lastY = 0,
-         .moveTime = MOVE_TIME, .moveDelay = WAIT_TIME);
+         .moveTime = moveTime, .moveDelay = waitTime);
       _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
       
    }
 }
 
 void gridMovementManagerMoveEntityRelative(GridMovementManager *self, Entity *e, short x, short y) {
-   TGridMovingComponent *tgc = entityGet(TGridMovingComponent)(e);
    GridComponent *gc = entityGet(GridComponent)(e);
-   short w = gridManagerWidth(self->view->managers->gridManager);
-   short h = gridManagerHeight(self->view->managers->gridManager);
-   x = MAX(0, MIN(w - 1, gc->x + x));
-   y = MAX(0, MIN(h - 1, gc->y + y));
 
-   if (tgc) {
-      tgc->destX = x;
-      tgc->destY = y;
-      tgc->lastX = tgc->lastY = 0;
-   }
-   else {
-      COMPONENT_ADD(e, TGridMovingComponent, 
-         .destX = x, .destY = y,
-         .lastX = 0, .lastY = 0,
-         .moveTime = MOVE_TIME, .moveDelay = WAIT_TIME);
-      _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
-
-   }
+   gridMovementManagerMoveEntity(self, e, gc->x + x, gc->y + y);
 }
 
 bool gridMovementManagerEntityIsMoving(GridMovementManager *self, Entity *e) {

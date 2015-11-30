@@ -364,7 +364,7 @@ static void _addActor(WorldState *state, int x, int y, int imgX, int imgY) {
    COMPONENT_ADD(e, InViewComponent, 0);
    COMPONENT_ADD(e, GridComponent, x, y);
    COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
-   COMPONENT_ADD(e, ActorComponent, 0);
+   COMPONENT_ADD(e, ActorComponent, .moveTime = DEFAULT_MOVE_SPEED, .moveDelay = DEFAULT_MOVE_DELAY);
 
    if (t) {
       t->schema = 3;

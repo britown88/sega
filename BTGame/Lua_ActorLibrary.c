@@ -18,6 +18,8 @@ static int slua_actorPosition(lua_State *L);
 static int slua_actorStop(lua_State *L);
 static int slua_actorIsMoving(lua_State *L);
 static int slua_actorDistanceTo(lua_State *L);
+static int slua_actorMoveSpeed(lua_State *L);
+static int slua_actorSetMoveSpeed(lua_State *L);
 
 //add an entity to the actors table (called by adding an ActorComponent)
 void luaActorAddActor(lua_State *L, Entity *e) {
@@ -175,6 +177,8 @@ void luaLoadActorLibrary(lua_State *L) {
    luaPushFunctionTable(L, "stop", &slua_actorStop);
    luaPushFunctionTable(L, "isMoving", &slua_actorIsMoving);
    luaPushFunctionTable(L, "distanceTo", &slua_actorDistanceTo);
+   luaPushFunctionTable(L, "moveSpeed", &slua_actorMoveSpeed);
+   luaPushFunctionTable(L, "setMoveSpeed", &slua_actorSetMoveSpeed);
    
    lua_setglobal(L, LLIB_ACTOR);
 }
@@ -409,4 +413,82 @@ int slua_actorIsMoving(lua_State *L) {
    }
 
    return 1;
+}
+int slua_actorMoveSpeed(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   Entity *e = NULL;
+   ActorComponent *ac;
+   luaL_checktype(L, 1, LUA_TTABLE);
+
+   e = luaGetUserDataFromTable(L, 1, "entity");
+
+   if (!e) {
+      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_error(L);
+   }
+
+   ac = entityGet(ActorComponent)(e);
+   lua_pushinteger(L, ac->moveTime);
+   lua_pushinteger(L, ac->moveDelay);
+   return 2;
+}
+int slua_actorSetMoveSpeed(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   Entity *e = NULL;
+   luaL_checktype(L, 1, LUA_TTABLE);
+   Milliseconds moveTime, moveDelay;
+   bool hasDelay = false, hasTime = false;
+
+   //parameters is a table, try to grab the individual aprts
+   if (lua_type(L, 2) == LUA_TTABLE) {
+      lua_pushliteral(L, "time");
+      lua_gettable(L, -2);
+      if (lua_isinteger(L, -1)) {
+         moveTime = lua_tointeger(L, -1);
+         hasTime = true;
+      }
+      lua_pop(L, 1);
+
+      lua_pushliteral(L, "delay");
+      lua_gettable(L, -2);
+      if (lua_isinteger(L, -1)) {
+         moveDelay = lua_tointeger(L, -1);
+         hasDelay = true;
+      }
+      lua_pop(L, 1);
+   }
+   else {
+      //expect two integers
+      if (lua_isinteger(L, 2)) {
+         moveTime = lua_tointeger(L, 2);
+         hasTime = true;
+      }
+      if (lua_isinteger(L, 3)) {
+         moveDelay = lua_tointeger(L, 3);
+         hasDelay = true;
+      }
+   }
+
+   if (!hasDelay && !hasTime) {
+      return 0;
+   }
+
+   e = luaGetUserDataFromTable(L, 1, "entity");
+
+   if (!e) {
+      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_error(L);
+   }
+
+   COMPONENT_LOCK(ActorComponent, ac, e, {
+      if (hasTime) {
+         ac->moveTime = moveTime;
+      }
+      
+      if (hasDelay) {
+         ac->moveDelay = moveDelay;
+      }   
+   });
+
+   return 0;
 }

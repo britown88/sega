@@ -96,7 +96,7 @@ static void _createTestSchemas(GridManager *self) {
 
 static void _createTestGrid(GridManager *self) {
    int i, count;
-   self->width = self->height = 1024;
+   self->width = 21,self->height = 11;
    self->cellCount = self->width * self->height;
 
    count = self->width * self->height;
