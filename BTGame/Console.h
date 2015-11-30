@@ -22,6 +22,7 @@ void consoleClear(Console *self);
 void consoleScrollLog(Console *self, int direction);
 void consoleMacroGridPos(Console *self, short x, short y);
 void consoleMacroActor(Console *self, Entity *e);
+void consolePrintLuaError(Console *self, const char *tag);
 
 #define consolePrintLine(CONSOLE, STR, ...) {\
    char buffer[256] = {0}; \

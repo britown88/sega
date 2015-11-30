@@ -405,7 +405,7 @@ static void _enterState(WorldState *state) {
    cursorManagerCreateCursor(state->view->managers->cursorManager);
    pcManagerCreatePC(state->view->managers->pcManager);
    verbManagerCreateVerbs(state->view->managers->verbManager);
-   consoleCreateLines(state->view->console);
+   
 
    gridManagerSetAmbientLight(state->view->managers->gridManager, STARTING_AMBIENT_LEVEL);
 

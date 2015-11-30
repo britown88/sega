@@ -44,7 +44,6 @@ void luaLoadActorLibrary(lua_State *L);
 void luaActorAddActor(lua_State *L, Entity *e);//add an entity to the actors table (called by adding an ActorComponent)
 void luaActorRemoveActor(lua_State *L, Entity *e);//remove an added actor from the actors table (called by removing an actorComponent)
 void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name);//make an ALREADY_ADDED actor global (ie: player)
-void luaActorPushActor(lua_State *L, Entity *e);//push the corresponding actor table to the stack, pushes nil if it doesnt exist
 int luaActorGetIndex(lua_State *L, Entity *e);//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
 void luaActorStepAllScripts(WorldView *view, lua_State *L);//calls stepScript on every loaded actor
 void luaActorInteract(lua_State *L, Entity *e, Verbs v);//actor:pushScript(actor.responses.verb) if it is available

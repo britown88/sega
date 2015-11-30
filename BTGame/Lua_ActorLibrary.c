@@ -21,8 +21,9 @@ static int slua_actorDistanceTo(lua_State *L);
 static int slua_actorMoveSpeed(lua_State *L);
 static int slua_actorSetMoveSpeed(lua_State *L);
 
-//add an entity to the actors table (called by adding an ActorComponent)
-void luaActorAddActor(lua_State *L, Entity *e) {
+//C API FUNCTIONS
+static int slua_actorAddActor(lua_State *L) {
+   Entity *e = lua_touserdata(L, 1);
    lua_getglobal(L, LLIB_ACTORS);
    lua_pushliteral(L, "add");
    lua_gettable(L, -2);
@@ -37,14 +38,16 @@ void luaActorAddActor(lua_State *L, Entity *e) {
 
    lua_pushliteral(L, "scripts");
    lua_newtable(L);
-   lua_rawset(L, -3);
+   lua_settable(L, -3);
 
    lua_call(L, 2, 0);
-   lua_pop(L, 1);
-}
 
-//remove an added actor from the actors table (called by removing an actorComponent)
-void luaActorRemoveActor(lua_State *L, Entity *e) {
+   lua_pop(L, 1);
+
+   return 0;
+}
+static int slua_actorRemoveActor(lua_State *L) {
+   Entity *e = lua_touserdata(L, 1);
    lua_getglobal(L, LLIB_ACTORS);
    lua_pushliteral(L, "remove");
    lua_gettable(L, -2);
@@ -55,40 +58,41 @@ void luaActorRemoveActor(lua_State *L, Entity *e) {
    lua_call(L, 2, 0);
 
    lua_pop(L, 1);
+   return 0;
 }
+static int slua_actorPushActor(lua_State *L) {
+   Entity *e = lua_touserdata(L, 1);
+   lua_getglobal(L, LLIB_ACTORS);//push actors
+   lua_pushliteral(L, "get");
+   lua_gettable(L, -2);//push get func
+   lua_pushvalue(L, -2);//copy table to top
 
-//make an ALREADY_ADDED actor global (ie: player)
-void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name) {
-   int len = lua_gettop(L);
-   int len2;
-   luaActorPushActor(L, e);
-   len2 = lua_gettop(L);
+   lua_newtable(L);//add new entity
+   luaPushUserDataTable(L, "entity", e);//set its udata
+   lua_call(L, 2, 1);
+   lua_remove(L, -2);//remove the Actors table
+   return 1;
+}
+static int slua_actorMakeActorGlobal(lua_State *L) {
+   Entity *e = lua_touserdata(L, 1);
+   const char *name = lua_tostring(L, 2);
 
-   if (!lua_isnil(L, -1)) {
+   lua_pushcfunction(L, &slua_actorPushActor);
+   lua_pushvalue(L, 1);//copy the entiry
+   lua_call(L, 1, 1);
+
+   if (lua_type(L, -1) == LUA_TTABLE) {
       lua_setglobal(L, name);
    }
    else {
       lua_pop(L, 1);
+      lua_pushliteral(L, "Attempted to make an Actor global that is not in the actors table.");
+      lua_error(L);
    }
+   return 0;
 }
-
-//push the corresponding actor table to the stack, pushes nil if it doesnt exist
-void luaActorPushActor(lua_State *L, Entity *e) {
-   lua_getglobal(L, LLIB_ACTORS);//push actors
-   lua_pushliteral(L, "get");
-   lua_gettable(L, -2);
-   lua_pushvalue(L, -2);
-
-   lua_newtable(L);
-   luaPushUserDataTable(L, "entity", e);
-   lua_call(L, 2, 1);//push the actor
-
-   lua_remove(L, -2);//remove the Actors table
-}
-
-//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
-int luaActorGetIndex(lua_State *L, Entity *e) {
-   int out;
+static int slua_actorGetIndex(lua_State *L) {
+   Entity *e = lua_touserdata(L, 1);
    lua_getglobal(L, LLIB_ACTORS);//push actors
    lua_pushliteral(L, "indexOf");
    lua_gettable(L, -2);
@@ -96,17 +100,13 @@ int luaActorGetIndex(lua_State *L, Entity *e) {
 
    lua_newtable(L);
    luaPushUserDataTable(L, "entity", e);
-   if (lua_pcall(L, 2, 1, 0)) {//push the index
-      return 0;
-   }
+   lua_call(L, 2, 1);
 
-   out = (int)luaL_checkinteger(L, -1);
-   lua_pop(L, 2);//remove the Actors table and index
-   return out;
+   lua_remove(L, -2);//remove the Actors table
+
+   return 1;
 }
-
-//calls stepScript on every loaded actor
-void luaActorStepAllScripts(WorldView *view, lua_State *L) {
+static int slua_actorStepAllScripts(lua_State *L) {
    int aCount, i;
    lua_getglobal(L, LLIB_ACTORS);
 
@@ -120,53 +120,26 @@ void luaActorStepAllScripts(WorldView *view, lua_State *L) {
       lua_pushinteger(L, i + 1);
       lua_gettable(L, -3);//push the actor
 
-      if (lua_pcall(L, 1, 0, 0)) {
-         const char *err = lua_tostring(L, -1);
-         consolePrintLine(view->console, "[c=0,13]Error stepping script:\n [=]%s[/=][/c]", err);
-         lua_pop(L, 1);
-      }
+      lua_call(L, 1, 0);
    }
 
    lua_pop(L, 1); //pop actors
+   return 0;
 }
+static int slua_actorInteract(lua_State *L) {
+   Entity *e = lua_touserdata(L, 1);
+   Verbs v = (Verbs)lua_tointeger(L, 2);
 
-void luaActorAddGlobalActor(lua_State *L, const char *name, Entity *e) {
-   //call new
-   lua_pushcfunction(L, &luaNewObject);
-   lua_getglobal(L, LLIB_ACTOR);
+   lua_pushcfunction(L, &slua_actorPushActor);
+   lua_pushvalue(L, 1);//copy the entiry
    lua_call(L, 1, 1);
-
-   luaPushUserDataTable(L, "entity", e);
-
-   lua_pushliteral(L, "scripts");
-   lua_newtable(L);
-   lua_rawset(L, -3);
-
-   lua_setglobal(L, name);
-
-   lua_getglobal(L, LLIB_ACTORS);
-   lua_pushliteral(L, "add");
-   lua_gettable(L, -2);
-   lua_pushvalue(L, -2);
-   lua_getglobal(L, LLIB_PLAYER);
-   lua_call(L, 2, 0);
-
-   lua_pop(L, 1);   
-}
-
-void luaActorInteract(lua_State *L, Entity *e, Verbs v) {
-   luaActorPushActor(L, e);//1: the actor
-   if (lua_isnoneornil(L, -1)) {
-      lua_pop(L, 1);
-      return;
-   }
 
    lua_pushliteral(L, "response");
    lua_gettable(L, -2);//2: the  responses table
 
    if (lua_type(L, -1) != LUA_TTABLE) {
       lua_pop(L, 2);
-      return;//no responses table
+      return 0;//no responses table
    }
 
    switch (v) {
@@ -187,21 +160,93 @@ void luaActorInteract(lua_State *L, Entity *e, Verbs v) {
    lua_gettable(L, -2);//3: the response function
    if (lua_type(L, -1) != LUA_TFUNCTION) {
       lua_pop(L, 3);
-      return;//does not have this response
+      return 0;//does not have this response
    }
 
-   
    lua_pushcfunction(L, &slua_actorPushScript);//2: push the pushscript function
    lua_pushvalue(L, 1);//copy the actor to the front
    lua_pushvalue(L, 3);//copy the funciton to the top
+   lua_call(L, 2, 0);
+   lua_pop(L, 3);//actor, response table, and response function
+   return 0;
+}
+
+//add an entity to the actors table (called by adding an ActorComponent)
+void luaActorAddActor(lua_State *L, Entity *e) {
+   lua_pushcfunction(L, &slua_actorAddActor);
+   lua_pushlightuserdata(L, e);
+   if (lua_pcall(L, 1, 0, 0)) {
+      WorldView *view = luaGetWorldView(L);
+      consolePrintLuaError(view->console, "Error adding actor");
+   }
+}
+
+//remove an added actor from the actors table (called by removing an actorComponent)
+void luaActorRemoveActor(lua_State *L, Entity *e) {
+   lua_pushcfunction(L, &slua_actorRemoveActor);
+   lua_pushlightuserdata(L, e);
+   if (lua_pcall(L, 1, 0, 0)) {
+      WorldView *view = luaGetWorldView(L);
+      consolePrintLuaError(view->console, "Error removing actor");
+   }
+}
+
+//make an ALREADY_ADDED actor global (ie: player)
+void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name) {
+   lua_pushcfunction(L, &slua_actorMakeActorGlobal);
+   lua_pushlightuserdata(L, e);
+   lua_pushstring(L, name);
    if (lua_pcall(L, 2, 0, 0)) {
       WorldView *view = luaGetWorldView(L);
-      const char *err = lua_tostring(L, -1);
-      consolePrintLine(view->console, "[c=0,13]Response Error:\n [=]%s[/=][/c]", err);
+      consolePrintLuaError(view->console, "Error making actor global");
+   }
+}
+
+//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
+int luaActorGetIndex(lua_State *L, Entity *e) {
+   int out = 0;
+   lua_pushcfunction(L, &slua_actorGetIndex);
+   lua_pushlightuserdata(L, e);
+   if (lua_pcall(L, 1, 1, 0)) {
+      WorldView *view = luaGetWorldView(L);
+      consolePrintLuaError(view->console, "Error retreiving actor index");
+   }
+   else
+   {
+      if (lua_isinteger(L, -1)) {
+         out = (int)lua_tointeger(L, -1);
+      }
       lua_pop(L, 1);
    }
 
-   lua_pop(L, 3);//actor, response table, and response function
+   return out;
+}
+
+//calls stepScript on every loaded actor
+void luaActorStepAllScripts(WorldView *view, lua_State *L) {
+   static bool ErrorTripped = false;
+
+   if (ErrorTripped) {
+      return;
+   }
+
+   lua_pushcfunction(L, &slua_actorStepAllScripts);
+   if (lua_pcall(L, 0, 0, 0)) {
+      WorldView *view = luaGetWorldView(L);
+      consolePrintLuaError(view->console, "Error stepping scripts, halting execution of scripts by frame.");
+
+      ErrorTripped = true;
+   }
+}
+
+void luaActorInteract(lua_State *L, Entity *e, Verbs v) {
+   lua_pushcfunction(L, &slua_actorInteract);
+   lua_pushlightuserdata(L, e);
+   lua_pushinteger(L, (int)v);
+   if (lua_pcall(L, 2, 0, 0)) {
+      WorldView *view = luaGetWorldView(L);
+      consolePrintLuaError(view->console, "Error interacting");
+   }
 }
 
 void luaLoadActorLibrary(lua_State *L) {
@@ -213,7 +258,7 @@ void luaLoadActorLibrary(lua_State *L) {
    //add empty scripts table
    lua_pushliteral(L, "scripts");
    lua_newtable(L);
-   lua_rawset(L, -3);
+   lua_settable(L, -3);
 
    luaPushFunctionTable(L, "pushScript", &slua_actorPushScript);
    luaPushFunctionTable(L, "popScript", &slua_actorPopScript);

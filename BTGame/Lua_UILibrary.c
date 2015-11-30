@@ -2,6 +2,7 @@
 
 #include "WorldView.h"
 #include "Managers.h"
+#include "Console.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -9,18 +10,33 @@
 
 static int slua_textAreaPush(lua_State *L);
 
-void luaUIAddTextArea(lua_State *L, StringView name) {
-
+static int slua_textAreaAddTextArea(lua_State *L) {
+   StringView *sv = lua_touserdata(L, 1);
+   const char *name = lua_tostring(L, 2);
+   
    lua_getglobal(L, LLIB_TEXT_AREAS);
-   lua_pushstring(L, name); 
+   lua_pushstring(L, name);
 
    lua_pushcfunction(L, &luaNewObject);
    lua_getglobal(L, LLIB_TEXT_AREA);
    lua_call(L, 1, 1);
-   luaPushUserDataTable(L, "name", (void*)name);
+
+   luaPushUserDataTable(L, "name", (void*)sv);
 
    lua_settable(L, -3);
    lua_pop(L, 1);
+   return 0;
+}
+
+void luaUIAddTextArea(lua_State *L, StringView name) {
+   lua_pushcfunction(L, &slua_textAreaAddTextArea);
+   lua_pushstring(L, name);
+   lua_pushlightuserdata(L, (void*)name);
+   if (lua_pcall(L, 2, 0, 0)) {
+      WorldView *view = luaGetWorldView(L);
+      consolePrintLuaError(view->console, "Error adding text area");
+   }
+   
 }
 
 void luaLoadUILibrary(lua_State *L) {

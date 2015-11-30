@@ -151,24 +151,32 @@ static void _printStackItem(lua_State *L, Console *self, int index) {
    }
 }
 
+void consolePrintLuaError(Console *self, const char *tag) {
+   lua_State *L = self->view->L;
+   const char *fmt = "[c=0,13]%s:\n [=]%s[/=][/c]";
+   size_t len = lua_rawlen(L, -1);
+   size_t tagLen = strlen(tag);
+   size_t fmtLen = strlen(fmt);
+   size_t fullLen = len + tagLen + fmtLen;
+
+   if (fullLen >= 256) {
+      char *buffer = checkedCalloc(1, fullLen);
+      sprintf(buffer, fmt, tag, lua_tostring(L, -1));
+      consolePushLine(self, buffer);
+      checkedFree(buffer);
+   }
+   else {
+      consolePrintLine(self, fmt, tag, lua_tostring(L, -1));
+   }
+
+   lua_pop(L, 1);
+}
+
 static void _processInput(Console *self, String *input) {
    lua_State *L = self->view->L;
 
    if (luaL_dostring(L, c_str(input))) {
-      size_t len = lua_rawlen(L, -1);
-      if (lua_rawlen(L, -1) > 256) {
-         char *buffer = checkedCalloc(1, len + 24);
-         sprintf(buffer, "[c=0,13][=]%s[/=][/c]", lua_tostring(L, -1));
-         consolePushLine(self, buffer); 
-         checkedFree(buffer);
-         consolePrintLine(self, "[c=0,13]Error was really long! :([/c]");
-      }
-      else {
-         consolePrintLine(self, "[c=0,13][=]%s[/=][/c]", lua_tostring(L, -1));
-      }
-
-      
-      lua_pop(L, 1);
+      consolePrintLuaError(self, "Console");     
    }
    else {
       while (lua_gettop(L)) {

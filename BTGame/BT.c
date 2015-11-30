@@ -147,6 +147,10 @@ void _destroy(BTGame *self){
 
 void _onStart(BTGame *self){
    self->view.L = self->L;
+
+   //we need the console alive to print errors!
+   consoleCreateLines(self->console);
+
    luaLoadAllLibraries(self->L, &self->view);
 
    //push the opening state

@@ -1,4 +1,5 @@
 #include "Lua.h"
+#include "Console.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -47,7 +48,7 @@ void luaPushFunctionGlobal(lua_State *L, const char *name, lua_CFunction func) {
 void luaPushFunctionTable(lua_State *L, const char *index, lua_CFunction func) {
    lua_pushstring(L, index);
    lua_pushcfunction(L, func);
-   lua_rawset(L, -3);
+   lua_settable(L, -3);
 }
 
 void luaPushUserDataGlobal(lua_State *L, const char *name, void *data) {
@@ -57,7 +58,7 @@ void luaPushUserDataGlobal(lua_State *L, const char *name, void *data) {
 void luaPushUserDataTable(lua_State *L, const char *index, void *data) {
    lua_pushstring(L, index);
    lua_pushlightuserdata(L, data);
-   lua_rawset(L, -3);
+   lua_settable(L, -3);
 }
 
 void *luaGetUserDataFromTable(lua_State *L, int tableIndex, const char *index) {
@@ -72,17 +73,17 @@ void *luaGetUserDataFromTable(lua_State *L, int tableIndex, const char *index) {
 }
 
 void luaRequire(lua_State *L, const char *modname) {
-   int success;
+   WorldView *view = luaGetWorldView(L);
    lua_getglobal(L, "require");
    lua_pushstring(L, modname);
    if (lua_pcall(L, 1, LUA_MULTRET, 0)) {
-      const char *err = lua_tostring(L, -1);
-      lua_error(L);
+      consolePrintLuaError(view->console, "Error loading module");
+      return;
+   }
+   else if (!lua_toboolean(L, -1)) {
+      consolePrintLine(view->console, "[c=0,13]Module %s not loaded![/c]", modname);
    }
 
-   success = lua_toboolean(L, -1);
-   if (!success) {
-      lua_error(L);
-   }
+   
    lua_pop(L, 1);
 }
