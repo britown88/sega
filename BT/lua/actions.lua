@@ -47,7 +47,8 @@ function actions.scatter()
   for a=1, #actors do
     local actor = actors[a]
     if(actor ~= player) then
-      actor:pushScript(actions.move, rand(0,21), rand(0,11))
+      actor:setMoveSpeed(500,1000)
+      actor:pushScript(actions.wander, 3, 3)
     end
   end
 end

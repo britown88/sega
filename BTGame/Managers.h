@@ -16,6 +16,7 @@ typedef struct PCManager_t PCManager;
 typedef struct TextBoxManager_t TextBoxManager;
 typedef struct VerbManager_t VerbManager;
 typedef struct ActorManager_t ActorManager;
+typedef struct ClockManager_t ClockManager;
 
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
@@ -32,6 +33,7 @@ typedef struct BTManagers_t {
    TextBoxManager *textBoxManager;
    VerbManager *verbManager;
    ActorManager *actorManager;
+   ClockManager *clockManager;
 }BTManagers;
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
@@ -46,6 +48,9 @@ void cursorManagerClearVerb(CursorManager *self);
 
 ActorManager *createActorManager(WorldView *view);
 void actorManagerUpdate(ActorManager *self);
+
+ClockManager *createClockManager(WorldView *view);
+void clockManagerUpdate(ClockManager *self);
 
 InterpolationManager *createInterpolationManager(WorldView *view);
 void interpolationManagerUpdate(InterpolationManager *self);
