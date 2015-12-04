@@ -287,6 +287,7 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
    self->map = map;
    self->width = mapWidth(map);
    self->height = mapHeight(map);
+   self->cellCount = self->width * self->height;
 
    _rebuildPartitionTable(self);
 }

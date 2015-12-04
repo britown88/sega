@@ -34,9 +34,10 @@ typedef struct{
 #include "Entities\ComponentDecl.h"
 
 typedef enum{
-   LayerBackground,
+   
    LayerGrid,
    LayerGridLighting,
+   LayerBackground,
    LayerUI,
    LayerConsole,
    LayerCursor,

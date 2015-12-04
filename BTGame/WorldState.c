@@ -285,9 +285,6 @@ static void _handleMouse(WorldState *state){
             (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE);
       }
    }
-   
-
-
 }
 
 void _boardHandleInput(WorldState *state, GameStateHandleInput *m){
