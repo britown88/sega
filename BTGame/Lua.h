@@ -35,10 +35,13 @@ void luaRequire(lua_State *L, const char *modname);
 #define LLIB_ACTOR "actor"
 #define LLIB_ACTORS "actors"
 #define LLIB_PLAYER "player"
+#define LLIB_MAP "map"
 
 void luaLoadAllLibraries(lua_State *L, WorldView *view);
 
 void luaLoadStandardLibrary(lua_State *L);
+
+void luaLoadMapLibrary(lua_State *L);
 
 void luaLoadActorLibrary(lua_State *L);
 void luaActorAddActor(lua_State *L, Entity *e);//add an entity to the actors table (called by adding an ActorComponent)

@@ -2,6 +2,7 @@
 #include "Entities/Entities.h"
 #include "segashared/CheckedMemory.h"
 #include "CoreComponents.h"
+#include "Console.h"
 
 #include "Lua.h"
 

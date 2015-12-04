@@ -282,7 +282,7 @@ Map *gridManagerGetMap(GridManager *self) {
 }
 void gridManagerLoadMap(GridManager *self, Map *map) {
    if (self->map) {
-      mapDestroy(map);
+      mapDestroy(self->map);
    }
    self->map = map;
    self->width = mapWidth(map);

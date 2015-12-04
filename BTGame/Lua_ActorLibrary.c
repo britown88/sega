@@ -225,8 +225,6 @@ int luaActorGetIndex(lua_State *L, Entity *e) {
 
 //calls stepScript on every loaded actor
 int luaActorStepAllScripts(WorldView *view, lua_State *L) {
-   int err;
-
    lua_pushcfunction(L, &slua_actorStepAllScripts);
    return lua_pcall(L, 0, 0, 0);
 }

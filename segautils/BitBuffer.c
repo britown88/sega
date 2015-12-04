@@ -67,6 +67,11 @@ byte *bitBufferGetData(BitBuffer *self) {
 byte *readFullFile(const char *path, long *fsize) {
    byte *string;
    FILE *f = fopen(path, "rb");
+
+   if (!f) {
+      return NULL;
+   }
+
    fseek(f, 0, SEEK_END);
    *fsize = ftell(f);
    fseek(f, 0, SEEK_SET);

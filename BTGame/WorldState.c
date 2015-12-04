@@ -272,11 +272,11 @@ static void _handleMouse(WorldState *state){
 
    }
 
-   //if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
-   //   if (rectiContains(vpArea, pos)) {
-   //      _dropTestBlock(state, pos);
-   //   }         
-   //}
+   if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
+      if (rectiContains(vpArea, pos)) {
+         _dropTestBlock(state, pos);
+      }         
+   }
 
    if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
       if (rectiContains(vpArea, pos)) {

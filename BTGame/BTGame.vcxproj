@@ -123,6 +123,7 @@
     <ClCompile Include="Lua.c" />
     <ClCompile Include="Lua_ActorLibrary.c" />
     <ClCompile Include="Lua_AllLibraries.c" />
+    <ClCompile Include="Lua_Map.c" />
     <ClCompile Include="Lua_StandardLibrary.c" />
     <ClCompile Include="Lua_UILibrary.c" />
     <ClCompile Include="Map.c" />
