@@ -4,6 +4,7 @@
 #include "segashared\Strings.h"
 
 #include "Entities\Entities.h"
+#include "CoreComponents.h"
 #include "WorldView.h"
 #include "GameClock.h"
 #include "ImageLibrary.h"
@@ -14,6 +15,7 @@
 #include "Verbs.h"
 #include "Console.h"
 #include "Lua.h"
+#include "LightGrid.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -150,6 +152,57 @@ void _destroy(BTGame *self){
    checkedFree(self);
 }
 
+static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
+   Tile *t = gridManagerTileAtXY(app->managers.gridManager, x, y);
+   Entity *e = entityCreate(app->entitySystem);
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, SizeComponent, 14, 14);
+   COMPONENT_ADD(e, RectangleComponent, 0);
+
+   COMPONENT_ADD(e, ImageComponent, .filename = stringIntern("assets/img/tiles.ega"), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
+   COMPONENT_ADD(e, LayerComponent, LayerGrid);
+   COMPONENT_ADD(e, InViewComponent, 0);
+   COMPONENT_ADD(e, GridComponent, x, y);
+   COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
+   COMPONENT_ADD(e, ActorComponent, .moveTime = DEFAULT_MOVE_SPEED, .moveDelay = DEFAULT_MOVE_DELAY);
+
+   if (t) {
+      t->schema = 3;
+      t->collision = 0;
+   }
+
+   entityUpdate(e);
+}
+
+static void _addTestEntities(BTGame *app) {
+   int i;
+   Entity *e = entityCreate(app->entitySystem);
+   COMPONENT_ADD(e, PositionComponent, 0, 0);
+   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/bg.ega"));
+   COMPONENT_ADD(e, LayerComponent, LayerBackground);
+   COMPONENT_ADD(e, RenderedUIComponent, 0);
+   entityUpdate(e);
+
+   {
+      StringView boxName = stringIntern("smallbox");
+      textBoxManagerCreateTextBox(app->managers.textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
+      textBoxManagerPushText(app->managers.textBoxManager, boxName, "You are likely to be eaten by a [c=0,13]grue[/c].");
+      textBoxManagerShowTextArea(app->managers.textBoxManager, boxName);
+
+   }
+
+   for (i = 0; i < 15; ++i) {
+      int x = appRand(appGet(), 0, 21);
+      int y = appRand(appGet(), 0, 11);
+      int sprite = appRand(appGet(), 0, 3);
+
+      _addActor(app, x, y, 70 + (sprite * 14), 28);
+   }
+
+}
+
+
+
 void _onStart(BTGame *self){
    self->view.L = self->L;
 
@@ -158,9 +211,17 @@ void _onStart(BTGame *self){
 
    luaLoadAllLibraries(self->L, &self->view);
 
+   appLoadPalette(appGet(), "assets/pal/default.pal");
+   cursorManagerCreateCursor(self->managers.cursorManager);
+   pcManagerCreatePC(self->managers.pcManager);
+   verbManagerCreateVerbs(self->managers.verbManager);
+
+   gridManagerSetAmbientLight(self->managers.gridManager, MAX_BRIGHTNESS);
+
+   _addTestEntities(self);
+
    //push the opening state
    fsmPush(self->gameState, gameStateCreateWorld(&self->view));
-
 }
 
 

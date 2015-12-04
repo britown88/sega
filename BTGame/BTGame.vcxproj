@@ -114,6 +114,7 @@
   <ItemGroup>
     <ClCompile Include="ActorManager.c" />
     <ClCompile Include="Console.c" />
+    <ClCompile Include="ConsoleState.c" />
     <ClCompile Include="GameHelpers.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridMovementManager.c" />
@@ -141,7 +142,6 @@
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="MeshRendering.c" />
     <ClCompile Include="RenderManager.c" />
-    <ClCompile Include="WorldStateInput.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
