@@ -87,30 +87,30 @@ size_t _solverGetNeighbors(GridSolver *self, GridNode *node, GridNode ***outList
    int neighborCount = 0;
    *outList = node->neighbors;
 
-   if (!(node->data.collision&GRID_SOLID_TOP) && y > 0) {
+   if (!(node->data.collision&COL_SOLID_TOP) && y > 0) {
       GridNode *above = self->solvingTable->data + i - self->solveWidth;
-      if (!(above->data.collision&GRID_SOLID_BOTTOM)) {
+      if (!(above->data.collision&COL_SOLID_BOTTOM)) {
          node->neighbors[neighborCount++] = above;
       }
    }
 
-   if (!(node->data.collision&GRID_SOLID_RIGHT) && x < self->solveWidth - 1) {
+   if (!(node->data.collision&COL_SOLID_RIGHT) && x < self->solveWidth - 1) {
       GridNode *right = self->solvingTable->data + i + 1;
-      if (!(right->data.collision&GRID_SOLID_LEFT)) {
+      if (!(right->data.collision&COL_SOLID_LEFT)) {
          node->neighbors[neighborCount++] = right;
       }
    }
 
-   if (!(node->data.collision&GRID_SOLID_BOTTOM) && y < self->solveHeight - 1) {
+   if (!(node->data.collision&COL_SOLID_BOTTOM) && y < self->solveHeight - 1) {
       GridNode *below = self->solvingTable->data + i + self->solveWidth;
-      if (!(below->data.collision&GRID_SOLID_TOP)) {
+      if (!(below->data.collision&COL_SOLID_TOP)) {
          node->neighbors[neighborCount++] = below;
       }
    }
 
-   if (!(node->data.collision&GRID_SOLID_LEFT) && x > 0) {
+   if (!(node->data.collision&COL_SOLID_LEFT) && x > 0) {
       GridNode *left = self->solvingTable->data + i - 1;
-      if (!(left->data.collision&GRID_SOLID_RIGHT)) {
+      if (!(left->data.collision&COL_SOLID_RIGHT)) {
          node->neighbors[neighborCount++] = left;
       }
    }

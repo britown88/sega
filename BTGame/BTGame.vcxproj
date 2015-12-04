@@ -103,8 +103,10 @@
     <ClInclude Include="LightGrid.h" />
     <ClInclude Include="Lua.h" />
     <ClInclude Include="Managers.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="RichText.h" />
+    <ClInclude Include="Tiles.h" />
     <ClInclude Include="Verbs.h" />
     <ClInclude Include="Viewport.h" />
     <ClInclude Include="WorldView.h" />
@@ -123,6 +125,7 @@
     <ClCompile Include="Lua_AllLibraries.c" />
     <ClCompile Include="Lua_StandardLibrary.c" />
     <ClCompile Include="Lua_UILibrary.c" />
+    <ClCompile Include="Map.c" />
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="RichText.c" />
     <ClCompile Include="TextBoxManager.c" />

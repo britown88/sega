@@ -9,16 +9,12 @@
 #include "ImageLibrary.h"
 #include "LightGrid.h"
 #include "GameHelpers.h"
+#include "Map.h"
 
 #define SCHEMA_COUNT 256
 #define PARTITION_SIZE 16
 
 #pragma pack(push, 1)
-typedef struct {
-   short img[3];
-   byte imgCount;
-   byte occlusion;
-}TileSchema;
 
 typedef struct {
    vec(EntityPtr) *entities;
@@ -43,6 +39,9 @@ static void _partitionDestroy(Partition *p) {
 #define VectorT Partition
 #include "segautils/Vector_Create.h"
 
+#define VectorT TileSchema
+#include "segautils/Vector_Create.h"
+
 struct GridManager_t {
    Manager m;
    WorldView *view;
@@ -51,13 +50,13 @@ struct GridManager_t {
    ManagedImage *tilePalette;
 
    //the schema table
-   TileSchema *schemas;
+   vec(TileSchema) *schemas;
 
    //the actual grid
    short height, width;
    size_t cellCount;
-   Tile *grid;
    LightGrid *lightGrid;
+   Map *map;
 
    //the tile animation clock
    byte tileAnimFrameIndex;
@@ -76,45 +75,35 @@ struct GridManager_t {
 ImplManagerVTable(GridManager)
 
 static Tile *_tileAt(GridManager *self, int x, int y) {
-   return self->grid + (y * self->width + x);
+   return mapGetTiles(self->map) + (y * self->width + x);
 }
 
-static void _createTestSchemas(GridManager *self) {
-   int i;
-   self->schemas = checkedCalloc(11, sizeof(TileSchema));
-   for (i = 0; i < 8; ++i) {
-      self->schemas[i] = (TileSchema) { .img = { i }, .imgCount = 1, .occlusion = 0 };
-   }   
-
-   self->schemas[5].img[1] = 21;
-   self->schemas[5].imgCount = 2;
-
-   self->schemas[6].occlusion = 1;
-   self->schemas[7].occlusion = 1;
-
+static void _gridAddEntity(GridManager *self, Entity *e, Partition *partition) {
+   TGridComponent *tgc = entityGet(TGridComponent)(e);
+   if (partition) {
+      vecPushBack(size_t)(tgc->occupyingPartitions, &partition->index);
+      vecPushBack(EntityPtr)(partition->entities, &e);
+   }
 }
 
-static void _createTestGrid(GridManager *self) {
-   int i, count;
-   self->width = 21,self->height = 11;
-   self->cellCount = self->width * self->height;
+static void _gridRemoveEntity(GridManager *self, Entity *e, Partition *old) {
+   TGridComponent *tgc = entityGet(TGridComponent)(e);
+   if (tgc) {
+      vec(size_t) *nodes = tgc->occupyingPartitions;
 
-   count = self->width * self->height;
-   self->grid = checkedCalloc(count, sizeof(Tile));
-   
-   for (i = 0; i < count; ++i) {
-      self->grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
-      if (self->grid[i].schema == 6 || self->grid[i].schema == 5) {
-         //self->grid[i].collision = GRID_SOLID;
+      if (old) {
+         vecRemove(size_t)(nodes, &old->index);
+         vecRemove(EntityPtr)(old->entities, &e);
       }
    }
+}
 
-   //part table
-   vecClear(Partition)(self->partitionTable);
-   self->partitionWidth = self->width / PARTITION_SIZE + (self->width%PARTITION_SIZE ? 1 : 0);
-   self->partitionHeight = self->height / PARTITION_SIZE + (self->height%PARTITION_SIZE ? 1 : 0);
-   self->partitionCount = self->partitionHeight * self->partitionWidth;
-   vecResize(Partition)(self->partitionTable, self->partitionWidth * self->partitionHeight, &(Partition){NULL});
+static void _gridMoveEntity(GridManager *self, Entity *e, Partition *old, Partition *new) {
+
+   if (old && new && old != new) {
+      _gridRemoveEntity(self, e, old);
+      _gridAddEntity(self, e, new);
+   }
 }
 
 static Partition *_partitionAt(GridManager *self, size_t index) {
@@ -147,32 +136,59 @@ static Partition *_partitionFromXY(GridManager *self, short x, short y) {
 
    return p;
 }
-static void _gridAddEntity(GridManager *self, Entity *e, Partition *partition) {
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-   if (partition) {
-      vecPushBack(size_t)(tgc->occupyingPartitions, &partition->index);
-      vecPushBack(EntityPtr)(partition->entities, &e);
-   }
+
+static void _rebuildPartitionTable(GridManager *self) {
+   //clear current partitions for every entity currently loaded
+   COMPONENT_QUERY(self->view->entitySystem, TGridComponent, tgc, {
+      vecClear(size_t)(tgc->occupyingPartitions);
+   });
+
+   //part table
+   vecClear(Partition)(self->partitionTable);
+   self->partitionWidth = self->width / PARTITION_SIZE + (self->width%PARTITION_SIZE ? 1 : 0);
+   self->partitionHeight = self->height / PARTITION_SIZE + (self->height%PARTITION_SIZE ? 1 : 0);
+   self->partitionCount = self->partitionHeight * self->partitionWidth;
+   vecResize(Partition)(self->partitionTable, self->partitionWidth * self->partitionHeight, &(Partition){NULL});
+
+   //go back voer and reinsert every entity
+   COMPONENT_QUERY(self->view->entitySystem, TGridComponent, tgc, {
+      Entity *e = componentGetParent(tgc, self->view->entitySystem);
+      GridComponent *gc = entityGet(GridComponent)(e);
+      _gridAddEntity(self, e, _partitionFromXY(self, gc->x, gc->y));
+   });
 }
 
-static void _gridRemoveEntity(GridManager *self, Entity *e, Partition *old) {
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-   if (tgc) {
-      vec(size_t) *nodes = tgc->occupyingPartitions;
+static void _createTestSchemas(GridManager *self) {
+   int i;
 
-      if (old) {
-         vecRemove(size_t)(nodes, &old->index);
-         vecRemove(EntityPtr)(old->entities, &e);
+   for (i = 0; i < 8; ++i) {
+      *gridManagerGetSchema(self, i) = (TileSchema) { .img = { i }, .imgCount = 1, .occlusion = 0 };
+   }   
+
+   gridManagerGetSchema(self, 5)->img[1] = 21;
+   gridManagerGetSchema(self, 5)->imgCount = 2;
+
+   gridManagerGetSchema(self, 6)->occlusion = 1;
+   gridManagerGetSchema(self, 7)->occlusion = 1;
+
+}
+
+static void _createTestGrid(GridManager *self) {
+   int i;
+   self->width = 21,self->height = 11;
+   self->cellCount = self->width * self->height;
+
+   self->map = mapCreate(self->width, self->height);
+   
+   for (i = 0; i < (int)self->cellCount; ++i) {
+      Tile *grid = mapGetTiles(self->map);
+      grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
+      if (grid[i].schema == 6 || grid[i].schema == 5) {
+         //self->grid[i].collision = GRID_SOLID;
       }
    }
-}
 
-static void _gridMoveEntity(GridManager *self, Entity *e, Partition *old, Partition *new) {
-
-   if (old && new && old != new) {
-      _gridRemoveEntity(self, e, old);
-      _gridAddEntity(self, e, new);
-   }
+   _rebuildPartitionTable(self);
 }
 
 static void _gridComponentUpdate(GridManager *self, Entity *e, GridComponent *oldGC) {
@@ -218,7 +234,9 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    for (y = worldArea.top; y <= worldArea.bottom; ++y) {
       for (x = worldArea.left; x <= worldArea.right; ++x) {
          int worldGridIndex = y * self->width + x;
-         byte occlusionLevel = self->schemas[self->grid[worldGridIndex].schema].occlusion;
+         Tile *mapGrid = mapGetTiles(self->map);
+         
+         byte occlusionLevel = gridManagerGetSchema(self, mapGrid[worldGridIndex].schema)->occlusion;
 
          if (occlusionLevel > 0) {
             grid[count++] = (OcclusionCell) {.level = occlusionLevel, .x = x - vpx, .y = y - vpy };
@@ -251,12 +269,34 @@ void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y) {
 }
 Tile *gridManagerTileAt(GridManager *self, size_t index) {
    if (index < self->cellCount) {
-      return self->grid + index;
+      return mapGetTiles(self->map) + index;
    }
    return NULL;
 }
 Tile *gridManagerTileAtXY(GridManager *self, int x, int y) {
    return gridManagerTileAt(self, y*self->width + x);
+}
+
+Map *gridManagerGetMap(GridManager *self) {
+   return self->map;
+}
+void gridManagerLoadMap(GridManager *self, Map *map) {
+   if (self->map) {
+      mapDestroy(map);
+   }
+   self->map = map;
+   self->width = mapWidth(map);
+   self->height = mapHeight(map);
+
+   _rebuildPartitionTable(self);
+}
+TileSchema *gridManagerGetSchema(GridManager *self, short index) {
+   size_t count = vecSize(TileSchema)(self->schemas);
+   if (index >= (short)count) {
+      vecResize(TileSchema)(self->schemas, index + 1, &(TileSchema){0});
+   }
+
+   return vecAt(TileSchema)(self->schemas, index);
 }
 
 GridManager *createGridManager(WorldView *view) {
@@ -265,6 +305,7 @@ GridManager *createGridManager(WorldView *view) {
    out->m.vTable = CreateManagerVTable(GridManager);
    out->partitionTable = vecCreate(Partition)(&_partitionDestroy);
    out->inViewEntities = vecCreate(EntityPtr)(NULL);
+   out->schemas = vecCreate(TileSchema)(NULL);
 
    out->tilePalette = imageLibraryGetImage(view->imageLibrary, stringIntern("assets/img/tiles.ega"));
    out->lightGrid = lightGridCreate(out);
@@ -278,14 +319,14 @@ GridManager *createGridManager(WorldView *view) {
 }
 
 void _destroy(GridManager *self) {
-   if (self->grid) {
-      checkedFree(self->grid);      
+   if (self->map) {
+      mapDestroy(self->map);
    }
    lightGridDestroy(self->lightGrid);
 
    vecDestroy(Partition)(self->partitionTable);
    vecDestroy(EntityPtr)(self->inViewEntities);
-   checkedFree(self->schemas);
+   vecDestroy(TileSchema)(self->schemas);
    
    checkedFree(self);
 }
@@ -464,7 +505,9 @@ void gridManagerRender(GridManager *self, Frame *frame) {
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
          int gridIndex = y * self->width + x;
-         short img = _getImageIndex(self, self->schemas + self->grid[gridIndex].schema);
+         Tile *mapGrid = mapGetTiles(self->map);
+         
+         short img = _getImageIndex(self, gridManagerGetSchema(self, mapGrid[gridIndex].schema));
          short imgX = (img % 16) * GRID_CELL_SIZE;
          short imgY = (img / 16) * GRID_CELL_SIZE;
 

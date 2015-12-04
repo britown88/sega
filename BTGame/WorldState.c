@@ -229,7 +229,7 @@ static void _dropTestBlock(WorldState *state, Int2 pos) {
    Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, x, y);
    if (t) {
       t->schema = 7;
-      t->collision = GRID_SOLID;
+      t->collision = COL_SOLID;
    }
 }
 

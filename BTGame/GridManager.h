@@ -3,7 +3,9 @@
 #include "segautils/Defs.h"
 #include "segautils/Rect.h"
 #include "Entities/Entities.h"
+#include "Tiles.h"
 
+typedef struct Map_t Map;
 typedef struct GridManager_t GridManager;
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
@@ -22,31 +24,21 @@ typedef struct WorldView_t WorldView;
 #define DEFAULT_MOVE_SPEED 250
 #define DEFAULT_MOVE_DELAY 0
 
-//collision flags
-#define GRID_SOLID_TOP (1 << 0)
-#define GRID_SOLID_LEFT (1 << 1)
-#define GRID_SOLID_BOTTOM (1 << 2)
-#define GRID_SOLID_RIGHT (1 << 3)
-#define GRID_SOLID (GRID_SOLID_TOP|GRID_SOLID_LEFT|GRID_SOLID_BOTTOM|GRID_SOLID_RIGHT)
-
-#pragma pack(push, 1)
-typedef struct {
-   byte schema;
-   byte collision;//use "solid" flags
-}Tile;
-#pragma pack(pop)
-
 typedef struct OcclusionCell_t OcclusionCell;
-
-//returns pointer to the entity array that contains all gridded entities currently in view
-vec(EntityPtr) *gridManagerQueryEntities(GridManager *self);
-void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) *outlist);
-Entity *gridMangerEntityFromScreenPosition(GridManager *self, Int2 pos);
 
 GridManager *createGridManager(WorldView *view);
 void gridManagerRender(GridManager *self, Frame *frame);
 void gridManagerRenderLighting(GridManager *self, Frame *frame);
 void gridManagerSetAmbientLight(GridManager *self, byte level);
+
+Map *gridManagerGetMap(GridManager *self);
+void gridManagerLoadMap(GridManager *self, Map *map);
+TileSchema *gridManagerGetSchema(GridManager *self, short index);
+
+//returns pointer to the entity array that contains all gridded entities currently in view
+vec(EntityPtr) *gridManagerQueryEntities(GridManager *self);
+void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) *outlist);
+Entity *gridMangerEntityFromScreenPosition(GridManager *self, Int2 pos);
 
 short gridManagerWidth(GridManager *self);
 short gridManagerHeight(GridManager *self);
