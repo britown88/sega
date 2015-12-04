@@ -85,7 +85,6 @@ TextBoxManager *createTextBoxManager(WorldView *view);
 void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area);
 int textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg);
 void textBoxManagerUpdate(TextBoxManager *self);
-
 int textBoxManagerSetTextAreaVisibility(TextBoxManager *self, StringView name, bool visible);
 int textBoxManagerHideTextArea(TextBoxManager *self, StringView name);
 int textBoxManagerShowTextArea(TextBoxManager *self, StringView name);

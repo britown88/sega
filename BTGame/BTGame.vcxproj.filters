@@ -170,5 +170,8 @@
     <ClCompile Include="Lua_Map.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
+    <ClCompile Include="WorldStateInput.c">
+      <Filter>Source Files\Game States</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

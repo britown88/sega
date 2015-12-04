@@ -141,6 +141,7 @@
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="MeshRendering.c" />
     <ClCompile Include="RenderManager.c" />
+    <ClCompile Include="WorldStateInput.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

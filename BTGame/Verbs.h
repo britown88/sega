@@ -16,7 +16,8 @@ typedef struct VerbManager_t VerbManager;
 VerbManager *createVerbManager(WorldView *view);
 void verbManagerCreateVerbs(VerbManager *self);
 
+void verbManagerSetEnabled(VerbManager *self, bool enabled);
+
 //returns nonzero if event occurs
 int verbManagerMouseButton(VerbManager *self, MouseEvent *e);
-
 void verbManagerKeyButton(VerbManager *self, Verbs v, SegaKeyActions action);

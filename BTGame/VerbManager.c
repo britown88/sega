@@ -18,6 +18,7 @@ struct VerbManager_t {
    WorldView *view;
    Entity *buttons[Verb_COUNT];
    Verbs focus, current;
+   bool enabled;
 };
 
 ImplManagerVTable(VerbManager)
@@ -27,6 +28,7 @@ VerbManager *createVerbManager(WorldView *view) {
    out->view = view;
    out->m.vTable = CreateManagerVTable(VerbManager);
    out->focus = out->current = Verb_COUNT;
+   out->enabled = true;
    return out;
 }
 
@@ -66,11 +68,21 @@ void verbManagerCreateVerbs(VerbManager *self) {
       COMPONENT_ADD(e, ImageComponent, .filename = atlas, .partial = true, .x = imgX, .y = imgY, .width = BTN_SIZE, .height = BTN_SIZE);
       COMPONENT_ADD(e, LayerComponent, LayerUI);
       COMPONENT_ADD(e, RenderedUIComponent, 0);
+      COMPONENT_ADD(e, VisibilityComponent, .shown = true);
       entityUpdate(e);
       
       self->buttons[i] = e;
    }
 }
+
+void verbManagerSetEnabled(VerbManager *self, bool enabled) {
+   int i;
+   self->enabled = enabled;
+   for (i = 0; i < Verb_COUNT; ++i) {
+      entityGet(VisibilityComponent)(self->buttons[i])->shown = enabled;
+   }
+}
+
 int verbManagerMouseButton(VerbManager *self, MouseEvent *e) {
    Viewport *vp = self->view->viewport;
    Recti vpArea = { 
@@ -95,6 +107,10 @@ int verbManagerMouseButton(VerbManager *self, MouseEvent *e) {
    };
 
    int i;
+
+   if (!self->enabled) {
+      return 0;
+   }
 
    if (self->focus < Verb_COUNT) {      
       if (e->action == SegaMouse_Released) {
@@ -146,6 +162,10 @@ int verbManagerMouseButton(VerbManager *self, MouseEvent *e) {
    return 0;
 }
 void verbManagerKeyButton(VerbManager *self, Verbs v, SegaKeyActions action) {
+
+   if (!self->enabled) {
+      return;
+   }
    
    if (action == SegaKey_Pressed) {
       _btnState(self, v, Pressed);
