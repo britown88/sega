@@ -6,11 +6,18 @@
 #include "WorldView.h"
 #include <math.h>
 
+typedef enum {
+   Idle,
+   Moving,
+   Waiting
+} MoveStates;
+
 #pragma pack(push, 1)
 typedef struct {
    short destX, destY;
    short lastX, lastY;
    Milliseconds moveTime, moveDelay;
+   MoveStates state;
 }TGridMovingComponent;
 #pragma pack(pop)
 
@@ -191,6 +198,8 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Entity *e, M
       tgc->lastX = gc->x;
       tgc->lastY = gc->y;
 
+      tgc->state = Moving;
+
       //update our grid position to the new cell
       COMPONENT_LOCK(GridComponent, newgc, e, {
          gridManagerXYFromCellID(manager, dest, &newgc->x, &newgc->y);
@@ -214,40 +223,43 @@ static void _updateGridMovement(GridMovementManager *self, Entity *e) {
    Microseconds overflow = 0;
    WaitComponent *wc = entityGet(WaitComponent)(e);
 
-   /*
-   if we're moving, return
-   if we're waiting return
-   if we're not moving, start the wait
-   if we're done waiting, move
-   */
+   switch (tgc->state) {
+   case Idle:
+      break;
+   case Moving:
+      if (!ic || ic->overflow != 0) {
 
-   if ((wc && wc->overflow == 0) || 
-      (ic && ic->overflow == 0)) {
-      return;//waiting or moving
-   }
-
-   if (tgc->moveDelay > 0) {
-      if (ic) {
-         COMPONENT_ADD(e, WaitComponent,
-            .time = tgc->moveDelay,
-            .overflow = ic->overflow);
-
-         entityRemove(InterpolationComponent)(e);
+         //not moving or we're done moving
+         if (tgc->moveDelay <= 0) {
+            //no wait so go straight into move
+            tgc->state = Idle;
+            overflow = ic ? ic->overflow : 0;
+            entityRemove(InterpolationComponent)(e);
+            entityUpdate(e);
+            _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, overflow);
+         }
+         else {
+            //time to wait
+            tgc->state = Waiting;
+            COMPONENT_ADD(e, WaitComponent,
+               .time = tgc->moveDelay,
+               .overflow = ic ? ic->overflow : 0);
+            entityRemove(InterpolationComponent)(e);
+            entityUpdate(e);
+         }
+      }
+      break;
+   case Waiting:
+      if (tgc->moveDelay <= 0 || !wc || wc->overflow != 0) {
+         //either there is no movedelay or our wait is finished
+         tgc->state = Idle;
+         overflow = wc ? wc->overflow : 0;
+         entityRemove(WaitComponent)(e);
          entityUpdate(e);
-         return;
+         _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, overflow);
       }
-
-      if (wc) {
-         overflow = wc->overflow;
-      }
-   }
-   else {
-      if (ic) {
-         overflow = ic->overflow;
-      }
-   }
-
-   _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, overflow);
+      break;
+   }   
 }
 
 void gridMovementManagerUpdate(GridMovementManager *self) {
@@ -298,7 +310,9 @@ void gridMovementManagerMoveEntity(GridMovementManager *self, Entity *e, short x
       COMPONENT_ADD(e, TGridMovingComponent,
          .destX = x, .destY = y,
          .lastX = 0, .lastY = 0,
-         .moveTime = moveTime, .moveDelay = waitTime);
+         .moveTime = moveTime, .moveDelay = waitTime,
+         .state = Idle);
+
       _stepMovement(self->view->managers->gridManager, self->view->gridSolver, e, 0);
       
    }
