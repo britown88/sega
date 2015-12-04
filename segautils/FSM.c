@@ -23,7 +23,6 @@ FSM *fsmCreate(){
    return r;
 }
 void fsmDestroy(FSM *self){
-   fsmClear(self);
    vecDestroy(StateClosure)(self->states);
    checkedFree(self);
 }
