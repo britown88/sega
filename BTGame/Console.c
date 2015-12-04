@@ -14,9 +14,9 @@
 
 #include "RichText.h"
 
-#define LINE_COUNT 17
+#define LINE_COUNT 20
 #define WIDTH 36
-#define BOTTOM 19
+#define BOTTOM 22
 #define LEFT 2
 
 #define PREFIX     "> "
