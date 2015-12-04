@@ -80,19 +80,21 @@ int slua_mapSetSchemas(lua_State *L) {
       lua_pushinteger(L, i + 1);
       lua_gettable(L, -2);//push the schema table
 
-      lua_pushliteral(L, "imgCount");
-      lua_gettable(L, -2);
-      schema->imgCount = (byte)MIN(3, lua_tointeger(L, -1));
-      lua_pop(L, 1);
-
       lua_pushliteral(L, "occlusion");
       lua_gettable(L, -2);
-      schema->occlusion = (byte)lua_tointeger(L, -1);
+      if (!lua_isnil(L, -1)) {
+         schema->occlusion = (byte)lua_tointeger(L, -1);
+      }
       lua_pop(L, 1);
 
       lua_pushliteral(L, "img");
       lua_gettable(L, -2);
       luaL_checktype(L, -1, LUA_TTABLE);
+
+      //get the len
+      lua_len(L, -1);
+      schema->imgCount = (byte)MIN(3, lua_tointeger(L, -1));
+      lua_pop(L, 1);
 
       for (j = 0; j < schema->imgCount; ++j) {
          lua_pushinteger(L, j + 1);
