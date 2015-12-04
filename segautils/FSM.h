@@ -34,3 +34,6 @@ void fsmSendEx(FSM *self, Type *t, Message m);
    DeclRTTI(TypeName)
 
 #define ImpleStateMessage(TypeName) ImplRTTI(TypeName)
+
+DeclStateMessage(StateEnter)
+DeclStateMessage(StateExit)

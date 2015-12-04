@@ -19,22 +19,22 @@ typedef struct {
    WorldView *view;
 }WorldState;
 
-static void _enterState(WorldState *state) {
-
-}
-
-static void _worldStateDestroy(WorldState *self){
+static void _worldStateDestroy(WorldState *self){   
    checkedFree(self);
 }
 
 static void _worldUpdate(WorldState*, GameStateUpdate*);
 static void _worldHandleInput(WorldState*, GameStateHandleInput*);
 static void _worldRender(WorldState*, GameStateRender*);
+static void _worldEnter(WorldState*, StateEnter*);
+static void _worldExit(WorldState*, StateExit*);
 
 static void _world(WorldState *state, Type *t, Message m){
    if (t == GetRTTI(GameStateUpdate)){ _worldUpdate(state, m); }
    else if (t == GetRTTI(GameStateHandleInput)){ _worldHandleInput(state, m); }
    else if (t == GetRTTI(GameStateRender)){ _worldRender(state, m); }
+   else if (t == GetRTTI(StateEnter)) { _worldEnter(state, m); }
+   else if (t == GetRTTI(StateExit)) { _worldExit(state, m); }
 }
 
 void _worldUpdate(WorldState *state, GameStateUpdate *m){
@@ -51,6 +51,16 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    actorManagerUpdate(managers->actorManager);
 }
 
+void _worldEnter(WorldState *state, StateEnter *m) {
+   BTManagers *managers = state->view->managers;
+   textBoxManagerShowTextArea(managers->textBoxManager, stringIntern("smallbox"));
+   verbManagerSetEnabled(managers->verbManager, true);
+}
+void _worldExit(WorldState *state, StateExit *m) {
+   BTManagers *managers = state->view->managers;
+   textBoxManagerHideTextArea(managers->textBoxManager, stringIntern("smallbox"));
+   verbManagerSetEnabled(managers->verbManager, false);
+}
 
 static void _handleKeyboard(WorldState *state) {
    BTManagers *managers = state->view->managers;
@@ -88,7 +98,8 @@ static void _handleKeyboard(WorldState *state) {
             renderManagerToggleFPS(state->view->managers->renderManager);
             break;
          case SegaKey_GraveAccent:
-            consoleSetEnabled(state->view->console, true);
+            fsmPush(state->view->gameState, gameStateCreateConsole(state->view));
+            //consoleSetEnabled(state->view->console, true);
             //textBoxManagerPushText(state->view->managers->textBoxManager, stringIntern("smallbox"), "[i]meme[/i]:\nan [c=0,13]element[/c] of a [c=0,7]culture[/c] or [c=0,6]system[/c] of [c=0,5]behavior[/c] that [c=0,4]may[/c] be considered to be passed from [c=0,3]one individual[/c] to another by nongenetic means, [c=0,5]especially imitation.[/c]");
             break;
          case SegaKey_LeftControl:
@@ -226,8 +237,6 @@ StateClosure gameStateCreateWorld(WorldView *view){
    StateClosure out;
    WorldState *state = checkedCalloc(1, sizeof(WorldState));
    state->view = view;
-
-   _enterState(state);
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_world, &_worldStateDestroy);
 
