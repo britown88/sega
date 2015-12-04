@@ -15,6 +15,8 @@ typedef struct {
 struct ActorManager_t {
    Manager m;
    WorldView *view;
+
+   bool errorTripped;
 };
 
 ImplManagerVTable(ActorManager)
@@ -77,5 +79,16 @@ static void _updateActor(ActorManager *self, Entity *e) {
 }
 
 void actorManagerUpdate(ActorManager *self) {
-   luaActorStepAllScripts(self->view, self->view->L);
+   if (self->errorTripped) {
+      return;
+   }
+
+   if (luaActorStepAllScripts(self->view, self->view->L)) {
+      consolePrintLuaError(self->view->console, "Error stepping scripts, halting execution of scripts by frame.");
+      self->errorTripped = true;
+   }
+}
+
+void actorManagerClearErrorFlag(ActorManager *self) {
+   self->errorTripped = false;
 }

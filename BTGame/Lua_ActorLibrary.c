@@ -224,20 +224,11 @@ int luaActorGetIndex(lua_State *L, Entity *e) {
 }
 
 //calls stepScript on every loaded actor
-void luaActorStepAllScripts(WorldView *view, lua_State *L) {
-   static bool ErrorTripped = false;
-
-   if (ErrorTripped) {
-      return;
-   }
+int luaActorStepAllScripts(WorldView *view, lua_State *L) {
+   int err;
 
    lua_pushcfunction(L, &slua_actorStepAllScripts);
-   if (lua_pcall(L, 0, 0, 0)) {
-      WorldView *view = luaGetWorldView(L);
-      consolePrintLuaError(view->console, "Error stepping scripts, halting execution of scripts by frame.");
-
-      ErrorTripped = true;
-   }
+   return lua_pcall(L, 0, 0, 0);
 }
 
 void luaActorInteract(lua_State *L, Entity *e, Verbs v) {

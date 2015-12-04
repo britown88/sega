@@ -25,10 +25,11 @@
 
 struct Console_t {
    WorldView *view;
-   Entity *e;
+   Entity *e, *notif;
    bool enabled;
    vec(StringPtr) *inputHistory, *shiftLines;   
    String *input;
+   size_t errorCount;
 
    RichText *rt;
    vec(RichTextLine) *queue;
@@ -151,6 +152,21 @@ static void _printStackItem(lua_State *L, Console *self, int index) {
    }
 }
 
+static void _updateNotification(Console *self) {
+   TextComponent *tc = entityGet(TextComponent)(self->notif);
+   TextLine *line = vecBegin(TextLine)(tc->lines);
+   Span *span = vecBegin(Span)(line->line);
+
+   if (self->errorCount == 0) {
+      stringClear(span->string);
+   }
+   else {
+      static char buff[8];
+      sprintf(buff, "!%d", self->errorCount);
+      stringSet(span->string, buff);
+   }
+}
+
 void consolePrintLuaError(Console *self, const char *tag) {
    lua_State *L;
    const char *fmt = "[c=0,13]%s:\n [=]%s[/=][/c]";
@@ -175,6 +191,11 @@ void consolePrintLuaError(Console *self, const char *tag) {
    }
 
    lua_pop(L, 1);
+
+   if (!self->enabled) {
+      ++self->errorCount;
+      _updateNotification(self);
+   }
 }
 
 static void _processInput(Console *self, String *input) {
@@ -263,6 +284,7 @@ void consoleCreateLines(Console *self) {
    int y;
    Entity *e = entityCreate(self->view->entitySystem);
    TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
+   TextComponent notiftc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    int bottomLine = BOTTOM;//last line on screen
    int topLine = bottomLine - LINE_COUNT - 1;//account for input line
 
@@ -273,12 +295,27 @@ void consoleCreateLines(Console *self) {
       });
    }
 
+   vecPushBack(TextLine)(notiftc.lines, &(TextLine){
+         .x = 0, .y = EGA_TEXT_RES_HEIGHT - 1,
+         .line = vecCreate(Span)(&spanDestroy)
+   });
+
+   //i apologize to the faint of heart for this line
+   vecPushBack(Span)(vecBegin(TextLine)(notiftc.lines)->line, &(Span){ .string = stringCreate(""), .style = { .flags = Style_Color, .bg = 0, .fg = 13 } });
+
    self->e = entityCreate(self->view->entitySystem);
    COMPONENT_ADD(self->e, LayerComponent, LayerConsole);
    COMPONENT_ADD(self->e, RenderedUIComponent, 0);
    COMPONENT_ADD(self->e, VisibilityComponent, .shown = self->enabled);
    entityAdd(TextComponent)(self->e, &tc);
    entityUpdate(self->e);
+
+   self->notif = entityCreate(self->view->entitySystem);
+   COMPONENT_ADD(self->notif, LayerComponent, LayerConsole);
+   COMPONENT_ADD(self->notif, RenderedUIComponent, 0);
+   COMPONENT_ADD(self->notif, VisibilityComponent, .shown = !self->enabled);
+   entityAdd(TextComponent)(self->notif, &notiftc);
+   entityUpdate(self->notif);
 
    consolePushLine(self,
       "---------------------------\n"
@@ -299,6 +336,17 @@ void consoleClear(Console *self) {
 void consoleSetEnabled(Console *self, bool enabled) {
    self->enabled = enabled;
    entityGet(VisibilityComponent)(self->e)->shown = enabled;
+   entityGet(VisibilityComponent)(self->notif)->shown = !enabled;
+
+   if (enabled) {
+      if (self->errorCount > 0) {
+         self->errorCount = 0;
+         _updateNotification(self);
+      }      
+   }
+   else {
+      actorManagerClearErrorFlag(self->view->managers->actorManager);
+   }
 }
 
 bool consoleGetEnabled(Console *self) {

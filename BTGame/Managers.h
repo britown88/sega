@@ -48,6 +48,7 @@ void cursorManagerClearVerb(CursorManager *self);
 
 ActorManager *createActorManager(WorldView *view);
 void actorManagerUpdate(ActorManager *self);
+void actorManagerClearErrorFlag(ActorManager *self);//resumes execution of script steps if it was halted by an error
 
 ClockManager *createClockManager(WorldView *view);
 void clockManagerUpdate(ClockManager *self);
