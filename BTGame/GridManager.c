@@ -299,6 +299,10 @@ TileSchema *gridManagerGetSchema(GridManager *self, short index) {
    return vecAt(TileSchema)(self->schemas, index);
 }
 
+void gridManagerClearSchemas(GridManager *self) {
+   vecClear(TileSchema)(self->schemas);
+}
+
 GridManager *createGridManager(WorldView *view) {
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
    out->view = view;

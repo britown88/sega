@@ -188,8 +188,9 @@
 		LUA_CDIR"loadall.dll;" ".\\?.dll"
 */
 #define LUA_PATH_DEFAULT \
+   ".\\?.lua;" ".\\?\\init.lua;" \
    ".\\lua\\?.lua;" ".\\lua\\?\\init.lua;" \
-   ".\\assets\\lua\\?.lua;" ".\\assets\\lua\\?\\init.lua"
+   ".\\assets\\?.lua;" ".\\assets\\?\\init.lua"
 #define LUA_CPATH_DEFAULT ".\\lib\\lua\\?.dll"
 
 

@@ -34,6 +34,7 @@ void gridManagerSetAmbientLight(GridManager *self, byte level);
 Map *gridManagerGetMap(GridManager *self);
 void gridManagerLoadMap(GridManager *self, Map *map);
 TileSchema *gridManagerGetSchema(GridManager *self, short index);
+void gridManagerClearSchemas(GridManager *self);
 
 //returns pointer to the entity array that contains all gridded entities currently in view
 vec(EntityPtr) *gridManagerQueryEntities(GridManager *self);
