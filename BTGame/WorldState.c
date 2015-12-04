@@ -384,6 +384,7 @@ static void _addTestEntities(WorldState *state) {
       StringView boxName = stringIntern("smallbox");
       textBoxManagerCreateTextBox(state->view->managers->textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
       textBoxManagerPushText(state->view->managers->textBoxManager, boxName, "You are likely to be eaten by a [c=0,13]grue[/c].");
+      textBoxManagerShowTextArea(state->view->managers->textBoxManager, boxName);
       
    }
 

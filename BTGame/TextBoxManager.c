@@ -85,6 +85,7 @@ void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti ar
    box.e = entityCreate(self->view->entitySystem);
    COMPONENT_ADD(box.e, LayerComponent, LayerUI);
    COMPONENT_ADD(box.e, RenderedUIComponent, 0);
+   COMPONENT_ADD(box.e, VisibilityComponent, false);
    entityAdd(TextComponent)(box.e, &tc);
    entityUpdate(box.e);
 
@@ -98,12 +99,33 @@ void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti ar
 
    htInsert(TextBox)(self->boxTable, &box);
 }
-void textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg) {
+int textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg) {
    TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
    if (found) {
       String *msgstr = stringCreate(msg);
       vecPushBack(StringPtr)(found->queue, &msgstr);
+      return 0;
    }
+   return 1;
+}
+
+int textBoxManagerSetTextAreaVisibility(TextBoxManager *self, StringView name, bool visible) {
+   TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
+   if (found) {
+      VisibilityComponent *vc = entityGet(VisibilityComponent)(found->e);
+      if (vc) {
+         vc->shown = visible;
+      }
+      return 0;
+   }
+   return 1;
+}
+
+int textBoxManagerHideTextArea(TextBoxManager *self, StringView name) {
+   return textBoxManagerSetTextAreaVisibility(self, name, false);
+}
+int textBoxManagerShowTextArea(TextBoxManager *self, StringView name) {
+   return textBoxManagerSetTextAreaVisibility(self, name, true);
 }
 
 static void _clearLineEntity(Entity *e) {
