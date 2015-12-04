@@ -11,11 +11,13 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view) {
    luaL_openlibs(L);
 
    luaPushUserDataGlobal(L, LLIB_VIEW, view);
-   luaRequire(L, "core");
+   luaRequire(L, "core");   
   
    luaLoadActorLibrary(L);
    luaLoadStandardLibrary(L);
    luaLoadUILibrary(L);
    luaLoadMapLibrary(L);
+
+   luaRequire(L, "assets");
 
 }
