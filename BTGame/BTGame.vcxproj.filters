@@ -173,5 +173,8 @@
     <ClCompile Include="ConsoleState.c">
       <Filter>Source Files\Game States</Filter>
     </ClCompile>
+    <ClCompile Include="EditorState.c">
+      <Filter>Source Files\Game States</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

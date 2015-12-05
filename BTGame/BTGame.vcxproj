@@ -115,6 +115,7 @@
     <ClCompile Include="ActorManager.c" />
     <ClCompile Include="Console.c" />
     <ClCompile Include="ConsoleState.c" />
+    <ClCompile Include="EditorState.c" />
     <ClCompile Include="GameHelpers.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridMovementManager.c" />

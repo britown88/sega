@@ -16,7 +16,7 @@
 
 typedef struct {
    WorldView *view;
-   bool pop;
+   bool pop, openEditor;
 }ConsoleState;
 
 static void _consoleStateDestroy(ConsoleState *self) {
@@ -28,6 +28,7 @@ static void _consoleHandleInput(ConsoleState*, GameStateHandleInput*);
 static void _consoleRender(ConsoleState*, GameStateRender*);
 static void _consoleEnter(ConsoleState*, StateEnter*);
 static void _consoleExit(ConsoleState*, StateExit*);
+static void _consoleOpenEditor(ConsoleState*, GameStateOpenMapEditor*);
 
 static void _console(ConsoleState *state, Type *t, Message m) {
    if (t == GetRTTI(GameStateUpdate)) { _consoleUpdate(state, m); }
@@ -35,6 +36,12 @@ static void _console(ConsoleState *state, Type *t, Message m) {
    else if (t == GetRTTI(GameStateRender)) { _consoleRender(state, m); }
    else if (t == GetRTTI(StateEnter)) { _consoleEnter(state, m); }
    else if (t == GetRTTI(StateExit)) { _consoleExit(state, m); }
+   else if (t == GetRTTI(GameStateOpenMapEditor)) { _consoleOpenEditor(state, m); }
+}
+
+void _consoleOpenEditor(ConsoleState *state, GameStateOpenMapEditor *m) {
+   state->pop = true;
+   state->openEditor = true;
 }
 
 void _consoleEnter(ConsoleState *state, StateEnter *m) {
@@ -60,14 +67,17 @@ void _consoleUpdate(ConsoleState *state, GameStateUpdate *m) {
    Int2 mousePos = mouseGetPosition(mouse);
 
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
-   //interpolationManagerUpdate(managers->interpolationManager);
-   //waitManagerUpdate(managers->waitManager);
-   //gridMovementManagerUpdate(managers->gridMovementManager);
-   //pcManagerUpdate(managers->pcManager);
-   //textBoxManagerUpdate(managers->textBoxManager);
-   //actorManagerUpdate(managers->actorManager);
-
    consoleUpdate(state->view->console);
+
+   if (state->pop) {
+      bool openEditor = state->openEditor;
+      FSM *fsm = state->view->gameState;
+      fsmPop(fsm);
+
+      if (openEditor) {
+         fsmSend(fsm, GameStateOpenMapEditor);
+      }
+   }
 }
 
 static void _handleKeyboard(ConsoleState *state) {
@@ -133,10 +143,7 @@ static void _handleMouse(ConsoleState *state) {
 
 void _consoleHandleInput(ConsoleState *state, GameStateHandleInput *m) {
    _handleKeyboard(state);
-   _handleMouse(state);
-   if (state->pop) {
-      fsmPop(state->view->gameState);
-   }
+   _handleMouse(state);   
 }
 
 void _consoleRender(ConsoleState *state, GameStateRender *m) {

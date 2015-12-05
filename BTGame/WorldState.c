@@ -28,6 +28,8 @@ static void _worldHandleInput(WorldState*, GameStateHandleInput*);
 static void _worldRender(WorldState*, GameStateRender*);
 static void _worldEnter(WorldState*, StateEnter*);
 static void _worldExit(WorldState*, StateExit*);
+static void _worldOpenEditor(WorldState*, GameStateOpenMapEditor*);
+
 
 static void _world(WorldState *state, Type *t, Message m){
    if (t == GetRTTI(GameStateUpdate)){ _worldUpdate(state, m); }
@@ -35,6 +37,11 @@ static void _world(WorldState *state, Type *t, Message m){
    else if (t == GetRTTI(GameStateRender)){ _worldRender(state, m); }
    else if (t == GetRTTI(StateEnter)) { _worldEnter(state, m); }
    else if (t == GetRTTI(StateExit)) { _worldExit(state, m); }
+   else if (t == GetRTTI(GameStateOpenMapEditor)) { _worldOpenEditor(state, m); }
+}
+
+void _worldOpenEditor(WorldState *state, GameStateOpenMapEditor *m) {
+   fsmPush(state->view->gameState, gameStateCreateEditor(state->view));
 }
 
 void _worldUpdate(WorldState *state, GameStateUpdate *m){

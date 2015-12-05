@@ -2,6 +2,7 @@
 
 ImpleStateMessage(GameStateUpdate)
 ImpleStateMessage(GameStateHandleInput)
+ImpleStateMessage(GameStateOpenMapEditor);
 ImpleStateMessage(GameStateRender)
 
 

@@ -3,6 +3,7 @@
 
 #include "WorldView.h"
 #include "Managers.h"
+#include "GameState.h"
 #include "SEGA/App.h"
 
 #include "liblua/lauxlib.h"
@@ -12,6 +13,7 @@ static int slua_consolePrint(lua_State *L);
 static int slua_consoleClear(lua_State *L);
 static int slua_rand(lua_State *L);
 static int slua_toggleStats(lua_State *L);
+static int slua_openEditor(lua_State *L);
 
 void luaLoadStandardLibrary(lua_State *L) {
 
@@ -22,6 +24,7 @@ void luaLoadStandardLibrary(lua_State *L) {
 
    luaPushFunctionGlobal(L, "rand", &slua_rand);
    luaPushFunctionGlobal(L, "toggleStats", &slua_toggleStats);
+   luaPushFunctionGlobal(L, "openEditor", &slua_openEditor);
 }
 
 int slua_consolePrint(lua_State *L) {
@@ -34,6 +37,12 @@ int slua_consolePrint(lua_State *L) {
 int slua_consoleClear(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    consoleClear(view->console);
+   return 0;
+}
+
+int slua_openEditor(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   fsmSend(view->gameState, GameStateOpenMapEditor);
    return 0;
 }
 
