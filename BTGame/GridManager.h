@@ -8,6 +8,7 @@
 typedef struct Map_t Map;
 typedef struct GridManager_t GridManager;
 typedef struct Frame_t Frame;
+typedef struct FrameRegion_t FrameRegion;
 typedef struct WorldView_t WorldView;
 
 #define GRID_POS_X 13
@@ -33,8 +34,11 @@ void gridManagerSetAmbientLight(GridManager *self, byte level);
 
 Map *gridManagerGetMap(GridManager *self);
 void gridManagerLoadMap(GridManager *self, Map *map);
-TileSchema *gridManagerGetSchema(GridManager *self, size_t index);
+
 void gridManagerClearSchemas(GridManager *self);
+TileSchema *gridManagerGetSchema(GridManager *self, size_t index);
+size_t gridManagerGetSchemaCount(GridManager *self);
+void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *vp, short x, short y);
 
 void gridManagerSnapEntity(GridManager *self, Entity *e);
 

@@ -58,7 +58,7 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    actorManagerUpdate(managers->actorManager);
 }
 
-void _registerGridRenders(BTManagers *managers) {
+static void _registerGridRenders(BTManagers *managers) {
    LayerRenderer grid, light;
 
    closureInit(LayerRenderer)(&grid, managers->gridManager, &gridManagerRender, NULL);

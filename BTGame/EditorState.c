@@ -39,15 +39,46 @@ static void _editor(EditorState *state, Type *t, Message m) {
    else if (t == GetRTTI(StateExit)) { _editorExit(state, m); }
 }
 
+void _renderSchemas(EditorState *state, Frame *frame) {
+   static int schemaX = 41;
+   static int schemaY = 165;
+   static int cols = 17;
+   static int rows = 2;
+   GridManager *gm = state->view->managers->gridManager;
+   size_t count = gridManagerGetSchemaCount(gm);
+   int x, y, i = 0;
+
+   for (y = 0; y < rows; ++y) {
+      short rendery = schemaY + (y * GRID_CELL_SIZE);
+      for (x = 0; x < cols; ++x) {
+         short renderX = schemaX + (x * GRID_CELL_SIZE);
+         
+         gridManagerRenderSchema(gm, i, frame, FrameRegionFULL, renderX, rendery);
+
+         if (++i >= count) {
+            return;
+         }
+      }
+   }
+}
+
+static void _registerGridRenders(EditorState *state) {
+   LayerRenderer schemas;
+   closureInit(LayerRenderer)(&schemas, state, &_renderSchemas, NULL);
+   renderManagerAddLayerRenderer(state->view->managers->renderManager, LayerConsole, schemas);
+}
+
 void _editorEnter(EditorState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
 
    changeBackground(state->view, "assets/img/bgeditor.ega");
+   _registerGridRenders(state);
 
 }
 void _editorExit(EditorState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
 
+   renderManagerRemoveLayerRenderer(managers->renderManager, LayerConsole);
 }
 
 void _editorUpdate(EditorState *state, GameStateUpdate *m) {

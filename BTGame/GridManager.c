@@ -442,13 +442,23 @@ Entity *gridMangerEntityFromScreenPosition(GridManager *self, Int2 pos) {
    return NULL;
 }
 
-static void _renderTile(GridManager *self, Frame *frame, short x, short y, short imgX, short imgY) {
+size_t gridManagerGetSchemaCount(GridManager *self) {
+   return vecSize(TileSchema)(self->schemas);
+}
+short _getImageIndex(GridManager *self, TileSchema *schema) {
+   return schema->img[self->tileAnimFrameIndex % schema->imgCount];
+}
+
+void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *region, short x, short y) {
    Viewport *vp = self->view->viewport;
-   FrameRegion *region = &self->view->viewport->region;
-   short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
-   short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
+
+   short renderX = x - vp->worldPos.x;
+   short renderY = y - vp->worldPos.y;
+   short img = _getImageIndex(self, gridManagerGetSchema(self, index));
+   short imgX = (img % 16) * GRID_CELL_SIZE;
+   short imgY = (img / 16) * GRID_CELL_SIZE;
+
    frameRenderImagePartial(frame, region, renderX, renderY, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
-   //frameRenderRect(frame, vp, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, 15);
 }
 
 static void _renderBlank(GridManager *self, Frame *frame, short x, short y) {
@@ -465,9 +475,6 @@ void _updateTileAnimationIndex(GridManager *self) {
       self->tileAnimSecondCount = currentSecond;
       self->tileAnimFrameIndex = (self->tileAnimFrameIndex + 1) ;
    }
-}
-short _getImageIndex(GridManager *self, TileSchema *schema) {
-   return schema->img[self->tileAnimFrameIndex % schema->imgCount];
 }
 
 void _hideEntitySquare(GridManager *self, Frame *frame, Entity *e, int xstart, int xend, int ystart, int yend) {
@@ -519,18 +526,15 @@ void gridManagerRender(GridManager *self, Frame *frame) {
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
-         int gridIndex = y * self->width + x;
-         Tile *mapGrid = mapGetTiles(self->map);
-         
-         short img = _getImageIndex(self, gridManagerGetSchema(self, mapGrid[gridIndex].schema));
-         short imgX = (img % 16) * GRID_CELL_SIZE;
-         short imgY = (img / 16) * GRID_CELL_SIZE;
-
          LightData *lightLevel = lightGridAt(self->lightGrid, x - xstart, y - ystart);
          if (lightLevel) {
             if (lightLevel->level > 0) {
-               _renderTile(self, frame, x, y, imgX, imgY);
-               //lightDataRender(lightLevel, frame, &vp->region, renderX, renderY);
+               int gridIndex = y * self->width + x;
+               Tile *mapGrid = mapGetTiles(self->map);
+               size_t schema = mapGrid[gridIndex].schema;
+               FrameRegion *region = &self->view->viewport->region;
+
+               gridManagerRenderSchema(self, schema, frame, region, x * GRID_CELL_SIZE, y * GRID_CELL_SIZE);
             }
          }
       }
