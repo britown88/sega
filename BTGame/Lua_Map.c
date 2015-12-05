@@ -7,6 +7,8 @@
 #include "GridManager.h"
 
 #include "SEGA/App.h"
+#include "segautils/Defs.h"
+#include "LightGrid.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -15,6 +17,7 @@ static int slua_mapNew(lua_State *L);
 static int slua_mapLoad(lua_State *L);
 static int slua_mapSave(lua_State *L);
 static int slua_mapSetSchemas(lua_State *L);
+static int slua_mapAmbient(lua_State *L);
 
 static int slua_paletteLoad(lua_State *L);
 
@@ -24,6 +27,7 @@ void luaLoadMapLibrary(lua_State *L) {
    luaPushFunctionTable(L, "load", &slua_mapLoad);
    luaPushFunctionTable(L, "save", &slua_mapSave);
    luaPushFunctionTable(L, "setSchemas", &slua_mapSetSchemas);
+   luaPushFunctionTable(L, "ambient", &slua_mapAmbient);
    lua_setglobal(L, LLIB_MAP);
 
    lua_newtable(L);
@@ -128,4 +132,13 @@ int slua_paletteLoad(lua_State *L) {
    
    return 0;
 
+}
+
+int slua_mapAmbient(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   byte level = (byte)MAX(0, MIN(MAX_BRIGHTNESS, (int)luaL_checkinteger(L, 1)));
+
+   gridManagerSetAmbientLight(view->managers->gridManager, level);
+
+   return 0;
 }

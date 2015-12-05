@@ -2,6 +2,7 @@
 #include "Console.h"
 
 #include "WorldView.h"
+#include "Managers.h"
 #include "SEGA/App.h"
 
 #include "liblua/lauxlib.h"
@@ -10,6 +11,7 @@
 static int slua_consolePrint(lua_State *L);
 static int slua_consoleClear(lua_State *L);
 static int slua_rand(lua_State *L);
+static int slua_toggleStats(lua_State *L);
 
 void luaLoadStandardLibrary(lua_State *L) {
 
@@ -19,6 +21,7 @@ void luaLoadStandardLibrary(lua_State *L) {
    lua_setglobal(L, LLIB_CONSOLE);
 
    luaPushFunctionGlobal(L, "rand", &slua_rand);
+   luaPushFunctionGlobal(L, "toggleStats", &slua_toggleStats);
 }
 
 int slua_consolePrint(lua_State *L) {
@@ -40,4 +43,10 @@ int slua_rand(lua_State *L) {
    
    lua_pushinteger(L, appRand(appGet(), lower, upper));
    return 1;
+}
+
+int slua_toggleStats(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   renderManagerToggleFPS(view->managers->renderManager);
+   return 0;
 }

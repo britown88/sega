@@ -68,8 +68,6 @@ static void _handleKeyboard(WorldState *state) {
    KeyboardEvent e = { 0 };
    Viewport *vp = state->view->viewport;
    int speed = 2;
-   static int toggle = 1;
-   static int amb = STARTING_AMBIENT_LEVEL;
 
    while (keyboardPopEvent(k, &e)) {
 
@@ -94,9 +92,6 @@ static void _handleKeyboard(WorldState *state) {
       }
       else if (e.action == SegaKey_Released) {
          switch (e.key) {
-         case SegaKey_F1:
-            renderManagerToggleFPS(state->view->managers->renderManager);
-            break;
          case SegaKey_GraveAccent:
             fsmPush(state->view->gameState, gameStateCreateConsole(state->view));
             //consoleSetEnabled(state->view->console, true);
@@ -105,20 +100,8 @@ static void _handleKeyboard(WorldState *state) {
          case SegaKey_LeftControl:
             pcManagerSetSneak(state->view->managers->pcManager, false);
             break;
-         case SegaKey_KeypadAdd:
-            amb = MIN(amb + 1, MAX_BRIGHTNESS);
-            gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
-            break;
-         case SegaKey_KeypadSubtract:
-            amb = MAX(amb - 1, 0);
-            gridManagerSetAmbientLight(state->view->managers->gridManager, amb);
-            break;
          case SegaKey_Escape:
             appQuit(appGet());
-            break;
-         case SegaKey_P:
-            appLoadPalette(appGet(), toggle ? "assets/pal/dark.pal" : "assets/pal/default.pal");
-            toggle = !toggle;
             break;
          case SegaKey_T:
             pcManagerToggleTorch(state->view->managers->pcManager);
