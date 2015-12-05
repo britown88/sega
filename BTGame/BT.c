@@ -183,6 +183,8 @@ static void _addTestEntities(BTGame *app) {
    COMPONENT_ADD(e, RenderedUIComponent, 0);
    entityUpdate(e);
 
+   app->view.backgroundEntity = e;
+
    {
       StringView boxName = stringIntern("smallbox");
       textBoxManagerCreateTextBox(app->managers.textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });

@@ -40,6 +40,7 @@ static void _console(ConsoleState *state, Type *t, Message m) {
 void _consoleEnter(ConsoleState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
 
+   changeBackground(state->view, "assets/img/bgconsole.ega");
    consoleSetEnabled(state->view->console, true);
    gameClockPause(state->view->gameClock);
 
