@@ -37,12 +37,16 @@ typedef struct BTManagers_t {
    ClockManager *clockManager;
 }BTManagers;
 
-typedef void(*LayerRenderFunc)(WorldView *, Frame *);
+#define ClosureTPart \
+    CLOSURE_RET(void) /*return edge*/\
+    CLOSURE_NAME(LayerRenderer) \
+    CLOSURE_ARGS(Frame *)
+#include "segautils\Closure_Decl.h"
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);
 void renderManagerToggleFPS(RenderManager *self);
-void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderFunc cb);
+void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderer renderer);
 void renderManagerRemoveLayerRenderer(RenderManager *self, Layer l);
 
 

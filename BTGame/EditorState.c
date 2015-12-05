@@ -17,6 +17,8 @@
 typedef struct {
    WorldView *view;
    bool pop;
+
+   int schemaLine;
 }EditorState;
 
 static void _editorStateDestroy(EditorState *self) {

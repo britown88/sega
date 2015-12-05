@@ -21,8 +21,11 @@ struct RenderManager_t{
    bool showFPS;
 
    vec(EntityPtr) *layers[LayerCount];
-   LayerRenderFunc layerRenderers[LayerCount];
+   LayerRenderer layerRenderers[LayerCount];
 };
+
+#define ClosureTPart CLOSURE_NAME(LayerRenderer)
+#include "segautils\Closure_Impl.h"
 
 typedef struct{
    bool hasImage;
@@ -332,9 +335,9 @@ void _renderLayers(RenderManager *self, Frame *frame){
    vec(EntityPtr) **last = first + LayerCount;
 
    int i = 0;
-   while (first != last){  
-      if (self->layerRenderers[i]) {
-         self->layerRenderers[i](self->view, frame);
+   while (first != last){
+      if (!closureIsNull(LayerRenderer)(&self->layerRenderers[i])) {
+         closureCall(&self->layerRenderers[i], frame);
       }
       ++i;
 
@@ -381,9 +384,9 @@ void renderManagerRender(RenderManager *self, Frame *frame){
    }
 }
 
-void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderFunc cb) {
-   self->layerRenderers[l] = cb;
+void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderer renderer) {
+   self->layerRenderers[l] = renderer;
 }
 void renderManagerRemoveLayerRenderer(RenderManager *self, Layer l) {
-   self->layerRenderers[l] = NULL;
+   self->layerRenderers[l] = (LayerRenderer) { 0 };
 }

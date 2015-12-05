@@ -58,14 +58,23 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    actorManagerUpdate(managers->actorManager);
 }
 
+void _registerGridRenders(BTManagers *managers) {
+   LayerRenderer grid, light;
+
+   closureInit(LayerRenderer)(&grid, managers->gridManager, &gridManagerRender, NULL);
+   closureInit(LayerRenderer)(&light, managers->gridManager, &gridManagerRenderLighting, NULL);
+
+   renderManagerAddLayerRenderer(managers->renderManager, LayerGrid, grid);
+   renderManagerAddLayerRenderer(managers->renderManager, LayerGridLighting, light);
+}
+
 void _worldEnter(WorldState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
    textBoxManagerShowTextArea(managers->textBoxManager, stringIntern("smallbox"));
    verbManagerSetEnabled(managers->verbManager, true);
    changeBackground(state->view, "assets/img/bg.ega");
 
-   renderManagerAddLayerRenderer(managers->renderManager, LayerGrid, &gridManagerRender);
-   renderManagerAddLayerRenderer(managers->renderManager, LayerGridLighting, &gridManagerRenderLighting);
+   _registerGridRenders(managers);   
 }
 void _worldExit(WorldState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
