@@ -247,6 +247,16 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    return count;
 }
 
+void gridManagerSnapEntity(GridManager *self, Entity *e) {
+   GridComponent *gc = entityGet(GridComponent)(e);
+   PositionComponent *pc = entityGet(PositionComponent)(e);
+
+   if (gc && pc) {
+      pc->x = gc->x * GRID_CELL_SIZE;
+      pc->y = gc->y * GRID_CELL_SIZE;
+   }
+}
+
 short gridManagerWidth(GridManager *self) {
    return self->width;
 }
@@ -515,8 +525,6 @@ void gridManagerRender(GridManager *self, Frame *frame) {
          short img = _getImageIndex(self, gridManagerGetSchema(self, mapGrid[gridIndex].schema));
          short imgX = (img % 16) * GRID_CELL_SIZE;
          short imgY = (img / 16) * GRID_CELL_SIZE;
-
-         
 
          LightData *lightLevel = lightGridAt(self->lightGrid, x - xstart, y - ystart);
          if (lightLevel) {

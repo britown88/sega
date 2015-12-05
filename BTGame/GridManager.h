@@ -36,6 +36,8 @@ void gridManagerLoadMap(GridManager *self, Map *map);
 TileSchema *gridManagerGetSchema(GridManager *self, short index);
 void gridManagerClearSchemas(GridManager *self);
 
+void gridManagerSnapEntity(GridManager *self, Entity *e);
+
 //returns pointer to the entity array that contains all gridded entities currently in view
 vec(EntityPtr) *gridManagerQueryEntities(GridManager *self);
 void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) *outlist);
