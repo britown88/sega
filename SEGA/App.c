@@ -241,9 +241,16 @@ void appQuit(App *app){
 Palette *appGetPalette(App *self){
    return &self->subclass->currentPalette;
 }
-void appLoadPalette(App *self, const char *palFile){
+int appLoadPalette(App *self, const char *palFile){
    Palette pal = paletteDeserialize(palFile);
+
+   if (!memcmp(&pal, &(Palette){0}, sizeof(Palette))) {
+      return 1;
+   }
+
    paletteCopy(&self->subclass->currentPalette, &pal);
+
+   return 0;
 }
 void appSetPalette(App *self, Palette *p){
    paletteCopy(&self->subclass->currentPalette, p);

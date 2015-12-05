@@ -406,10 +406,17 @@ int getEGAColor(byte c) {
 
 Palette paletteDeserialize(const char *path) {
    long fSize;
-   BitBuffer *buffer = bitBufferCreate(readFullFile(path, &fSize), 1);
+   byte *file = readFullFile(path, &fSize);
+   BitBuffer *buffer;
    Palette p = {0};
 
    int i;
+
+   if (!file) {
+      return p;
+   }
+
+   buffer = bitBufferCreate(file, 1);
 
    if(fSize == 12) {
       for(i = 0; i < 16; ++i) {

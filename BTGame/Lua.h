@@ -36,6 +36,7 @@ void luaRequire(lua_State *L, const char *modname);
 #define LLIB_ACTORS "actors"
 #define LLIB_PLAYER "player"
 #define LLIB_MAP "map"
+#define LLIB_PAL "palette"
 
 void luaLoadAllLibraries(lua_State *L, WorldView *view);
 
