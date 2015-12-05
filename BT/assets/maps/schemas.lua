@@ -10,4 +10,4 @@ schemas = {
   {img = {8}}  --8
 }
 
-map.setSchemas(schemas)
+maps.setSchemas(schemas)
