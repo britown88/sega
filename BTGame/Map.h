@@ -6,6 +6,7 @@ typedef struct Map_t Map;
 
 Map *mapCreate(short x, short y);
 Map *mapLoad(const char *fileName);
+void mapResize(Map *self, short x, short y);
 void mapDestroy(Map *self);
 
 int mapSave(Map *save, const char *fileName);

@@ -291,7 +291,7 @@ Map *gridManagerGetMap(GridManager *self) {
    return self->map;
 }
 void gridManagerLoadMap(GridManager *self, Map *map) {
-   if (self->map) {
+   if (self->map && map != self->map) {
       mapDestroy(self->map);
    }
    self->map = map;

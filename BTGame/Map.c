@@ -3,8 +3,11 @@
 #include "segautils/BitBuffer.h"
 #include "segautils/BitTwiddling.h"
 
+#include "segautils/Defs.h"
+
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 struct Map_t {
    short width, height;
@@ -18,6 +21,31 @@ Map *mapCreate(short x, short y) {
    out->width = x;
    return out;
 }
+
+void mapResize(Map *self, short x, short y) {
+   Tile *newGrid;
+   short iy;
+   
+   if (x == self->width && y == self->height) {
+      return;
+   }
+
+   newGrid = checkedCalloc(x*y, sizeof(Tile));
+
+   for (iy = 0; iy < MIN(y, self->height); ++iy) {
+      memcpy(
+         newGrid + (iy*x), 
+         self->grid + (iy*self->width), 
+         MIN(x, self->width) * sizeof(Tile)
+         );
+   }
+
+   checkedFree(self->grid);
+   self->grid = newGrid;
+   self->height = y;
+   self->width = x;
+}
+
 Map *mapLoad(const char *fileName) {
    long size;
    byte *file;

@@ -14,6 +14,7 @@
 #include "liblua/lualib.h"
 
 static int slua_mapNew(lua_State *L);
+static int slua_mapResize(lua_State *L);
 static int slua_mapLoad(lua_State *L);
 static int slua_mapSave(lua_State *L);
 static int slua_mapSetSchemas(lua_State *L);
@@ -24,6 +25,7 @@ static int slua_paletteLoad(lua_State *L);
 void luaLoadMapLibrary(lua_State *L) {
    lua_newtable(L);
    luaPushFunctionTable(L, "new", &slua_mapNew);
+   luaPushFunctionTable(L, "resize", &slua_mapResize);
    luaPushFunctionTable(L, "load", &slua_mapLoad);
    luaPushFunctionTable(L, "save", &slua_mapSave);
    luaPushFunctionTable(L, "setSchemas", &slua_mapSetSchemas);
@@ -43,6 +45,17 @@ int slua_mapNew(lua_State *L) {
    gridManagerLoadMap(view->managers->gridManager, map);
    return 0;
 }
+
+int slua_mapResize(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   int x = (int)luaL_checkinteger(L, 1);
+   int y = (int)luaL_checkinteger(L, 2);
+   Map *map = gridManagerGetMap(view->managers->gridManager);
+   mapResize(map, x, y);
+   gridManagerLoadMap(view->managers->gridManager, map);
+   return 0;
+}
+
 int slua_mapLoad(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    const char *path = luaL_checkstring(L, 1);
