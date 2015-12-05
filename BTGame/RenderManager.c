@@ -21,6 +21,7 @@ struct RenderManager_t{
    bool showFPS;
 
    vec(EntityPtr) *layers[LayerCount];
+   LayerRenderFunc layerRenderers[LayerCount];
 };
 
 typedef struct{
@@ -332,14 +333,10 @@ void _renderLayers(RenderManager *self, Frame *frame){
 
    int i = 0;
    while (first != last){  
-      switch (i++) {
-      case LayerGrid:
-         gridManagerRender(self->view->managers->gridManager, frame);
-         break;
-      case LayerGridLighting:
-         gridManagerRenderLighting(self->view->managers->gridManager, frame);
-         break;
+      if (self->layerRenderers[i]) {
+         self->layerRenderers[i](self->view, frame);
       }
+      ++i;
 
       _renderLayer(self, *first++, frame);  
    }
@@ -382,4 +379,11 @@ void renderManagerRender(RenderManager *self, Frame *frame){
    if (self->showFPS) {
       _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
    }
+}
+
+void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderFunc cb) {
+   self->layerRenderers[l] = cb;
+}
+void renderManagerRemoveLayerRenderer(RenderManager *self, Layer l) {
+   self->layerRenderers[l] = NULL;
 }

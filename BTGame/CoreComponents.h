@@ -6,6 +6,7 @@
 #include "segautils\String.h"
 #include "segautils/Time.h"
 #include "RichText.h"
+#include "RenderLayers.h"
 
 #pragma pack(push, 1)
 
@@ -32,17 +33,6 @@ typedef struct{
 
 #define ComponentT ImageComponent
 #include "Entities\ComponentDecl.h"
-
-typedef enum{
-   
-   LayerGrid,
-   LayerGridLighting,
-   LayerBackground,
-   LayerUI,
-   LayerConsole,
-   LayerCursor,
-   LayerCount
-} Layer;
 
 typedef struct{
    Layer layer;

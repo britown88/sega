@@ -5,6 +5,7 @@
 #include "segautils/Rect.h"
 #include "segashared/Strings.h"
 #include "Verbs.h"
+#include "RenderLayers.h"
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
@@ -36,9 +37,14 @@ typedef struct BTManagers_t {
    ClockManager *clockManager;
 }BTManagers;
 
+typedef void(*LayerRenderFunc)(WorldView *, Frame *);
+
 RenderManager *createRenderManager(WorldView *view, double *fps);
 void renderManagerRender(RenderManager *self, Frame *frame);
 void renderManagerToggleFPS(RenderManager *self);
+void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderFunc cb);
+void renderManagerRemoveLayerRenderer(RenderManager *self, Layer l);
+
 
 CursorManager *createCursorManager(WorldView *view);
 void cursorManagerCreateCursor(CursorManager *self);

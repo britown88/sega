@@ -105,6 +105,7 @@
     <ClInclude Include="Managers.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="MeshRendering.h" />
+    <ClInclude Include="RenderLayers.h" />
     <ClInclude Include="RichText.h" />
     <ClInclude Include="Tiles.h" />
     <ClInclude Include="Verbs.h" />

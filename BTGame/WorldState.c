@@ -63,6 +63,9 @@ void _worldEnter(WorldState *state, StateEnter *m) {
    textBoxManagerShowTextArea(managers->textBoxManager, stringIntern("smallbox"));
    verbManagerSetEnabled(managers->verbManager, true);
    changeBackground(state->view, "assets/img/bg.ega");
+
+   renderManagerAddLayerRenderer(managers->renderManager, LayerGrid, &gridManagerRender);
+   renderManagerAddLayerRenderer(managers->renderManager, LayerGridLighting, &gridManagerRenderLighting);
 }
 void _worldExit(WorldState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;

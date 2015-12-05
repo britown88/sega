@@ -495,7 +495,8 @@ void _hideEntitySquares(GridManager *self, Frame *frame, int xstart, int xend, i
    });
 }
 
-void gridManagerRender(GridManager *self, Frame *frame) {
+void gridManagerRender(WorldView *view, Frame *frame) {
+   GridManager *self = view->managers->gridManager;
    Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
    bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
@@ -539,7 +540,8 @@ void gridManagerRender(GridManager *self, Frame *frame) {
   // _hideEntitySquares(self, frame, xstart, xend, ystart, yend);
 }
 
-void gridManagerRenderLighting(GridManager *self, Frame *frame) {
+void gridManagerRenderLighting(WorldView *view, Frame *frame) {
+   GridManager *self = view->managers->gridManager;
    Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
    bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);

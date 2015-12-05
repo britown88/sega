@@ -27,8 +27,8 @@ typedef struct WorldView_t WorldView;
 typedef struct OcclusionCell_t OcclusionCell;
 
 GridManager *createGridManager(WorldView *view);
-void gridManagerRender(GridManager *self, Frame *frame);
-void gridManagerRenderLighting(GridManager *self, Frame *frame);
+void gridManagerRender(WorldView *view, Frame *frame);
+void gridManagerRenderLighting(WorldView *view, Frame *frame);
 void gridManagerSetAmbientLight(GridManager *self, byte level);
 
 Map *gridManagerGetMap(GridManager *self);
