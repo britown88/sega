@@ -33,7 +33,7 @@ void gridManagerSetAmbientLight(GridManager *self, byte level);
 
 Map *gridManagerGetMap(GridManager *self);
 void gridManagerLoadMap(GridManager *self, Map *map);
-TileSchema *gridManagerGetSchema(GridManager *self, short index);
+TileSchema *gridManagerGetSchema(GridManager *self, size_t index);
 void gridManagerClearSchemas(GridManager *self);
 
 void gridManagerSnapEntity(GridManager *self, Entity *e);

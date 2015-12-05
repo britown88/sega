@@ -351,6 +351,27 @@ void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
       self->grid[i].level = self->ambientLevel;
    }
 
+   for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
+      int x = (i % LIGHT_GRID_WIDTH) + vpx;
+      int y = (i / LIGHT_GRID_WIDTH) + vpy;
+      size_t index = gridManagerCellIDFromXY(self->parent, x, y);
+
+      if (index < INF) {
+         Tile *t = gridManagerTileAtXY(self->parent, x, y);
+         TileSchema *schema = gridManagerGetSchema(self->parent, t->schema);
+         if (schema->lit) {
+            _addPoint(self, (PointLight) {
+               .origin = {
+                  .x = x - vpx,
+                  .y = y - vpy
+               },
+                  .radius = schema->radius,
+                  .level = schema->centerLevel,
+                  .fadeWidth = schema->fadeWidth
+            });
+         }
+      }
+   }
 
 
    COMPONENT_QUERY(es, LightComponent, lc, {

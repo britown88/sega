@@ -112,6 +112,37 @@ int slua_mapSetSchemas(lua_State *L) {
       }
       lua_pop(L, 1);
 
+      lua_pushliteral(L, "lit");
+      lua_gettable(L, -2);
+      if (!lua_isnil(L, -1)) {
+         schema->lit = (byte)lua_toboolean(L, -1);
+      }
+      lua_pop(L, 1);
+
+      lua_pushliteral(L, "radius");
+      lua_gettable(L, -2);
+      if (!lua_isnil(L, -1)) {
+         schema->radius = (byte)lua_tointeger(L, -1);
+         schema->lit = true;
+      }
+      lua_pop(L, 1);
+
+      lua_pushliteral(L, "centerLevel");
+      lua_gettable(L, -2);
+      if (!lua_isnil(L, -1)) {
+         schema->centerLevel = (byte)lua_tointeger(L, -1);
+         schema->lit = true;
+      }
+      lua_pop(L, 1);
+
+      lua_pushliteral(L, "fadeWidth");
+      lua_gettable(L, -2);
+      if (!lua_isnil(L, -1)) {
+         schema->fadeWidth = (byte)lua_tointeger(L, -1);
+         schema->lit = true;
+      }
+      lua_pop(L, 1);
+
       lua_pushliteral(L, "img");
       lua_gettable(L, -2);
       luaL_checktype(L, -1, LUA_TTABLE);

@@ -301,9 +301,9 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
 
    _rebuildPartitionTable(self);
 }
-TileSchema *gridManagerGetSchema(GridManager *self, short index) {
+TileSchema *gridManagerGetSchema(GridManager *self, size_t index) {
    size_t count = vecSize(TileSchema)(self->schemas);
-   if (index >= (short)count) {
+   if (index >= count) {
       vecResize(TileSchema)(self->schemas, index + 1, &(TileSchema){0});
    }
 

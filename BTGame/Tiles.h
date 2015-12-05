@@ -20,6 +20,12 @@ typedef struct {
    short img[3];
    byte imgCount;
    byte occlusion;
+
+   //lighting
+   bool lit;
+   byte radius;
+   byte centerLevel;
+   byte fadeWidth;
 }TileSchema;
 
 #pragma pack(pop)
