@@ -285,22 +285,29 @@ void _renderEntity(RenderManager *self, Entity *e, Frame *frame){
    }
 
    //render image (or mesh)
-   if (trc->hasImage && trc->img){
-      Image *img = managedImageGetImage(trc->img);
+   if (trc->hasImage){
 
-      if (trc->hasMesh){
-         MeshComponent *mc = entityGet(MeshComponent)(e);
-         if (mc){ _renderMeshEntity(e, frame, mc, x, y, img); }         
+      if (!trc->img) {
+         _updateManagedImage(self, trc, entityGet(ImageComponent)(e));
       }
-      else{
-         ImageComponent *ic = entityGet(ImageComponent)(e);
-         if (ic->partial){
-            frameRenderImagePartial(frame, vp, x, y, img, ic->x, ic->y, ic->width, ic->height);
+
+      if (trc->img) {
+         Image *img = managedImageGetImage(trc->img);
+
+         if (trc->hasMesh) {
+            MeshComponent *mc = entityGet(MeshComponent)(e);
+            if (mc) { _renderMeshEntity(e, frame, mc, x, y, img); }
          }
-         else{
-            frameRenderImage(frame, vp, x, y, img);
+         else {
+            ImageComponent *ic = entityGet(ImageComponent)(e);
+            if (ic->partial) {
+               frameRenderImagePartial(frame, vp, x, y, img, ic->x, ic->y, ic->width, ic->height);
+            }
+            else {
+               frameRenderImage(frame, vp, x, y, img);
+            }
+
          }
-         
       }
    }
 

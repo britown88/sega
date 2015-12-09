@@ -67,10 +67,17 @@ Image *imageCreate(short width, short height) {
 
 Image *_imageDeserializeEX(const char*path, int optimize){
    long size;
-   BitBuffer *buffer = bitBufferCreate(readFullFile(path, &size), 1);
+   byte *f = readFullFile(path, &size);
+   BitBuffer *buffer; 
    short width, height;
    int y, i;
    Image *img;
+
+   if (!f) {
+      return NULL;
+   }
+
+   buffer = bitBufferCreate(f, 1);
 
    width = bitBufferReadShort(buffer);
    height = bitBufferReadShort(buffer);

@@ -7,7 +7,7 @@ schemas = {
   {img = {5, 21}}, --5, water
   {img = {6}}, --6, mountain
   {img = {7}}, --7, wall
-  {img = {8}}  --8
+  {img = {8, 24}}  --8, walltorch
 }
 
 map.setSchemas(schemas)
