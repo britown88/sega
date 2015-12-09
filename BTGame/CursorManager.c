@@ -48,8 +48,7 @@ void cursorManagerCreateCursor(CursorManager *self){
    self->e = entityCreate(self->view->entitySystem);
 
    COMPONENT_ADD(self->e, PositionComponent, 0, 0);
-   COMPONENT_ADD(self->e, ImageComponent, stringIntern("assets/img/cursor.ega"), 
-      .partial = true, .height = CURSOR_SIZE, .width = CURSOR_SIZE, .x = 0, .y = 0);
+   COMPONENT_ADD(self->e, ImageComponent, .imgID = stringIntern(IMG_CURSOR), .partial = true, .height = CURSOR_SIZE, .width = CURSOR_SIZE, .x = 0, .y = 0);
    COMPONENT_ADD(self->e, TCursorComponent, 0);
    COMPONENT_ADD(self->e, LayerComponent, LayerCursor);
    COMPONENT_ADD(self->e, RenderedUIComponent, 0);

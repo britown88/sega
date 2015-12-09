@@ -31,6 +31,7 @@ void luaRequire(lua_State *L, const char *modname);
 #define LLIB_TEXT_AREAS "textAreas"
 
 #define LLIB_CONSOLE "console"
+#define LLIB_IMG "img"
 #define LLIB_VIEW "view"
 #define LLIB_ACTOR "actor"
 #define LLIB_ACTORS "actors"

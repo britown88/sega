@@ -2,6 +2,7 @@
 
 #include "segalib\EGA.h"
 #include "segautils\BitTwiddling.h"
+#include "segautils/String.h"
 
 typedef struct {
    StringView key;
@@ -13,7 +14,8 @@ typedef struct {
 
 struct ManagedImage_t{   
    ht(iEntry) *map;
-   StringView path;
+   StringView name;
+   String *path;
    Image *image;
    size_t useCount;
 };
@@ -23,7 +25,7 @@ void managedImageDestroy(ManagedImage *self){
       --self->useCount;
    }
    else {
-      iEntry entry = { self->path, self };
+      iEntry entry = { self->name, self };
       htErase(iEntry)(self->map, &entry);
    }
 }
@@ -43,6 +45,7 @@ static size_t _iEntryHash(iEntry *p){
 
 static void _iEntryDestroy(iEntry *p){
    imageDestroy(p->value->image);
+   stringDestroy(p->value->path);
    checkedFree(p->value);
 }
 
@@ -59,32 +62,53 @@ void imageLibraryDestroy(ImageLibrary *self){
    htDestroy(iEntry)(self->table);
    checkedFree(self);
 }
-ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView path){
+ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView name){
    iEntry entry = { 0 };
    iEntry *found = 0;
-   ManagedImage *out = 0;
    
-   entry.key = path;
+   entry.key = name;
    found = htFind(iEntry)(self->table, &entry);
 
    if (!found){      
-      Image *newImage = imageDeserializeOptimized(path);
-      
-      if (newImage){
-         out = checkedCalloc(1, sizeof(ManagedImage));
-         out->image = newImage;
-         out->map = self->table;
-         out->path = path;
-         out->useCount = 2;
+      return NULL;
+   }
 
-         entry.value = out;
-         htInsert(iEntry)(self->table, &entry);
-      }
+   ++found->value->useCount;
+   return found->value;
+}
+
+int imageLibraryRegisterName(ImageLibrary *self, StringView name, const char *assetPath) {
+   iEntry entry = { 0 };
+   iEntry *found = 0;
+
+   Image *newImage = imageDeserializeOptimized(assetPath);
+
+   if (!newImage) {
+      //failed to laod image, get fucked
+      return 1;
+   }
+
+   entry.key = name;
+   found = htFind(iEntry)(self->table, &entry);
+
+   if (found) {
+      //kill the old image
+      imageDestroy(found->value->image);
+
+      stringSet(found->value->path, assetPath);      
+      found->value->image = newImage;      
    }
    else {
-      ++found->value->useCount;
-      out = found->value;
+      //create a new entry
+      entry.value = checkedCalloc(1, sizeof(ManagedImage));
+      entry.value->image = newImage;
+      entry.value->map = self->table;
+      entry.value->path = stringCreate(assetPath);
+      entry.value->name = name;
+      entry.value->useCount = 1;
+
+      htInsert(iEntry)(self->table, &entry);
    }
 
-   return out;
+   return 0;
 }

@@ -5,6 +5,7 @@
 #include "Console.h"
 #include "GameState.h"
 #include "GameHelpers.h"
+#include "ImageLibrary.h"
 
 #include "Entities\Entities.h"
 
@@ -47,7 +48,7 @@ void _consoleOpenEditor(ConsoleState *state, GameStateOpenMapEditor *m) {
 void _consoleEnter(ConsoleState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
 
-   changeBackground(state->view, "assets/img/bgconsole.ega");
+   changeBackground(state->view, IMG_BG_CONSOLE);
    consoleSetEnabled(state->view->console, true);
    gameClockPause(state->view->gameClock);
 

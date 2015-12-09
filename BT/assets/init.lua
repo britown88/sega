@@ -1,5 +1,4 @@
 require 'lua'
 require 'maps'
 require 'pal'
-
-openEditor()
+require 'img'

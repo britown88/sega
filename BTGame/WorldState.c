@@ -5,6 +5,7 @@
 #include "Console.h"
 #include "GameState.h"
 #include "GameHelpers.h"
+#include "ImageLibrary.h"
 
 #include "Entities\Entities.h"
 
@@ -72,7 +73,7 @@ void _worldEnter(WorldState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
    textBoxManagerShowTextArea(managers->textBoxManager, stringIntern("smallbox"));
    verbManagerSetEnabled(managers->verbManager, true);
-   changeBackground(state->view, "assets/img/bg.ega");
+   changeBackground(state->view, IMG_BG);
 
    _registerGridRenders(managers);   
 }

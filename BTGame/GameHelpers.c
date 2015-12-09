@@ -14,8 +14,8 @@ Int2 screenToWorld(WorldView *view, Int2 pos) {
    };
 }
 
-void changeBackground(WorldView *view, const char *file) {
+void changeBackground(WorldView *view, const char *imgID) {
    COMPONENT_LOCK(ImageComponent, ic, view->backgroundEntity, {
-      ic->filename = stringIntern(file);
+      ic->imgID = stringIntern(imgID);
    });
 }

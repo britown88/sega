@@ -4,6 +4,7 @@
 #include "WorldView.h"
 #include "LightGrid.h"
 #include "segashared/CheckedMemory.h"
+#include "ImageLibrary.h"
 #include "Lua.h"
 
 
@@ -83,7 +84,7 @@ void pcManagerCreatePC(PCManager *self) {
    COMPONENT_ADD(self->pc, SizeComponent, 14, 14);
    COMPONENT_ADD(self->pc, RectangleComponent, 0);
 
-   COMPONENT_ADD(self->pc, ImageComponent, .filename = stringIntern("assets/img/tiles.ega"), .partial = true, .x = 56, .y = 28, .width = 14, .height = 14);
+   COMPONENT_ADD(self->pc, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = 56, .y = 28, .width = 14, .height = 14);
    COMPONENT_ADD(self->pc, LayerComponent, LayerGrid);
    COMPONENT_ADD(self->pc, InViewComponent, 0);
    COMPONENT_ADD(self->pc, GridComponent, 7, 2);

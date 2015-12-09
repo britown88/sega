@@ -5,6 +5,7 @@
 #include "Console.h"
 #include "GameState.h"
 #include "GameHelpers.h"
+#include "ImageLibrary.h"
 
 #include "Entities\Entities.h"
 
@@ -60,7 +61,7 @@ void _renderSchemas(EditorState *state, Frame *frame) {
          
          gridManagerRenderSchema(gm, i, frame, FrameRegionFULL, renderX, rendery);
 
-         if (++i >= count) {
+         if (++i >= (int)count) {
             return;
          }
       }
@@ -76,7 +77,7 @@ static void _registerGridRenders(EditorState *state) {
 void _editorEnter(EditorState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
 
-   changeBackground(state->view, "assets/img/bgeditor.ega");
+   changeBackground(state->view, IMG_BG_EDITOR);
    _registerGridRenders(state);
 
 }

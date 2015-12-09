@@ -7,6 +7,7 @@
 #include "segautils/Defs.h"
 #include "Lua.h"
 #include "GridManager.h"
+#include "ImageLibrary.h"
 
 #define BTN_SIZE 22
 #define BTN_SPACE 1
@@ -55,7 +56,7 @@ void _btnState(VerbManager *self, Verbs v, VerbActions action) {
 
 void verbManagerCreateVerbs(VerbManager *self) {
    int i;
-   StringView atlas = stringIntern("assets/img/verbs.ega");
+   StringView atlas = stringIntern(IMG_VERBS);
    for (i = 0; i < Verb_COUNT; ++i) {
       int x = BTN_LEFT + ((BTN_SIZE + BTN_SPACE) * i);
       int y = BTN_TOP;
@@ -65,7 +66,7 @@ void verbManagerCreateVerbs(VerbManager *self) {
       Entity *e = entityCreate(self->view->entitySystem);
       COMPONENT_ADD(e, PositionComponent, x, y);
       COMPONENT_ADD(e, SizeComponent, BTN_SIZE, BTN_SIZE);
-      COMPONENT_ADD(e, ImageComponent, .filename = atlas, .partial = true, .x = imgX, .y = imgY, .width = BTN_SIZE, .height = BTN_SIZE);
+      COMPONENT_ADD(e, ImageComponent, .imgID = atlas, .partial = true, .x = imgX, .y = imgY, .width = BTN_SIZE, .height = BTN_SIZE);
       COMPONENT_ADD(e, LayerComponent, LayerUI);
       COMPONENT_ADD(e, RenderedUIComponent, 0);
       COMPONENT_ADD(e, VisibilityComponent, .shown = true);

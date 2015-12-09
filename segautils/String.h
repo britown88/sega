@@ -1,6 +1,8 @@
 #pragma once
 #include <string.h>
 
+#include "segautils/Defs.h"
+
 typedef struct String_t String;
 
 //String *foo = stringCreate("test");
@@ -18,4 +20,5 @@ void stringConcatEX(String *self, const char*str, size_t length);
 void stringSet(String *self, const char*str);
 void stringInsert(String *self, char c, size_t pos);
 void stringErase(String *self, size_t pos);
+bool stringEqual(String *s1, String *s2);
 const char *c_str(String *str);

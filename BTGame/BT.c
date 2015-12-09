@@ -159,7 +159,7 @@ static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
    COMPONENT_ADD(e, SizeComponent, 14, 14);
    COMPONENT_ADD(e, RectangleComponent, 0);
 
-   COMPONENT_ADD(e, ImageComponent, .filename = stringIntern("assets/img/tiles.ega"), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
+   COMPONENT_ADD(e, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
    COMPONENT_ADD(e, LayerComponent, LayerGrid);
    COMPONENT_ADD(e, InViewComponent, 0);
    COMPONENT_ADD(e, GridComponent, x, y);
@@ -213,7 +213,10 @@ void _onStart(BTGame *self){
 
    luaLoadAllLibraries(self->L, &self->view);
 
+   luaLoadAssets(self->L);
+
    appLoadPalette(appGet(), "assets/pal/default.pal");
+   renderManagerInitialize(self->managers.renderManager);
    cursorManagerCreateCursor(self->managers.cursorManager);
    pcManagerCreatePC(self->managers.pcManager);
    verbManagerCreateVerbs(self->managers.verbManager);
@@ -224,8 +227,7 @@ void _onStart(BTGame *self){
 
    //push the opening state
    fsmPush(self->gameState, gameStateCreateWorld(&self->view));
-
-   luaLoadAssets(self->L);
+   
 }
 
 

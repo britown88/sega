@@ -44,6 +44,7 @@ typedef struct BTManagers_t {
 #include "segautils\Closure_Decl.h"
 
 RenderManager *createRenderManager(WorldView *view, double *fps);
+void renderManagerInitialize(RenderManager *self);
 void renderManagerRender(RenderManager *self, Frame *frame);
 void renderManagerToggleFPS(RenderManager *self);
 void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderer renderer);

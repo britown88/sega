@@ -322,7 +322,6 @@ GridManager *createGridManager(WorldView *view) {
    out->inViewEntities = vecCreate(EntityPtr)(NULL);
    out->schemas = vecCreate(TileSchema)(NULL);
 
-   out->tilePalette = imageLibraryGetImage(view->imageLibrary, stringIntern("assets/img/tiles.ega"));
    out->lightGrid = lightGridCreate(out);
    _createTestSchemas(out);
    _createTestGrid(out);
@@ -518,6 +517,10 @@ void gridManagerRender(GridManager *self, Frame *frame) {
    ystart = MAX(0, ystart);
    xend = MIN(self->width, xend);
    yend = MIN(self->height, yend);
+
+   if (!self->tilePalette) {
+      self->tilePalette = imageLibraryGetImage(self->view->imageLibrary, stringIntern(IMG_TILE_ATLAS));
+   }
 
    _updateTileAnimationIndex(self);
    lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);

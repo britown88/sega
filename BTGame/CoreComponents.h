@@ -26,7 +26,7 @@ typedef struct {
 #include "Entities\ComponentDecl.h"
 
 typedef struct{
-   StringView filename;
+   StringView imgID;
    bool partial;
    short x, y, width, height;
 }ImageComponent;

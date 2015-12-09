@@ -73,3 +73,14 @@ void stringErase(String *self, size_t pos) {
       vecRemoveAt(char)((vec(char)*)self, pos);
    }
 }
+
+bool stringEqual(String *s1, String *s2) {
+   size_t len1 = stringLen(s1);
+   size_t len2 = stringLen(s2);
+
+   if (len1 != len2) {
+      return false;
+   }
+
+   return memcmp(c_str(s1), c_str(s2), len1) == 0;   
+}

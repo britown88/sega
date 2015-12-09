@@ -36,21 +36,17 @@ typedef struct{
    bool inView;
 
    ManagedImage *img;
-   StringView filename;
+   StringView imgID;
 }TRenderComponent;
 
 static void _updateManagedImage(RenderManager *self, TRenderComponent *trc, ImageComponent *ic){
-   if (trc->img && trc->filename != ic->filename){
+   if (trc->img && trc->imgID != ic->imgID){
       //image has changed
       managedImageDestroy(trc->img);
-      trc->filename = ic->filename;
-      trc->img = imageLibraryGetImage(self->view->imageLibrary, trc->filename);
    }
-   else {
-      //new image
-      trc->filename = ic->filename;
-      trc->img = imageLibraryGetImage(self->view->imageLibrary, trc->filename);
-   }
+
+   trc->imgID = ic->imgID;
+   trc->img = imageLibraryGetImage(self->view->imageLibrary, trc->imgID);
 }
 
 static bool _buildTRenderComponent(RenderManager *self, TRenderComponent *trc, Entity *e){
@@ -122,11 +118,9 @@ static void _registerUpdateDelegate(RenderManager *self, EntitySystem *system){
 ImplManagerVTable(RenderManager)
 
 RenderManager *createRenderManager(WorldView *view, double *fps){
-   RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
-   Image *fontImage = imageDeserializeOptimized("assets/img/font.ega");
+   RenderManager *out = checkedCalloc(1, sizeof(RenderManager));   
    out->view = view;
-   out->m.vTable = CreateManagerVTable(RenderManager);
-   out->fontFactory = fontFactoryCreate(fontImage);
+   out->m.vTable = CreateManagerVTable(RenderManager);   
    out->fps = fps;
    _initLayers(out);
 
@@ -138,7 +132,6 @@ RenderManager *createRenderManager(WorldView *view, double *fps){
    out->showFPS = false;
 #endif
 
-   imageDestroy(fontImage);
    return out;
 }
 
@@ -358,6 +351,15 @@ void _renderFramerate(Frame *frame, Font *font, double d){
 
 void renderManagerToggleFPS(RenderManager *self) {
    self->showFPS = !self->showFPS;
+}
+
+void renderManagerInitialize(RenderManager *self) {
+   ManagedImage *fontImg = imageLibraryGetImage(self->view->imageLibrary, stringIntern(IMG_FONT));
+
+   if (fontImg) {
+      self->fontFactory = fontFactoryCreate(managedImageGetImage(fontImg));
+      managedImageDestroy(fontImg);
+   }
 }
 
 void renderManagerRender(RenderManager *self, Frame *frame){
