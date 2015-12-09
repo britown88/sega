@@ -68,7 +68,7 @@ AppData createData() {
       data.dcFlags |= DC_FLAG_FULLSCREEN;
    }
 
-   data.windowTitle = stringIntern("Ultimorrowheel");
+   data.windowTitle = stringIntern("Chronicles IV: Ebonheim");
 
    return data;
 }
