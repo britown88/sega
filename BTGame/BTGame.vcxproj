@@ -104,6 +104,7 @@
     <ClInclude Include="Lua.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="MapEditor.h" />
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="RenderLayers.h" />
     <ClInclude Include="RichText.h" />
@@ -130,6 +131,7 @@
     <ClCompile Include="Lua_StandardLibrary.c" />
     <ClCompile Include="Lua_UILibrary.c" />
     <ClCompile Include="Map.c" />
+    <ClCompile Include="MapEditor.c" />
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="RichText.c" />
     <ClCompile Include="TextBoxManager.c" />

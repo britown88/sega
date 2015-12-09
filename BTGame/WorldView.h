@@ -11,6 +11,7 @@ typedef struct GameClock_t GameClock;
 typedef struct GridSolver_t GridSolver;
 typedef struct Console_t Console;
 typedef struct lua_State lua_State;
+typedef struct MapEditor_t MapEditor;
 
 typedef struct WorldView_t {
    BTManagers *managers;
@@ -22,5 +23,6 @@ typedef struct WorldView_t {
    GridSolver *gridSolver;
    Viewport *viewport;
    Console *console;
+   MapEditor *mapEditor;
    lua_State *L;
 }WorldView;

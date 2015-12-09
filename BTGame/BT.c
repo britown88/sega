@@ -16,6 +16,7 @@
 #include "Console.h"
 #include "Lua.h"
 #include "LightGrid.h"
+#include "MapEditor.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -31,6 +32,7 @@ typedef struct {
    GridSolver *gridSolver;
    WorldView view;
    Console *console;
+   MapEditor *mapEditor;
 
    lua_State *L;
 
@@ -130,6 +132,9 @@ VirtualApp *btCreate() {
    r->console = consoleCreate(&r->view);
    r->view.console = r->console;
 
+   r->mapEditor = mapEditorCreate(&r->view);
+   r->view.mapEditor = r->mapEditor;
+
    r->L = luaCreate();
 
    return (VirtualApp*)r;
@@ -138,7 +143,7 @@ VirtualApp *btCreate() {
 void _destroy(BTGame *self){
    fsmDestroy(self->gameState);
 
-   //kill the console before the entity system tries throwing errors to it
+   //kill the console before the entity system tries throwing errors to it!
    consoleDestroy(self->console);
    self->console = self->view.console = NULL;
    
@@ -147,6 +152,7 @@ void _destroy(BTGame *self){
    imageLibraryDestroy(self->imageLibrary);
    gameClockDestroy(self->gameClock);
    gridSolverDestroy(self->gridSolver);
+   mapEditorDestroy(self->mapEditor);
    
    luaDestroy(self->L);
    checkedFree(self);
@@ -209,7 +215,8 @@ void _onStart(BTGame *self){
    self->view.L = self->L;
 
    //we need the console alive to print errors!
-   consoleCreateLines(self->console);
+   consoleCreateLines(self->console);   
+   mapEditorInitialize(self->mapEditor);
 
    luaLoadAllLibraries(self->L, &self->view);
 

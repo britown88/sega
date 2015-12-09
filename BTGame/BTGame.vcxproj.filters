@@ -84,6 +84,9 @@
     <ClInclude Include="RenderLayers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MapEditor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -178,6 +181,9 @@
     </ClCompile>
     <ClCompile Include="EditorState.c">
       <Filter>Source Files\Game States</Filter>
+    </ClCompile>
+    <ClCompile Include="MapEditor.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@
 #include "GameState.h"
 #include "GameHelpers.h"
 #include "ImageLibrary.h"
+#include "MapEditor.h"
 
 #include "Entities\Entities.h"
 
@@ -18,9 +19,6 @@
 typedef struct {
    WorldView *view;
    bool pop;
-
-   short mouseGridX, mouseGridY;
-   Entity *textEntity;
 }EditorState;
 
 static void _stateCreate(EditorState *state) {
@@ -80,11 +78,14 @@ void _editorEnter(EditorState *state, StateEnter *m) {
    changeBackground(state->view, IMG_BG_EDITOR);
    _registerGridRenders(state);
 
+   mapEditorSetEnabled(state->view->mapEditor, true);
+
 }
 void _editorExit(EditorState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
 
    renderManagerRemoveLayerRenderer(managers->renderManager, LayerConsole);
+   mapEditorSetEnabled(state->view->mapEditor, false);
 }
 
 void _editorUpdate(EditorState *state, GameStateUpdate *m) {
