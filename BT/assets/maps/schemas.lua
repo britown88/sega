@@ -6,7 +6,7 @@ schemas = {
   {img = {4}}, --4, tree group
   {img = {5, 21}}, --5, water
   {img = {6}}, --6, mountain
-  {img = {7}, centerLevel = 6, fadeWidth = 6}, --7, wall
+  {img = {7}}, --7, wall
   {img = {8}}  --8
 }
 

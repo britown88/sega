@@ -17,7 +17,8 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view) {
    luaLoadStandardLibrary(L);
    luaLoadUILibrary(L);
    luaLoadMapLibrary(L);
+}
 
+void luaLoadAssets(lua_State *L) {
    luaRequire(L, "assets");
-
 }

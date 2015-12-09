@@ -224,6 +224,8 @@ void _onStart(BTGame *self){
 
    //push the opening state
    fsmPush(self->gameState, gameStateCreateWorld(&self->view));
+
+   luaLoadAssets(self->L);
 }
 
 

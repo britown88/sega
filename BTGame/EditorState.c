@@ -18,8 +18,13 @@ typedef struct {
    WorldView *view;
    bool pop;
 
-   int schemaLine;
+   short mouseGridX, mouseGridY;
+   Entity *textEntity;
 }EditorState;
+
+static void _stateCreate(EditorState *state) {
+
+}
 
 static void _editorStateDestroy(EditorState *self) {
    checkedFree(self);
@@ -140,16 +145,12 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
-static void _enterState(EditorState *state) {
-
-}
-
 StateClosure gameStateCreateEditor(WorldView *view) {
    StateClosure out;
    EditorState *state = checkedCalloc(1, sizeof(EditorState));
    state->view = view;
 
-   _enterState(state);
+   _stateCreate(state);
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_editor, &_editorStateDestroy);
 

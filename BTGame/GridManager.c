@@ -451,14 +451,12 @@ short _getImageIndex(GridManager *self, TileSchema *schema) {
 
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *region, short x, short y) {
    Viewport *vp = self->view->viewport;
-
-   short renderX = x - vp->worldPos.x;
-   short renderY = y - vp->worldPos.y;
+  
    short img = _getImageIndex(self, gridManagerGetSchema(self, index));
    short imgX = (img % 16) * GRID_CELL_SIZE;
    short imgY = (img / 16) * GRID_CELL_SIZE;
 
-   frameRenderImagePartial(frame, region, renderX, renderY, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
+   frameRenderImagePartial(frame, region, x, y, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
 }
 
 static void _renderBlank(GridManager *self, Frame *frame, short x, short y) {
@@ -533,8 +531,11 @@ void gridManagerRender(GridManager *self, Frame *frame) {
                Tile *mapGrid = mapGetTiles(self->map);
                size_t schema = mapGrid[gridIndex].schema;
                FrameRegion *region = &self->view->viewport->region;
+               short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
+               short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
 
-               gridManagerRenderSchema(self, schema, frame, region, x * GRID_CELL_SIZE, y * GRID_CELL_SIZE);
+
+               gridManagerRenderSchema(self, schema, frame, region, renderX, renderY);
             }
          }
       }

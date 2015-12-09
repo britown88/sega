@@ -39,6 +39,7 @@ void luaRequire(lua_State *L, const char *modname);
 #define LLIB_PAL "pal"
 
 void luaLoadAllLibraries(lua_State *L, WorldView *view);
+void luaLoadAssets(lua_State *L);
 
 void luaLoadStandardLibrary(lua_State *L);
 
