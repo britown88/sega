@@ -16,15 +16,15 @@
 
 #include "segashared\CheckedMemory.h"
 
+#define VP_SPEED 3
+#define VP_FAST_SPEED 8
+
 typedef struct {
    WorldView *view;
    bool pop;
 }EditorState;
 
-static void _stateCreate(EditorState *state) {
-
-}
-
+static void _editorStateCreate(EditorState *state) {}
 static void _editorStateDestroy(EditorState *self) {
    checkedFree(self);
 }
@@ -43,13 +43,9 @@ static void _editor(EditorState *state, Type *t, Message m) {
    else if (t == GetRTTI(StateExit)) { _editorExit(state, m); }
 }
 
-void _renderSchemas(EditorState *state, Frame *frame) {
-   mapEditorRender(state->view->mapEditor, frame);
-}
-
 static void _registerGridRenders(EditorState *state) {
    LayerRenderer schemas;
-   closureInit(LayerRenderer)(&schemas, state, &_renderSchemas, NULL);
+   closureInit(LayerRenderer)(&schemas, state->view->mapEditor, &mapEditorRender, NULL);
    renderManagerAddLayerRenderer(state->view->managers->renderManager, LayerConsole, schemas);
 }
 
@@ -86,6 +82,8 @@ static void _handleKeyboard(EditorState *state) {
    BTManagers *managers = state->view->managers;
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
+   Viewport *vp = state->view->viewport;
+   short speed;
 
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released) {
@@ -98,6 +96,23 @@ static void _handleKeyboard(EditorState *state) {
             break;
          }
       }
+   }
+
+   speed = keyboardIsDown(k, SegaKey_LeftShift) ? VP_FAST_SPEED : VP_SPEED;
+
+   if (keyboardIsDown(k, SegaKey_W)) {
+      vp->worldPos.y = MAX(0, vp->worldPos.y - speed);
+   }
+   if (keyboardIsDown(k, SegaKey_S)) {
+      short maxY = (gridManagerHeight(state->view->managers->gridManager) * GRID_CELL_SIZE) - vp->region.height;
+      vp->worldPos.y = MIN(maxY, vp->worldPos.y + speed);
+   }
+   if (keyboardIsDown(k, SegaKey_A)) {
+      vp->worldPos.x = MAX(0, vp->worldPos.x - speed);
+   }
+   if (keyboardIsDown(k, SegaKey_D)) {
+      short maxX = (gridManagerWidth(state->view->managers->gridManager) * GRID_CELL_SIZE) - vp->region.width;
+      vp->worldPos.x = MIN(maxX, vp->worldPos.x + speed);
    }
 }
 
@@ -119,9 +134,6 @@ static void _handleMouse(EditorState *state) {
 void _editorHandleInput(EditorState *state, GameStateHandleInput *m) {
    _handleKeyboard(state);
    _handleMouse(state);
-   if (state->pop) {
-      fsmPop(state->view->gameState);
-   }
 }
 
 void _editorRender(EditorState *state, GameStateRender *m) {
@@ -133,9 +145,8 @@ StateClosure gameStateCreateEditor(WorldView *view) {
    EditorState *state = checkedCalloc(1, sizeof(EditorState));
    state->view = view;
 
-   _stateCreate(state);
+   _editorStateCreate(state);
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_editor, &_editorStateDestroy);
-
    return out;
 }

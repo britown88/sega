@@ -20,6 +20,7 @@ typedef struct {
    WorldView *view;
 }WorldState;
 
+static void _worldStateCreate(WorldState *self) { }
 static void _worldStateDestroy(WorldState *self){   
    checkedFree(self);
 }
@@ -115,8 +116,6 @@ static void _handleKeyboard(WorldState *state) {
          switch (e.key) {
          case SegaKey_GraveAccent:
             fsmPush(state->view->gameState, gameStateCreateConsole(state->view));
-            //consoleSetEnabled(state->view->console, true);
-            //textBoxManagerPushText(state->view->managers->textBoxManager, stringIntern("smallbox"), "[i]meme[/i]:\nan [c=0,13]element[/c] of a [c=0,7]culture[/c] or [c=0,6]system[/c] of [c=0,5]behavior[/c] that [c=0,4]may[/c] be considered to be passed from [c=0,3]one individual[/c] to another by nongenetic means, [c=0,5]especially imitation.[/c]");
             break;
          case SegaKey_LeftControl:
             pcManagerSetSneak(state->view->managers->pcManager, false);
@@ -163,17 +162,6 @@ static void _handleKeyboard(WorldState *state) {
    }
 }
 
-static void _dropTestBlock(WorldState *state, Int2 pos) {
-   Viewport *vp = state->view->viewport;
-   int x = (pos.x - vp->region.origin_x + vp->worldPos.x) / GRID_CELL_SIZE;
-   int y = (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE;
-   Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, x, y);
-   if (t) {
-      t->schema = 7;
-      t->collision = COL_SOLID;
-   }
-}
-
 static void _handleMouse(WorldState *state) {
    BTManagers *managers = state->view->managers;
    Mouse *mouse = appGetMouse(appGet());
@@ -185,8 +173,6 @@ static void _handleMouse(WorldState *state) {
 
    while (mousePopEvent(mouse, &event)) {
       if (event.action == SegaMouse_Scrolled) {
-         //LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-         //lc->radius = MAX(0, lc->radius + event.pos.y);
       }
       else if (event.action == SegaMouse_Pressed) {
          switch (event.button) {
@@ -213,12 +199,6 @@ static void _handleMouse(WorldState *state) {
 
    }
 
-   if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
-      if (rectiContains(vpArea, pos)) {
-         _dropTestBlock(state, pos);
-      }
-   }
-
    if (mouseIsDown(mouse, SegaMouseBtn_Right)) {
       if (rectiContains(vpArea, pos)) {
          pcManagerMove(state->view->managers->pcManager,
@@ -242,6 +222,7 @@ StateClosure gameStateCreateWorld(WorldView *view){
    WorldState *state = checkedCalloc(1, sizeof(WorldState));
    state->view = view;
 
+   _worldStateCreate(state);
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_world, &_worldStateDestroy);
 
    return out;

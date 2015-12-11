@@ -20,6 +20,7 @@ typedef struct {
    bool pop, openEditor;
 }ConsoleState;
 
+static void _consoleStateCreate(ConsoleState *state) {}
 static void _consoleStateDestroy(ConsoleState *self) {
    checkedFree(self);
 }
@@ -117,9 +118,6 @@ static void _handleMouse(ConsoleState *state) {
 
    while (mousePopEvent(mouse, &event)) {
       if (event.action == SegaMouse_Scrolled) {
-         //LightComponent *lc = entityGet(LightComponent)(state->mouseLight);
-         //lc->radius = MAX(0, lc->radius + event.pos.y);
-
          consoleScrollLog(state->view->console, event.pos.y);
       }
       else if (event.action == SegaMouse_Pressed) {
@@ -136,7 +134,6 @@ static void _handleMouse(ConsoleState *state) {
                   worldPos.x / GRID_CELL_SIZE,
                   worldPos.y / GRID_CELL_SIZE);
             }
-
          }
       }
    }
@@ -151,16 +148,12 @@ void _consoleRender(ConsoleState *state, GameStateRender *m) {
    renderManagerRender(state->view->managers->renderManager, m->frame);
 }
 
-static void _enterState(ConsoleState *state) {
-
-}
-
 StateClosure gameStateCreateConsole(WorldView *view) {
    StateClosure out;
    ConsoleState *state = checkedCalloc(1, sizeof(ConsoleState));
    state->view = view;
 
-   _enterState(state);
+   _consoleStateCreate(state);
 
    closureInit(StateClosure)(&out, state, (StateClosureFunc)&_console, &_consoleStateDestroy);
 
