@@ -119,7 +119,7 @@ static void _handleKeyboard(EditorState *state) {
 static void _handleMouse(EditorState *state) {
    Mouse *mouse = appGetMouse(appGet());
    MouseEvent event = { 0 };
-   //Int2 pos = mouseGetPosition(mouse);
+   Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = state->view->viewport;
    Recti vpArea = { vp->region.origin_x, vp->region.origin_y, vp->region.origin_x + vp->region.width, vp->region.origin_y + vp->region.height };
 
@@ -128,6 +128,14 @@ static void _handleMouse(EditorState *state) {
       }
       else if (event.action == SegaMouse_Pressed) {
       }
+   }
+
+   if (rectiContains(vpArea, pos)) {
+      Int2 vpPos = screenToWorld(state->view, pos);
+      vpPos.x /= GRID_CELL_SIZE;
+      vpPos.y /= GRID_CELL_SIZE;
+
+      mapEditorUpdateStats(state->view->mapEditor, vpPos);
    }
 }
 

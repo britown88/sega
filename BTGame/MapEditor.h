@@ -12,3 +12,5 @@ void mapEditorInitialize(MapEditor *self);
 void mapEditorSetEnabled(MapEditor *self, bool enabled);
 
 void mapEditorRender(MapEditor *self, Frame *frame);
+
+void mapEditorUpdateStats(MapEditor *self, Int2 mouseGridPos);
