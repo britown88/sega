@@ -11,9 +11,16 @@
 #define STATS_LEFT 2
 #define STATS_TOP 2
 
+#define SCHEMA_LEFT 41
+#define SCHEMA_TOP 165
+#define SCHEMA_COLUMNS 27
+#define SCHEMA_ROWS 2
+
 struct MapEditor_t {
    WorldView *view;
    bool enabled;
+
+   int schemaIndex;
 
    Int2 mouseGridPos;
    Entity *statsEntity;
@@ -75,24 +82,27 @@ void mapEditorSetEnabled(MapEditor *self, bool enabled) {
 }
 
 void mapEditorRender(MapEditor *self, Frame *frame) {
-   static int schemaX = 41;
-   static int schemaY = 165;
-   static int cols = 17;
-   static int rows = 2;
+   
    GridManager *gm = self->view->managers->gridManager;
-   size_t count = gridManagerGetSchemaCount(gm);
+   int count = (int)gridManagerGetSchemaCount(gm);
    int x, y, i = 0;
 
-   for (y = 0; y < rows; ++y) {
-      short rendery = schemaY + (y * GRID_CELL_SIZE);
-      for (x = 0; x < cols; ++x) {
-         short renderX = schemaX + (x * GRID_CELL_SIZE);
+   for (y = 0; y < SCHEMA_ROWS && i < count; ++y) {
+      short renderY = SCHEMA_TOP + (y * GRID_CELL_SIZE);
 
-         gridManagerRenderSchema(gm, i, frame, FrameRegionFULL, renderX, rendery);
+      for (x = 0; x < SCHEMA_COLUMNS && i < count; ++x) {
+         short renderX = SCHEMA_LEFT + (x * GRID_CELL_SIZE);
 
-         if (++i >= (int)count) {
-            return;
+         gridManagerRenderSchema(gm, i, frame, FrameRegionFULL, renderX, renderY);
+
+         if (i == self->schemaIndex) {
+            frameRenderLine(frame, FrameRegionFULL, renderX, renderY, renderX + GRID_CELL_SIZE, renderY, 15);
+            frameRenderLine(frame, FrameRegionFULL, renderX + GRID_CELL_SIZE, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 15);
+            frameRenderLine(frame, FrameRegionFULL, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, renderX, renderY + GRID_CELL_SIZE, 15);
+            frameRenderLine(frame, FrameRegionFULL, renderX, renderY + GRID_CELL_SIZE, renderX, renderY, 15);
          }
+
+         ++i;
       }
    }
 }
