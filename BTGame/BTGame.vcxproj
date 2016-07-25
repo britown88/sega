@@ -115,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActorManager.c" />
+    <ClCompile Include="ChoiceManager.c" />
     <ClCompile Include="Console.c" />
     <ClCompile Include="ConsoleState.c" />
     <ClCompile Include="EditorState.c" />

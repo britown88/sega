@@ -19,6 +19,13 @@ function actions.move(actor, x, y)
   actions.waitForStop(actor)
 end
 
+function actions.wait(actor, t)
+  local startTime = os.clock()
+  while(os.clock() - startTime < t) do
+    coroutine.yield()
+  end
+end
+
 function actions.moveRelative(actor, x, y)
     actor:moveRelative(x, y)
     actions.waitForStop(actor)
@@ -47,8 +54,8 @@ function actions.scatter()
   for a=1, #actors do
     local actor = actors[a]
     if(actor ~= player) then
-      actor:setMoveSpeed(500,1000)
-      actor:pushScript(actions.wander, 3, 3)
+      actor:setMoveSpeed(500,0)
+      actor:pushScript(actions.wander, 5, 5)
     end
   end
 end

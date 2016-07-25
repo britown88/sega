@@ -1,11 +1,13 @@
 #pragma once
 
 #include "segautils\Preprocessor.h"
+#include "segautils/StandardVectors.h"
 #include "segautils/Defs.h"
 #include "segautils/Rect.h"
 #include "segashared/Strings.h"
 #include "Verbs.h"
 #include "RenderLayers.h"
+
 
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
@@ -18,6 +20,7 @@ typedef struct TextBoxManager_t TextBoxManager;
 typedef struct VerbManager_t VerbManager;
 typedef struct ActorManager_t ActorManager;
 typedef struct ClockManager_t ClockManager;
+typedef struct ChoiceManager_t ChoiceManager;
 
 typedef struct Frame_t Frame;
 typedef struct WorldView_t WorldView;
@@ -35,6 +38,7 @@ typedef struct BTManagers_t {
    VerbManager *verbManager;
    ActorManager *actorManager;
    ClockManager *clockManager;
+   ChoiceManager *choiceManager;
 }BTManagers;
 
 #define ClosureTPart \
@@ -100,4 +104,9 @@ int textBoxManagerSetTextAreaVisibility(TextBoxManager *self, StringView name, b
 int textBoxManagerHideTextArea(TextBoxManager *self, StringView name);
 int textBoxManagerShowTextArea(TextBoxManager *self, StringView name);
 
+ChoiceManager *createChoiceManager(WorldView *view);
+void choiceManagerSetChoices(ChoiceManager *self, const char **choices);
+vec(StringPtr) *choiceManagerGetChoices(ChoiceManager *self);
+int choiceManagerGetDecisionIndex(ChoiceManager *self);
+const char *choiceManagerGetDecision(ChoiceManager *self);
 
