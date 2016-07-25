@@ -6,7 +6,7 @@ function shirley.toLook(actor)
   textAreas.smallbox:push("How dare you!")
 
   local time, delay = actor:moveSpeed()
-  actor:setMoveSpeed(100, 0)
+  actor:setMoveSpeed(250, 0)
 
   local px, py = player:position()
   actions.move(actor, px, py)
@@ -28,7 +28,7 @@ function shirley.toLook(actor)
   else
     textAreas.smallbox:push("*slap*")
   end
-
+  actions.wait(2.0)
   actor:setMoveSpeed(time, delay)
 end
 

@@ -19,7 +19,7 @@ function actions.move(actor, x, y)
   actions.waitForStop(actor)
 end
 
-function actions.wait(actor, t)
+function actions.wait(t)
   local startTime = os.clock()
   while(os.clock() - startTime < t) do
     coroutine.yield()

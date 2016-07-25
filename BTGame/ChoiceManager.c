@@ -1,5 +1,6 @@
 #include "Managers.h"
 #include "Entities/Entities.h"
+#include "segashared/CheckedMemory.h"
 
 struct ChoiceManager_t {
    Manager m;
