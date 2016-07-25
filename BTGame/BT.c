@@ -17,6 +17,7 @@
 #include "Lua.h"
 #include "LightGrid.h"
 #include "MapEditor.h"
+#include "ChoicePrompt.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -33,6 +34,7 @@ typedef struct {
    WorldView view;
    Console *console;
    MapEditor *mapEditor;
+   ChoicePrompt *choicePrompt;
 
    lua_State *L;
 
@@ -96,7 +98,6 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.textBoxManager, createTextBoxManager(&self->view));
    RegisterManager(self->managers.verbManager, createVerbManager(&self->view));
    RegisterManager(self->managers.actorManager, createActorManager(&self->view));
-   RegisterManager(self->managers.choiceManager, createChoiceManager(&self->view));
 }
 
 void _destroyEntitySystem(BTGame *self){
@@ -138,6 +139,9 @@ VirtualApp *btCreate() {
 
    r->L = luaCreate();
 
+   r->choicePrompt = createChoicePrompt(&r->view);
+   r->view.choicePrompt = r->choicePrompt;
+
    return (VirtualApp*)r;
 }
 
@@ -154,6 +158,7 @@ void _destroy(BTGame *self){
    gameClockDestroy(self->gameClock);
    gridSolverDestroy(self->gridSolver);
    mapEditorDestroy(self->mapEditor);
+   choicePromptDestroy(self->choicePrompt);
    
    luaDestroy(self->L);
    checkedFree(self);

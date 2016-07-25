@@ -12,6 +12,7 @@ typedef struct GridSolver_t GridSolver;
 typedef struct Console_t Console;
 typedef struct lua_State lua_State;
 typedef struct MapEditor_t MapEditor;
+typedef struct ChoicePrompt_t ChoicePrompt;
 
 typedef struct WorldView_t {
    BTManagers *managers;
@@ -25,4 +26,5 @@ typedef struct WorldView_t {
    Console *console;
    MapEditor *mapEditor;
    lua_State *L;
+   ChoicePrompt *choicePrompt;
 }WorldView;

@@ -7,6 +7,8 @@
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
+#include "segautils/StandardVectors.h"
+
 
 static int slua_textAreaPush(lua_State *L);
 static int slua_textAreaHide(lua_State *L);

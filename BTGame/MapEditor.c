@@ -95,6 +95,7 @@ void mapEditorRender(MapEditor *self, Frame *frame) {
 
          gridManagerRenderSchema(gm, i, frame, FrameRegionFULL, renderX, renderY);
 
+         //draw the selected schema...we need a draw rect here
          if (i == self->schemaIndex) {
             frameRenderLine(frame, FrameRegionFULL, renderX, renderY, renderX + GRID_CELL_SIZE, renderY, 15);
             frameRenderLine(frame, FrameRegionFULL, renderX + GRID_CELL_SIZE, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 15);
