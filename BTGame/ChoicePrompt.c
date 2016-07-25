@@ -12,6 +12,7 @@ struct ChoicePrompt_t {
    Entity *linesEntity;
    RichText *rt;
    vec(RichTextLine) *rtLines;
+   vec(StringPtr) *choices;
 };
 
 static void _createLinesEntity(ChoicePrompt *self) {
@@ -35,6 +36,7 @@ ChoicePrompt *createChoicePrompt(WorldView *view) {
    out->rt = richTextCreateFromRaw("");
    out->rtLines = vecCreate(RichTextLine)(&richTextLineDestroy);
    out->enabled = false;
+   out->choices = NULL;
 
    _createLinesEntity(out);
 
@@ -45,6 +47,82 @@ void choicePromptDestroy(ChoicePrompt *self) {
    richTextDestroy(self->rt);
    vecDestroy(RichTextLine)(self->rtLines);
 
+   if (self->choices) {
+      vecDestroy(StringPtr)(self->choices);
+   }
+
    checkedFree(self);
+}
+
+static void _renderChoicesToLines(ChoicePrompt *self) {
+   VisibilityComponent *vc = entityGet(VisibilityComponent)(self->linesEntity);
+   TextComponent *tc = entityGet(TextComponent)(self->linesEntity);
+   String *renderedChoices = stringCreate("");
+   int i = 0;
+   int choiceCount = vecSize(StringPtr)(self->choices);
+   int rtLineCount = 0;
+   static char buff[128];
+
+   vc->shown = true;
+   vecClear(TextLine)(tc->lines);
+
+   //iterate over our choices into a formatted single string which we'll feed to
+   //richtext
+   for (i = 0; i < choiceCount; ++i) {
+      sprintf(buff, "%i: %s\n", i + 1, c_str(*vecAt(StringPtr)(self->choices, i)));
+      stringConcat(renderedChoices, buff);
+   }
+
+   //render to richtext (parses)
+   richTextResetFromRaw(self->rt, c_str(renderedChoices));
+
+   vecClear(RichTextLine)(self->rtLines);
+   richTextRenderToLines(self->rt, 0, self->rtLines);
+
+   rtLineCount = vecSize(RichTextLine)(self->rtLines);
+
+   //now we need to push each rtline into the entity
+   for (i = 0; i < rtLineCount; ++i) {
+      TextLine *line = NULL;
+      vecPushBack(TextLine)(tc->lines, &(TextLine){
+         .x = 0, .y = i,
+         .line = vecCreate(Span)(&spanDestroy)
+      });
+
+      line = vecAt(TextLine)(tc->lines, i);
+
+
+   }
+
+}
+
+void choicePromptUpdate(ChoicePrompt *self) {
+}
+
+//assumes ownership of the vector
+void choicePromptSetChoices(ChoicePrompt *self, vec(StringPtr) *choices) {
+   if (self->choices) {
+      vecDestroy(StringPtr)(self->choices);
+   }
+
+   self->choices = choices;
+   self->enabled = true;
+   
+   _renderChoicesToLines(self);
+}
+
+//returns nonzero if event occurs
+int choicePromptHandleMouseEvent(ChoicePrompt *self, MouseEvent *e) {
+   return 0;
+}
+
+//returns nonzero if event occurs
+int choicePromptHandleKeyEvent(ChoicePrompt *self, KeyboardEvent *e) {
+   return 0;
+}
+
+//returns NULL if no selection is yet made
+const char *choicePromptGetDecision(ChoicePrompt *self) {
+   return NULL;
 }
 
