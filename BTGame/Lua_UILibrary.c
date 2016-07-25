@@ -13,6 +13,8 @@ static int slua_textAreaHide(lua_State *L);
 static int slua_textAreaShow(lua_State *L);
 static int slua_textAreaSetVisibility(lua_State *L);
 
+static int slua_promptChoices(lua_State *L);
+
 static int slua_textAreaAddTextArea(lua_State *L) {
    const char *name = lua_tostring(L, 1);
    StringView *sv = lua_touserdata(L, 2);   
@@ -52,6 +54,8 @@ void luaLoadUILibrary(lua_State *L) {
    luaPushFunctionTable(L, "show", &slua_textAreaShow);
    luaPushFunctionTable(L, "setVisibility", &slua_textAreaSetVisibility);
    lua_setglobal(L, LLIB_TEXT_AREA);
+
+   luaPushFunctionGlobal(L, "promptChoices", &slua_promptChoices);
 }
 
 static StringView _nameFromTable(WorldView *view, lua_State *L) {
@@ -134,4 +138,35 @@ int slua_textAreaSetVisibility(lua_State *L) {
    }
 
    return 0;
+}
+
+int slua_promptChoices(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   int choiceCount = 0, i = 0;
+   vec(StringPtr) *choices = vecCreate(StringPtr)(&stringPtrDestroy);
+
+   luaL_checktype(L, 1, LUA_TTABLE);
+
+   lua_len(L, 1);//push size of list
+   choiceCount = (int)luaL_checkinteger(L, -1);
+   lua_pop(L, 1);//pop the size
+
+   for (i = 0; i < choiceCount; ++i) {
+      String *choice = NULL;
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, 1);//push the choice off the list
+
+      choice = stringCreate(luaL_checkstring(L, -1));
+      vecPushBack(StringPtr)(choices, &choice);
+      lua_pop(L, 1);//pop the choice
+   }
+
+   //just going to return the first in the list to start but
+   //we will want this to yield until a UI response
+   StringPtr *choiceFrom = vecAt(StringPtr)(choices, 0);
+   lua_pushstring(L, c_str(*choiceFrom));
+
+   vecDestroy(StringPtr)(choices);
+
+   return 1;
 }
