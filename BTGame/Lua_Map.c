@@ -29,7 +29,7 @@ void luaLoadMapLibrary(lua_State *L) {
    luaPushFunctionTable(L, "load", &slua_mapLoad);
    luaPushFunctionTable(L, "save", &slua_mapSave);
    luaPushFunctionTable(L, "setSchemas", &slua_mapSetSchemas);
-   luaPushFunctionTable(L, "ambient", &slua_mapAmbient);
+   luaPushFunctionTable(L, "setAmbient", &slua_mapAmbient);
    lua_setglobal(L, LLIB_MAP);
 
    lua_newtable(L);
