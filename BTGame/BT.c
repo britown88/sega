@@ -199,9 +199,9 @@ static void _addTestEntities(BTGame *app) {
 
    {
       StringView boxName = stringIntern("smallbox");
-      textBoxManagerCreateTextBox(app->managers.textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
-      textBoxManagerPushText(app->managers.textBoxManager, boxName, "You are likely to be eaten by a [c=0,13]grue[/c].");
-      textBoxManagerShowTextArea(app->managers.textBoxManager, boxName);
+      TextBox *tb = textBoxManagerCreateTextBox(app->managers.textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
+      textBoxPushText(tb, "You are likely to be eaten by a [c=0,13]grue[/c].");
+      textBoxShow(tb);
 
    }
 

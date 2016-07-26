@@ -93,14 +93,18 @@ void pcManagerToggleTorch(PCManager *self);
 void pcManagerSetTorch(PCManager *self, bool torchOn);
 void pcManagerSetSneak(PCManager *self, bool sneaking);
 
+typedef struct TextBox_t TextBox;
+
 TextBoxManager *createTextBoxManager(WorldView *view);
-void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area);
-int textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg);
-bool textBoxManagerIsDone(TextBoxManager *self, StringView name);
+TextBox *textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area);
 void textBoxManagerUpdate(TextBoxManager *self);
-int textBoxManagerSetTextAreaVisibility(TextBoxManager *self, StringView name, bool visible);
-int textBoxManagerHideTextArea(TextBoxManager *self, StringView name);
-int textBoxManagerShowTextArea(TextBoxManager *self, StringView name);
+TextBox *textBoxManagerGet(TextBoxManager *self, StringView name);
+
+void textBoxPushText(TextBox *self, const char *msg);
+bool textBoxIsDone(TextBox *self);
+void textBoxSetVisibility(TextBox *self, bool visible);
+void textBoxHide(TextBox *self);
+void textBoxShow(TextBox *self);
 
 
 

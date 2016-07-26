@@ -74,7 +74,9 @@ static void _registerGridRenders(BTManagers *managers) {
 
 void _worldEnter(WorldState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
-   textBoxManagerShowTextArea(managers->textBoxManager, stringIntern("smallbox"));
+   TextBox *tb = textBoxManagerGet(managers->textBoxManager, stringIntern("smallbox"));
+   textBoxShow(tb);
+
    verbManagerSetEnabled(managers->verbManager, true);
    changeBackground(state->view, IMG_BG);
 
@@ -82,7 +84,9 @@ void _worldEnter(WorldState *state, StateEnter *m) {
 }
 void _worldExit(WorldState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
-   textBoxManagerHideTextArea(managers->textBoxManager, stringIntern("smallbox"));
+   TextBox *tb = textBoxManagerGet(managers->textBoxManager, stringIntern("smallbox"));
+   textBoxHide(tb);
+
    verbManagerSetEnabled(managers->verbManager, false);
 }
 

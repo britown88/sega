@@ -9,7 +9,7 @@
 #include "RichText.h"
 #include "Lua.h"
 
-typedef struct {
+struct TextBox_t{
    Entity *e;
    StringView name;
    int width, height;
@@ -21,7 +21,7 @@ typedef struct {
    String *workingLine;
 
    Microseconds nextChar;
-}TextBox;
+};
 
 #define HashTableT TextBox
 #include "segautils\HashTable_Create.h"
@@ -68,7 +68,7 @@ void _destroy(TextBoxManager *self) {
 void _onDestroy(TextBoxManager *self, Entity *e) {}
 void _onUpdate(TextBoxManager *self, Entity *e) {}
 
-void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area) {
+TextBox *textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area) {
    TextBox box = { 0 };
    TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    int y;
@@ -98,42 +98,7 @@ void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti ar
    box.workingLine = stringCreate("");
 
    htInsert(TextBox)(self->boxTable, &box);
-}
-int textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg) {
-   TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
-   if (found) {
-      String *msgstr = stringCreate(msg);
-      vecPushBack(StringPtr)(found->queue, &msgstr);
-      return 0;
-   }
-   return 1;
-}
-
-bool textBoxManagerIsDone(TextBoxManager *self, StringView name) {
-   TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
-   if (found) {
-      return found->done;
-   }
-   return true;
-}
-
-int textBoxManagerSetTextAreaVisibility(TextBoxManager *self, StringView name, bool visible) {
-   TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
-   if (found) {
-      VisibilityComponent *vc = entityGet(VisibilityComponent)(found->e);
-      if (vc) {
-         vc->shown = visible;
-      }
-      return 0;
-   }
-   return 1;
-}
-
-int textBoxManagerHideTextArea(TextBoxManager *self, StringView name) {
-   return textBoxManagerSetTextAreaVisibility(self, name, false);
-}
-int textBoxManagerShowTextArea(TextBoxManager *self, StringView name) {
-   return textBoxManagerSetTextAreaVisibility(self, name, true);
+   return htFind(TextBox)(self->boxTable, &box);
 }
 
 static void _clearLineEntity(Entity *e) {
@@ -269,4 +234,28 @@ void textBoxManagerUpdate(TextBoxManager *self) {
    htForEach(TextBox, tb, self->boxTable, {
       _updateTextBox(self, tb);
    });
+}
+
+TextBox *textBoxManagerGet(TextBoxManager *self, StringView name) {
+   return  htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
+}
+
+void textBoxPushText(TextBox *self, const char *msg) {
+   String *msgstr = stringCreate(msg);
+   vecPushBack(StringPtr)(self->queue, &msgstr);
+}
+bool textBoxIsDone(TextBox *self) {
+   return self->done;
+}
+void textBoxSetVisibility(TextBox *self, bool visible) {
+   VisibilityComponent *vc = entityGet(VisibilityComponent)(self->e);
+   if (vc) {
+      vc->shown = visible;
+   }
+}
+void textBoxHide(TextBox *self) {
+   textBoxSetVisibility(self, false);
+}
+void textBoxShow(TextBox *self) {
+   textBoxSetVisibility(self, true);
 }
