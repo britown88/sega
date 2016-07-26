@@ -42,6 +42,10 @@ static int slua_actorAddActor(lua_State *L) {
    lua_newtable(L);
    lua_settable(L, -3);
 
+   lua_pushliteral(L, "response");
+   lua_newtable(L);
+   lua_settable(L, -3);
+
    lua_call(L, 2, 0);
 
    lua_pop(L, 1);
