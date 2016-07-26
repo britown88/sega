@@ -1,3 +1,8 @@
+function textAndWait(txt)
+  textAreas.smallbox:push(txt)
+  textAreas.smallbox:wait()
+end
+
 function testChoices(actor)
   -- first lets get the players position
   local px, py = player:position()
@@ -6,29 +11,29 @@ function testChoices(actor)
   actions.move(actor, px, py)
 
   --greet us!
-  textAreas.smallbox:push "What can I do for you, stranger?"
-
-  actions.wait(2.0)--seconds
+  textAndWait "What can I do for you, stranger?"
 
   local choices = {
     "Ask about town",
     "Ask about the wilderness",
     "Ask about adventure!"
   }
-
   --let us choose what to ask them and respond accordingly
   local i, r = promptChoices(choices) --the index and full text
 
   if i == 0 then
-    textAreas.smallbox:push "Oh the town lies to the northwest."
+    textAndWait "Oh the town lies to the northwest."
   elseif i == 1 then
-    textAreas.smallbox:push "It's dangerous out there!"
+    textAndWait "It's dangerous out there!"
   elseif i == 2 then
-    textAreas.smallbox:push "You like to dance close to the fire don't you!"
+    textAndWait "You like to dance close to the fire don't you!"
   end
 
+  actions.wait(2.0)
   --wish us the best of luck
-  actions.wait(2.0)--seconds
-  textAreas.smallbox:push "Well, good luck to  you!"
-  actions.wait(2.0)--seconds
+  textAndWait "Well, good luck to  you!"
+end
+
+function choiceTest(actor)
+  actor.response = {toTalk = testChoices}
 end

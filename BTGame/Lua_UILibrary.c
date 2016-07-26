@@ -15,6 +15,7 @@ static int slua_textAreaPush(lua_State *L);
 static int slua_textAreaHide(lua_State *L);
 static int slua_textAreaShow(lua_State *L);
 static int slua_textAreaSetVisibility(lua_State *L);
+static int slua_textAreaWait(lua_State *L);
 
 static int slua_promptChoices(lua_State *L);
 
@@ -55,6 +56,7 @@ void luaLoadUILibrary(lua_State *L) {
    luaPushFunctionTable(L, "push", &slua_textAreaPush);
    luaPushFunctionTable(L, "hide", &slua_textAreaHide);
    luaPushFunctionTable(L, "show", &slua_textAreaShow);
+   luaPushFunctionTable(L, "wait", &slua_textAreaWait);
    luaPushFunctionTable(L, "setVisibility", &slua_textAreaSetVisibility);
    lua_setglobal(L, LLIB_TEXT_AREA);
 
@@ -97,6 +99,25 @@ int slua_textAreaPush(lua_State *L) {
    }
 
    return 0;
+}
+
+int slua_textAreaWaitK(lua_State *L, int status, lua_KContext ctx) {
+   WorldView *view = luaGetWorldView(L);
+   StringView name = NULL;
+   luaL_checktype(L, 1, LUA_TTABLE);
+
+   name = _nameFromTable(view, L);
+
+   if (!textBoxManagerIsDone(view->managers->textBoxManager, name)) {
+      return lua_yieldk(L, 0, ctx + 1, &slua_textAreaWaitK);
+   }
+
+   return 0;
+}
+
+
+int slua_textAreaWait(lua_State *L) {
+   return lua_yieldk(L, 0, 0, &slua_textAreaWaitK);
 }
 
 

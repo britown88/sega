@@ -109,6 +109,14 @@ int textBoxManagerPushText(TextBoxManager *self, StringView name, const char *ms
    return 1;
 }
 
+bool textBoxManagerIsDone(TextBoxManager *self, StringView name) {
+   TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
+   if (found) {
+      return found->done;
+   }
+   return true;
+}
+
 int textBoxManagerSetTextAreaVisibility(TextBoxManager *self, StringView name, bool visible) {
    TextBox *found = htFind(TextBox)(self->boxTable, &(TextBox){.name = name});
    if (found) {

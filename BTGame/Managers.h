@@ -96,6 +96,7 @@ void pcManagerSetSneak(PCManager *self, bool sneaking);
 TextBoxManager *createTextBoxManager(WorldView *view);
 void textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area);
 int textBoxManagerPushText(TextBoxManager *self, StringView name, const char *msg);
+bool textBoxManagerIsDone(TextBoxManager *self, StringView name);
 void textBoxManagerUpdate(TextBoxManager *self);
 int textBoxManagerSetTextAreaVisibility(TextBoxManager *self, StringView name, bool visible);
 int textBoxManagerHideTextArea(TextBoxManager *self, StringView name);
