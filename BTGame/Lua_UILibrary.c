@@ -3,6 +3,7 @@
 #include "WorldView.h"
 #include "Managers.h"
 #include "Console.h"
+#include "ChoicePrompt.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -168,7 +169,9 @@ int slua_promptChoices(lua_State *L) {
    StringPtr *choiceFrom = vecAt(StringPtr)(choices, 0);
    lua_pushstring(L, c_str(*choiceFrom));
 
-   vecDestroy(StringPtr)(choices);
+   choicePromptSetChoices(view->choicePrompt, choices);
+
+   //vecDestroy(StringPtr)(choices);
 
    return 1;
 }

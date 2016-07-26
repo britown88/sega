@@ -4,6 +4,8 @@
 #include "RichText.h"
 #include "CoreComponents.h"
 
+#include <stdio.h>
+
 struct ChoicePrompt_t {
    Manager m;
    WorldView *view;
@@ -63,23 +65,27 @@ static void _renderChoicesToLines(ChoicePrompt *self) {
    int rtLineCount = 0;
    static char buff[128];
 
-   vc->shown = true;
-   vecClear(TextLine)(tc->lines);
+   vc->shown = true;   
 
    //iterate over our choices into a formatted single string which we'll feed to
    //richtext
    for (i = 0; i < choiceCount; ++i) {
-      sprintf(buff, "%i: %s\n", i + 1, c_str(*vecAt(StringPtr)(self->choices, i)));
+      const char *fmt = i ? "\n%i: %s" : "%i: %s";
+      sprintf(buff, fmt, i + 1, c_str(*vecAt(StringPtr)(self->choices, i)));
       stringConcat(renderedChoices, buff);
    }
 
    //render to richtext (parses)
    richTextResetFromRaw(self->rt, c_str(renderedChoices));
+   stringDestroy(renderedChoices);
 
    vecClear(RichTextLine)(self->rtLines);
    richTextRenderToLines(self->rt, 0, self->rtLines);
 
    rtLineCount = vecSize(RichTextLine)(self->rtLines);
+
+   //clear the old entity list
+   vecClear(TextLine)(tc->lines);
 
    //now we need to push each rtline into the entity
    for (i = 0; i < rtLineCount; ++i) {
@@ -89,9 +95,8 @@ static void _renderChoicesToLines(ChoicePrompt *self) {
          .line = vecCreate(Span)(&spanDestroy)
       });
 
-      line = vecAt(TextLine)(tc->lines, i);
-
-
+      //copy from our rt list to the entity
+      richTextLineCopy(*vecAt(RichTextLine)(self->rtLines, i), vecAt(TextLine)(tc->lines, i)->line);
    }
 
 }
