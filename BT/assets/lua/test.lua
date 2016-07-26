@@ -2,7 +2,8 @@ test = {}
 
 function test.toLook(actor)
   actions.stop(actor)
-  textAreas.smallbox:push("Hey stop looking at me!")
+  local i, result = promptChoices{"At their face.", "At their butt.", "At their feet."}
+  textAreas.smallbox:push("Hey stop looking " .. result)
 end
 
 function test.toTalk(actor)

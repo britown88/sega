@@ -15,6 +15,9 @@ struct ChoicePrompt_t {
    RichText *rt;
    vec(RichTextLine) *rtLines;
    vec(StringPtr) *choices;
+
+   String *selection;
+   int selectedIndex;
 };
 
 static void _createLinesEntity(ChoicePrompt *self) {
@@ -39,6 +42,8 @@ ChoicePrompt *createChoicePrompt(WorldView *view) {
    out->rtLines = vecCreate(RichTextLine)(&richTextLineDestroy);
    out->enabled = false;
    out->choices = NULL;
+   out->selection = NULL;
+   out->selectedIndex = -1;
 
    _createLinesEntity(out);
 
@@ -71,7 +76,8 @@ static void _renderChoicesToLines(ChoicePrompt *self) {
    //richtext
    for (i = 0; i < choiceCount; ++i) {
       const char *fmt = i ? "\n%i: %s" : "%i: %s";
-      sprintf(buff, fmt, i + 1, c_str(*vecAt(StringPtr)(self->choices, i)));
+      const char *hfmt = i ? "[i]\n%i: %s[/i]" : "[i]%i: %s[/i]";
+      sprintf(buff, i == self->selectedIndex ? hfmt : fmt, i + 1, c_str(*vecAt(StringPtr)(self->choices, i)));
       stringConcat(renderedChoices, buff);
    }
 
@@ -101,6 +107,15 @@ static void _renderChoicesToLines(ChoicePrompt *self) {
 
 }
 
+static void _setSelected(ChoicePrompt *self) {
+   VisibilityComponent *vc = entityGet(VisibilityComponent)(self->linesEntity);
+   vc->shown = false;
+
+   self->selection = *vecAt(StringPtr)(self->choices, self->selectedIndex);
+   self->enabled = false;
+
+}
+
 void choicePromptUpdate(ChoicePrompt *self) {
 }
 
@@ -112,22 +127,59 @@ void choicePromptSetChoices(ChoicePrompt *self, vec(StringPtr) *choices) {
 
    self->choices = choices;
    self->enabled = true;
+   self->selection = NULL;
+   self->selectedIndex = -1;
    
    _renderChoicesToLines(self);
 }
 
 //returns nonzero if event occurs
 int choicePromptHandleMouseEvent(ChoicePrompt *self, MouseEvent *e) {
-   return 0;
+   if (!self->enabled) {
+      return 0;
+   }
+
+   return 1;
 }
 
 //returns nonzero if event occurs
 int choicePromptHandleKeyEvent(ChoicePrompt *self, KeyboardEvent *e) {
-   return 0;
+   if (!self->enabled) {
+      return 0;
+   }
+
+   int key = e->key - SegaKey_0;
+
+   if (!self->choices || key < 0 || key > vecSize(StringPtr)(self->choices)) {
+      return 0;
+   }
+
+
+   if (e->action == SegaKey_Pressed) {
+      self->selectedIndex = key - 1;
+      _renderChoicesToLines(self);
+
+   }
+   else if (e->action == SegaKey_Released) {
+      if (key != self->selectedIndex + 1) {
+         return 1;
+      }
+      _setSelected(self);      
+   }
+
+   return 1;
+}
+
+int choicePromptGetDecisionIndex(ChoicePrompt *self) {
+   return self->selectedIndex;
 }
 
 //returns NULL if no selection is yet made
 const char *choicePromptGetDecision(ChoicePrompt *self) {
+   if (self->selection) {
+      return c_str(self->selection);
+   }
+
    return NULL;
 }
 

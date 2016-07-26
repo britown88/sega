@@ -143,6 +143,20 @@ int slua_textAreaSetVisibility(lua_State *L) {
    return 0;
 }
 
+int slua_promptChoicesK(lua_State *L, int status, lua_KContext ctx) {
+   WorldView *view = luaGetWorldView(L);
+   const char *result = choicePromptGetDecision(view->choicePrompt);
+   int selectionIndex = choicePromptGetDecisionIndex(view->choicePrompt);
+   if (!result) {
+      return lua_yieldk(L, 0, ctx + 1, &slua_promptChoicesK);
+   }
+   else {
+      lua_pushinteger(L, selectionIndex);
+      lua_pushstring(L, result);
+      return 2;
+   }
+}
+
 int slua_promptChoices(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    int choiceCount = 0, i = 0;
@@ -166,12 +180,11 @@ int slua_promptChoices(lua_State *L) {
 
    //just going to return the first in the list to start but
    //we will want this to yield until a UI response
-   StringPtr *choiceFrom = vecAt(StringPtr)(choices, 0);
-   lua_pushstring(L, c_str(*choiceFrom));
+   //StringPtr *choiceFrom = vecAt(StringPtr)(choices, 0);
+   //lua_pushstring(L, c_str(*choiceFrom));
 
    choicePromptSetChoices(view->choicePrompt, choices);
 
    //vecDestroy(StringPtr)(choices);
-
-   return 1;
+   return lua_yieldk(L, 0, 0, &slua_promptChoicesK);
 }

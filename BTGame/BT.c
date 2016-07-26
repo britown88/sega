@@ -205,7 +205,7 @@ static void _addTestEntities(BTGame *app) {
 
    }
 
-   for (i = 0; i < 15; ++i) {
+   for (i = 0; i < 1; ++i) {
       int x = appRand(appGet(), 0, 21);
       int y = appRand(appGet(), 0, 11);
       int sprite = appRand(appGet(), 0, 3);

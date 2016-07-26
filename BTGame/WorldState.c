@@ -6,6 +6,7 @@
 #include "GameState.h"
 #include "GameHelpers.h"
 #include "ImageLibrary.h"
+#include "ChoicePrompt.h"
 
 #include "Entities\Entities.h"
 
@@ -13,6 +14,7 @@
 #include "SEGA\App.h"
 
 #include "segashared\CheckedMemory.h"
+
 
 #define STARTING_AMBIENT_LEVEL MAX_BRIGHTNESS
 
@@ -93,6 +95,11 @@ static void _handleKeyboard(WorldState *state) {
 
    while (keyboardPopEvent(k, &e)) {
 
+      //intercept keyboard input for choicePrompt
+      if (choicePromptHandleKeyEvent(state->view->choicePrompt, &e)) {
+         continue;
+      }
+
       if (e.action == SegaKey_Pressed) {
          switch (e.key) {
          case SegaKey_LeftControl:
@@ -172,6 +179,11 @@ static void _handleMouse(WorldState *state) {
    Recti vpArea = { vp->region.origin_x, vp->region.origin_y, vp->region.origin_x + vp->region.width, vp->region.origin_y + vp->region.height };
 
    while (mousePopEvent(mouse, &event)) {
+
+      if (choicePromptHandleMouseEvent(state->view->choicePrompt, &event)) {
+         continue;
+      }
+
       if (event.action == SegaMouse_Scrolled) {
       }
       else if (event.action == SegaMouse_Pressed) {

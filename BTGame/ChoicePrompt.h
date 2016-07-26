@@ -23,3 +23,4 @@ int choicePromptHandleKeyEvent(ChoicePrompt *self, KeyboardEvent *e);
 
 //returns NULL if no selection is yet made
 const char *choicePromptGetDecision(ChoicePrompt *self);
+int choicePromptGetDecisionIndex(ChoicePrompt *self);
