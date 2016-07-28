@@ -12,9 +12,15 @@ schemas = {
     lit = true,
     radius = 5,
     fadeWidth = 3,
-    centerLevel = 6,},  --8, walltorch
+    centerLevel = 6},  --8, walltorch
   {img = {9}}, --7, bridge
-  {img = {10, 26}} --7, rapids
+  {img = {10, 26}}, --7, rapids
+  {img = {11, 27}}, --7, corner
+  {img = {16, 32},
+    lit = true,
+    radius = 5,
+    fadeWidth = 3,
+    centerLevel = 6} --7, campfire
 }
 
 
