@@ -343,6 +343,13 @@ void frameRenderLine(Frame *self, FrameRegion *vp, short _x0, short _y0, short _
    }
 }
 
+void frameRenderLineRect(Frame *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color) {
+   frameRenderLine(self, vp, left, top, right, top, color);
+   frameRenderLine(self, vp, left, bottom, right, bottom, color);
+   frameRenderLine(self, vp, left, top, left, bottom, color);
+   frameRenderLine(self, vp, right, top, right, bottom, color);
+}
+
 void frameClear(Frame *self, FrameRegion *vp, byte color){
    int i;
    if (vp == FrameRegionFULL) {

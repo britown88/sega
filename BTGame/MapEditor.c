@@ -13,14 +13,15 @@
 
 #define SCHEMA_LEFT 41
 #define SCHEMA_TOP 165
-#define SCHEMA_COLUMNS 27
+#define SCHEMA_COLUMNS 17
 #define SCHEMA_ROWS 2
 
 struct MapEditor_t {
    WorldView *view;
    bool enabled;
 
-   int schemaIndex;
+   byte schemaIndex;
+   byte schemaRowIndex;
 
    Int2 mouseGridPos;
    Entity *statsEntity;
@@ -61,6 +62,8 @@ MapEditor *mapEditorCreate(WorldView *view) {
    out->rt = richTextCreateFromRaw("");
    out->rtLines = vecCreate(RichTextLine)(&richTextLineDestroy);
 
+   out->schemaIndex = out->schemaRowIndex = 0;
+
    _createStatsEntity(out);
 
    return out;
@@ -78,14 +81,50 @@ void mapEditorInitialize(MapEditor *self) {
 }
 void mapEditorSetEnabled(MapEditor *self, bool enabled) {
    self->enabled = enabled;
+   self->schemaIndex = self->schemaRowIndex = 0;
    entityGet(VisibilityComponent)(self->statsEntity)->shown = enabled;
+}
+
+bool mapEditorPointInSchemaWindow(MapEditor *self, Int2 p) {
+   return 
+      p.x >= SCHEMA_LEFT && p.x < (SCHEMA_LEFT + GRID_CELL_SIZE * SCHEMA_COLUMNS) && 
+      p.y >= SCHEMA_TOP && p.y < (SCHEMA_TOP + GRID_CELL_SIZE * SCHEMA_ROWS);
+}
+
+void mapEditorSelectSchema(MapEditor *self, Int2 mousePos) {
+   short schemaX = (mousePos.x - SCHEMA_LEFT) / GRID_CELL_SIZE;
+   short schemaY = (mousePos.y - SCHEMA_TOP) / GRID_CELL_SIZE;
+
+   self->schemaIndex =
+      (self->schemaRowIndex * SCHEMA_COLUMNS) +
+      (schemaY * SCHEMA_COLUMNS) +
+      schemaX;
+}
+void mapEditorScrollSchemas(MapEditor *self, int deltaY) {
+   GridManager *gm = self->view->managers->gridManager;
+   int sCount = (int)gridManagerGetSchemaCount(gm);
+   int sRowCount = (sCount / SCHEMA_COLUMNS) + (sCount % SCHEMA_COLUMNS ? 1 : 0);
+   int maxRow = MAX(sRowCount - SCHEMA_ROWS, 0);
+
+   if (deltaY < 0) {
+      self->schemaRowIndex = MIN(self->schemaRowIndex + 1, maxRow);
+   }
+   else if (deltaY > 0) {
+      self->schemaRowIndex = MAX(self->schemaRowIndex - 1, 0);
+   }
+}
+
+byte mapEditorGetSelectedSchema(MapEditor *self) {
+   return self->schemaIndex;
 }
 
 void mapEditorRender(MapEditor *self, Frame *frame) {
    
    GridManager *gm = self->view->managers->gridManager;
    int count = (int)gridManagerGetSchemaCount(gm);
-   int x, y, i = 0;
+   int x, y;
+
+   int i = self->schemaRowIndex * SCHEMA_COLUMNS;
 
    for (y = 0; y < SCHEMA_ROWS && i < count; ++y) {
       short renderY = SCHEMA_TOP + (y * GRID_CELL_SIZE);
@@ -95,17 +134,18 @@ void mapEditorRender(MapEditor *self, Frame *frame) {
 
          gridManagerRenderSchema(gm, i, frame, FrameRegionFULL, renderX, renderY);
 
-         //draw the selected schema...we need a draw rect here
          if (i == self->schemaIndex) {
-            frameRenderLine(frame, FrameRegionFULL, renderX, renderY, renderX + GRID_CELL_SIZE, renderY, 15);
-            frameRenderLine(frame, FrameRegionFULL, renderX + GRID_CELL_SIZE, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 15);
-            frameRenderLine(frame, FrameRegionFULL, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, renderX, renderY + GRID_CELL_SIZE, 15);
-            frameRenderLine(frame, FrameRegionFULL, renderX, renderY + GRID_CELL_SIZE, renderX, renderY, 15);
+            //hjighlight the selected schema
+            frameRenderLineRect(frame, FrameRegionFULL,
+               renderX, renderY,
+               renderX + GRID_CELL_SIZE - 1, renderY + GRID_CELL_SIZE - 1, 15);
          }
 
          ++i;
       }
    }
+
+   
 }
 
 void mapEditorUpdateStats(MapEditor *self, Int2 mouseGridPos) {

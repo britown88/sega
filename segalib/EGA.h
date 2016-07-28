@@ -85,6 +85,7 @@ void frameRenderImage(Frame *self, FrameRegion *vp, short x, short y, Image *img
 void frameRenderImagePartial(Frame *self, FrameRegion *vp, short x, short y, Image *img, short imgX, short imgY, short imgWidth, short imgHeight);
 void frameRenderPoint(Frame *self, FrameRegion *vp, short x, short y, byte color);
 void frameRenderLine(Frame *self, FrameRegion *vp, short x1, short y1, short x2, short y2, byte color);
+void frameRenderLineRect(Frame *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
 void frameRenderRect(Frame *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
 void frameClear(Frame *self, FrameRegion *vp, byte color);
 

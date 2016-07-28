@@ -14,3 +14,10 @@ void mapEditorSetEnabled(MapEditor *self, bool enabled);
 void mapEditorRender(MapEditor *self, Frame *frame);
 
 void mapEditorUpdateStats(MapEditor *self, Int2 mouseGridPos);
+
+bool mapEditorPointInSchemaWindow(MapEditor *self, Int2 p);
+void mapEditorSelectSchema(MapEditor *self, Int2 mousePos);
+void mapEditorScrollSchemas(MapEditor *self, int deltaY);
+
+byte mapEditorGetSelectedSchema(MapEditor *self);
+

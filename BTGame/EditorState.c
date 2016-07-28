@@ -121,12 +121,26 @@ static void _handleMouse(EditorState *state) {
    MouseEvent event = { 0 };
    Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = state->view->viewport;
-   Recti vpArea = { vp->region.origin_x, vp->region.origin_y, vp->region.origin_x + vp->region.width, vp->region.origin_y + vp->region.height };
+   MapEditor *me = state->view->mapEditor;
+   Recti vpArea = { 
+      vp->region.origin_x, 
+      vp->region.origin_y, 
+      vp->region.origin_x + vp->region.width, 
+      vp->region.origin_y + vp->region.height 
+   };
 
    while (mousePopEvent(mouse, &event)) {
+      bool schemaOperation = mapEditorPointInSchemaWindow(me, pos);
+
       if (event.action == SegaMouse_Scrolled) {
+         if (schemaOperation) {
+            mapEditorScrollSchemas(me, event.pos.y);
+         }
       }
       else if (event.action == SegaMouse_Pressed) {
+         if (schemaOperation) {
+            mapEditorSelectSchema(me, pos);
+         }
       }
    }
 
@@ -135,7 +149,14 @@ static void _handleMouse(EditorState *state) {
       vpPos.x /= GRID_CELL_SIZE;
       vpPos.y /= GRID_CELL_SIZE;
 
-      mapEditorUpdateStats(state->view->mapEditor, vpPos);
+      mapEditorUpdateStats(me, vpPos);
+
+      if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
+         Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, vpPos.x, vpPos.y);
+         if (t) {
+            t->schema = mapEditorGetSelectedSchema(me);
+         }
+      }
    }
 }
 

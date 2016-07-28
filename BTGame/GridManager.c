@@ -450,8 +450,13 @@ short _getImageIndex(GridManager *self, TileSchema *schema) {
 
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *region, short x, short y) {
    Viewport *vp = self->view->viewport;
+   TileSchema *schema = gridManagerGetSchema(self, index);
+
+   if (!schema->imgCount) {
+      return;
+   }
   
-   short img = _getImageIndex(self, gridManagerGetSchema(self, index));
+   short img = _getImageIndex(self, schema);
    short imgX = (img % 16) * GRID_CELL_SIZE;
    short imgY = (img / 16) * GRID_CELL_SIZE;
 
