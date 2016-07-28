@@ -14,7 +14,7 @@
 
 #include "RichText.h"
 
-#define LINE_COUNT 21
+#define LINE_COUNT 2
 #define WIDTH 36
 #define BOTTOM 23
 #define LEFT 2
@@ -317,10 +317,12 @@ void consoleCreateLines(Console *self) {
    entityAdd(TextComponent)(self->notif, &notiftc);
    entityUpdate(self->notif);
 
-   consolePushLine(self,
-      "---------------------------\n"
-      "| [i][c=0,14]Welcome[/i] to the console![/c] |\n"
-      "---------------------------");
+   //consolePushLine(self,
+   //   "---------------------------\n"
+   //   "| [i][c=0,14]Welcome[/i] to the console![/c] |\n"
+   //   "---------------------------");
+
+   //consolePushLine(self, "#[c=0,4]c[/c][c=0,10]o[/c][c=0,11]n[/c][c=0,5]s[/c][c=0,3]o[/c][c=0,1]l[/c][c=0,4]e[/c]");
 
    consolePushLine(self, "");
    _updateInputLine(self);

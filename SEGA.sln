@@ -42,6 +42,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BTGame", "BTGame\BTGame.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "liblua", "liblua\liblua.vcxproj", "{221073A0-4AB3-4C7D-9B10-5F09732836A2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqlite", "sqlite\sqlite.vcxproj", "{FB4684D7-1879-4331-8F06-30B8B69FB1D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -148,6 +150,14 @@ Global
 		{221073A0-4AB3-4C7D-9B10-5F09732836A2}.Release|Win32.Build.0 = Release|Win32
 		{221073A0-4AB3-4C7D-9B10-5F09732836A2}.Release|x64.ActiveCfg = Release|x64
 		{221073A0-4AB3-4C7D-9B10-5F09732836A2}.Release|x64.Build.0 = Release|x64
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Debug|Win32.Build.0 = Debug|Win32
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Debug|x64.ActiveCfg = Debug|x64
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Debug|x64.Build.0 = Debug|x64
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Release|Win32.ActiveCfg = Release|Win32
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Release|Win32.Build.0 = Release|Win32
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Release|x64.ActiveCfg = Release|x64
+		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
