@@ -82,7 +82,7 @@ void pcManagerCreatePC(PCManager *self) {
    self->pc = entityCreate(self->view->entitySystem);
    COMPONENT_ADD(self->pc, PositionComponent, 0, 0);
    COMPONENT_ADD(self->pc, SizeComponent, 14, 14);
-   COMPONENT_ADD(self->pc, RectangleComponent, 0);
+   //COMPONENT_ADD(self->pc, RectangleComponent, 0);
 
    COMPONENT_ADD(self->pc, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = 56, .y = 28, .width = 14, .height = 14);
    COMPONENT_ADD(self->pc, LayerComponent, LayerGrid);

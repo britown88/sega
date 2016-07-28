@@ -287,6 +287,14 @@ Tile *gridManagerTileAtXY(GridManager *self, int x, int y) {
    return gridManagerTileAt(self, y*self->width + x);
 }
 
+Tile *gridManagerTileAtScreenPos(GridManager *self, int x, int y) {
+   Int2 vpPos = screenToWorld(self->view, (Int2) { x, y });
+   vpPos.x /= GRID_CELL_SIZE;
+   vpPos.y /= GRID_CELL_SIZE;
+
+   return gridManagerTileAtXY(self, vpPos.x, vpPos.y);
+}
+
 Map *gridManagerGetMap(GridManager *self) {
    return self->map;
 }

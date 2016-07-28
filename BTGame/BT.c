@@ -169,7 +169,7 @@ static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
    Entity *e = entityCreate(app->entitySystem);
    COMPONENT_ADD(e, PositionComponent, 0, 0);
    COMPONENT_ADD(e, SizeComponent, 14, 14);
-   COMPONENT_ADD(e, RectangleComponent, 0);
+   //COMPONENT_ADD(e, RectangleComponent, 0);
 
    COMPONENT_ADD(e, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
    COMPONENT_ADD(e, LayerComponent, LayerGrid);
@@ -205,7 +205,7 @@ static void _addTestEntities(BTGame *app) {
 
    }
 
-   for (i = 0; i < 15; ++i) {
+   for (i = 0; i < 0; ++i) {
       int x = appRand(appGet(), 0, 21);
       int y = appRand(appGet(), 0, 11);
       int sprite = appRand(appGet(), 0, 3);

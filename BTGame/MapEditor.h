@@ -20,4 +20,5 @@ void mapEditorSelectSchema(MapEditor *self, Int2 mousePos);
 void mapEditorScrollSchemas(MapEditor *self, int deltaY);
 
 byte mapEditorGetSelectedSchema(MapEditor *self);
+void mapEditorSetSelectedSchema(MapEditor *self, byte schema);
 

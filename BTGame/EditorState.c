@@ -128,9 +128,10 @@ static void _handleMouse(EditorState *state) {
       vp->region.origin_x + vp->region.width, 
       vp->region.origin_y + vp->region.height 
    };
+   bool gridOperation = rectiContains(vpArea, pos);
+   bool schemaOperation = mapEditorPointInSchemaWindow(me, pos);
 
-   while (mousePopEvent(mouse, &event)) {
-      bool schemaOperation = mapEditorPointInSchemaWindow(me, pos);
+   while (mousePopEvent(mouse, &event)) {            
 
       if (event.action == SegaMouse_Scrolled) {
          if (schemaOperation) {
@@ -141,10 +142,18 @@ static void _handleMouse(EditorState *state) {
          if (schemaOperation) {
             mapEditorSelectSchema(me, pos);
          }
+         else if (gridOperation && event.button == SegaMouseBtn_Right) {
+            Tile *t = gridManagerTileAtScreenPos(state->view->managers->gridManager, pos.x, pos.y);
+
+            if (t) {
+               mapEditorSetSelectedSchema(me, t->schema);
+            }
+            
+         }
       }
    }
 
-   if (rectiContains(vpArea, pos)) {
+   if (gridOperation) {
       Int2 vpPos = screenToWorld(state->view, pos);
       vpPos.x /= GRID_CELL_SIZE;
       vpPos.y /= GRID_CELL_SIZE;

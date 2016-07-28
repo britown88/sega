@@ -118,6 +118,25 @@ byte mapEditorGetSelectedSchema(MapEditor *self) {
    return self->schemaIndex;
 }
 
+void mapEditorSetSelectedSchema(MapEditor *self, byte schema) {
+   GridManager *gm = self->view->managers->gridManager;
+   int sCount = (int)gridManagerGetSchemaCount(gm);
+   int sRowCount = (sCount / SCHEMA_COLUMNS) + (sCount % SCHEMA_COLUMNS ? 1 : 0);
+   int schemaRow = schema / SCHEMA_COLUMNS;
+
+   if (schema < 0 || schema >= sCount) {
+      return;
+   }
+
+   self->schemaIndex = schema;
+   if (schemaRow < self->schemaRowIndex) {
+      self->schemaRowIndex = schemaRow;
+   }
+   else if (schemaRow > self->schemaRowIndex + 1) {
+      self->schemaRowIndex = schemaRow - 1;
+   }
+}
+
 void mapEditorRender(MapEditor *self, Frame *frame) {
    
    GridManager *gm = self->view->managers->gridManager;

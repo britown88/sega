@@ -58,5 +58,6 @@ size_t gridManagerCellIDFromXY(GridManager *self, int x, int y);
 void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y);
 Tile *gridManagerTileAt(GridManager *self, size_t index);
 Tile *gridManagerTileAtXY(GridManager *self, int x, int y);
+Tile *gridManagerTileAtScreenPos(GridManager *self, int x, int y);
 
 
