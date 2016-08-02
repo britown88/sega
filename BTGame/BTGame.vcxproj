@@ -89,12 +89,16 @@
     <ProjectReference Include="..\SEGA\SEGA.vcxproj">
       <Project>{3de6287e-1249-41c4-a0f2-378ba3b0dd5a}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\sqlite\sqlite.vcxproj">
+      <Project>{fb4684d7-1879-4331-8f06-30b8b69fb1d7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h" />
     <ClInclude Include="ChoicePrompt.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="CoreComponents.h" />
+    <ClInclude Include="DB.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameHelpers.h" />
     <ClInclude Include="GameState.h" />
@@ -119,6 +123,7 @@
     <ClCompile Include="ChoicePrompt.c" />
     <ClCompile Include="Console.c" />
     <ClCompile Include="ConsoleState.c" />
+    <ClCompile Include="DB.c" />
     <ClCompile Include="EditorState.c" />
     <ClCompile Include="GameHelpers.c" />
     <ClCompile Include="GridManager.c" />
@@ -129,6 +134,7 @@
     <ClCompile Include="Lua.c" />
     <ClCompile Include="Lua_ActorLibrary.c" />
     <ClCompile Include="Lua_AllLibraries.c" />
+    <ClCompile Include="Lua_DB.c" />
     <ClCompile Include="Lua_Map.c" />
     <ClCompile Include="Lua_StandardLibrary.c" />
     <ClCompile Include="Lua_UILibrary.c" />

@@ -20,7 +20,12 @@ schemas = {
     lit = true,
     radius = 5,
     fadeWidth = 3,
-    centerLevel = 6} --7, campfire
+    centerLevel = 6}, --7, campfire
+    {img = {22}, occlusion = 1}, --6, mountain2
+    {img = {12, 28}}, --7 corner
+    {img = {13, 29}}, --7 corner
+    {img = {14, 30}} --7 corner
+
 }
 
 

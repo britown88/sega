@@ -11,7 +11,9 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view) {
    luaL_openlibs(L);
 
    luaPushUserDataGlobal(L, LLIB_VIEW, view);
-   luaRequire(L, "core");   
+   luaRequire(L, "core");
+
+   luaLoadDBLibrary(L);
   
    luaLoadActorLibrary(L);
    luaLoadStandardLibrary(L);

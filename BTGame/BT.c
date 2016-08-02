@@ -18,6 +18,7 @@
 #include "LightGrid.h"
 #include "MapEditor.h"
 #include "ChoicePrompt.h"
+#include "DB.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -35,6 +36,7 @@ typedef struct {
    Console *console;
    MapEditor *mapEditor;
    ChoicePrompt *choicePrompt;
+   DB *db;
 
    lua_State *L;
 
@@ -139,6 +141,9 @@ VirtualApp *btCreate() {
 
    r->L = luaCreate();
 
+   r->db = DBCreate(&r->view);
+   r->view.db = r->db;
+
    r->choicePrompt = createChoicePrompt(&r->view);
    r->view.choicePrompt = r->choicePrompt;
 
@@ -159,6 +164,7 @@ void _destroy(BTGame *self){
    gridSolverDestroy(self->gridSolver);
    mapEditorDestroy(self->mapEditor);
    choicePromptDestroy(self->choicePrompt);
+   DBDestroy(self->db);
    
    luaDestroy(self->L);
    checkedFree(self);

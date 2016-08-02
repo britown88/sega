@@ -61,7 +61,7 @@ static void freeFileTable(){
 }
 
 typedef struct {
-   StringView file;
+   StringView file, func;
    size_t line, bytes;
 }AllocData;
 
@@ -112,16 +112,16 @@ static void addAlloc(StringView file, size_t line){
    }
 }
 
-void* checkedMallocImpl(size_t sz, char* file, size_t line){
+void* checkedMallocImpl(size_t sz, char *func, char* file, size_t line){
    StringView str = stringIntern(file);
-   adEntry newEntry = { malloc(sz), { str, line, sz } };
+   adEntry newEntry = { malloc(sz), { str, stringIntern(func), line, sz } };
    htInsert(adEntry)(getMemTable(), &newEntry);
    addAlloc(str, line);
    return newEntry.key;
 }
-void* checkedCallocImpl(size_t count, size_t sz, char* file, size_t line){
+void* checkedCallocImpl(size_t count, size_t sz, char *func, char* file, size_t line){
    StringView str = stringIntern(file);
-   adEntry newEntry = { calloc(count, sz), { stringIntern(file), line, count*sz } };
+   adEntry newEntry = { calloc(count, sz), { str, stringIntern(func), line, count*sz } };
    htInsert(adEntry)(getMemTable(), &newEntry);
    addAlloc(str, line);
    return newEntry.key;
@@ -161,7 +161,7 @@ void printMemoryLeaks(){
       fprintf(output, "-------------START---------------\n");
       htForEach(adEntry, e, getMemTable(), {
          AllocData *data = &e->value;
-         fprintf(output, "%i bytes in %s:%i\n", data->bytes, data->file, data->line);
+         fprintf(output, "%i bytes in %s(%s:%i)\n", data->bytes, data->func, data->file, data->line);
          ++leaks;
       });
       fprintf(output, "-------------END-----------------\n");

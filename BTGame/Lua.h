@@ -30,6 +30,7 @@ void luaRequire(lua_State *L, const char *modname);
 #define LLIB_TEXT_AREA "textArea"
 #define LLIB_TEXT_AREAS "textAreas"
 
+#define LLIB_DB "db"
 #define LLIB_CONSOLE "console"
 #define LLIB_IMG "img"
 #define LLIB_VIEW "view"
@@ -59,5 +60,7 @@ void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name);
 
 
+
+void luaLoadDBLibrary(lua_State *L);
 
 

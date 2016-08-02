@@ -90,6 +90,9 @@
     <ClInclude Include="ChoicePrompt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -190,6 +193,12 @@
     </ClCompile>
     <ClCompile Include="ChoicePrompt.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DB.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lua_DB.c">
+      <Filter>Source Files\Lua</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
