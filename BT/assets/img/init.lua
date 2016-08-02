@@ -1,5 +1,4 @@
 db.connect 'assets/chronicles.db'
-db.insertImage('test', 'assets/img/bg.ega')
 
 db.insertImage("font",       "assets/img/font.ega")
 db.insertImage("tile-atlas", "assets/img/tiles.ega")

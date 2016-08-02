@@ -14,7 +14,9 @@
 
 #include "RichText.h"
 
-#define LINE_COUNT 2
+#define MAX_LINE_COUNT 21
+#define MIN_LINE_COUNT 2
+
 #define WIDTH 36
 #define BOTTOM 23
 #define LEFT 2
@@ -41,6 +43,7 @@ struct Console_t {
    bool invertCursor;
 
    int queuePos;
+   int showLineCount;
 };
 
 Console *consoleCreate(WorldView *view) {
@@ -51,6 +54,8 @@ Console *consoleCreate(WorldView *view) {
    out->shiftLines = vecCreate(StringPtr)(&stringPtrDestroy);
    out->input = stringCreate("");
    out->rt = richTextCreateFromRaw("");
+
+   out->showLineCount = MIN_LINE_COUNT;
 
    return out;
 }
@@ -113,16 +118,16 @@ static void _updateInputLine(Console *self) {
 static void _updateConsoleLines(Console *self) {
    size_t i;
    size_t queuelen = vecSize(RichTextLine)(self->queue) - self->queuePos;
-   size_t drawnCount = MIN(LINE_COUNT, queuelen);
-   size_t skipCount = LINE_COUNT - drawnCount;
+   size_t drawnCount = MIN(self->showLineCount, queuelen);
+   size_t skipCount = MAX_LINE_COUNT - drawnCount;
    TextComponent *tc = entityGet(TextComponent)(self->e);
    
-   for (i = 0; i < LINE_COUNT; ++i) {
+   for (i = 0; i < MAX_LINE_COUNT; ++i) {
       TextLine *line = vecAt(TextLine)(tc->lines, i + 1);
       vecClear(Span)(line->line);
       if (i >= skipCount) {
          //render the spans onto the component
-         RichTextLine queueline = *(vecEnd(RichTextLine)(self->queue) - (LINE_COUNT - skipCount) - self->queuePos + (i - skipCount));
+         RichTextLine queueline = *(vecEnd(RichTextLine)(self->queue) - (MAX_LINE_COUNT - skipCount) - self->queuePos + (i - skipCount));
 
          //push the queueline spans into the console entity
          richTextLineCopy(queueline, line->line);
@@ -286,7 +291,7 @@ void consoleCreateLines(Console *self) {
    TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    TextComponent notiftc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    int bottomLine = BOTTOM;//last line on screen
-   int topLine = bottomLine - LINE_COUNT - 1;//account for input line
+   int topLine = bottomLine - MAX_LINE_COUNT - 1;//account for input line
 
    for (y = topLine; y <= bottomLine; ++y) {
       vecPushBack(TextLine)(tc.lines, &(TextLine){
@@ -471,6 +476,11 @@ void consoleInputKey(Console *self, SegaKeys key, SegaKeyMods mods) {
       self->invertCursor = true;
       _updateInputLine(self);
       break;
+
+   case SegaKey_PageUp:
+      self->showLineCount = (self->showLineCount == MIN_LINE_COUNT) ? MAX_LINE_COUNT : MIN_LINE_COUNT;
+      _updateConsoleLines(self);
+      break;
    }
 }
 
@@ -494,7 +504,7 @@ void consoleUpdate(Console *self) {
 }
 
 void consoleScrollLog(Console *self, int direction) {
-   int upperlimit = MAX(LINE_COUNT, vecSize(RichTextLine)(self->queue)) - LINE_COUNT;
+   int upperlimit = MAX(self->showLineCount, vecSize(RichTextLine)(self->queue)) - self->showLineCount;
    if (self->queuePos + direction >= 0 && self->queuePos + direction <= upperlimit) {
       self->queuePos += direction;
       _updateConsoleLines(self);
