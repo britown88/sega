@@ -21,4 +21,5 @@ void stringSet(String *self, const char*str);
 void stringInsert(String *self, char c, size_t pos);
 void stringErase(String *self, size_t pos);
 bool stringEqual(String *s1, String *s2);
+bool stringEqualRaw(String *s1, const char *s2);
 const char *c_str(String *str);

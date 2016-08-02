@@ -30,9 +30,16 @@ int DBConnect(DB *self, const char *filename) {
    int result = 0;
    
    if (!self || self->open) {
-      //already open bro
-      stringSet(self->err, "Database already open.");
-      return 1;
+
+      if (stringEqualRaw(self->dbPath, filename)) {
+         //attempting to reconnect to existing db, no-op
+         return 0;
+      }
+      else {
+         //already open bro
+         stringSet(self->err, "Database already open.");
+         return 1;
+      }
    }
    
    result = sqlite3_open_v2(filename, &self->conn, SQLITE_OPEN_READWRITE, NULL);

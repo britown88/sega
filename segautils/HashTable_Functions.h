@@ -3,6 +3,7 @@
 #ifndef ht
 #define ht(TYPE) CONCAT(ht_, TYPE)
 #define htCreate(TYPE) CONCAT(htCreate_, TYPE)
+#define htClear(TYPE) CONCAT(htClear_, TYPE)
 #define htDestroy(TYPE) CONCAT(htDestroy_, TYPE)
 #define htInsert(TYPE) CONCAT(htInsert_, TYPE)
 #define htErase(TYPE) CONCAT(htErase_, TYPE)

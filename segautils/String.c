@@ -84,3 +84,14 @@ bool stringEqual(String *s1, String *s2) {
 
    return memcmp(c_str(s1), c_str(s2), len1) == 0;   
 }
+
+bool stringEqualRaw(String *s1, const char *s2) {
+   size_t len1 = stringLen(s1);
+   size_t len2 = strlen(s2);
+
+   if (len1 != len2) {
+      return false;
+   }
+
+   return memcmp(c_str(s1), s2, len1) == 0;
+}

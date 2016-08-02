@@ -15,11 +15,16 @@ typedef struct {
 #include "segautils\HashTable_Create.h"
 
 struct ManagedImage_t{   
-   ht(iEntry) *map;
+   ImageLibrary *parent;
    StringView name;
-   String *path;
    Image *image;
    size_t useCount;
+   bool loaded;
+};
+
+struct ImageLibrary_t {
+   ht(iEntry) *table;
+   WorldView *view;
 };
 
 void managedImageDestroy(ManagedImage *self){
@@ -28,10 +33,26 @@ void managedImageDestroy(ManagedImage *self){
    }
    else {
       iEntry entry = { self->name, self };
-      htErase(iEntry)(self->map, &entry);
+      htErase(iEntry)(self->parent->table, &entry);
    }
 }
 Image *managedImageGetImage(ManagedImage *self){
+
+   if (!self->loaded) {
+      ManagedImage *out;
+      byte *buffer;
+      int bSize;
+      int result = DBSelectImage(self->parent->view->db, self->name, &buffer, &bSize);
+
+      if (result) {
+         return NULL;
+      }
+
+      self->image = imageDeserializeOptimizedFromBuffer(buffer, bSize);
+
+      self->loaded = true;
+   }
+
    return self->image;
 }
 
@@ -46,15 +67,13 @@ static size_t _iEntryHash(iEntry *p){
 }
 
 static void _iEntryDestroy(iEntry *p){
-   imageDestroy(p->value->image);
-   stringDestroy(p->value->path);
+   if (p->value->loaded) {
+      imageDestroy(p->value->image);
+   }   
    checkedFree(p->value);
 }
 
-struct ImageLibrary_t{
-   ht(iEntry) *table;
-   WorldView *view;
-};
+
 
 ImageLibrary *imageLibraryCreate(WorldView *view){
    ImageLibrary *out = checkedCalloc(1, sizeof(ImageLibrary));
@@ -67,30 +86,25 @@ void imageLibraryDestroy(ImageLibrary *self){
    checkedFree(self);
 }
 
-static int _registerBuffer(ImageLibrary *self, StringView name, byte *buffer, int size) {   
+static ManagedImage *_registerNew(ImageLibrary *self, StringView name) {   
    
    iEntry entry = { 0 };
    ManagedImage *out = NULL;
-   Image *newImage = imageDeserializeOptimizedFromBuffer(buffer, size);
 
-   if (!newImage) {
-      //failed to laod image, get fucked
-      return 1;
-   }
-
-   entry.key = name;
 
    //create a new entry
-   entry.value = checkedCalloc(1, sizeof(ManagedImage));
-   entry.value->image = newImage;
-   entry.value->map = self->table;
-   //entry.value->path = stringCreate(assetPath);
-   entry.value->name = name;
-   entry.value->useCount = 1;
+   out = checkedCalloc(1, sizeof(ManagedImage));
+   out->parent = self;
+   out->name = name;
+   out->useCount = 1;
+   out->loaded = false;
+
+   entry.key = name;
+   entry.value = out;
 
    htInsert(iEntry)(self->table, &entry);
 
-   return 0;
+   return out;
 }
 
 
@@ -101,59 +115,21 @@ ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView name){
    entry.key = name;
    found = htFind(iEntry)(self->table, &entry);
 
-   if (!found){  
-      byte *buffer;
-      int bSize;
-      int result = DBSelectImage(self->view->db, name, &buffer, &bSize);
-
-      if (result) {
-         return NULL;
-      }
-
-      result = _registerBuffer(self, name, buffer, bSize);
-      if (result) {
-         return NULL;
-      }
-
-      return imageLibraryGetImage(self, name);
+   if (!found){
+      return _registerNew(self, name);
    }
 
    ++found->value->useCount;
    return found->value;
 }
 
-int imageLibraryRegisterName(ImageLibrary *self, StringView name, const char *assetPath) {
-   iEntry entry = { 0 };
-   iEntry *found = 0;
-
-   Image *newImage = imageDeserializeOptimized(assetPath);
-
-   if (!newImage) {
-      //failed to laod image, get fucked
-      return 1;
-   }
-
-   entry.key = name;
-   found = htFind(iEntry)(self->table, &entry);
-
-   if (found) {
-      //kill the old image
-      imageDestroy(found->value->image);
-
-      stringSet(found->value->path, assetPath);      
-      found->value->image = newImage;      
-   }
-   else {
-      //create a new entry
-      entry.value = checkedCalloc(1, sizeof(ManagedImage));
-      entry.value->image = newImage;
-      entry.value->map = self->table;
-      entry.value->path = stringCreate(assetPath);
-      entry.value->name = name;
-      entry.value->useCount = 1;
-
-      htInsert(iEntry)(self->table, &entry);
-   }
-
-   return 0;
+void imageLibraryClear(ImageLibrary *self) {
+  
+   
+   htForEach(iEntry, entry, self->table, {
+      if (entry->value->loaded) {
+         imageDestroy(entry->value->image);
+         entry->value->loaded = false;
+      }
+   });
 }

@@ -79,6 +79,37 @@ static void htDestroy(T)(HT_NAME *self){
    
 }
 
+static void htClear(T)(HT_NAME *self) {
+   //destroy buckets here
+   if (self->buckets) {
+      HT_BUCKET **bucket = self->buckets;
+      HT_BUCKET **end = bucket + (1 << self->power);
+
+      for (;bucket != end; ++bucket) {
+         HT_BUCKET *iter = *bucket;
+         while (iter) {
+            HT_BUCKET *next = iter->next;
+            if (self->destroy) {
+               self->destroy(&iter->data);
+            }
+#ifndef UNCHECKED
+            checkedFree(iter);
+#else
+            free(iter);
+#endif
+
+            iter = next;
+         }
+      }
+   }
+   self->count = 0;
+
+
+
+
+}
+
+
 static void htErase(T)(HT_NAME *self, T *item){
    if(!self->buckets) {
       return;
@@ -105,7 +136,8 @@ static void htErase(T)(HT_NAME *self, T *item){
             checkedFree(iter);
 #else
             free(iter);
-#endif            
+#endif       
+            --self->count;
             return;
          }
 

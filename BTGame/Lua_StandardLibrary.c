@@ -15,7 +15,8 @@ static int slua_consoleClear(lua_State *L);
 static int slua_rand(lua_State *L);
 static int slua_toggleStats(lua_State *L);
 static int slua_openEditor(lua_State *L);
-static int slua_registerImage(lua_State *L);
+static int slua_clearCache(lua_State *L);
+
 
 void luaLoadStandardLibrary(lua_State *L) {
 
@@ -29,7 +30,7 @@ void luaLoadStandardLibrary(lua_State *L) {
    luaPushFunctionGlobal(L, "openEditor", &slua_openEditor);
 
    lua_newtable(L);
-   luaPushFunctionTable(L, "registerImage", &slua_registerImage);
+   luaPushFunctionTable(L, "clearCache", &slua_clearCache);
    lua_setglobal(L, LLIB_IMG);
 }
 
@@ -66,17 +67,10 @@ int slua_toggleStats(lua_State *L) {
    return 0;
 }
 
-int slua_registerImage(lua_State *L) {
+int slua_clearCache(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   const char *id = luaL_checkstring(L, 1);
-   const char *path = luaL_checkstring(L, 2);
 
-   if (imageLibraryRegisterName(view->imageLibrary, stringIntern(id), path)) {
-      char buff[128];
-      sprintf(buff, "Failed to register image \"%s\", file \"%s\" not found.", id, path);
-      lua_pushstring(L, buff);
-      lua_error(L);
-   }
+   imageLibraryClear(view->imageLibrary);
 
    return 0;
 }
