@@ -1,4 +1,6 @@
 #include "ImageLibrary.h"
+#include "DB.h"
+#include "WorldView.h"
 
 #include "segalib\EGA.h"
 #include "segautils\BitTwiddling.h"
@@ -51,10 +53,12 @@ static void _iEntryDestroy(iEntry *p){
 
 struct ImageLibrary_t{
    ht(iEntry) *table;
+   WorldView *view;
 };
 
-ImageLibrary *imageLibraryCreate(){
+ImageLibrary *imageLibraryCreate(WorldView *view){
    ImageLibrary *out = checkedCalloc(1, sizeof(ImageLibrary));
+   out->view = view;
    out->table = htCreate(iEntry)(&_iEntryCompare, &_iEntryHash, &_iEntryDestroy);
    return out;
 }
@@ -62,6 +66,34 @@ void imageLibraryDestroy(ImageLibrary *self){
    htDestroy(iEntry)(self->table);
    checkedFree(self);
 }
+
+static int _registerBuffer(ImageLibrary *self, StringView name, byte *buffer, int size) {   
+   
+   iEntry entry = { 0 };
+   ManagedImage *out = NULL;
+   Image *newImage = imageDeserializeOptimizedFromBuffer(buffer, size);
+
+   if (!newImage) {
+      //failed to laod image, get fucked
+      return 1;
+   }
+
+   entry.key = name;
+
+   //create a new entry
+   entry.value = checkedCalloc(1, sizeof(ManagedImage));
+   entry.value->image = newImage;
+   entry.value->map = self->table;
+   //entry.value->path = stringCreate(assetPath);
+   entry.value->name = name;
+   entry.value->useCount = 1;
+
+   htInsert(iEntry)(self->table, &entry);
+
+   return 0;
+}
+
+
 ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView name){
    iEntry entry = { 0 };
    iEntry *found = 0;
@@ -69,8 +101,21 @@ ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView name){
    entry.key = name;
    found = htFind(iEntry)(self->table, &entry);
 
-   if (!found){      
-      return NULL;
+   if (!found){  
+      byte *buffer;
+      int bSize;
+      int result = DBSelectImage(self->view->db, name, &buffer, &bSize);
+
+      if (result) {
+         return NULL;
+      }
+
+      result = _registerBuffer(self, name, buffer, bSize);
+      if (result) {
+         return NULL;
+      }
+
+      return imageLibraryGetImage(self, name);
    }
 
    ++found->value->useCount;

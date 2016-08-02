@@ -1,9 +1,12 @@
-img.registerImage("font",       "assets/img/font.ega")
-img.registerImage("tile-atlas", "assets/img/tiles.ega")
+db.connect 'assets/chronicles.db'
+db.insertImage('test', 'assets/img/bg.ega')
 
-img.registerImage("bg",         "assets/img/bg.ega")
-img.registerImage("bg-editor",  "assets/img/bgeditor.ega")
-img.registerImage("bg-console", "assets/img/bgconsole.ega")
+db.insertImage("font",       "assets/img/font.ega")
+db.insertImage("tile-atlas", "assets/img/tiles.ega")
 
-img.registerImage("verbs",      "assets/img/verbs.ega")
-img.registerImage("cursor",     "assets/img/cursor.ega")
+db.insertImage("bg",         "assets/img/bg.ega")
+db.insertImage("bg-editor",  "assets/img/bgeditor.ega")
+db.insertImage("bg-console", "assets/img/bgconsole.ega")
+
+db.insertImage("verbs",      "assets/img/verbs.ega")
+db.insertImage("cursor",     "assets/img/cursor.ega")

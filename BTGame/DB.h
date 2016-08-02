@@ -13,6 +13,7 @@ void DBDestroy(DB *self);
 const char *DBGetError(DB *self);
 
 int DBInsertImage(DB *self, StringView id, const char *path);
+int DBSelectImage(DB *self, StringView id, byte **buffer, int *size);
 
 
 

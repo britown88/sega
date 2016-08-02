@@ -8,10 +8,13 @@ typedef struct ImageLibrary_t ImageLibrary;
 
 typedef struct ManagedImage_t ManagedImage;
 
+
+typedef struct WorldView_t WorldView;
+
 void managedImageDestroy(ManagedImage *self);
 Image *managedImageGetImage(ManagedImage *self);
 
-ImageLibrary *imageLibraryCreate();
+ImageLibrary *imageLibraryCreate(WorldView *view);
 void imageLibraryDestroy(ImageLibrary *self);
 ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView name);
 int imageLibraryRegisterName(ImageLibrary *self, StringView name, const char *assetPath);

@@ -112,7 +112,7 @@ VirtualApp *btCreate() {
    r->data = createData();
 
    //Other constructor shit goes here   
-   r->imageLibrary = imageLibraryCreate();
+   r->imageLibrary = imageLibraryCreate(&r->view);
    r->gameState = fsmCreate();
    r->gameClock = gameClockCreate();
    
