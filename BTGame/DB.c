@@ -3,6 +3,7 @@
 #include "segautils/String.h"
 #include "segashared/CheckedMemory.h"
 #include "Console.h"
+#include "segautils/BitBuffer.h"
 
 #include "sqlite/sqlite3.h"
 
@@ -78,4 +79,59 @@ void DBDestroy(DB *self) {
 
 const char *DBGetError(DB *self) {
    return c_str(self->err);
+}
+
+int DBInsertImage(DB *self, StringView id, const char *path) {
+   const char *stmt = "INSERT INTO 'Images' VALUES (:id, :image);";
+   sqlite3_stmt *sqlstmt = NULL;
+   int result = 0;
+   
+   if (!self || !self->open) {
+      stringSet(self->err, "No db connection.");
+      return 1;
+   }
+
+   result = sqlite3_prepare_v2(self->conn, stmt, strlen(stmt) + 1, &sqlstmt, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return 1;
+   }
+   
+   result = sqlite3_bind_text(sqlstmt, 1, id, -1, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return 1;
+   }
+   
+   {
+      long size = 0;
+      byte *buff = readFullFile(path, &size);
+
+      if (!buff) {         
+         stringSet(self->err, "Failure inserting image.  File not found: ");
+         stringConcat(self->err, path);
+         return 1;
+      }
+
+      result = sqlite3_bind_blob(sqlstmt, 2, buff, size, NULL);
+      if (result != SQLITE_OK) {
+         stringSet(self->err, sqlite3_errmsg(self->conn));
+         return 1;
+      }
+   }
+
+   result = sqlite3_step(sqlstmt);
+   if (result != SQLITE_DONE) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return 1;
+   }
+
+   result = sqlite3_finalize(sqlstmt);
+   if (result != SQLITE_OK) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return 1;
+   }
+
+   return 0;
+
 }

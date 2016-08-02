@@ -65,9 +65,7 @@ Image *imageCreate(short width, short height) {
    return r;
 }
 
-Image *_imageDeserializeEX(const char*path, int optimize){
-   long size;
-   byte *f = readFullFile(path, &size);
+Image *_imageDeserializeEX(byte *f, long fSize, int optimize){
    BitBuffer *buffer; 
    short width, height;
    int y, i;
@@ -146,15 +144,26 @@ Image *_imageDeserializeEX(const char*path, int optimize){
    return img;
 }
 
+Image *_imageDeserializeEXFile(const char*path, int optimize) {
+   long size;
+   byte *f = readFullFile(path, &size);
+   return _imageDeserializeEX(f, size, optimize);
+}
+
 //DO NOT USE IF RENDERING TO A FRAME
-Image *imageDeserialize(const char *path) 
-{
-   return _imageDeserializeEX(path, false);
+Image *imageDeserialize(const char *path) {
+   return _imageDeserializeEXFile(path, false);
+}
+Image *imageDeserializeFromBuffer(byte *buffer, long size) {
+   return _imageDeserializeEX(buffer, size, false);
 }
 
 //optimized for rendering to a frame
 Image *imageDeserializeOptimized(const char*path){
-   return _imageDeserializeEX(path, true);
+   return _imageDeserializeEXFile(path, true);
+}
+Image *imageDeserializeOptimizedFromBuffer(byte *buffer, long size) {
+   return _imageDeserializeEX(buffer, size, true);
 }
 
 void imageSerialize(Image *self, const char *path) {

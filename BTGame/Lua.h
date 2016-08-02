@@ -59,8 +59,6 @@ void luaActorInteract(lua_State *L, Entity *e, Verbs v);//actor:pushScript(actor
 void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name);
 
-
-
 void luaLoadDBLibrary(lua_State *L);
 
 

@@ -65,6 +65,8 @@ Map *mapLoad(const char *fileName) {
    map = mapCreate(width, height);
    bitBufferReadBits(buffer, (byte*)map->grid, width * height * sizeof(Tile) * 8);
 
+   bitBufferDestroy(buffer);
+
    return map;
 }
 void mapDestroy(Map *self) {

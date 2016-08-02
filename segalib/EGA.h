@@ -124,10 +124,12 @@ void imageRenderToFlat(Image *self, FlatImage *dest);
 
 //deserializes an ega file and maintains the file's scanline compression in memory
 Image *imageDeserialize(const char*path);
+Image *imageDeserializeFromBuffer(byte *buffer, long size);
 
 //expands deserialized image into uncompressed scanlines which takes up mroe memory but renders faster
 //also precomputes alpha
 Image *imageDeserializeOptimized(const char*path);
+Image *imageDeserializeOptimizedFromBuffer(byte *buffer, long size);
 
 void imageSerialize(Image *self, const char *path);
 void imageDestroy(Image *self);

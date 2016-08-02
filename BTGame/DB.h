@@ -1,5 +1,7 @@
 #pragma once
 
+#include "segashared/Strings.h"
+
 typedef struct DB_t DB;
 typedef struct WorldView_t WorldView;
 
@@ -9,6 +11,8 @@ int DBDisconnect(DB *self);
 void DBDestroy(DB *self);
 
 const char *DBGetError(DB *self);
+
+int DBInsertImage(DB *self, StringView id, const char *path);
 
 
 
