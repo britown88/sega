@@ -12,15 +12,16 @@ struct DB_t {
    String *dbPath, *err;
    sqlite3 *conn;
    bool open;
+
+   //time for all our cool procs
+   sqlite3_stmt *insertImage, *selectImage;
 };
 
 DB *DBCreate(WorldView *view){
    
    DB *out = checkedCalloc(1, sizeof(DB));
-   out->conn = NULL;
    out->dbPath = stringCreate("");
    out->view = view;
-   out->open = false;
    out->err = stringCreate("");
 
    return out;
@@ -57,13 +58,22 @@ int DBConnect(DB *self, const char *filename) {
 
 }
 
+static void _destroyStmt(DB *self, sqlite3_stmt **stmt) {
+   if (stmt) {
+      sqlite3_finalize(*stmt);
+      stmt = NULL;
+   }
+}
+
 int DBDisconnect(DB *self) {
    if (!self || !self->open) {
       stringSet(self->err, "No db connection.");
       return 1;
    }
 
-   //TODO: destroy prepared procs
+   _destroyStmt(self, &self->insertImage);
+   _destroyStmt(self, &self->selectImage);
+
    sqlite3_close(self->conn);
 
    self->open = false;
@@ -88,23 +98,40 @@ const char *DBGetError(DB *self) {
    return c_str(self->err);
 }
 
-int DBInsertImage(DB *self, StringView id, const char *path) {
-   const char *stmt = "INSERT INTO Images VALUES (:id, :image);";
-   sqlite3_stmt *sqlstmt = NULL;
-   int result = 0;
-   
+static int _prepare(DB *self, sqlite3_stmt **out, const char *stmt) {
    if (!self || !self->open) {
       stringSet(self->err, "No db connection.");
       return 1;
    }
 
-   result = sqlite3_prepare_v2(self->conn, stmt, strlen(stmt) + 1, &sqlstmt, NULL);
-   if (result != SQLITE_OK) {
-      stringSet(self->err, sqlite3_errmsg(self->conn));
+   if (!*out) {
+      sqlite3_stmt *sqlstmt = NULL;
+      int result = sqlite3_prepare_v2(self->conn, stmt, strlen(stmt) + 1, &sqlstmt, NULL);
+      if (result != SQLITE_OK) {
+         stringSet(self->err, sqlite3_errmsg(self->conn));
+         return 1;
+      }
+      *out = sqlstmt;
+   }
+
+   sqlite3_reset(*out);
+   return 0;
+}
+
+static void _destroyBlob(void*data) {
+
+}
+
+
+int DBInsertImage(DB *self, StringView id, const char *path) {
+   int result = 0;
+
+   if (_prepare(self, &self->insertImage, "INSERT INTO Images VALUES (:id, :image);")) {
       return 1;
    }
    
-   result = sqlite3_bind_text(sqlstmt, 1, id, -1, NULL);
+   
+   result = sqlite3_bind_text(self->insertImage, 1, id, -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(self->err, sqlite3_errmsg(self->conn));
       return 1;
@@ -120,21 +147,16 @@ int DBInsertImage(DB *self, StringView id, const char *path) {
          return 1;
       }
 
-      result = sqlite3_bind_blob(sqlstmt, 2, buff, size, NULL);
+      result = sqlite3_bind_blob(self->insertImage, 2, buff, size, SQLITE_TRANSIENT);
+      checkedFree(buff);
       if (result != SQLITE_OK) {
          stringSet(self->err, sqlite3_errmsg(self->conn));
          return 1;
       }
    }
 
-   result = sqlite3_step(sqlstmt);
+   result = sqlite3_step(self->insertImage);
    if (result != SQLITE_DONE) {
-      stringSet(self->err, sqlite3_errmsg(self->conn));
-      return 1;
-   }
-
-   result = sqlite3_finalize(sqlstmt);
-   if (result != SQLITE_OK) {
       stringSet(self->err, sqlite3_errmsg(self->conn));
       return 1;
    }
@@ -144,42 +166,33 @@ int DBInsertImage(DB *self, StringView id, const char *path) {
 }
 
 int DBSelectImage(DB *self, StringView id, byte **buffer, int *size) {
-   const char *stmt = "SELECT image FROM Images WHERE id=:id;";
-   sqlite3_stmt *sqlstmt = NULL;
    int result = 0;
-   void *blob;
+   void *blob = NULL;
 
-   if (!self || !self->open) {
-      stringSet(self->err, "No db connection.");
+   if (_prepare(self, &self->selectImage, "SELECT image FROM Images WHERE id=:id;")) {
       return 1;
    }
 
-   result = sqlite3_prepare_v2(self->conn, stmt, strlen(stmt) + 1, &sqlstmt, NULL);
+   result = sqlite3_bind_text(self->selectImage, 1, id, -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(self->err, sqlite3_errmsg(self->conn));
       return 1;
    }
 
-   result = sqlite3_bind_text(sqlstmt, 1, id, -1, NULL);
-   if (result != SQLITE_OK) {
-      stringSet(self->err, sqlite3_errmsg(self->conn));
-      return 1;
-   }
-
-   result = sqlite3_step(sqlstmt);
+   result = sqlite3_step(self->selectImage);
    if (result != SQLITE_ROW) {
       stringSet(self->err, sqlite3_errmsg(self->conn));
       return 1;
    }
 
-   *size = sqlite3_column_bytes(sqlstmt, 0);
+   *size = sqlite3_column_bytes(self->selectImage, 0);
 
    if (*size == 0) {
       stringSet(self->err, "No data found.");
       return 1;
    }
 
-   blob = sqlite3_column_blob(sqlstmt, 0);
+   blob = sqlite3_column_blob(self->selectImage, 0);
 
    if (!blob) {
       stringSet(self->err, "No data found.");
@@ -189,11 +202,6 @@ int DBSelectImage(DB *self, StringView id, byte **buffer, int *size) {
    *buffer = checkedCalloc(1, *size);
    memcpy(*buffer, blob, *size);
 
-   result = sqlite3_finalize(sqlstmt);
-   if (result != SQLITE_OK) {
-      stringSet(self->err, sqlite3_errmsg(self->conn));
-      return 1;
-   }
-
    return 0;
 }
+
