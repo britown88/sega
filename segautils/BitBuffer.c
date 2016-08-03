@@ -19,15 +19,53 @@ void bitBufferDestroy(BitBuffer *self) {
    }
 }
 
+//void bitBufferReadBits(BitBuffer *self, byte *destination, int bitCount) {
+//   int i;
+//   for (i = 0; i < bitCount; ++i) {
+//      long position = self->pos + i;
+//      byte value = getBitFromArray(self->buffer, position);
+//      setBitInArray(destination, i, value);
+//   }
+//
+//   self->pos += bitCount;
+//}
+
 void bitBufferReadBits(BitBuffer *self, byte *destination, int bitCount) {
    int i;
-   for(i = 0; i < bitCount; ++i) {
-      long position = self->pos + i;
-      byte value = getBitFromArray(self->buffer, position);
-      setBitInArray(destination, i, value);
+   int startBits = self->pos;
+   int startBytes = self->pos >> 3;
+   int toAlign = self->pos & 7;
+   int byteCount;
+   int byteBitCount;
+   int leftover = bitCount;
+
+   if (toAlign > 0) {
+      startBytes += 1;
+      for (i = 0; i < 8 - toAlign && i < bitCount; ++i) {
+         long position = self->pos + i;
+         byte value = getBitFromArray(self->buffer, position);
+         setBitInArray(destination, i, value);
+      }
+      self->pos += i;
+      leftover -= i;
    }
 
-   self->pos += bitCount;
+   byteCount = leftover >> 3;
+   byteBitCount = byteCount << 3;
+
+   if (byteCount > 0 && toAlign == 0) {
+      memcpy(destination + (toAlign > 0 ? 1 : 0), self->buffer + startBytes, byteCount);
+      self->pos += byteBitCount;
+      leftover -= byteBitCount;
+   } 
+
+   for(i = 0; i < leftover; ++i) {
+      long position = self->pos + i;
+      byte value = getBitFromArray(self->buffer, position);
+      setBitInArray(destination, self->pos - startBits + i, value);
+   }
+
+   self->pos += leftover;
 }
 short bitBufferReadShort(BitBuffer *self) {
    static byte readBuffer[sizeof(uint16_t)] = {0};
