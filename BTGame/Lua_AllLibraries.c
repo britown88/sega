@@ -28,3 +28,7 @@ void luaLoadAssets(lua_State *L) {
 void luaStartup(lua_State *L) {
    luaRequire(L, "startup");
 }
+
+void luaBuildDB(lua_State *L) {
+   luaRequire(L, "buildDB");
+}

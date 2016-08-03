@@ -33,8 +33,18 @@ void luaLoadDBLibrary(lua_State *L) {
 int slua_DBConnect(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    const char *dbPath = lua_tostring(L, 1);
+   int result = DBConnect(view->db, dbPath);
 
-   if (DBConnect(view->db, dbPath)) {
+   if (result != DB_SUCCESS) {
+#ifdef _DEBUG
+
+      if (result == DB_CREATED) {
+         luaBuildDB(L);
+         return 0;
+      }
+
+#endif
+
       lua_pushstring(L, DBGetError(view->db));
       lua_error(L);
    }

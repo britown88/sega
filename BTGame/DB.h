@@ -5,6 +5,10 @@
 typedef struct DB_t DB;
 typedef struct WorldView_t WorldView;
 
+#define DB_SUCCESS 0
+#define DB_FAILURE 1
+#define DB_CREATED 2
+
 DB *DBCreate(WorldView *view);
 int DBConnect(DB *self, const char *filename);
 int DBDisconnect(DB *self);
