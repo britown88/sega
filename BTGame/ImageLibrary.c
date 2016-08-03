@@ -48,7 +48,7 @@ Image *managedImageGetImage(ManagedImage *self){
          return NULL;
       }
 
-      self->image = imageDeserializeOptimizedFromBuffer(buffer, bSize);
+      self->image = imageDeserialize(buffer, EGA_IMGD_OPTIMIZED);
 
       self->loaded = true;
    }

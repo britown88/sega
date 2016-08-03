@@ -16,6 +16,7 @@ static int slua_rand(lua_State *L);
 static int slua_toggleStats(lua_State *L);
 static int slua_openEditor(lua_State *L);
 static int slua_clearCache(lua_State *L);
+static int slua_setPalette(lua_State *L);
 
 
 void luaLoadStandardLibrary(lua_State *L) {
@@ -28,6 +29,7 @@ void luaLoadStandardLibrary(lua_State *L) {
    luaPushFunctionGlobal(L, "rand", &slua_rand);
    luaPushFunctionGlobal(L, "toggleStats", &slua_toggleStats);
    luaPushFunctionGlobal(L, "openEditor", &slua_openEditor);
+   luaPushFunctionGlobal(L, "setPalette", &slua_setPalette);
 
    lua_newtable(L);
    luaPushFunctionTable(L, "clearCache", &slua_clearCache);
@@ -73,4 +75,38 @@ int slua_clearCache(lua_State *L) {
    imageLibraryClear(view->imageLibrary);
 
    return 0;
+}
+
+int slua_setPalette(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   StringView id = NULL;
+   int result = 0;
+   byte *buffer;
+   int bSize;
+
+   int inType = lua_type(L, -1);
+
+   if (inType == LUA_TLIGHTUSERDATA) {
+      id = lua_touserdata(L, -1);
+   }
+   else if (inType == LUA_TSTRING) {
+      id = stringIntern(lua_tostring(L, -1));
+   }
+   else {
+      lua_pushliteral(L, "Failed to load palette; input identifier is invalid type.");
+      lua_error(L);
+   }
+
+   result = DBSelectPalette(view->db, id, &buffer, &bSize);
+
+   if (bSize != sizeof(Palette)) {
+      lua_pushliteral(L, "Failed to load palette; Got blob but invalid size?");
+      lua_error(L);
+   }
+
+   appSetPalette(appGet(), (Palette*)buffer);
+
+
+   return 0;
+
 }

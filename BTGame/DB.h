@@ -19,6 +19,9 @@ const char *DBGetError(DB *self);
 int DBInsertImage(DB *self, StringView id, const char *path);
 int DBSelectImage(DB *self, StringView id, byte **buffer, int *size);
 
+int DBInsertPalette(DB *self, StringView id, const char *path);
+int DBSelectPalette(DB *self, StringView id, byte **buffer, int *size);
+
 
 
 

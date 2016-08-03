@@ -65,17 +65,24 @@ Image *imageCreate(short width, short height) {
    return r;
 }
 
-Image *_imageDeserializeEX(byte *f, long fSize, int optimize){
+Image *imageDeserialize(const void *inBuff, int flags) {
    BitBuffer *buffer; 
    short width, height;
    int y, i;
    Image *img;
 
-   if (!f) {
-      return NULL;
-   }
+   if (flags&EGA_IMGD_FILEPATH) {
+      long size;
+      byte *f = readFullFile(inBuff, &size);
+      if (!f) {
+         return NULL;
+      }
 
-   buffer = bitBufferCreate(f, 1);
+      buffer = bitBufferCreate(f, !!(flags&EGA_IMGD_OWN));
+   }
+   else {
+      buffer = bitBufferCreate(inBuff, !!(flags&EGA_IMGD_OWN));
+   }
 
    width = bitBufferReadShort(buffer);
    height = bitBufferReadShort(buffer);
@@ -105,7 +112,7 @@ Image *_imageDeserializeEX(byte *f, long fSize, int optimize){
    }
 
    //alpha computation postpass
-   if (optimize){
+   if (flags&EGA_IMGD_OPTIMIZED){
       int plane, y, x;
       int intCount = minIntCount(width);
       int32_t alphaBuffer[MAX_IMAGE_WIDTH / sizeof(int32_t)] = { 0 };
@@ -142,28 +149,6 @@ Image *_imageDeserializeEX(byte *f, long fSize, int optimize){
 
    bitBufferDestroy(buffer);
    return img;
-}
-
-Image *_imageDeserializeEXFile(const char*path, int optimize) {
-   long size;
-   byte *f = readFullFile(path, &size);
-   return _imageDeserializeEX(f, size, optimize);
-}
-
-//DO NOT USE IF RENDERING TO A FRAME
-Image *imageDeserialize(const char *path) {
-   return _imageDeserializeEXFile(path, false);
-}
-Image *imageDeserializeFromBuffer(byte *buffer, long size) {
-   return _imageDeserializeEX(buffer, size, false);
-}
-
-//optimized for rendering to a frame
-Image *imageDeserializeOptimized(const char*path){
-   return _imageDeserializeEXFile(path, true);
-}
-Image *imageDeserializeOptimizedFromBuffer(byte *buffer, long size) {
-   return _imageDeserializeEX(buffer, size, true);
 }
 
 void imageSerialize(Image *self, const char *path) {

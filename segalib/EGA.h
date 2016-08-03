@@ -123,13 +123,14 @@ typedef struct FlatImage_t{
 void imageRenderToFlat(Image *self, FlatImage *dest);
 
 //deserializes an ega file and maintains the file's scanline compression in memory
-Image *imageDeserialize(const char*path);
-Image *imageDeserializeFromBuffer(byte *buffer, long size);
+#define EGA_IMGD_FILEPATH (1 << 0)//input buffer is assumed to be a null terminated string to a filepath
+#define EGA_IMGD_OPTIMIZED (1 << 1)//output is deserialized into uncompressed scanlines which takes up mroe memory but renders faster
+#define EGA_IMGD_OWN (1 << 2) //function takes ownership of the input buffer and frees it when done
 
-//expands deserialized image into uncompressed scanlines which takes up mroe memory but renders faster
-//also precomputes alpha
-Image *imageDeserializeOptimized(const char*path);
-Image *imageDeserializeOptimizedFromBuffer(byte *buffer, long size);
+#define EGA_IMGD_LEGACY (EGA_IMGD_FILEPATH|EGA_IMGD_OPTIMIZED|EGA_IMGD_OWN)
+
+//buffer should be a nullterminated string if flag has FILEPATH or a byte* otherwise
+Image *imageDeserialize(const void *buffer, int flags);
 
 void imageSerialize(Image *self, const char *path);
 void imageDestroy(Image *self);

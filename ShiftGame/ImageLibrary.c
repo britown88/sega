@@ -68,7 +68,7 @@ ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView path){
    found = htFind(iEntry)(self->table, &entry);
 
    if (!found){      
-      Image *newImage = imageDeserializeOptimized(path);
+      Image *newImage = imageDeserialize(path, EGA_IMGD_LEGACY);
       
       if (newImage){
          out = checkedCalloc(1, sizeof(ManagedImage));

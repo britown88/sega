@@ -15,6 +15,7 @@ struct DB_t {
 
    //time for all our cool procs
    sqlite3_stmt *insertImage, *selectImage;
+   sqlite3_stmt *insertPalette, *selectPalette;
 };
 
 DB *DBCreate(WorldView *view){
@@ -121,6 +122,8 @@ int DBDisconnect(DB *self) {
 
    _destroyStmt(self, &self->insertImage);
    _destroyStmt(self, &self->selectImage);
+   _destroyStmt(self, &self->insertPalette);
+   _destroyStmt(self, &self->selectPalette);
 
    sqlite3_close(self->conn);
 
@@ -247,9 +250,89 @@ int DBSelectImage(DB *self, StringView id, byte **buffer, int *size) {
       return DB_FAILURE;
    }
 
-   *buffer = checkedCalloc(1, *size);
-   memcpy(*buffer, blob, *size);
+   *buffer = blob;
 
    return DB_SUCCESS;
 }
+
+int DBInsertPalette(DB *self, StringView id, const char *path) {
+   int result = 0;
+
+   if (_prepare(self, &self->insertPalette, "INSERT INTO Palettes VALUES (:id, :palette);")) {
+      return DB_FAILURE;
+   }
+
+
+   result = sqlite3_bind_text(self->insertPalette, 1, id, -1, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return DB_FAILURE;
+   }
+
+   {
+      Palette p = paletteDeserialize(path);
+
+      if (!memcmp(&p, &(Palette){0}, sizeof(Palette))) {
+         stringSet(self->err, "Failure inserting Palette.  File not found. ");
+         stringConcat(self->err, path);
+         return DB_FAILURE;
+      }
+
+      result = sqlite3_bind_blob(self->insertPalette, 2, &p, sizeof(Palette), SQLITE_TRANSIENT);
+
+      if (result != SQLITE_OK) {
+         stringSet(self->err, sqlite3_errmsg(self->conn));
+         return DB_FAILURE;
+      }
+   }
+
+   result = sqlite3_step(self->insertPalette);
+   if (result != SQLITE_DONE) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return DB_FAILURE;
+   }
+
+   return DB_SUCCESS;
+
+}
+
+int DBSelectPalette(DB *self, StringView id, byte **buffer, int *size) {
+   int result = 0;
+   void *blob = NULL;
+
+   if (_prepare(self, &self->selectPalette, "SELECT palette FROM Palettes WHERE id=:id;")) {
+      return DB_FAILURE;
+   }
+
+   result = sqlite3_bind_text(self->selectPalette, 1, id, -1, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return DB_FAILURE;
+   }
+
+   result = sqlite3_step(self->selectPalette);
+   if (result != SQLITE_ROW) {
+      stringSet(self->err, sqlite3_errmsg(self->conn));
+      return DB_FAILURE;
+   }
+
+   *size = sqlite3_column_bytes(self->selectPalette, 0);
+
+   if (*size == 0) {
+      stringSet(self->err, "No data found.");
+      return DB_FAILURE;
+   }
+
+   blob = sqlite3_column_blob(self->selectPalette, 0);
+
+   if (!blob) {
+      stringSet(self->err, "No data found.");
+      return DB_FAILURE;
+   }
+
+   *buffer = blob;
+
+   return DB_SUCCESS;
+}
+
 

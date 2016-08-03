@@ -33,8 +33,6 @@ void bitBufferReadBits(BitBuffer *self, byte *destination, int bitCount) {
       long position = self->pos + i;
       byte value = getBitFromArray(self->buffer, position);
       setBitInArray(destination, i, value);
-
-
    }
 
    self->pos += bitCount;

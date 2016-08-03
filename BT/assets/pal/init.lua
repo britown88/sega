@@ -1,7 +1,5 @@
-pal = pal or {}
-pal.directory = "assets/pal/"
-
-function loadPal(fname)
-  pal.load(string.format("%s%s.pal", pal.directory, fname))
-  console.print(string.format("Loaded palette: [c=0,5]%s[/c]", fname))
-end
+db.insertPalette("default", "assets/pal/default.pal");
+db.insertPalette("dusk", "assets/pal/dusk.pal");
+db.insertPalette("dark", "assets/pal/dark.pal");
+db.insertPalette("night", "assets/pal/night.pal");
+db.insertPalette("CGA", "assets/pal/CGA.pal");

@@ -481,7 +481,7 @@ private:
             txtPNG->Enabled = true;
 
             auto pathStr = toNative(file->path);
-            auto img = imageDeserialize(pathStr.c_str());
+            auto img = imageDeserialize(pathStr.c_str(), EGA_IMGD_FILEPATH);
             auto png = pngDataCreateFromImage(img, getNativePalette().colors);            
 
             auto tempPath = file->path + ".temp~";

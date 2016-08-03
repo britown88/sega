@@ -234,7 +234,10 @@ void _onStart(BTGame *self){
 
    luaLoadAssets(self->L);
 
-   appLoadPalette(appGet(), "assets/pal/default.pal");
+   //sesneless default palette woohoo
+   Palette defPal = { {0, 1, 2, 3, 4, 58, 20, 7, 56, 57, 60, 62, 63, 60, 62, 63} };
+   appSetPalette(appGet(), &defPal);
+
    renderManagerInitialize(self->managers.renderManager);
    cursorManagerCreateCursor(self->managers.cursorManager);
    pcManagerCreatePC(self->managers.pcManager);

@@ -9,6 +9,7 @@
 #include "SEGA/App.h"
 #include "segautils/Defs.h"
 #include "LightGrid.h"
+#include "DB.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -20,7 +21,7 @@ static int slua_mapSave(lua_State *L);
 static int slua_mapSetSchemas(lua_State *L);
 static int slua_mapAmbient(lua_State *L);
 
-static int slua_paletteLoad(lua_State *L);
+
 
 void luaLoadMapLibrary(lua_State *L) {
    lua_newtable(L);
@@ -31,10 +32,6 @@ void luaLoadMapLibrary(lua_State *L) {
    luaPushFunctionTable(L, "setSchemas", &slua_mapSetSchemas);
    luaPushFunctionTable(L, "setAmbient", &slua_mapAmbient);
    lua_setglobal(L, LLIB_MAP);
-
-   lua_newtable(L);
-   luaPushFunctionTable(L, "load", &slua_paletteLoad);
-   lua_setglobal(L, LLIB_PAL);
 }
 
 int slua_mapNew(lua_State *L) {
@@ -163,19 +160,6 @@ int slua_mapSetSchemas(lua_State *L) {
    }
 
    return 0;
-}
-
-int slua_paletteLoad(lua_State *L) {
-   WorldView *view = luaGetWorldView(L);
-   const char *path = luaL_checkstring(L, 1);
-   if (appLoadPalette(appGet(), path)) {
-      lua_pushliteral(L, "Failed to load palette; file not found.");
-      lua_error(L);
-   }
-
-   
-   return 0;
-
 }
 
 int slua_mapAmbient(lua_State *L) {
