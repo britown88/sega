@@ -1,1 +1,2 @@
 require 'img'
+require 'pal'
