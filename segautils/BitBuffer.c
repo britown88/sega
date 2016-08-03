@@ -7,24 +7,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-struct BitBuffer_t {
-   long pos;
-   int deleteData;
-   byte *buffer;
-};
 
-BitBuffer *bitBufferCreate(byte *existingData, int deleteData) {
-   BitBuffer *r = checkedCalloc(1, sizeof(BitBuffer));
-   r->buffer = existingData;
-   r->deleteData = deleteData;
-   return r;
+
+BitBuffer bitBufferCreate(byte *existingData, int deleteData) {
+   BitBuffer out = { .buffer = existingData,  .deleteData = deleteData, .pos = 0 };
+   return out;
 }
 void bitBufferDestroy(BitBuffer *self) {
    if(self->deleteData) {
       checkedFree(self->buffer);
    }
-   
-   checkedFree(self);
 }
 
 void bitBufferReadBits(BitBuffer *self, byte *destination, int bitCount) {
@@ -53,13 +45,6 @@ void bitBufferWriteBits(BitBuffer *self, int bitCount, byte *data) {
    }
 
    self->pos += bitCount;
-}
-
-long bitBufferGetPosition(BitBuffer *self){
-   return self->pos;
-}
-byte *bitBufferGetData(BitBuffer *self) {
-   return self->buffer;
 }
 
 byte *readFullFile(const char *path, long *fsize) {

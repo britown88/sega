@@ -66,7 +66,7 @@ Image *imageCreate(short width, short height) {
 }
 
 Image *imageDeserialize(const void *inBuff, int flags) {
-   BitBuffer *buffer; 
+   BitBuffer buffer; 
    short width, height;
    int y, i;
    Image *img;
@@ -84,8 +84,8 @@ Image *imageDeserialize(const void *inBuff, int flags) {
       buffer = bitBufferCreate(inBuff, !!(flags&EGA_IMGD_OWN));
    }
 
-   width = bitBufferReadShort(buffer);
-   height = bitBufferReadShort(buffer);
+   width = bitBufferReadShort(&buffer);
+   height = bitBufferReadShort(&buffer);
 
    img = imageCreate(width, height);
 
@@ -93,17 +93,17 @@ Image *imageDeserialize(const void *inBuff, int flags) {
       for (y = 0; y < height; ++y){
          ImageScanLine *scanLine = NULL;
          byte typeID = 0;
-         bitBufferReadBits(buffer, &typeID, 2);
+         bitBufferReadBits(&buffer, &typeID, 2);
 
          switch (typeID) {
          case scanline_SOLID:
-            scanLine = createSolidScanLineFromBB(buffer, width);
+            scanLine = createSolidScanLineFromBB(&buffer, width);
             break;
          case scanline_RLE:
-            scanLine = createRLEScanLineFromBB(buffer);
+            scanLine = createRLEScanLineFromBB(&buffer);
             break;
          case scanline_UNCOMPRESSED:
-            scanLine = createUncompressedScanLineFromBB(buffer);
+            scanLine = createUncompressedScanLineFromBB(&buffer);
             break;
          }
 
@@ -147,7 +147,7 @@ Image *imageDeserialize(const void *inBuff, int flags) {
       }
    }
 
-   bitBufferDestroy(buffer);
+   bitBufferDestroy(&buffer);
    return img;
 }
 
@@ -164,24 +164,24 @@ void imageSerialize(Image *self, const char *path) {
    int maxBitCount = ((width + sizeofShort + 2)*height)*EGA_IMAGE_PLANES + sizeofShort*2;
    int maxByteCount = minByteCount(maxBitCount);
 
-   BitBuffer *buffer = bitBufferCreate(checkedCalloc(1, maxByteCount), 1);
+   BitBuffer buffer = bitBufferCreate(checkedCalloc(1, maxByteCount), 1);
 
-   bitBufferWriteBits(buffer, sizeofShort, (byte*)&width);
-   bitBufferWriteBits(buffer, sizeofShort, (byte*)&height);
+   bitBufferWriteBits(&buffer, sizeofShort, (byte*)&width);
+   bitBufferWriteBits(&buffer, sizeofShort, (byte*)&height);
 
    for(i = 0; i < EGA_IMAGE_PLANES; ++i) {
       for(y = 0; y < height; ++y) {
-         imageScanLineSerialize(imageGetScanLine(self, y, i), buffer);
+         imageScanLineSerialize(imageGetScanLine(self, y, i), &buffer);
       }
    }
 
-   bPos = bitBufferGetPosition(buffer);
+   bPos = buffer.pos;
 
    out = fopen(path, "wb");
-   fwrite(bitBufferGetData(buffer) , sizeof(char), minByteCount(bPos), out);
+   fwrite(buffer.buffer , sizeof(char), minByteCount(bPos), out);
    fclose (out);
 
-   bitBufferDestroy(buffer);
+   bitBufferDestroy(&buffer);
 }
 
 

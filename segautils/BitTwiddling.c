@@ -62,7 +62,7 @@ byte getBitFromArray(const byte *dest, int pos){
 
 //returns 0 if passed the bitcount(failure), 1 on success
 int _RLEWriteCurrent(BitBuffer *buffer, int maxBitCount, byte current, byte currentCount){
-   if(bitBufferGetPosition(buffer) + 9 > maxBitCount){
+   if(buffer->pos + 9 > maxBitCount){
       bitBufferDestroy(buffer);
       return 0;
    }
@@ -78,7 +78,7 @@ int compressBitsRLE(const byte *in, const int inBitCount, byte *out) {
    
    int i, ret;
    byte current = getBit(*in, 0), currentCount = 1;
-   BitBuffer *buffer = bitBufferCreate(out, 0);
+   BitBuffer buffer = bitBufferCreate(out, 0);
 
    for(i = 1; i < inBitCount; ++i){
       byte value = getBitFromArray(in, i);
@@ -86,7 +86,7 @@ int compressBitsRLE(const byte *in, const int inBitCount, byte *out) {
       if(value == current) {
          if(currentCount == 255){
 
-            if(!_RLEWriteCurrent(buffer, inBitCount, current, currentCount))
+            if(!_RLEWriteCurrent(&buffer, inBitCount, current, currentCount))
                return 0;
 
             currentCount = 0;
@@ -95,7 +95,7 @@ int compressBitsRLE(const byte *in, const int inBitCount, byte *out) {
          ++currentCount;
       }
       else {
-         if(!_RLEWriteCurrent(buffer, inBitCount, current, currentCount))
+         if(!_RLEWriteCurrent(&buffer, inBitCount, current, currentCount))
             return 0;
 
          currentCount = 1;
@@ -104,33 +104,33 @@ int compressBitsRLE(const byte *in, const int inBitCount, byte *out) {
    }
 
    if(currentCount > 0) {
-      if(!_RLEWriteCurrent(buffer, inBitCount, current, currentCount))
+      if(!_RLEWriteCurrent(&buffer, inBitCount, current, currentCount))
          return 0;
    }
    
-   ret = bitBufferGetPosition(buffer);
-   bitBufferDestroy(buffer);
+   ret = buffer.pos;
+   bitBufferDestroy(&buffer);
    return ret;
 }
 
 void decompressRLE(byte *src, int compressedBitCount, byte *dest){
-   BitBuffer *srcBuff = bitBufferCreate(src, 0);
-   BitBuffer *destBuff = bitBufferCreate(dest, 0);
+   BitBuffer srcBuff = bitBufferCreate(src, 0);
+   BitBuffer destBuff = bitBufferCreate(dest, 0);
    byte lineOutput[MAX_BUFFER_WIDTH] = { 0 };
 
-   while(bitBufferGetPosition(srcBuff) + 9 <= compressedBitCount) {
+   while(srcBuff.pos + 9 <= compressedBitCount) {
       byte count = 0, value = 0;
-      bitBufferReadBits(srcBuff, &count, 8);
-      bitBufferReadBits(srcBuff, &value, 1);
+      bitBufferReadBits(&srcBuff, &count, 8);
+      bitBufferReadBits(&srcBuff, &value, 1);
 
       if(value > 0) value = 255;
 
       memset(lineOutput, value, minByteCount(count));
-      bitBufferWriteBits(destBuff, count, lineOutput);      
+      bitBufferWriteBits(&destBuff, count, lineOutput);      
    }
 
-   bitBufferDestroy(srcBuff);
-   bitBufferDestroy(destBuff);
+   bitBufferDestroy(&srcBuff);
+   bitBufferDestroy(&destBuff);
 }
 
 byte arrayIsSolid(byte *src, int bitCount){

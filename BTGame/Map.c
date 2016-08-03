@@ -49,7 +49,7 @@ void mapResize(Map *self, short x, short y) {
 Map *mapLoad(const char *fileName) {
    long size;
    byte *file;
-   BitBuffer *buffer;
+   BitBuffer buffer;
    short width, height;
    Map *map = NULL;
 
@@ -59,13 +59,13 @@ Map *mapLoad(const char *fileName) {
    }
 
    buffer = bitBufferCreate(file, 1);
-   width = bitBufferReadShort(buffer);
-   height = bitBufferReadShort(buffer);
+   width = bitBufferReadShort(&buffer);
+   height = bitBufferReadShort(&buffer);
 
    map = mapCreate(width, height);
-   bitBufferReadBits(buffer, (byte*)map->grid, width * height * sizeof(Tile) * 8);
+   bitBufferReadBits(&buffer, (byte*)map->grid, width * height * sizeof(Tile) * 8);
 
-   bitBufferDestroy(buffer);
+   bitBufferDestroy(&buffer);
 
    return map;
 }
@@ -85,25 +85,25 @@ int mapSave(Map *self, const char *fileName) {
    int maxBitCount = (sizeofShort*2)+(width*height*sizeof(Tile)*8);
    int maxByteCount = minByteCount(maxBitCount);
 
-   BitBuffer *buffer = bitBufferCreate(checkedCalloc(1, maxByteCount), 1);
+   BitBuffer buffer = bitBufferCreate(checkedCalloc(1, maxByteCount), 1);
 
-   bitBufferWriteBits(buffer, sizeofShort, (byte*)&width);
-   bitBufferWriteBits(buffer, sizeofShort, (byte*)&height);
+   bitBufferWriteBits(&buffer, sizeofShort, (byte*)&width);
+   bitBufferWriteBits(&buffer, sizeofShort, (byte*)&height);
 
-   bitBufferWriteBits(buffer, width * height * sizeof(Tile) * 8, (byte*)self->grid);
+   bitBufferWriteBits(&buffer, width * height * sizeof(Tile) * 8, (byte*)self->grid);
 
-   bPos = bitBufferGetPosition(buffer);
+   bPos = buffer.pos;
 
    out = fopen(fileName, "wb");
    if (!out) {
-      bitBufferDestroy(buffer);
+      bitBufferDestroy(&buffer);
       return 1;
    }
 
-   fwrite(bitBufferGetData(buffer), sizeof(char), minByteCount(bPos), out);
+   fwrite(buffer.buffer, sizeof(char), minByteCount(bPos), out);
    fclose(out);
 
-   bitBufferDestroy(buffer);
+   bitBufferDestroy(&buffer);
 
    return 0;
 }

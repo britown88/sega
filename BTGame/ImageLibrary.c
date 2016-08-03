@@ -39,7 +39,6 @@ void managedImageDestroy(ManagedImage *self){
 Image *managedImageGetImage(ManagedImage *self){
 
    if (!self->loaded) {
-      ManagedImage *out;
       byte *buffer;
       int bSize;
       int result = DBSelectImage(self->parent->view->db, self->name, &buffer, &bSize);

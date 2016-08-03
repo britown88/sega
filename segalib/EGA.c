@@ -414,7 +414,7 @@ int getEGAColor(byte c) {
 Palette paletteDeserialize(const char *path) {
    long fSize;
    byte *file = readFullFile(path, &fSize);
-   BitBuffer *buffer;
+   BitBuffer buffer;
    Palette p = {0};
 
    int i;
@@ -427,26 +427,26 @@ Palette paletteDeserialize(const char *path) {
 
    if(fSize == 12) {
       for(i = 0; i < 16; ++i) {
-         bitBufferReadBits(buffer, (byte*)&p+i, 6);
+         bitBufferReadBits(&buffer, (byte*)&p+i, 6);
       }
    }
    
-   bitBufferDestroy(buffer);
+   bitBufferDestroy(&buffer);
    return p;
 }
 
 void paletteSerialize(byte *data, const char *path) {
-   BitBuffer *buff = bitBufferCreate(checkedCalloc(1, 12), 1);
+   BitBuffer buff = bitBufferCreate(checkedCalloc(1, 12), 1);
    int i;
    FILE *out;
    for(i = 0; i < 16; ++i) {
-      bitBufferWriteBits(buff, 6, data + i);
+      bitBufferWriteBits(&buff, 6, data + i);
    }
 
    out = fopen(path, "wb");
-   fwrite(bitBufferGetData(buff), sizeof(char), 12, out);
+   fwrite(buff.buffer, sizeof(char), 12, out);
    fclose (out);
-   bitBufferDestroy(buff);
+   bitBufferDestroy(&buff);
 }
 
 Palette paletteCreatePartial(byte *data, byte pOffset, byte pCount, byte totalCount){
