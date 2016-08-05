@@ -1,4 +1,5 @@
 --openEditor()
 
---loadMap 'testtown'
---map.setAmbient(0)
+loadMap 'testWilderness'
+map.setAmbient(2)
+setPalette 'snow'

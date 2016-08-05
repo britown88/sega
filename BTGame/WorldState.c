@@ -7,6 +7,7 @@
 #include "GameHelpers.h"
 #include "ImageLibrary.h"
 #include "ChoicePrompt.h"
+#include "Weather.h"
 
 #include "Entities\Entities.h"
 
@@ -22,7 +23,10 @@ typedef struct {
    WorldView *view;
 }WorldState;
 
-static void _worldStateCreate(WorldState *self) { }
+static void _worldStateCreate(WorldState *self) { 
+   testRain(self->view->weather);
+
+}
 static void _worldStateDestroy(WorldState *self){   
    checkedFree(self);
 }
@@ -62,14 +66,16 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    actorManagerUpdate(managers->actorManager);
 }
 
-static void _registerGridRenders(BTManagers *managers) {
-   LayerRenderer grid, light;
+static void _registerGridRenders(WorldView *view) {
+   LayerRenderer grid, light, weather;
 
-   closureInit(LayerRenderer)(&grid, managers->gridManager, &gridManagerRender, NULL);
-   closureInit(LayerRenderer)(&light, managers->gridManager, &gridManagerRenderLighting, NULL);
+   closureInit(LayerRenderer)(&grid, view->managers->gridManager, &gridManagerRender, NULL);
+   closureInit(LayerRenderer)(&weather, view->weather, &weatherRender, NULL);
+   closureInit(LayerRenderer)(&light, view->managers->gridManager, &gridManagerRenderLighting, NULL);
 
-   renderManagerAddLayerRenderer(managers->renderManager, LayerGrid, grid);
-   renderManagerAddLayerRenderer(managers->renderManager, LayerGridLighting, light);
+   renderManagerAddLayerRenderer(view->managers->renderManager, LayerGrid, grid);
+   renderManagerAddLayerRenderer(view->managers->renderManager, LayerGridWeather, weather);
+   renderManagerAddLayerRenderer(view->managers->renderManager, LayerGridLighting, light);
 }
 
 void _worldEnter(WorldState *state, StateEnter *m) {
@@ -80,7 +86,7 @@ void _worldEnter(WorldState *state, StateEnter *m) {
    verbManagerSetEnabled(managers->verbManager, true);
    changeBackground(state->view, IMG_BG);
 
-   _registerGridRenders(managers);   
+   _registerGridRenders(state->view);
 }
 void _worldExit(WorldState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;

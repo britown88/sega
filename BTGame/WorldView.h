@@ -14,6 +14,7 @@ typedef struct lua_State lua_State;
 typedef struct MapEditor_t MapEditor;
 typedef struct ChoicePrompt_t ChoicePrompt;
 typedef struct DB_t DB;
+typedef struct Weather_t Weather;
 
 typedef struct WorldView_t {
    BTManagers *managers;
@@ -29,4 +30,5 @@ typedef struct WorldView_t {
    lua_State *L;
    ChoicePrompt *choicePrompt;
    DB *db;
+   Weather *weather;
 }WorldView;

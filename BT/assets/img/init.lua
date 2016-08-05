@@ -7,3 +7,6 @@ db.insertImage("bg-console", "assets/img/bgconsole.ega")
 
 db.insertImage("verbs",      "assets/img/verbs.ega")
 db.insertImage("cursor",     "assets/img/cursor.ega")
+
+
+db.insertImageFolder("assets/img")

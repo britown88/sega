@@ -19,6 +19,7 @@
 #include "MapEditor.h"
 #include "ChoicePrompt.h"
 #include "DB.h"
+#include "Weather.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -37,6 +38,7 @@ typedef struct {
    MapEditor *mapEditor;
    ChoicePrompt *choicePrompt;
    DB *db;
+   Weather *weather;
 
    lua_State *L;
 
@@ -144,6 +146,9 @@ VirtualApp *btCreate() {
    r->db = DBCreate(&r->view);
    r->view.db = r->db;
 
+   r->weather = createWeather(&r->view);
+   r->view.weather = r->weather;
+
    r->choicePrompt = createChoicePrompt(&r->view);
    r->view.choicePrompt = r->choicePrompt;
 
@@ -165,6 +170,7 @@ void _destroy(BTGame *self){
    mapEditorDestroy(self->mapEditor);
    choicePromptDestroy(self->choicePrompt);
    DBDestroy(self->db);
+   weatherDestroy(self->weather);
    
    luaDestroy(self->L);
    checkedFree(self);

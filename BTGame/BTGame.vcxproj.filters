@@ -93,6 +93,9 @@
     <ClInclude Include="DB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Weather.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -199,6 +202,9 @@
     </ClCompile>
     <ClCompile Include="Lua_DB.c">
       <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="Weather.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

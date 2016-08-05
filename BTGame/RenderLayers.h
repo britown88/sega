@@ -3,6 +3,7 @@
 typedef enum {
 
    LayerGrid,
+   LayerGridWeather,
    LayerGridLighting,
    LayerBackground,
    LayerUI,

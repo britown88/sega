@@ -116,6 +116,7 @@
     <ClInclude Include="Tiles.h" />
     <ClInclude Include="Verbs.h" />
     <ClInclude Include="Viewport.h" />
+    <ClInclude Include="Weather.h" />
     <ClInclude Include="WorldView.h" />
   </ItemGroup>
   <ItemGroup>
@@ -145,6 +146,7 @@
     <ClCompile Include="TextBoxManager.c" />
     <ClCompile Include="VerbManager.c" />
     <ClCompile Include="WaitManager.c" />
+    <ClCompile Include="Weather.c" />
     <ClCompile Include="WorldState.c" />
     <ClCompile Include="BT.c" />
     <ClCompile Include="CoreComponents.c" />
