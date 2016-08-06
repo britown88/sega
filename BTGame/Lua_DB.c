@@ -15,6 +15,7 @@
 static int slua_DBConnect(lua_State *L);
 static int slua_DBDisconnect(lua_State *L);
 static int slua_DBInsertImage(lua_State *L);
+static int slua_DBInsertImageFolder(lua_State *L);
 static int slua_DBInsertPalette(lua_State *L);
 
 
@@ -24,6 +25,7 @@ void luaLoadDBLibrary(lua_State *L) {
    luaPushFunctionTable(L, "connect", &slua_DBConnect);
    luaPushFunctionTable(L, "disconnect", &slua_DBDisconnect);
    luaPushFunctionTable(L, "insertImage", &slua_DBInsertImage);
+   luaPushFunctionTable(L, "insertImageFolder", &slua_DBInsertImageFolder);
    luaPushFunctionTable(L, "insertPalette", &slua_DBInsertPalette);
 
    //img
@@ -72,6 +74,36 @@ int slua_DBDisconnect(lua_State *L) {
    }
 
    consolePrintLine(view->console, "Disconnected.");
+   return 0;
+}
+
+int slua_DBInsertImageFolder(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   const char *path = lua_tostring(L, 1);
+   vec(StringPtr) *list = NULL;   
+   int r = appListFiles(appGet(), path, APP_FILE_FILE_ONLY, &list, "ega");
+
+   consolePrintLine(view->console, "Inserting (*.ega) images in [c=0,5]%s[/c]", path);
+
+   if (!r){
+      vecForEach(StringPtr, str, list, {
+         String *fnameOnly = stringGetFilename(*str);
+         lua_pushcfunction(L, &slua_DBInsertImage);
+         lua_pushstring(L, c_str(fnameOnly));
+         lua_pushstring(L, c_str(*str));
+         
+         lua_call(L, 2, 0);
+         stringDestroy(fnameOnly);
+      });
+
+      consolePrintLine(view->console, "Inserted [c=0,5]%i[/c] images.", vecSize(StringPtr)(list));
+      vecDestroy(StringPtr)(list);
+   }   
+   else {
+      consolePrintLine(view->console, "Inserted [c=0,5]%i[/c] images.", 0);
+   }
+   
+   
    return 0;
 }
 

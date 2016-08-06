@@ -25,6 +25,23 @@ void stringDestroy(String *self){
 size_t stringLen(String *self){
    return vecSize(char)((vec(char)*)self) - 1;
 }
+size_t stringFindLastOf(String *self, const char *chrs) {
+   size_t len = stringLen(self);
+   int chrLen = strlen(chrs);
+   size_t i = stringNPos;
+
+   for (i = len - 1; i < len; --i) {
+      int chIndex = 0;
+      for (chIndex = 0; chIndex < chrLen; ++chIndex) {
+         if (c_str(self)[i] == chrs[chIndex]) {
+            return i;
+         }
+      }
+   }
+
+   return i;
+}
+
 void stringSubStr(String *self, size_t start, size_t len) {
    static char close = 0;
    size_t actuallen = stringLen(self);
@@ -38,6 +55,20 @@ void stringSubStr(String *self, size_t start, size_t len) {
    vecResize(char)((vec(char)*)self, finalLen, &(char){0});
    vecPushBack(char)((vec(char)*)self, &(char){0});
 }
+
+String *stringGetFilename(String *self) {
+   size_t dotPos = stringFindLastOf(self, ".");
+   size_t dirPos = stringFindLastOf(self, "\\/");
+   size_t oLen = stringLen(self);
+   size_t begin = dirPos < stringNPos ? dirPos + 1 : 0;
+   size_t len = dotPos < stringNPos ? dotPos - begin : oLen;
+   
+   String *out = stringCreate("");
+   vecResize(char)((vec(char)*)out, len + 1, &(char){0});
+   memcpy((char*)c_str(out), (char*)c_str(self) + begin, len);
+   return out;
+}
+
 void stringClear(String *self){
    vecClear(char)((vec(char)*)self);
    vecPushBack(char)((vec(char)*)self, &(char){0});
@@ -60,7 +91,8 @@ const char *c_str(String *str){
    if (!str) {
       return NULL;
    }
-   return vecAt(char)((vec(char)*)str, 0);
+   //return vecAt(char)((vec(char)*)str, 0);
+   return *((char**)str);
 }
 
 void stringInsert(String *self, char c, size_t pos) {

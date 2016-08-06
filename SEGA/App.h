@@ -6,6 +6,7 @@
 #include "segautils\DLLBullshit.h"
 #include "segalib\EGA.h"
 
+#include "segautils/StandardVectors.h"
 #include "IRenderer.h"
 #include "IDeviceContext.h"
 
@@ -75,6 +76,12 @@ DLL_PUBLIC Mouse *appGetMouse(App *self);
 DLL_PUBLIC Palette *appGetPalette(App *self);
 DLL_PUBLIC int appLoadPalette(App *self, const char *palFile);
 DLL_PUBLIC void appSetPalette(App *self, Palette *p);
+
+#define APP_FILE_ALL 1 //returns both directories and files
+#define APP_FILE_DIR_ONLY 2  //returns only directories
+#define APP_FILE_FILE_ONLY 3 //return only files
+
+DLL_PUBLIC int appListFiles(App *self, const char *root, int type, vec(StringPtr) **out, const char *ext);
 
 
 

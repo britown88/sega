@@ -1,5 +1,7 @@
 #include "segautils/IncludeWindows.h"
 
+#include <strsafe.h>
+
 
 #include <malloc.h>
 #include <stddef.h>
@@ -254,4 +256,92 @@ int appLoadPalette(App *self, const char *palFile){
 }
 void appSetPalette(App *self, Palette *p){
    paletteCopy(&self->subclass->currentPalette, p);
+}
+
+int appListFiles(App *self, const char *root, int type, vec(StringPtr) **out, const char *ext) {
+   WIN32_FIND_DATA ffd;
+   TCHAR szDir[MAX_PATH];
+   size_t length_of_arg;
+   HANDLE hFind = INVALID_HANDLE_VALUE;
+   DWORD dwError = 0;
+   int extLen = 0;
+
+   // Check that the input path plus 3 is not longer than MAX_PATH.
+   // Three characters are for the "\*" plus NULL appended below.
+
+   StringCchLength(root, MAX_PATH, &length_of_arg);
+
+   if (length_of_arg > (MAX_PATH - 3)) {
+      //_tprintf(TEXT("\nDirectory path is too long.\n"));
+      return 1;
+   }
+
+   //_tprintf(TEXT("\nTarget directory is %s\n\n"), argv[1]);
+
+   // Prepare string for use with FindFile functions.  First, copy the
+   // string to a buffer, then append '\*' to the directory name.
+
+   StringCchCopy(szDir, MAX_PATH, root);
+   StringCchCat(szDir, MAX_PATH, TEXT("\\*"));
+
+   // Find the first file in the directory.
+
+   hFind = FindFirstFile(szDir, &ffd);
+
+   if (INVALID_HANDLE_VALUE == hFind)   {
+      //DisplayErrorBox(TEXT("FindFirstFile"));
+      return dwError;
+   }
+
+   *out = vecCreate(StringPtr)(&stringPtrDestroy);
+
+   if (ext) {
+      extLen = strlen(ext);
+   }
+
+   // List all the files in the directory with some info about them.
+   do {
+
+      if (type == APP_FILE_ALL ||
+         (type == APP_FILE_DIR_ONLY && ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) ||
+         (type == APP_FILE_FILE_ONLY && !(ffd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY))) {
+
+         String *fname = stringCreate(root);
+         stringConcat(fname, "/");
+         stringConcat(fname, ffd.cFileName);
+
+         if (ext) {
+            int len = strlen(ffd.cFileName);
+            size_t dotPos;
+            char *str;
+
+            if (len <= extLen + 1) {
+               stringDestroy(fname);
+               continue;
+            }
+
+            dotPos = stringFindLastOf(fname, ".");
+            str = c_str(fname) + dotPos + 1;
+
+            if (dotPos < stringNPos && 
+               strlen(str) == extLen &&               
+               !memcmp(str, ext, extLen)) {
+
+               vecPushBack(StringPtr)(*out, &fname);
+            }
+            else {
+               stringDestroy(fname);
+            }
+         }
+         else {
+            vecPushBack(StringPtr)(*out, &fname);
+         }
+      }
+
+      
+   } while (FindNextFile(hFind, &ffd) != 0);
+
+
+   FindClose(hFind);
+   return 0;
 }
