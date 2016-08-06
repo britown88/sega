@@ -17,6 +17,7 @@ static int slua_DBDisconnect(lua_State *L);
 static int slua_DBInsertImage(lua_State *L);
 static int slua_DBInsertImageFolder(lua_State *L);
 static int slua_DBInsertPalette(lua_State *L);
+static int slua_DBInsertPaletteFolder(lua_State *L);
 
 
 void luaLoadDBLibrary(lua_State *L) {
@@ -27,6 +28,7 @@ void luaLoadDBLibrary(lua_State *L) {
    luaPushFunctionTable(L, "insertImage", &slua_DBInsertImage);
    luaPushFunctionTable(L, "insertImageFolder", &slua_DBInsertImageFolder);
    luaPushFunctionTable(L, "insertPalette", &slua_DBInsertPalette);
+   luaPushFunctionTable(L, "insertPaletteFolder", &slua_DBInsertPaletteFolder);
 
    //img
    lua_pushliteral(L, LLIB_IMG);
@@ -152,6 +154,36 @@ int slua_DBInsertPalette(lua_State *L) {
 
 
    consolePrintLine(view->console, "Palette [c=0,5]%s[/c] inserted.", id);
+   return 0;
+}
+
+int slua_DBInsertPaletteFolder(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   const char *path = lua_tostring(L, 1);
+   vec(StringPtr) *list = NULL;
+   int r = appListFiles(appGet(), path, APP_FILE_FILE_ONLY, &list, "pal");
+
+   consolePrintLine(view->console, "Inserting (*.pal) palettes in [c=0,5]%s[/c]", path);
+
+   if (!r) {
+      vecForEach(StringPtr, str, list, {
+         String *fnameOnly = stringGetFilename(*str);
+         lua_pushcfunction(L, &slua_DBInsertPalette);
+         lua_pushstring(L, c_str(fnameOnly));
+         lua_pushstring(L, c_str(*str));
+
+         lua_call(L, 2, 0);
+         stringDestroy(fnameOnly);
+      });
+
+      consolePrintLine(view->console, "Inserted [c=0,5]%i[/c] palette.", vecSize(StringPtr)(list));
+      vecDestroy(StringPtr)(list);
+   }
+   else {
+      consolePrintLine(view->console, "Inserted [c=0,5]%i[/c] palette.", 0);
+   }
+
+
    return 0;
 }
 
