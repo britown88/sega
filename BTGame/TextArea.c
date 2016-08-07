@@ -232,43 +232,47 @@ void textAreaUpdate(TextArea *self, WorldView *view) {
          self->nextChar = gameClockGetTime(view->gameClock);
 
          _renderNextMessageToLines(self);
+         textAreaUpdate(self, view);//first update
       }
    }
    else if (!vecIsEmpty(RichTextLine)(self->lines)) {
       //we're drawing so gogo
       Microseconds time = gameClockGetTime(view->gameClock);
       if (time >= self->nextChar) {
-         RichTextLine rtline = *vecAt(RichTextLine)(self->lines, self->currentLine);
-         String *line = self->workingLine;
-         char *c = NULL;
-         Milliseconds delay = 0;
+         while ((time >= self->nextChar || self->textSpeed == 0) && !self->done) {
 
-         richTextLineGetRaw(rtline, self->workingLine);
-         c = (char*)c_str(self->workingLine) + self->currentChar;
+            RichTextLine rtline = *vecAt(RichTextLine)(self->lines, self->currentLine);
+            String *line = self->workingLine;
+            char *c = NULL;
+            Milliseconds delay = 0;
 
-         switch (*c) {
-         case ' ': break;
-         case '\\':
-            if (c[1] == 'c') {
-               self->currentChar += 3;
+            richTextLineGetRaw(rtline, self->workingLine);
+            c = (char*)c_str(self->workingLine) + self->currentChar;
+
+            switch (*c) {
+            case ' ': break;
+            case '\\':
+               if (c[1] == 'c') {
+                  self->currentChar += 3;
+               }
+               break;
+            case '.': delay = self->textSpeed * 3; break;
+            case ',': delay = self->textSpeed * 2; break;
+            case ';': delay = self->textSpeed * 2; break;
+            default:  delay = self->textSpeed; break;
             }
-            break;
-         case '.': delay = 500; break;
-         case ',': delay = 250; break;
-         case ';': delay = 250; break;
-         default:  delay = 50; break;
-         }
 
-         self->nextChar = gameClockGetTime(view->gameClock) + t_m2u(delay) - (time - self->nextChar);
+            self->nextChar = gameClockGetTime(view->gameClock) + t_m2u(delay) - (time - self->nextChar);
 
-         ++self->currentChar;
-         if (self->currentChar >= (int)stringLen(line)) {
-            if (self->currentLine + 1 >= (int)vecSize(RichTextLine)(self->lines)) {
-               self->done = true;
-            }
-            else {
-               self->currentChar = 0;
-               ++self->currentLine;
+            ++self->currentChar;
+            if (self->currentChar >= (int)stringLen(line)) {
+               if (self->currentLine + 1 >= (int)vecSize(RichTextLine)(self->lines)) {
+                  self->done = true;
+               }
+               else {
+                  self->currentChar = 0;
+                  ++self->currentLine;
+               }
             }
          }
 

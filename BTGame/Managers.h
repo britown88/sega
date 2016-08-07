@@ -56,6 +56,7 @@ CursorManager *createCursorManager(WorldView *view);
 void cursorManagerCreateCursor(CursorManager *self);
 void cursorManagerUpdate(CursorManager *self, int x, int y);
 void cursorManagerSetVerb(CursorManager *self, Verbs v);
+void cursorManagerSetShown(CursorManager *self, bool shown);
 void cursorManagerClearVerb(CursorManager *self);
 
 ActorManager *createActorManager(WorldView *view);

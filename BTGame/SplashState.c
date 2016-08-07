@@ -14,6 +14,7 @@
 #include "SEGA\Input.h"
 #include "SEGA\App.h"
 #include "GameClock.h"
+#include "TextArea.h"
 
 #include "segashared\CheckedMemory.h"
 
@@ -23,9 +24,19 @@
 typedef struct {
    WorldView *view;
    bool pop;
+
+   TextArea *select, *cont, *new, *ack, *quit, *copyright;
 }SplashState;
 
-static void _splashStateCreate(SplashState *state) {}
+static void _splashStateCreate(SplashState *state) {
+
+   state->select = textAreaCreate(17, 17, 6, 1);
+   state->cont = textAreaCreate(13, 19, 13, 1);
+   state->new = textAreaCreate(15, 20, 10, 1);
+   state->ack = textAreaCreate(12, 21, 66, 1);
+   state->quit = textAreaCreate(13, 22, 13, 1);
+   state->copyright = textAreaCreate(11, 24, 18, 1);
+}
 static void _splashStateDestroy(SplashState *self) {
    checkedFree(self);
 }
@@ -45,6 +56,12 @@ static void _splash(SplashState *state, Type *t, Message m) {
 }
 
 static void _testSplashText(SplashState *self, Frame *frame) {
+   textAreaRender(self->select, self->view, frame);
+   textAreaRender(self->cont, self->view, frame);
+   textAreaRender(self->new, self->view, frame);
+   textAreaRender(self->ack, self->view, frame);
+   textAreaRender(self->quit, self->view, frame);
+   textAreaRender(self->copyright, self->view, frame);
 }
 
 static void _registerTextRenders(SplashState *state) {
@@ -59,9 +76,18 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    int bSize;
 
    _registerTextRenders(state);
+
+   textAreaPushText(state->select, "Select"); textAreaUpdate(state->select, state->view);
+   textAreaPushText(state->cont, "[i]Journey forth[/i]"); textAreaUpdate(state->cont, state->view);
+   textAreaPushText(state->new, "Begin anew"); textAreaUpdate(state->new, state->view);
+   textAreaPushText(state->ack, "Acknowledgements"); textAreaUpdate(state->ack, state->view);
+   textAreaPushText(state->quit, "Retire to DOS"); textAreaUpdate(state->quit, state->view);
+   textAreaPushText(state->copyright, "Copyright 1988 BDT"); textAreaUpdate(state->copyright, state->view);
    
    verbManagerSetEnabled(managers->verbManager, false);
    changeBackground(state->view, "splash");
+
+   cursorManagerSetShown(state->view->managers->cursorManager, false);
 
    if (!DBSelectPalette(state->view->db, stringIntern("splash"), &buffer, &bSize)) {
       appSetPalette(appGet(), (Palette*)buffer);
@@ -70,6 +96,7 @@ void _splashEnter(SplashState *state, StateEnter *m) {
 void _splashExit(SplashState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
 
+   cursorManagerSetShown(state->view->managers->cursorManager, true);
    renderManagerRemoveLayerRenderer(state->view->managers->renderManager, LayerConsole);
    mapEditorSetEnabled(state->view->mapEditor, false);
 }

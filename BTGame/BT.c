@@ -220,6 +220,7 @@ static void _addTestEntities(BTGame *app) {
       StringView boxName = stringIntern("smallbox");
       TextArea *area = textAreaCreate(15, 22, 23, 2);
       textAreaPushText(area, "You are likely to be eaten by a [c=0,13]grue[/c].");
+      textAreaSetSpeed(area, 50);
       textAreaManagerRegister(app->view.textAreaManager, boxName, area);
 
    }

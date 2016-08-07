@@ -52,7 +52,12 @@ void cursorManagerCreateCursor(CursorManager *self){
    COMPONENT_ADD(self->e, TCursorComponent, 0);
    COMPONENT_ADD(self->e, LayerComponent, LayerCursor);
    COMPONENT_ADD(self->e, RenderedUIComponent, 0);
+   COMPONENT_ADD(self->e, VisibilityComponent, true);
    entityUpdate(self->e);
+}
+
+void cursorManagerSetShown(CursorManager *self, bool shown) {
+   entityGet(VisibilityComponent)(self->e)->shown = shown;
 }
 
 void cursorManagerSetVerb(CursorManager *self, Verbs v) {
@@ -77,3 +82,4 @@ void cursorManagerUpdate(CursorManager *self, int x, int y){
       pc->y = y;
    }
 }
+
