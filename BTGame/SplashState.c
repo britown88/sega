@@ -19,6 +19,8 @@
 
 #include "segashared\CheckedMemory.h"
 
+#include "ImageLibrary.h"
+
 #define VP_SPEED 3
 #define VP_FAST_SPEED 8
 
@@ -27,6 +29,8 @@ typedef struct {
    bool pop;
 
    TextArea *select, *cont, *new, *ack, *quit, *copyright;
+   ManagedImage *frames[10];
+
 }SplashState;
 
 static void _splashStateCreate(SplashState *state) {
@@ -63,6 +67,12 @@ static void _splash(SplashState *state, Type *t, Message m) {
 }
 
 static void _testSplashText(SplashState *self, Frame *frame) {
+
+   Milliseconds t = t_u2m(gameClockGetTime(self->view->gameClock));
+   int f = (int)(t / 200.0f) % 10;
+
+   frameRenderImage(frame, FrameRegionFULL, 79, 80, managedImageGetImage(self->frames[f]));
+
    textAreaRender(self->select, self->view, frame);
    textAreaRender(self->cont, self->view, frame);
    textAreaRender(self->new, self->view, frame);
@@ -81,6 +91,17 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
    byte *buffer;
    int bSize;
+
+   state->frames[0] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire1"));
+   state->frames[1] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire2"));
+   state->frames[2] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire3"));
+   state->frames[3] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire4"));
+   state->frames[4] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire5"));
+   state->frames[5] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire6"));
+   state->frames[6] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire7"));
+   state->frames[7] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire8"));
+   state->frames[8] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire9"));
+   state->frames[9] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire10"));
 
    _registerTextRenders(state);
 
@@ -102,6 +123,10 @@ void _splashEnter(SplashState *state, StateEnter *m) {
 }
 void _splashExit(SplashState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
+   int i = 0;
+   for (i = 0; i < 10; ++i) {
+      managedImageDestroy(state->frames[i]);
+   }
 
    cursorManagerSetShown(state->view->managers->cursorManager, true);
    renderManagerRemoveLayerRenderer(state->view->managers->renderManager, LayerConsole);
