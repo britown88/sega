@@ -143,6 +143,7 @@
     <ClCompile Include="MapEditor.c" />
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="RichText.c" />
+    <ClCompile Include="SplashState.c" />
     <ClCompile Include="TextBoxManager.c" />
     <ClCompile Include="VerbManager.c" />
     <ClCompile Include="WaitManager.c" />

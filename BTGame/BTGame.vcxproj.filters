@@ -206,5 +206,8 @@
     <ClCompile Include="Weather.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SplashState.c">
+      <Filter>Source Files\Game States</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

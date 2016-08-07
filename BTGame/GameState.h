@@ -14,3 +14,4 @@ DeclStateMessageWithData(GameStateRender, { Frame *frame; });
 StateClosure gameStateCreateWorld(WorldView *view);
 StateClosure gameStateCreateConsole(WorldView *view);
 StateClosure gameStateCreateEditor(WorldView *view);
+StateClosure gameStateCreateSplash(WorldView *view);

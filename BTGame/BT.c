@@ -254,7 +254,7 @@ void _onStart(BTGame *self){
    _addTestEntities(self);
 
    //push the opening state
-   fsmPush(self->gameState, gameStateCreateWorld(&self->view));
+   fsmPush(self->gameState, gameStateCreateSplash(&self->view));
    
    luaStartup(self->L);
 }

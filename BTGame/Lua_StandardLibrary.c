@@ -57,6 +57,7 @@ int slua_openEditor(lua_State *L) {
    return 0;
 }
 
+
 int slua_rand(lua_State *L) {
    int lower = (int)luaL_checkinteger(L, 1);
    int upper = (int)luaL_checkinteger(L, 2);
