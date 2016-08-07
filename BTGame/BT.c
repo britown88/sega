@@ -215,10 +215,12 @@ static void _addTestEntities(BTGame *app) {
    app->view.backgroundEntity = e;
 
    {
+
+
       StringView boxName = stringIntern("smallbox");
-      TextBox *tb = textBoxManagerCreateTextBox(app->managers.textBoxManager, boxName, (Recti) { 15, 22, 38, 24 });
-      textBoxPushText(tb, "You are likely to be eaten by a [c=0,13]grue[/c].");
-      textBoxShow(tb);
+      TextArea *area = textAreaCreate(15, 22, 23, 2);
+      textAreaPushText(area, "You are likely to be eaten by a [c=0,13]grue[/c].");
+      textAreaManagerRegister(app->view.textAreaManager, boxName, area);
 
    }
 

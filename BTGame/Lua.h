@@ -7,6 +7,7 @@ typedef struct Entity_t Entity;
 typedef struct lua_State lua_State;
 typedef int(*lua_CFunction) (lua_State *L);
 typedef struct WorldView_t WorldView;
+typedef struct TextArea_t TextArea;
 
 lua_State *luaCreate();
 void luaDestroy(lua_State *L);
@@ -41,7 +42,6 @@ void luaRequire(lua_State *L, const char *modname);
 #define LLIB_PAL "pal"
 #define LLIB_CONST "const"
 
-void luaInitConstants(lua_State *L);
 void luaLoadAllLibraries(lua_State *L, WorldView *view);
 void luaLoadAssets(lua_State *L);
 void luaStartup(lua_State *L);
@@ -60,7 +60,7 @@ int luaActorStepAllScripts(WorldView *view, lua_State *L);//calls stepScript on 
 void luaActorInteract(lua_State *L, Entity *e, Verbs v);//actor:pushScript(actor.responses.verb) if it is available
 
 void luaLoadUILibrary(lua_State *L);
-void luaUIAddTextArea(lua_State *L, StringView name);
+void luaUIAddTextArea(lua_State *L, StringView name, TextArea *area);
 
 void luaLoadDBLibrary(lua_State *L);
 

@@ -22,3 +22,14 @@ function test.toFight(actor)
   local px,py = player:position()
   actions.move(actor, px, py)
 end
+
+function testText(actor)
+  actions.move(player, 10, 10);
+  textAreas.smallbox:push("Let's wait a second. THis message should scroll a little bit so we have to talk a bit oh boy isnt it a beautiful day today i think so yess ok.")
+  textAreas.smallbox:wait()
+  actions.wait(1)
+  textAreas.smallbox:push("Ok let's go")
+  textAreas.smallbox:wait()
+  actions.move(player, 1, 1);
+  textAreas.smallbox:push("And done!")
+end

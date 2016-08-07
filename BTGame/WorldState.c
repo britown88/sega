@@ -8,6 +8,7 @@
 #include "ImageLibrary.h"
 #include "ChoicePrompt.h"
 #include "Weather.h"
+#include "TextArea.h"
 
 #include "Entities\Entities.h"
 
@@ -21,6 +22,8 @@
 
 typedef struct {
    WorldView *view;
+
+   TextArea *smallbox;
 }WorldState;
 
 static void _worldStateCreate(WorldState *self) { 
@@ -62,38 +65,45 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    waitManagerUpdate(managers->waitManager);
    gridMovementManagerUpdate(managers->gridMovementManager);
    pcManagerUpdate(managers->pcManager);
-   textBoxManagerUpdate(managers->textBoxManager);
    actorManagerUpdate(managers->actorManager);
+
+   textAreaUpdate(state->smallbox, state->view);
 }
 
-static void _registerGridRenders(WorldView *view) {
-   LayerRenderer grid, light, weather;
+static void _drawTextAreas(WorldState *state, Frame *frame) {
+   textAreaRender(state->smallbox, state->view, frame);
+}
+
+static void _registerGridRenders(WorldState *state, WorldView *view) {
+   LayerRenderer grid, light, weather, textAreas;
 
    closureInit(LayerRenderer)(&grid, view->managers->gridManager, &gridManagerRender, NULL);
    closureInit(LayerRenderer)(&weather, view->weather, &weatherRender, NULL);
    closureInit(LayerRenderer)(&light, view->managers->gridManager, &gridManagerRenderLighting, NULL);
+   closureInit(LayerRenderer)(&textAreas, state, &_drawTextAreas, NULL);
 
    renderManagerAddLayerRenderer(view->managers->renderManager, LayerGrid, grid);
    renderManagerAddLayerRenderer(view->managers->renderManager, LayerGridWeather, weather);
    renderManagerAddLayerRenderer(view->managers->renderManager, LayerGridLighting, light);
+
+   renderManagerAddLayerRenderer(view->managers->renderManager, LayerConsole, textAreas);
 }
 
 void _worldEnter(WorldState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
-   TextBox *tb = textBoxManagerGet(managers->textBoxManager, stringIntern("smallbox"));
-   textBoxShow(tb);
+   state->smallbox = textAreaManagerGet(state->view->textAreaManager, stringIntern("smallbox"));
 
    verbManagerSetEnabled(managers->verbManager, true);
    changeBackground(state->view, IMG_BG);
 
-   _registerGridRenders(state->view);
+   _registerGridRenders(state, state->view);
 }
 void _worldExit(WorldState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
-   TextBox *tb = textBoxManagerGet(managers->textBoxManager, stringIntern("smallbox"));
-   textBoxHide(tb);
 
    verbManagerSetEnabled(managers->verbManager, false);
+
+   renderManagerRemoveLayerRenderer(state->view->managers->renderManager, LayerConsole);
 }
 
 static void _handleKeyboard(WorldState *state) {

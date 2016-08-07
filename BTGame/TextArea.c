@@ -2,9 +2,11 @@
 #include "WorldView.h"
 #include "RichText.h"
 #include "Managers.h"
+#include "Lua.h"
 #include "segalib/EGA.h"
 
 #include "segautils/StandardVectors.h"
+#include "segautils/BitTwiddling.h"
 
 #include "segashared/CheckedMemory.h"
 
@@ -79,6 +81,9 @@ void textAreaManagerRegister(TextAreaManager *self, StringView id, TextArea *are
    else {
       htInsert(GTA)(self->areaTable, &(GTA){.id = id, .area = area });
    }
+
+   //now sync it with lua
+   luaUIAddTextArea(self->view->L, id, area);
 }
 
 TextArea *textAreaCreate(short x, short y, short width, short height) {
@@ -101,7 +106,7 @@ TextArea *textAreaCreate(short x, short y, short width, short height) {
    out->width = MIN(EGA_TEXT_RES_WIDTH - out->x, out->width);
    out->height = MIN(EGA_TEXT_RES_HEIGHT - out->y, out->height);
 
-   out->done = out->done = true;
+   out->done = out->shown = true;
 
    out->rt = richTextCreateFromRaw("");
    out->lines = vecCreate(RichTextLine)(&richTextLineDestroy);
@@ -110,8 +115,8 @@ TextArea *textAreaCreate(short x, short y, short width, short height) {
 
    //create empty shown lines
    for (i = 0; i < out->height; ++i) {
-      RichTextLine *shownLine = vecCreate(Span)(&spanDestroy);
-      vecPushBack(RichTextLine)(out->shownLines, &shownLine);
+      RichTextLine l = vecCreate(Span)(&spanDestroy);
+      vecPushBack(RichTextLine)(out->shownLines, &l);
    }
 
    out->workingLine = stringCreate("");
@@ -158,7 +163,7 @@ static void _renderNextMessageToLines(TextArea *self) {
 
 static void _clearShownLines(TextArea *self) {
    vecForEach(RichTextLine, line, self->shownLines, {
-      vecClear(Span)(line);
+      vecClear(Span)(*line);
    });
 }
 
@@ -174,11 +179,11 @@ static void _updateLines(TextArea *self) {
       RichTextLine *shownLine = vecAt(RichTextLine)(self->shownLines, i);
       RichTextLine rtline = *vecAt(RichTextLine)(self->lines, line);
 
-      vecClear(Span)(shownLine);
+      vecClear(Span)(*shownLine);
 
       if (line != self->currentLine) {
          //copy over the full line
-         richTextLineCopy(rtline, shownLine);
+         richTextLineCopy(rtline, *shownLine);
       }
       else {
          //midline, copy partial
@@ -191,7 +196,7 @@ static void _updateLines(TextArea *self) {
             size_t spanLen = stringLen(iter->string);
             if ((int)current + (int)spanLen < self->currentChar) {
                //the full span fits so add it
-               vecPushBack(Span)(shownLine, &(Span){
+               vecPushBack(Span)(*shownLine, &(Span){
                   .style = { iter->style.flags, iter->style.fg, iter->style.bg },
                      .string = stringCopy(iter->string)
                });
@@ -203,7 +208,7 @@ static void _updateLines(TextArea *self) {
                String *partial = stringCreate("");
 
                stringConcatEX(partial, c_str(iter->string), partialLen);
-               vecPushBack(Span)(shownLine, &(Span){
+               vecPushBack(Span)(*shownLine, &(Span){
                   .style = { iter->style.flags, iter->style.fg, iter->style.bg },
                      .string = partial
                });
@@ -226,7 +231,7 @@ void textAreaUpdate(TextArea *self, WorldView *view) {
          self->done = false;
          self->nextChar = gameClockGetTime(view->gameClock);
 
-         _renderNextMessageToLines(self, self);
+         _renderNextMessageToLines(self);
       }
    }
    else if (!vecIsEmpty(RichTextLine)(self->lines)) {
@@ -267,7 +272,7 @@ void textAreaUpdate(TextArea *self, WorldView *view) {
             }
          }
 
-         _updateEntityLines(self);
+         _updateLines(self);
       }
    }
 }
@@ -275,11 +280,15 @@ void textAreaRender(TextArea *self, WorldView *view, Frame *frame) {
    byte x = self->x;
    byte y = self->y;
 
+   if (!self->shown) {
+      return;
+   }
+
    vecForEach(RichTextLine, line, self->shownLines, {      
-      vecForEach(Span, span, line, {
+      vecForEach(Span, span, *line, {
          renderManagerRenderSpan(view->managers->renderManager, frame, &x, &y, span);
       });
-      x = 0;
+      x = self->x;
       ++y;
    });
 }

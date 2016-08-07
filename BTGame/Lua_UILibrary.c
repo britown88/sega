@@ -22,7 +22,7 @@ static int slua_promptChoices(lua_State *L);
 
 static int slua_textAreaAddTextArea(lua_State *L) {
    const char *name = lua_tostring(L, 1);
-   StringView *sv = lua_touserdata(L, 2);   
+   TextArea *area = lua_touserdata(L, 2);   
    
    lua_getglobal(L, LLIB_TEXT_AREAS);
    lua_pushstring(L, name);
@@ -31,17 +31,17 @@ static int slua_textAreaAddTextArea(lua_State *L) {
    lua_getglobal(L, LLIB_TEXT_AREA);
    lua_call(L, 1, 1);
 
-   luaPushUserDataTable(L, "name", (void*)sv);
+   luaPushUserDataTable(L, "area", (void*)area);
 
    lua_settable(L, -3);
    lua_pop(L, 1);
    return 0;
 }
 
-void luaUIAddTextArea(lua_State *L, StringView name) {
+void luaUIAddTextArea(lua_State *L, StringView name, TextArea *area) {
    lua_pushcfunction(L, &slua_textAreaAddTextArea);
    lua_pushstring(L, name);
-   lua_pushlightuserdata(L, (void*)name);
+   lua_pushlightuserdata(L, (void*)area);
    if (lua_pcall(L, 2, 0, 0)) {
       WorldView *view = luaGetWorldView(L);
       consolePrintLuaError(view->console, "Error adding text area");
@@ -64,65 +64,41 @@ void luaLoadUILibrary(lua_State *L) {
    luaPushFunctionGlobal(L, "promptChoices", &slua_promptChoices);
 }
 
-static TextArea *_resolveTextAreaFromStack(WorldView *view, lua_State *L) {
+static TextArea *_resolveTextAreaFromStack(WorldView *view, lua_State *L, int idx) {
+   TextArea *out = NULL;   
+   luaL_checktype(L, idx, LUA_TTABLE);
 
-}
-
-static StringView _nameFromTable(WorldView *view, lua_State *L) {
-   StringView name = NULL;
-   
-   //get name
-   lua_pushliteral(L, "name");
-   lua_gettable(L, 1);
+   lua_pushliteral(L, "area");
+   lua_gettable(L, idx);
    if (lua_isuserdata(L, -1)) {
-      name = lua_touserdata(L, -1);
+      out = lua_touserdata(L, -1);
    }
-   else if (lua_isstring(L, -1)) {
-      name = stringIntern(luaL_checkstring(L, -1));
-   }
+
    lua_pop(L, 1);
 
-   if (!name) {
-      lua_pushliteral(L, "Failed to find text area. Invalid name argument.");
+   if (!out) {
+      lua_pushliteral(L, "Invalid text area object.");
       lua_error(L);
    }
 
-   return name;
+   return out;
 }
 
 int slua_textAreaPush(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    const char *msg = luaL_checkstring(L, 2);
-   StringView name = NULL;
-   TextBox *tb = NULL;
-   luaL_checktype(L, 1, LUA_TTABLE);
+   TextArea *area = _resolveTextAreaFromStack(view, L, 1);
 
-   name = _nameFromTable(view, L);
-   tb = textBoxManagerGet(view->managers->textBoxManager, name);
-
-   if (!tb) {
-      lua_pushliteral(L, "Failed to push text. Name not found.");
-      lua_error(L);
-   }
-
-   textBoxPushText(tb, msg);
+   textAreaPushText(area, msg);
 
    return 0;
 }
 
 int slua_textAreaWaitK(lua_State *L, int status, lua_KContext ctx) {
    WorldView *view = luaGetWorldView(L);
-   TextBox *tb = NULL;
-   StringView name = lua_touserdata(L, -1);
+   TextArea *area = lua_touserdata(L, -1);
 
-   tb = textBoxManagerGet(view->managers->textBoxManager, name);
-
-   if (!tb) {
-      lua_pushliteral(L, "Failed to wait. Name not found.");
-      lua_error(L);
-   }
-
-   if (!textBoxIsDone(tb)) {
+   if (!textAreaIsDone(area)) {
       return lua_yieldk(L, 0, ctx + 1, &slua_textAreaWaitK);
    }
 
@@ -132,67 +108,38 @@ int slua_textAreaWaitK(lua_State *L, int status, lua_KContext ctx) {
 
 int slua_textAreaWait(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   StringView name = NULL;
-   
-   luaL_checktype(L, 1, LUA_TTABLE);
-   name = _nameFromTable(view, L);   
+   TextArea *area = _resolveTextAreaFromStack(view, L, 1);
 
-   lua_pushlightuserdata(L, (void*)name);
+   lua_pushlightuserdata(L, (void*)area);
    return lua_yieldk(L, 1, 0, &slua_textAreaWaitK);
 }
 
 
 int slua_textAreaHide(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   StringView name = NULL;
-   TextBox *tb = NULL;
-   luaL_checktype(L, 1, LUA_TTABLE);
-   name = _nameFromTable(view, L);
-   tb = textBoxManagerGet(view->managers->textBoxManager, name);
+   TextArea *area = _resolveTextAreaFromStack(view, L, 1);
 
-   if (!tb) {
-      lua_pushliteral(L, "Failed to hide text area.  Name not found.");
-      lua_error(L);
-   }
-
-   textBoxHide(tb);
+   textAreaHide(area);
 
    return 0;
 }
 
 int slua_textAreaShow(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   StringView name = NULL;
-   TextBox *tb = NULL;
-   luaL_checktype(L, 1, LUA_TTABLE);
-   name = _nameFromTable(view, L);
-   tb = textBoxManagerGet(view->managers->textBoxManager, name);
 
-   if (!tb) {
-      lua_pushliteral(L, "Failed to show text area.  Name not found.");
-      lua_error(L);
-   }
+   TextArea *area = _resolveTextAreaFromStack(view, L, 1);
 
-   textBoxShow(tb);
+   textAreaShow(area);
 
    return 0;
 }
 
 int slua_textAreaSetVisibility(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   StringView name = NULL;
-   TextBox *tb = NULL;
+   TextArea *area = _resolveTextAreaFromStack(view, L, 1);
    bool show = lua_toboolean(L, 2);
-   luaL_checktype(L, 1, LUA_TTABLE);
-   name = _nameFromTable(view, L);
-   tb = textBoxManagerGet(view->managers->textBoxManager, name);
 
-   if (!tb) {
-      lua_pushliteral(L, "Failed to hide text area.  Name not found.");
-      lua_error(L);
-   }
-
-   textBoxSetVisibility(tb, show);
+   textAreaSetVisibility(area, show);
 
    return 0;
 }
