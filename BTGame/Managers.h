@@ -6,6 +6,7 @@
 #include "segashared/Strings.h"
 #include "Verbs.h"
 #include "RenderLayers.h"
+#include "RichText.h"
 
 
 typedef struct RenderManager_t RenderManager;
@@ -15,7 +16,6 @@ typedef struct InterpolationManager_t InterpolationManager;
 typedef struct WaitManager_t WaitManager;
 typedef struct GridMovementManager_t GridMovementManager;
 typedef struct PCManager_t PCManager;
-typedef struct TextBoxManager_t TextBoxManager;
 typedef struct VerbManager_t VerbManager;
 typedef struct ActorManager_t ActorManager;
 typedef struct ClockManager_t ClockManager;
@@ -32,7 +32,6 @@ typedef struct BTManagers_t {
    WaitManager *waitManager;
    GridMovementManager *gridMovementManager;   
    PCManager *pcManager;
-   TextBoxManager *textBoxManager;
    VerbManager *verbManager;
    ActorManager *actorManager;
    ClockManager *clockManager;
@@ -47,6 +46,7 @@ typedef struct BTManagers_t {
 RenderManager *createRenderManager(WorldView *view, double *fps);
 void renderManagerInitialize(RenderManager *self);
 void renderManagerRender(RenderManager *self, Frame *frame);
+void renderManagerRenderSpan(RenderManager *self, Frame *frame, byte *x, byte *y, Span *span);
 void renderManagerToggleFPS(RenderManager *self);
 void renderManagerAddLayerRenderer(RenderManager *self, Layer l, LayerRenderer renderer);
 void renderManagerRemoveLayerRenderer(RenderManager *self, Layer l);
@@ -93,18 +93,8 @@ void pcManagerToggleTorch(PCManager *self);
 void pcManagerSetTorch(PCManager *self, bool torchOn);
 void pcManagerSetSneak(PCManager *self, bool sneaking);
 
-typedef struct TextBox_t TextBox;
 
-TextBoxManager *createTextBoxManager(WorldView *view);
-TextBox *textBoxManagerCreateTextBox(TextBoxManager *self, StringView name, Recti area);
-void textBoxManagerUpdate(TextBoxManager *self);
-TextBox *textBoxManagerGet(TextBoxManager *self, StringView name);
 
-void textBoxPushText(TextBox *self, const char *msg);
-bool textBoxIsDone(TextBox *self);
-void textBoxSetVisibility(TextBox *self, bool visible);
-void textBoxHide(TextBox *self);
-void textBoxShow(TextBox *self);
 
 
 

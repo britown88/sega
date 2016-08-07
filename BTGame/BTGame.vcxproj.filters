@@ -96,6 +96,9 @@
     <ClInclude Include="Weather.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TextArea.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -142,9 +145,6 @@
     </ClCompile>
     <ClCompile Include="GridSolver.c">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextBoxManager.c">
-      <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="VerbManager.c">
       <Filter>Source Files\Managers</Filter>
@@ -208,6 +208,9 @@
     </ClCompile>
     <ClCompile Include="SplashState.c">
       <Filter>Source Files\Game States</Filter>
+    </ClCompile>
+    <ClCompile Include="TextArea.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

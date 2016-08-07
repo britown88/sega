@@ -15,6 +15,7 @@ typedef struct MapEditor_t MapEditor;
 typedef struct ChoicePrompt_t ChoicePrompt;
 typedef struct DB_t DB;
 typedef struct Weather_t Weather;
+typedef struct TextAreaManager_t TextAreaManager;
 
 typedef struct WorldView_t {
    BTManagers *managers;
@@ -31,4 +32,5 @@ typedef struct WorldView_t {
    ChoicePrompt *choicePrompt;
    DB *db;
    Weather *weather;
+   TextAreaManager *textAreaManager;
 }WorldView;

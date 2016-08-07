@@ -20,6 +20,7 @@
 #include "ChoicePrompt.h"
 #include "DB.h"
 #include "Weather.h"
+#include "TextArea.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -39,6 +40,7 @@ typedef struct {
    ChoicePrompt *choicePrompt;
    DB *db;
    Weather *weather;
+   TextAreaManager *textAreaManager;
 
    lua_State *L;
 
@@ -99,7 +101,6 @@ void _initEntitySystem(BTGame *self){
    RegisterManager(self->managers.waitManager, createWaitManager(&self->view));
    RegisterManager(self->managers.gridMovementManager, createGridMovementManager(&self->view));
    RegisterManager(self->managers.pcManager, createPCManager(&self->view));
-   RegisterManager(self->managers.textBoxManager, createTextBoxManager(&self->view));
    RegisterManager(self->managers.verbManager, createVerbManager(&self->view));
    RegisterManager(self->managers.actorManager, createActorManager(&self->view));
 }
@@ -152,6 +153,9 @@ VirtualApp *btCreate() {
    r->choicePrompt = createChoicePrompt(&r->view);
    r->view.choicePrompt = r->choicePrompt;
 
+   r->textAreaManager = textAreaManagerCreate(&r->view);
+   r->view.textAreaManager = r->textAreaManager;
+
    return (VirtualApp*)r;
 }
 
@@ -171,6 +175,7 @@ void _destroy(BTGame *self){
    choicePromptDestroy(self->choicePrompt);
    DBDestroy(self->db);
    weatherDestroy(self->weather);
+   textAreaManagerDestroy(self->textAreaManager);
    
    luaDestroy(self->L);
    checkedFree(self);

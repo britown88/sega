@@ -208,7 +208,7 @@ void _renderPolygon(Frame *frame, FrameRegion *vp, vec(Int2) *pList, byte color,
    }   
 }
 
-void _renderRichTextLine(RenderManager *self, Frame *frame, byte *x, byte *y, Span *span) {
+void renderManagerRenderSpan(RenderManager *self, Frame *frame, byte *x, byte *y, Span *span) {
    Font *font;
    byte bg = 0, fg = 15;//default colors
 
@@ -218,8 +218,8 @@ void _renderRichTextLine(RenderManager *self, Frame *frame, byte *x, byte *y, Sp
    }
 
    if (span->style.flags&Style_Invert) {
-      bg |= (fg<<4);
-      fg = bg&15;
+      bg |= (fg << 4);
+      fg = bg & 15;
       bg >>= 4;
    }
 
@@ -242,7 +242,7 @@ void _renderEntityText(RenderManager *self, Frame *frame, Entity *e) {
          byte x = line->x;
          byte y = line->y;
          vecForEach(Span, span, line->line,{
-            _renderRichTextLine(self, frame, &x, &y, span);
+            renderManagerRenderSpan(self, frame, &x, &y, span);
          });
       });
    }

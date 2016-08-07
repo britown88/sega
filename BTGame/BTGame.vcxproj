@@ -113,6 +113,7 @@
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="RenderLayers.h" />
     <ClInclude Include="RichText.h" />
+    <ClInclude Include="TextArea.h" />
     <ClInclude Include="Tiles.h" />
     <ClInclude Include="Verbs.h" />
     <ClInclude Include="Viewport.h" />
@@ -144,7 +145,7 @@
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="RichText.c" />
     <ClCompile Include="SplashState.c" />
-    <ClCompile Include="TextBoxManager.c" />
+    <ClCompile Include="TextArea.c" />
     <ClCompile Include="VerbManager.c" />
     <ClCompile Include="WaitManager.c" />
     <ClCompile Include="Weather.c" />

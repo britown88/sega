@@ -4,6 +4,7 @@
 #include "Managers.h"
 #include "Console.h"
 #include "ChoicePrompt.h"
+#include "TextArea.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -61,6 +62,10 @@ void luaLoadUILibrary(lua_State *L) {
    lua_setglobal(L, LLIB_TEXT_AREA);
 
    luaPushFunctionGlobal(L, "promptChoices", &slua_promptChoices);
+}
+
+static TextArea *_resolveTextAreaFromStack(WorldView *view, lua_State *L) {
+
 }
 
 static StringView _nameFromTable(WorldView *view, lua_State *L) {
