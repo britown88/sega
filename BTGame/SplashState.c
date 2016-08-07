@@ -8,6 +8,7 @@
 #include "ImageLibrary.h"
 #include "MapEditor.h"
 #include "DB.h"
+#include "Lua.h"
 
 #include "Entities\Entities.h"
 
@@ -38,6 +39,12 @@ static void _splashStateCreate(SplashState *state) {
    state->copyright = textAreaCreate(11, 24, 18, 1);
 }
 static void _splashStateDestroy(SplashState *self) {
+   textAreaDestroy(self->select);
+   textAreaDestroy(self->cont);
+   textAreaDestroy(self->new);
+   textAreaDestroy(self->ack);
+   textAreaDestroy(self->quit);
+   textAreaDestroy(self->copyright);
    checkedFree(self);
 }
 
@@ -117,6 +124,8 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
       }
 
       fsmPush(state->view->gameState, gameStateCreateWorld(state->view));
+
+      luaStartup(state->view->L);
    }
 
 }

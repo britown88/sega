@@ -264,7 +264,7 @@ void _onStart(BTGame *self){
    //push the opening state
    fsmPush(self->gameState, gameStateCreateSplash(&self->view));
    
-   luaStartup(self->L);
+   
 }
 
 

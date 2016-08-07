@@ -13,6 +13,9 @@ typedef struct {
    int distance;
    Float2 slope;
    Int2 startPos;
+   Milliseconds speed;//ms per pixel of distance
+   byte color;
+   int length;
 }Raindrop;
 
 #define VectorT Raindrop
@@ -25,7 +28,7 @@ struct Weather_t {
 };
 
 void testRain(Weather *self) {
-   Float3 n = vNormalized((Float3){0.0f, 3.0f, 0.0f});
+   Float3 n = vNormalized((Float3){-1.0f, 3.0f, 0.0f});
    Float2 n2 = { n.x, n.y };
    Microseconds speed = t_m2u(1000);
 
@@ -36,12 +39,15 @@ void testRain(Weather *self) {
 
    App *app = appGet();
 
-   for (int i = 0; i < 1000; ++i) {
+   for (int i = 0; i < 500; ++i) {
       Raindrop r = {
          .startTime = gameClockGetTime(self->view->gameClock),
          .distance = appRand(app, 50, 150),
          .slope = {n.x, n.y},
-         .startPos = {appRand(app, left, right), appRand(app, top, bottom)}
+         .startPos = {appRand(app, left, right), appRand(app, top, bottom)},
+         .speed = 10,
+         .color = 7,
+         .length = 15
       };
       vecPushBack(Raindrop)(self->rain, &r);
    }
@@ -63,7 +69,7 @@ void weatherDestroy(Weather *self) {
 static void _renderRaindrop(Weather *self, Raindrop *r, Frame *frame) {
    Microseconds currentTime = gameClockGetTime(self->view->gameClock);
 
-   if (currentTime - r->startTime > r->distance * 10000) {
+   if (currentTime - r->startTime > t_m2u(r->distance * r->speed)) {
       //reboot
       int left = self->view->viewport->worldPos.x - 100;
       int top = self->view->viewport->worldPos.y - 100;
@@ -76,14 +82,16 @@ static void _renderRaindrop(Weather *self, Raindrop *r, Frame *frame) {
       r->startTime = currentTime;
    }
    else {
-      float d = t_u2s(currentTime - r->startTime) / (float)(r->distance/20.0f);
+      float d = t_u2s(currentTime - r->startTime) / t_m2s(r->distance*r->speed);
       int x0 = r->startPos.x + r->distance * r->slope.x * d;
       int y0 = r->startPos.y + r->distance * r->slope.y * d;
-      int x1 = x0 + r->slope.x * 1.0f;
-      int y1 = y0 + r->slope.y * 1.0f;
+      int x1 = x0 + r->slope.x  + r->slope.x * r->length * d;
+      int y1 = y0 + r->slope.y + r->slope.y * r->length * d;
+      int vpx = self->view->viewport->worldPos.x;
+      int vpy = self->view->viewport->worldPos.y;
 
       frameRenderLine(frame, &self->view->viewport->region,
-          x0, y0, x1, y1, 2 );
+          x0 - vpx, y0 - vpy, x1 - vpx, y1 - vpy, r->color );
    }
 }
 
