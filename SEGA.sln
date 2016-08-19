@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SEGA", "SEGA\SEGA.vcxproj", "{3DE6287E-1249-41C4-A0F2-378BA3B0DD5A}"
 EndProject
@@ -43,6 +43,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "liblua", "liblua\liblua.vcxproj", "{221073A0-4AB3-4C7D-9B10-5F09732836A2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqlite", "sqlite\sqlite.vcxproj", "{FB4684D7-1879-4331-8F06-30B8B69FB1D7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "segasound", "segasound\segasound.vcxproj", "{04C27234-F55F-4E6A-9FBD-A96A88E81747}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -158,6 +160,14 @@ Global
 		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Release|Win32.Build.0 = Release|Win32
 		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Release|x64.ActiveCfg = Release|x64
 		{FB4684D7-1879-4331-8F06-30B8B69FB1D7}.Release|x64.Build.0 = Release|x64
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Debug|Win32.ActiveCfg = Debug|Win32
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Debug|Win32.Build.0 = Debug|Win32
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Debug|x64.ActiveCfg = Debug|x64
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Debug|x64.Build.0 = Debug|x64
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Release|Win32.ActiveCfg = Release|Win32
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Release|Win32.Build.0 = Release|Win32
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Release|x64.ActiveCfg = Release|x64
+		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

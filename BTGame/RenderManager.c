@@ -369,6 +369,40 @@ void renderManagerInitialize(RenderManager *self) {
    }
 }
 
+#include <math.h>
+#define SAMPLES 100000
+#define PI  3.14159265358979323846
+
+static int it = 0;
+
+void renderWave(Frame *f, double freq, int color) {
+   int i = 0;
+   double period = 1.0 / freq;
+   double sinScale = 2.0 * (PI / period);
+
+   double period2 = 1.0 /(freq*2);
+   double sinScale2 = 2.0 * (PI / period2);
+
+   for (i = 0; i < EGA_RES_WIDTH<<4; ++i) {
+      double t = (it + i) * (1.0 / SAMPLES);
+      double v = sin(sinScale * t);
+      double cv = cos(sinScale * t);
+      double v2 = sin(sinScale2 * t);
+
+      v = (v + v2 + 1.0) * 0.5;
+      v = MAX(0.0, MIN(1.0, v));
+
+      cv = (cv + 1.0) * 0.5;
+      cv = MAX(0.0, MIN(1.0, cv));
+
+      frameRenderPoint(f, FrameRegionFULL, i>>2, (EGA_RES_HEIGHT * v), color);
+      //frameRenderPoint(f, FrameRegionFULL, i >> 2, (EGA_RES_HEIGHT * cv), color+1);
+
+
+   }
+   ++it;
+}
+
 void renderManagerRender(RenderManager *self, Frame *frame){
    frameClear(frame, FrameRegionFULL, 0);
 
@@ -388,8 +422,19 @@ void renderManagerRender(RenderManager *self, Frame *frame){
 
    _renderLayers(self, frame);
 
-   if (self->showFPS) {
+  if (self->showFPS) {
       _renderFramerate(frame, fontFactoryGetFont(self->fontFactory, 0, 15), *self->fps);
+   }
+
+
+
+
+   {
+      renderWave(frame, 100.00, 4);
+      //renderWave(frame, 440.00, 4);
+      //renderWave(frame, 494.00, 5);
+      //renderWave(frame, 523.25, 6);
+      //renderWave(frame, 698.46, 7);
    }
 }
 
