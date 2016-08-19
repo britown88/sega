@@ -258,7 +258,7 @@ void appSetPalette(App *self, Palette *p){
    paletteCopy(&self->subclass->currentPalette, p);
 }
 
-int appListFiles(App *self, const char *root, int type, vec(StringPtr) **out, const char *ext) {
+int appListFiles(const char *root, int type, vec(StringPtr) **out, const char *ext) {
    WIN32_FIND_DATA ffd;
    TCHAR szDir[MAX_PATH];
    size_t length_of_arg;

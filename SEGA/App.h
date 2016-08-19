@@ -81,7 +81,7 @@ DLL_PUBLIC void appSetPalette(App *self, Palette *p);
 #define APP_FILE_DIR_ONLY 2  //returns only directories
 #define APP_FILE_FILE_ONLY 3 //return only files
 
-DLL_PUBLIC int appListFiles(App *self, const char *root, int type, vec(StringPtr) **out, const char *ext);
+DLL_PUBLIC int appListFiles(const char *root, int type, vec(StringPtr) **out, const char *ext);
 
 
 

@@ -87,7 +87,12 @@ void bitBufferWriteBits(BitBuffer *self, int bitCount, byte *data) {
 
 byte *readFullFile(const char *path, long *fsize) {
    byte *string;
+   long fsizeBuffer = 0;
    FILE *f = fopen(path, "rb");
+
+   if (!fsize) {
+      fsize = &fsizeBuffer;
+   }
 
    if (!f) {
       return NULL;

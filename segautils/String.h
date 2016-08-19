@@ -19,7 +19,9 @@ size_t stringFindLastOf(String *self, const char *characters);
 void stringClear(String *self);
 void stringSubStr(String *self, size_t start, size_t len);
 String *stringGetFilename(String *str); //returns new, truncates after last . and before last /
+String *stringGetDirectory(String *str); //returns new, truncates after last /
 void stringConcat(String *self, const char*str);
+void stringConcatChar(String *self, const char c);
 void stringConcatEX(String *self, const char*str, size_t length);
 void stringSet(String *self, const char*str);
 void stringInsert(String *self, char c, size_t pos);

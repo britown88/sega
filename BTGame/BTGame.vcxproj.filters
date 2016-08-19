@@ -22,6 +22,15 @@
     <Filter Include="Source Files\Lua">
       <UniqueIdentifier>{6c69116a-9990-4962-91e0-90347a70d4f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\DBGen">
+      <UniqueIdentifier>{f93ab4af-53d0-4bd6-894f-51f24cefaf74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Generated">
+      <UniqueIdentifier>{071300d4-adaa-487f-95a6-16a8a94794cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Generated">
+      <UniqueIdentifier>{24f9c756-b789-4e19-886c-4b43bb47d87f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BT.h">
@@ -98,6 +107,12 @@
     </ClInclude>
     <ClInclude Include="TextArea.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="test.dbh">
+      <Filter>Header Files\DBGen</Filter>
+    </ClInclude>
+    <ClInclude Include="test.h">
+      <Filter>Header Files\Generated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -211,6 +226,9 @@
     </ClCompile>
     <ClCompile Include="TextArea.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test.c">
+      <Filter>Source Files\Generated</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

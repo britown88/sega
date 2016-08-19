@@ -69,12 +69,29 @@ String *stringGetFilename(String *self) {
    return out;
 }
 
+String *stringGetDirectory(String *self) {
+   size_t dirPos = stringFindLastOf(self, "\\/");
+   String *out = stringCreate("");
+
+   if (dirPos != stringNPos) {
+      vecResize(char)((vec(char)*)out, dirPos + 1, &(char){0});
+      memcpy((char*)c_str(out), (char*)c_str(self), dirPos);
+   }
+
+   return out;
+
+}
+
 void stringClear(String *self){
    vecClear(char)((vec(char)*)self);
    vecPushBack(char)((vec(char)*)self, &(char){0});
 }
 void stringConcat(String *self, const char*str){
    stringConcatEX(self, str, strlen(str));
+}
+void stringConcatChar(String *self, const char c) {
+   *(vecEnd(char)((vec(char)*)self) - 1) = c;
+   vecPushBack(char)((vec(char)*)self, &(char){0});
 }
 void stringConcatEX(String *self, const char*str, size_t length) {
    vecPopBack(char)((vec(char)*)self);//kill the terminator

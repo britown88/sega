@@ -83,7 +83,7 @@ int slua_DBInsertImageFolder(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    const char *path = lua_tostring(L, 1);
    vec(StringPtr) *list = NULL;   
-   int r = appListFiles(appGet(), path, APP_FILE_FILE_ONLY, &list, "ega");
+   int r = appListFiles(path, APP_FILE_FILE_ONLY, &list, "ega");
 
    consolePrintLine(view->console, "Inserting (*.ega) images in [c=0,5]%s[/c]", path);
 
@@ -161,7 +161,7 @@ int slua_DBInsertPaletteFolder(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    const char *path = lua_tostring(L, 1);
    vec(StringPtr) *list = NULL;
-   int r = appListFiles(appGet(), path, APP_FILE_FILE_ONLY, &list, "pal");
+   int r = appListFiles(path, APP_FILE_FILE_ONLY, &list, "pal");
 
    consolePrintLine(view->console, "Inserting (*.pal) palettes in [c=0,5]%s[/c]", path);
 

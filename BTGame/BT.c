@@ -235,9 +235,21 @@ static void _addTestEntities(BTGame *app) {
 
 }
 
-
+#include "test.h"
 
 void _onStart(BTGame *self){
+
+   DB_test *db = db_testCreate();
+   int result = dbConnect((DBBase*)db, "test.db");
+   DBImage img1 = { .id = stringCreate("foo"),.image = calloc(1, 100),.imageSize = 100,.foo = 45 };
+   vec(DBImage) *sel = NULL;
+
+   int result2 = db_testCreateTables(db);
+   dbImageInsert(db, &img1);
+   sel = dbImageSelectAll(db);
+
+
+
    self->view.L = self->L;
 
    //we need the console alive to print errors!
