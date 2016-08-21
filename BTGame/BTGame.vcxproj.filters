@@ -108,11 +108,14 @@
     <ClInclude Include="TextArea.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="test.dbh">
+    <ClInclude Include="assets.dbh">
       <Filter>Header Files\DBGen</Filter>
     </ClInclude>
-    <ClInclude Include="test.h">
+    <ClInclude Include="assets.h">
       <Filter>Header Files\Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetHelpers.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -227,8 +230,11 @@
     <ClCompile Include="TextArea.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test.c">
+    <ClCompile Include="assets.c">
       <Filter>Source Files\Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetHelpers.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,6 +19,8 @@ typedef unsigned char byte;
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 #define EMPTY_STRUCT int UNUSED
+
+#define SEGASSERT(...) if(!(__VA_ARGS__)){ int a = *(int*)0; }
 /*
 typedef struct {
    EMPTY_STRUCT;

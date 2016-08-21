@@ -1,6 +1,7 @@
 #include "ImageLibrary.h"
 #include "DB.h"
 #include "WorldView.h"
+#include "assets.h"
 
 #include "segalib\EGA.h"
 #include "segautils\BitTwiddling.h"
@@ -39,17 +40,16 @@ void managedImageDestroy(ManagedImage *self){
 Image *managedImageGetImage(ManagedImage *self){
 
    if (!self->loaded) {
-      byte *buffer;
-      int bSize;
-      int result = DBSelectImage(self->parent->view->db, self->name, &buffer, &bSize);
+      DBImage img = dbImageSelectFirstByid(self->parent->view->db, self->name);
 
-      if (result) {
+      if (!img.image) {
          return NULL;
       }
 
-      self->image = imageDeserialize(buffer, EGA_IMGD_OPTIMIZED);
-
+      self->image = imageDeserialize(img.image, EGA_IMGD_OPTIMIZED);
       self->loaded = true;
+
+      dbImageDestroy(&img);
    }
 
    return self->image;

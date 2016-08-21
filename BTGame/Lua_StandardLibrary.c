@@ -100,16 +100,7 @@ int slua_setPalette(lua_State *L) {
       lua_error(L);
    }
 
-   result = DBSelectPalette(view->db, id, &buffer, &bSize);
-
-   if (bSize != sizeof(Palette)) {
-      lua_pushliteral(L, "Failed to load palette; Got blob but invalid size?");
-      lua_error(L);
-   }
-
-   appSetPalette(appGet(), (Palette*)buffer);
-
-
+   assetsSetPalette(view->db, id);
    return 0;
 
 }

@@ -60,7 +60,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>$(OutDir)DBGen.exe test.dbh</Command>
+      <Command>$(OutDir)DBGen.exe assets.dbh</Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -92,7 +92,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PreBuildEvent>
-      <Command>$(OutDir)DBGen.exe test.dbh</Command>
+      <Command>$(OutDir)DBGen.exe assets.dbh</Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -131,6 +131,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AssetHelpers.h" />
+    <ClInclude Include="assets.h" />
     <ClInclude Include="BT.h" />
     <ClInclude Include="ChoicePrompt.h" />
     <ClInclude Include="Console.h" />
@@ -150,8 +152,7 @@
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="RenderLayers.h" />
     <ClInclude Include="RichText.h" />
-    <ClInclude Include="test.dbh" />
-    <ClInclude Include="test.h" />
+    <ClInclude Include="assets.dbh" />
     <ClInclude Include="TextArea.h" />
     <ClInclude Include="Tiles.h" />
     <ClInclude Include="Verbs.h" />
@@ -161,6 +162,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActorManager.c" />
+    <ClCompile Include="AssetHelpers.c" />
+    <ClCompile Include="assets.c" />
     <ClCompile Include="ChoicePrompt.c" />
     <ClCompile Include="Console.c" />
     <ClCompile Include="ConsoleState.c" />
@@ -184,7 +187,6 @@
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="RichText.c" />
     <ClCompile Include="SplashState.c" />
-    <ClCompile Include="test.c" />
     <ClCompile Include="TextArea.c" />
     <ClCompile Include="VerbManager.c" />
     <ClCompile Include="WaitManager.c" />

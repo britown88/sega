@@ -21,6 +21,8 @@
 
 #include "ImageLibrary.h"
 
+#include "AssetHelpers.h"
+
 #define VP_SPEED 3
 #define VP_FAST_SPEED 8
 
@@ -89,8 +91,7 @@ static void _registerTextRenders(SplashState *state) {
 
 void _splashEnter(SplashState *state, StateEnter *m) {
    BTManagers *managers = state->view->managers;
-   byte *buffer;
-   int bSize;
+
 
    state->frames[0] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire1"));
    state->frames[1] = imageLibraryGetImage(state->view->imageLibrary, stringIntern("fire2"));
@@ -117,9 +118,9 @@ void _splashEnter(SplashState *state, StateEnter *m) {
 
    cursorManagerSetShown(state->view->managers->cursorManager, false);
 
-   if (!DBSelectPalette(state->view->db, stringIntern("splash"), &buffer, &bSize)) {
-      appSetPalette(appGet(), (Palette*)buffer);
-   }
+   assetsSetPalette(state->view->db, stringIntern("splash"));
+   
+
 }
 void _splashExit(SplashState *state, StateExit *m) {
    BTManagers *managers = state->view->managers;
@@ -141,12 +142,7 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
    cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
 
    if (state->pop) {
-      byte *buffer;
-      int bSize;
-
-      if (!DBSelectPalette(state->view->db, stringIntern("default"), &buffer, &bSize)) {
-         appSetPalette(appGet(), (Palette*)buffer);
-      }
+      assetsSetPalette(state->view->db, stringIntern("default"));
 
       fsmPush(state->view->gameState, gameStateCreateWorld(state->view));
 

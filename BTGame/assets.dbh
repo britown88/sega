@@ -1,10 +1,9 @@
 struct Image{
    SELECT PRIMARY_KEY UNIQUE REPLACE_ON_CONFLICT String id;
    Blob image;
-   SELECT int foo;
 };
 
 struct Palette{
    SELECT PRIMARY_KEY UNIQUE REPLACE_ON_CONFLICT String id;
-   Blob palette;//ass
+   Blob palette;
 };

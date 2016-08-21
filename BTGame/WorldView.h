@@ -13,7 +13,7 @@ typedef struct Console_t Console;
 typedef struct lua_State lua_State;
 typedef struct MapEditor_t MapEditor;
 typedef struct ChoicePrompt_t ChoicePrompt;
-typedef struct DB_t DB;
+typedef struct DB_assets DB_assets;
 typedef struct Weather_t Weather;
 typedef struct TextAreaManager_t TextAreaManager;
 
@@ -30,7 +30,7 @@ typedef struct WorldView_t {
    MapEditor *mapEditor;
    lua_State *L;
    ChoicePrompt *choicePrompt;
-   DB *db;
+   DB_assets *db;
    Weather *weather;
    TextAreaManager *textAreaManager;
 }WorldView;

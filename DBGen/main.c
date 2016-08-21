@@ -618,6 +618,7 @@ void headerCreateStruct(FILE *f, FileData *fd, DBStruct *strct) {
    //functions
    fprintf(f, "void db%sDestroy(DB%s *self); //this does not call free on self!!\n", strct->name, strct->name);   
    fprintf(f, "int db%sInsert(DB_%s *db, const DB%s *obj);\n", strct->name, c_str(fd->inputFileOnly), strct->name);
+   fprintf(f, "int db%sUpdate(DB_%s *db, const DB%s *obj); //will base on primary key\n", strct->name, c_str(fd->inputFileOnly), strct->name);
    fprintf(f, "vec(DB%s) *db%sSelectAll(DB_%s *db);\n", strct->name, strct->name, c_str(fd->inputFileOnly));
 
    vecForEach(DBMember, member, strct->members, {
@@ -745,40 +746,68 @@ void sourceWriteBindMember(FILE *f, FileData *fd, DBStruct *strct, DBMember *mem
       "      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));\n"
       "      return DB_FAILURE;\n"
       "   }\n\n");
-
- 
 }
 
-void sourceWriteGetColumn(FILE *f, FileData *fd, DBStruct *strct, DBMember *member, const char *stmt, size_t index) {
+void sourceWriteBindMemberSelect(FILE *f, FileData *fd, DBStruct *strct, DBMember *member, const char *stmt, size_t index) {
 
    switch (member->type) {
    case TYPE_INT:
    case TYPE_BOOL:
-      fprintf(f, "      newObj.%s = sqlite3_column_int(db->%sStmts.%s, %i);\n",
-         member->name, strct->name, stmt, index);
-      break;
    case TYPE_CHAR:
-      fprintf(f, "      newObj.%s = (char)sqlite3_column_int(db->%sStmts.%s, %i);\n",
-         member->name, strct->name, stmt, index);
+      fprintf(f, "   result = sqlite3_bind_int(db->%sStmts.%s, %i, (int)%s);\n",
+         strct->name, stmt, index, member->name);
       break;
    case TYPE_BLOB:
-      fprintf(f, "      newObj.%sSize = sqlite3_column_bytes(db->%sStmts.%s, %i);\n",
-         member->name, strct->name, stmt, index);
+      fprintf(f, "   result = sqlite3_bind_blob(db->%sStmts.%s, %i, %s, %sSize, SQLITE_TRANSIENT);\n",
+         strct->name, stmt, index, member->name, member->name);
+      break;
+   case TYPE_FLOAT:
+      fprintf(f, "   result = sqlite3_bind_double(db->%sStmts.%s, %i, (double)%s);\n",
+         strct->name, stmt, index, member->name);
+      break;
+   case TYPE_STRING:
+      fprintf(f, "   result = sqlite3_bind_text(db->%sStmts.%s, %i, %s, -1, NULL);\n",
+         strct->name, stmt, index, member->name);
+      break;
+   }
+
+   fprintf(f,
+      "   if (result != SQLITE_OK) {\n"
+      "      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));\n"
+      "      return out;\n"
+      "   }\n\n");
+}
+
+void sourceWriteGetColumn(FILE *f, FileData *fd, DBStruct *strct, DBMember *member, const char *stmt, size_t index, const char *objName) {
+
+   switch (member->type) {
+   case TYPE_INT:
+   case TYPE_BOOL:
+      fprintf(f, "      %s.%s = sqlite3_column_int(db->%sStmts.%s, %i);\n",
+         objName, member->name, strct->name, stmt, index);
+      break;
+   case TYPE_CHAR:
+      fprintf(f, "      %s.%s = (char)sqlite3_column_int(db->%sStmts.%s, %i);\n",
+         objName, member->name, strct->name, stmt, index);
+      break;
+   case TYPE_BLOB:
+      fprintf(f, "      %s.%sSize = sqlite3_column_bytes(db->%sStmts.%s, %i);\n",
+         objName, member->name, strct->name, stmt, index);
 
       fprintf(f,
-         "      newObj.%s = checkedCalloc(1, newObj.%sSize);\n"
-         "      memcpy(newObj.%s, sqlite3_column_blob(db->%sStmts.%s, %i), newObj.%sSize);\n",
-         member->name, member->name, member->name, strct->name, stmt, index, member->name );
+         "      %s.%s = checkedCalloc(1, %s.%sSize);\n"
+         "      memcpy(%s.%s, sqlite3_column_blob(db->%sStmts.%s, %i), %s.%sSize);\n",
+         objName, member->name, objName, member->name, objName, member->name, strct->name, stmt, index, objName, member->name );
       
 
       break;
    case TYPE_FLOAT:
-      fprintf(f, "      newObj.%s = (float)sqlite3_column_double(db->%sStmts.%s, %i);\n",
-         member->name, strct->name, stmt, index);
+      fprintf(f, "      %s.%s = (float)sqlite3_column_double(db->%sStmts.%s, %i);\n",
+         objName, member->name, strct->name, stmt, index);
       break;
    case TYPE_STRING:
-      fprintf(f, "      newObj.%s = stringCreate(sqlite3_column_text(db->%sStmts.%s, %i));\n",
-         member->name, strct->name, stmt, index);
+      fprintf(f, "      %s.%s = stringCreate(sqlite3_column_text(db->%sStmts.%s, %i));\n",
+         objName, member->name, strct->name, stmt, index);
       break;
    }
 
@@ -798,6 +827,7 @@ void sourceWriteDestroyStatements(FILE *f, FileData *fd, DBStruct *strct) {
    fprintf(f, "void db%sDestroyStatements(DB_%s *db){\n", strct->name, c_str(fd->inputFileOnly));
 
    sourceWriteStatementDestroy(f, strct->name, "insert");
+   sourceWriteStatementDestroy(f, strct->name, "update");
    sourceWriteStatementDestroy(f, strct->name, "selectAll");
    sourceWriteStatementDestroy(f, strct->name, "deleteAll");
 
@@ -920,6 +950,68 @@ void sourceWriteInsert(FILE *f, FileData *fd, DBStruct *strct) {
 
    fprintf(f, "}\n");
 }
+void sourceWriteUpdate(FILE *f, FileData *fd, DBStruct *strct) {
+   bool first = true;
+   int i = 0;
+   DBMember *pkey = NULL;
+   fprintf(f, "int db%sUpdate(DB_%s *db, const DB%s *obj){\n", strct->name, c_str(fd->inputFileOnly), strct->name);
+
+   fprintf(f,
+      "   int result = 0;\n"
+      "   static const char *stmt = \"UPDATE \\\"%s\\\" SET ("
+      , strct->name);
+
+   vecForEach(DBMember, member, strct->members, {
+      if (!(member->mods&MOD(MODIFIER_AUTOINCREMENT))) {
+         if (member->mods&MOD(MODIFIER_PRIMARY_KEY)) {
+            pkey = member;
+            continue;
+         }
+
+         if (!first) {
+            fprintf(f, ", ");
+         }
+         else {
+            first = false;
+         }
+         fprintf(f, "\\\"%s\\\" = :%s", member->name, member->name);
+      }
+   });
+
+   fprintf(f, ") WHERE (\\\"%s\\\" = :%s)\";\n", pkey->name, pkey->name);
+
+
+   fprintf(f,
+      "   if(dbPrepareStatement((DBBase*)db, &db->%sStmts.update, stmt) != DB_SUCCESS){\n"
+      "      return DB_FAILURE;\n"
+      "   }\n\n"
+      "   //bind the values\n", strct->name
+      );
+
+   i = 1;
+   vecForEach(DBMember, member, strct->members, {
+      if (!(member->mods&MOD(MODIFIER_AUTOINCREMENT)) && !(member->mods&MOD(MODIFIER_PRIMARY_KEY))) {
+         sourceWriteBindMember(f, fd, strct, member, "update", i++);
+      }
+   });
+
+   //and the pkey
+   fprintf(f, "   //primary key:\n");
+   sourceWriteBindMember(f, fd, strct, pkey, "update", i++);
+
+   //now run it
+   fprintf(f,
+      "   //now run it\n"
+      "   result = sqlite3_step(db->%sStmts.update);\n"
+      "   if (result != SQLITE_DONE) {\n"
+      "      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));\n"
+      "      return DB_FAILURE;\n"
+      "   }\n\n"
+      "   return DB_SUCCESS;\n", strct->name
+      );
+
+   fprintf(f, "}\n");
+}
 void sourceWriteSelectAll(FILE *f, FileData *fd, DBStruct *strct) {
    
 
@@ -948,7 +1040,7 @@ void sourceWriteSelectAll(FILE *f, FileData *fd, DBStruct *strct) {
    
    i = 0;
    vecForEach(DBMember, member, strct->members, {
-      sourceWriteGetColumn(f, fd, strct, member, "selectAll", i++);
+      sourceWriteGetColumn(f, fd, strct, member, "selectAll", i++, "newObj");
    });
 
    fprintf(f,
@@ -965,14 +1057,100 @@ void sourceWriteSelectAll(FILE *f, FileData *fd, DBStruct *strct) {
    fprintf(f, "}\n");
 }
 void sourceWriteSelectFirst(FILE *f, FileData *fd, DBStruct *strct, DBMember *member) {
-   fprintf(f, "DB%s db%sSelectFirstBy%s(DB_%s *db, %s%s){\n\n}\n",
+   
+   bool first = true;
+   int i = 0;
+   char stmtName[256] = { 0 };
+   sprintf(stmtName, "selectBy%s", member->name);
+
+   fprintf(f, "DB%s db%sSelectFirstBy%s(DB_%s *db, %s%s){\n",
       strct->name, strct->name, member->name,
       c_str(fd->inputFileOnly), CTypes[member->type], member->name);
+
+   fprintf(f,
+      "   DB%s out = {0};\n"
+      "   int result = 0;\n"
+      "   static const char *stmt = \"SELECT * FROM \\\"%s\\\" WHERE \\\"%s\\\" = :%s;\";\n", strct->name, strct->name, member->name, member->name);
+
+   fprintf(f,
+      "   if(dbPrepareStatement((DBBase*)db, &db->%sStmts.%s, stmt) != DB_SUCCESS){\n"
+      "      return out;\n"
+      "   }\n\n", strct->name, stmtName
+      );
+
+   sourceWriteBindMemberSelect(f, fd, strct, member, stmtName, 1);
+
+   fprintf(f,
+      "   if((result = sqlite3_step(db->%sStmts.%s)) == SQLITE_ROW){\n"
+
+      , strct->name, stmtName
+      );
+
+
+   i = 0;
+   vecForEach(DBMember, member, strct->members, {
+      sourceWriteGetColumn(f, fd, strct, member, stmtName, i++, "out");
+   });
+
+   fprintf(f,
+      "   };\n\n"
+      "   return out;\n");
+
+   fprintf(f, "}\n");
 }
 void sourceWriteSelectBy(FILE *f, FileData *fd, DBStruct *strct, DBMember *member) {
-   fprintf(f, "vec(DB%s) *db%sSelectBy%s(DB_%s *db, %s%s){\n\n}\n",
+   
+
+
+   bool first = true;
+   int i = 0;
+   char stmtName[256] = { 0 };
+   sprintf(stmtName, "selectBy%s", member->name);
+
+   fprintf(f, "vec(DB%s) *db%sSelectBy%s(DB_%s *db, %s%s){\n",
       strct->name, strct->name, member->name,
       c_str(fd->inputFileOnly), CTypes[member->type], member->name);
+
+   fprintf(f,
+      "   int result = 0;\n"
+      "   vec(DB%s) *out = NULL;\n"
+      "   static const char *stmt = \"SELECT * FROM \\\"%s\\\" WHERE \\\"%s\\\" = :%s;\";\n"
+      , strct->name, strct->name, member->name, member->name);
+
+   fprintf(f,
+      "   if(dbPrepareStatement((DBBase*)db, &db->%sStmts.%s, stmt) != DB_SUCCESS){\n"
+      "      return NULL;\n"
+      "   }\n\n", strct->name, stmtName
+      );
+
+   sourceWriteBindMemberSelect(f, fd, strct, member, stmtName, 1);
+
+   fprintf(f,
+      "   out = vecCreate(DB%s)(&db%sDestroy);\n\n"
+
+      "   while((result = sqlite3_step(db->%sStmts.selectAll)) == SQLITE_ROW){\n"
+      "      DB%s newObj = {0};\n\n"
+      , strct->name, strct->name, strct->name, strct->name
+      );
+
+
+   i = 0;
+   vecForEach(DBMember, member, strct->members, {
+      sourceWriteGetColumn(f, fd, strct, member, "selectAll", i++, "newObj");
+   });
+
+   fprintf(f,
+      "      \n"
+      "      vecPushBack(DB%s)(out, &newObj);\n\n"
+      "   };\n\n"
+
+      "   if(result != SQLITE_DONE){\n"
+      "      vecDestroy(DB%s)(out);\n"
+      "      return NULL;\n"
+      "   }\n\n"
+      "   return out;\n", strct->name, strct->name);
+
+   fprintf(f, "}\n");
 }
 void sourceWriteDeleteAll(FILE *f, FileData *fd, DBStruct *strct) {
    fprintf(f, "void db%sDeleteAll(DB_%s *db){\n\n}\n", strct->name, c_str(fd->inputFileOnly));
@@ -992,6 +1170,7 @@ void sourceCreateStruct(FILE *f, FileData *fd, DBStruct *strct) {
    sourceWriteDestroyStatements(f, fd, strct);
    sourceWriteCreateTable(f, fd, strct);
    sourceWriteInsert(f, fd, strct);
+   sourceWriteUpdate(f, fd, strct);
    sourceWriteSelectAll(f, fd, strct);   
 
    vecForEach(DBMember, member, strct->members, {
@@ -1023,12 +1202,12 @@ void sourceCreateDB(FILE *f, FileData *fd) {
 
    fprintf(f, "\n");
 
-   
 
    vecForEach(DBStruct, strct, fd->structs, {
       //statements struct
       fprintf(f, "typedef struct {\n");
       fprintf(f, "   sqlite3_stmt *insert;\n");
+      fprintf(f, "   sqlite3_stmt *update;\n");
       fprintf(f, "   sqlite3_stmt *selectAll;\n");
       fprintf(f, "   sqlite3_stmt *deleteAll;\n");
 
@@ -1044,7 +1223,6 @@ void sourceCreateDB(FILE *f, FileData *fd) {
    });
 
 
-
    fprintf(f, "struct DB_%s{\n", c_str(fd->inputFileOnly));
 
    fprintf(f, "   DBBase base;\n");
@@ -1054,8 +1232,7 @@ void sourceCreateDB(FILE *f, FileData *fd) {
    });
 
    fprintf(f, "};\n\n");
-
-
+   
    fprintf(f,
       "DB_%s *db_%sCreate(){\n"
       "   DB_%s *out = checkedCalloc(1, sizeof(DB_%s));\n"
@@ -1084,10 +1261,7 @@ void sourceCreateDB(FILE *f, FileData *fd) {
       fprintf(f, "   if((result = db%sCreateTable(self)) != DB_SUCCESS){ return result; }\n", strct->name);
    });
 
-   fprintf(f, "}\n\n");
-
-
-
+   fprintf(f, "\n   return DB_SUCCESS;\n}\n\n");
 }
 
 void createSource(FileData *data) {
@@ -1117,6 +1291,7 @@ int main(int argc, char **argv) {
    Tokenizer *tokens = NULL;
    Lexer *lexer = NULL;
    FileData data = { 0 };
+   char namebuff[256] = { 0 };
 
    printf("_________\n| DBGEN |\n");
 
@@ -1144,12 +1319,19 @@ int main(int argc, char **argv) {
 
 
    data.input = stringCreate(argv[1]);
-   data.inputFileOnly = stringGetFilename(data.input);
+   
    data.dir = stringGetDirectory(data.input);
-   data.outputh = stringCreate(c_str(data.inputFileOnly));
-   data.outputc = stringCreate(c_str(data.inputFileOnly));
-   stringConcat(data.outputh, ".h");
-   stringConcat(data.outputc, ".c");
+
+   data.inputFileOnly = stringGetFilename(data.input);
+   sprintf(namebuff, "%s", c_str(data.inputFileOnly));
+   stringSet(data.inputFileOnly, namebuff);
+
+   sprintf(namebuff, "%s.h", c_str(data.inputFileOnly));
+   data.outputh = stringCreate(namebuff);
+
+   sprintf(namebuff, "%s.c", c_str(data.inputFileOnly));
+   data.outputc = stringCreate(namebuff);
+
 
    //prefixing the output with  directories sucks, should add a path combine funciton
    if(stringLen(data.dir) > 0){

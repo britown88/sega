@@ -19,6 +19,7 @@
 #include "MapEditor.h"
 #include "ChoicePrompt.h"
 #include "DB.h"
+#include "assets.h"
 #include "Weather.h"
 #include "TextArea.h"
 
@@ -38,7 +39,7 @@ typedef struct {
    Console *console;
    MapEditor *mapEditor;
    ChoicePrompt *choicePrompt;
-   DB *db;
+   DB_assets *db;
    Weather *weather;
    TextAreaManager *textAreaManager;
 
@@ -144,7 +145,7 @@ VirtualApp *btCreate() {
 
    r->L = luaCreate();
 
-   r->db = DBCreate(&r->view);
+   r->db = db_assetsCreate();
    r->view.db = r->db;
 
    r->weather = createWeather(&r->view);
@@ -173,7 +174,7 @@ void _destroy(BTGame *self){
    gridSolverDestroy(self->gridSolver);
    mapEditorDestroy(self->mapEditor);
    choicePromptDestroy(self->choicePrompt);
-   DBDestroy(self->db);
+   db_assetsDestroy(self->db);
    weatherDestroy(self->weather);
    textAreaManagerDestroy(self->textAreaManager);
    
@@ -215,8 +216,6 @@ static void _addTestEntities(BTGame *app) {
    app->view.backgroundEntity = e;
 
    {
-
-
       StringView boxName = stringIntern("smallbox");
       TextArea *area = textAreaCreate(15, 22, 23, 2);
       textAreaPushText(area, "You are likely to be eaten by a [c=0,13]grue[/c].");
@@ -235,21 +234,9 @@ static void _addTestEntities(BTGame *app) {
 
 }
 
-#include "test.h"
+
 
 void _onStart(BTGame *self){
-
-   DB_test *db = db_testCreate();
-   int result = dbConnect((DBBase*)db, "test.db");
-   DBImage img1 = { .id = stringCreate("foo"),.image = calloc(1, 100),.imageSize = 100,.foo = 45 };
-   vec(DBImage) *sel = NULL;
-
-   int result2 = db_testCreateTables(db);
-   dbImageInsert(db, &img1);
-   sel = dbImageSelectAll(db);
-
-
-
    self->view.L = self->L;
 
    //we need the console alive to print errors!
@@ -257,12 +244,27 @@ void _onStart(BTGame *self){
    mapEditorInitialize(self->mapEditor);
 
    luaLoadAllLibraries(self->L, &self->view);
-
    luaLoadAssets(self->L);
 
+   //gonna do our initial db connection here
+   if (dbConnect((DBBase*)self->db, "chronicles.db", false) != DB_SUCCESS){
+#ifdef _DEBUG
+      if (dbConnect((DBBase*)self->db, "chronicles.db", true) != DB_SUCCESS) {
+         SEGASSERT(true);
+      }
+
+      db_assetsCreateTables(self->db);
+      luaBuildDB(self->L);
+#else
+      SEGASSERT(true);
+#endif
+   }
+
    //sesneless default palette woohoo
-   Palette defPal = { {0, 1, 2, 3, 4, 58, 20, 7, 56, 57, 60, 62, 63, 60, 62, 63} };
-   appSetPalette(appGet(), &defPal);
+   {
+      Palette defPal = { {0, 1, 2, 3, 4, 58, 20, 7, 56, 57, 60, 62, 63, 60, 62, 63} };
+      appSetPalette(appGet(), &defPal);
+   }
 
    renderManagerInitialize(self->managers.renderManager);
    cursorManagerCreateCursor(self->managers.cursorManager);
@@ -275,7 +277,6 @@ void _onStart(BTGame *self){
 
    //push the opening state
    fsmPush(self->gameState, gameStateCreateSplash(&self->view));
-   
    
 }
 
