@@ -57,6 +57,10 @@ void actorDestroy(Actor *self) {
    checkedFree(self);
 }
 
+void actorPtrDestroy(ActorPtr *self) {
+   actorDestroy(*self);
+}
+
 GridToken *actorGetGridToken(Actor *self) {
    return self->gridToken;
 }

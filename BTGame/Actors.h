@@ -15,6 +15,8 @@ typedef Actor* ActorPtr;
 #define VectorTPart ActorPtr
 #include "segautils/Vector_Decl.h"
 
+void actorPtrDestroy(ActorPtr *self);
+
 ActorManager *actorManagerCreate(WorldView *view);
 void actorManagerDestroy(ActorManager *self);
 Actor *actorManagerCreateActor(ActorManager *self);

@@ -50,6 +50,8 @@ typedef struct {
 
    lua_State *L;
 
+   vec(ActorPtr) *testActors;
+
 } BTGame;
 
 #pragma region App_Things
@@ -127,6 +129,8 @@ VirtualApp *btCreate() {
    CREATE_AND_VIEW(weather, createWeather(&r->view));
    CREATE_AND_VIEW(choicePrompt, createChoicePrompt(&r->view));
 
+   r->testActors = vecCreate(ActorPtr)(&actorPtrDestroy);
+
    return (VirtualApp*)r;
 }
 
@@ -136,14 +140,18 @@ void _destroy(BTGame *self){
    fsmDestroy(self->gameState);
 
    consoleDestroy(self->console);
-   self->console = self->view.console = NULL;   
+   self->console = self->view.console = NULL;  
+
+   vecDestroy(ActorPtr)(self->testActors);
 
    verbManagerDestroy(self->verbManager);
    gridMovementManagerDestroy(self->gridMovementManager);
    cursorManagerDestroy(self->cursorManager);
-   actorManagerDestroy(self->actorManager);
-   gridManagerDestroy(self->gridManager);
+   
+   
    pcManagerDestroy(self->pcManager);
+   gridManagerDestroy(self->gridManager);
+   actorManagerDestroy(self->actorManager);
 
    fontFactoryDestroy(self->fontFactory);
    framerateViewerDestroy(self->framerateViewer);
@@ -159,37 +167,18 @@ void _destroy(BTGame *self){
 }
 
 static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
-   //Tile *t = gridManagerTileAtXY(app->managers.gridManager, x, y);
-   //Entity *e = entityCreate(app->entitySystem);
-   //COMPONENT_ADD(e, PositionComponent, 0, 0);
-   //COMPONENT_ADD(e, SizeComponent, 14, 14);
-   ////COMPONENT_ADD(e, RectangleComponent, 0);
 
-   //COMPONENT_ADD(e, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
-   //COMPONENT_ADD(e, LayerComponent, LayerGrid);
-   //COMPONENT_ADD(e, InViewComponent, 0);
-   //COMPONENT_ADD(e, GridComponent, x, y);
-   //COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
-   //COMPONENT_ADD(e, ActorComponent, .moveTime = DEFAULT_MOVE_SPEED, .moveDelay = DEFAULT_MOVE_DELAY);
+   Actor *a =  actorManagerCreateActor(app->actorManager);
 
-   //if (t) {
-   //   t->schema = 3;
-   //   t->collision = 0;
-   //}
+   actorSetImage(a, stringIntern(IMG_TILE_ATLAS));
+   actorSetGridPosition(a, (Int2) { x, y });
+   actorSetImagePos(a, (Int2) { imgX, imgY });
 
-   //entityUpdate(e);
+   vecPushBack(ActorPtr)(app->testActors, &a);
 }
 
 static void _addTestEntities(BTGame *app) {
    int i;
-   //Entity *e = entityCreate(app->entitySystem);
-   //COMPONENT_ADD(e, PositionComponent, 0, 0);
-   //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/bg.ega"));
-   //COMPONENT_ADD(e, LayerComponent, LayerBackground);
-   //COMPONENT_ADD(e, RenderedUIComponent, 0);
-   //entityUpdate(e);
-
-   //app->view.backgroundEntity = e;
 
    {
       StringView boxName = stringIntern("smallbox");
@@ -200,7 +189,7 @@ static void _addTestEntities(BTGame *app) {
 
    }
 
-   for (i = 0; i < 0; ++i) {
+   for (i = 0; i < 10; ++i) {
       int x = appRand(appGet(), 0, 21);
       int y = appRand(appGet(), 0, 11);
       int sprite = appRand(appGet(), 0, 3);
