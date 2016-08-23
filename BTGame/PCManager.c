@@ -4,10 +4,12 @@
 #include "segashared/CheckedMemory.h"
 #include "ImageLibrary.h"
 #include "Lua.h"
+#include "Actors.h"
 
 
 struct PCManager_t {
    WorldView *view;
+   Actor *pc;
 
    bool usingTorch;
    bool sneaking;
@@ -22,85 +24,73 @@ PCManager *pcManagerCreate(WorldView *view) {
 }
 
 void pcManagerDestroy(PCManager *self) {
+   actorDestroy(self->pc);
    checkedFree(self);
 }
 
 static void _updateSprite(PCManager *self) {
-   //ImageComponent *ic = entityGet(ImageComponent)(self->pc);
 
-   //if (self->sneaking) {
-   //   ic->x = 28;
-   //   ic->y = 28;
-   //}
-   //else if (self->usingTorch) {
-   //   ic->x = 56;
-   //   ic->y = 28;
-   //}
-   //else {
-   //   ic->x = 42;
-   //   ic->y = 28;
-   //}
+   if (self->sneaking) {
+      actorSetImagePos(self->pc, (Int2) {28, 28});
+   }
+   else if (self->usingTorch) {
+      actorSetImagePos(self->pc, (Int2) { 56, 28 });
+   }
+   else {
+      actorSetImagePos(self->pc, (Int2) { 42, 28 });
+   }
 }
 
 static void _updateLight(PCManager *self) {
-   //LightComponent *lc = entityGet(LightComponent)(self->pc);
-   //
-   //if (self->usingTorch && !self->sneaking) {
-   //   lc->centerLevel = MAX_BRIGHTNESS;
-   //   lc->radius = 0;
-   //   lc->fadeWidth = MAX_BRIGHTNESS;
-   //}
-   //else {
-   //   lc->centerLevel = 2;
-   //   lc->radius = 0;
-   //   lc->fadeWidth = 2;
-   //}
+   LightSource *ls = actorGetLightSource(self->pc);
+   LightSourceParams *light = lightSourceParams(ls);
 
+   if (self->usingTorch && !self->sneaking) {
+      light->centerLevel = MAX_BRIGHTNESS;
+      light->radius = 0;
+      light->fadeWidth = MAX_BRIGHTNESS;
+   }
+   else {
+      light->centerLevel = 2;
+      light->radius = 0;
+      light->fadeWidth = 2;
+   }
 }
 
 void pcManagerUpdate(PCManager *self) {
-   //Viewport *vp = self->view->viewport;
-   //PositionComponent *pc = entityGet(PositionComponent)(self->pc);
-   //int gridWidth = gridManagerWidth(self->view->managers->gridManager) * GRID_CELL_SIZE;
-   //int gridHeight = gridManagerHeight(self->view->managers->gridManager) * GRID_CELL_SIZE;
-   //int xCenter = (GRID_WIDTH / 2) * GRID_CELL_SIZE;
-   //int yCenter = (GRID_HEIGHT / 2) * GRID_CELL_SIZE;
-   //int xOffset = MIN(gridWidth - (vp->region.width), MAX(0, pc->x - xCenter));
-   //int yOffset = MIN(gridHeight - (vp->region.height), MAX(0, pc->y - yCenter));
+   Viewport *vp = self->view->viewport;
+   Int2 aPos = actorGetWorldPosition(self->pc);
+   int gridWidth = gridManagerWidth(self->view->gridManager) * GRID_CELL_SIZE;
+   int gridHeight = gridManagerHeight(self->view->gridManager) * GRID_CELL_SIZE;
+   int xCenter = (GRID_WIDTH / 2) * GRID_CELL_SIZE;
+   int yCenter = (GRID_HEIGHT / 2) * GRID_CELL_SIZE;
+   int xOffset = MIN(gridWidth - (vp->region.width), MAX(0, aPos.x - xCenter));
+   int yOffset = MIN(gridHeight - (vp->region.height), MAX(0, aPos.y - yCenter));
 
-   //vp->worldPos = (Int2) { xOffset, yOffset };
+   vp->worldPos = (Int2) { xOffset, yOffset };
 }
 
 void pcManagerCreatePC(PCManager *self) {
-   //self->pc = entityCreate(self->view->entitySystem);
-   //COMPONENT_ADD(self->pc, PositionComponent, 0, 0);
-   //COMPONENT_ADD(self->pc, SizeComponent, 14, 14);
-   ////COMPONENT_ADD(self->pc, RectangleComponent, 0);
+   self->pc = actorManagerCreateActor(self->view->actorManager);
 
-   //COMPONENT_ADD(self->pc, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = 56, .y = 28, .width = 14, .height = 14);
-   //COMPONENT_ADD(self->pc, LayerComponent, LayerGrid);
-   //COMPONENT_ADD(self->pc, InViewComponent, 0);
-   //COMPONENT_ADD(self->pc, GridComponent, 7, 2);
-   //COMPONENT_ADD(self->pc, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
-   //COMPONENT_ADD(self->pc, ActorComponent, .moveTime = DEFAULT_MOVE_SPEED, .moveDelay = DEFAULT_MOVE_DELAY);
+   actorSetImage(self->pc, stringIntern(IMG_TILE_ATLAS));
 
-   //_updateLight(self);
-   //_updateSprite(self);
-   //entityUpdate(self->pc);
+   _updateLight(self);
+   _updateSprite(self);
 
-   //luaActorMakeActorGlobal(self->view->L, self->pc, LLIB_PLAYER);
+   luaActorMakeActorGlobal(self->view->L, self->pc, LLIB_PLAYER);
 }
 
 void pcManagerStop(PCManager *self) {
-   //gridMovementManagerStopEntity(self->view->gridMovementManager, self->pc);
+   gridMovementManagerStopActor(self->view->gridMovementManager, self->pc);
 }
 
 void pcManagerMove(PCManager *self, short x, short y) {
-   //gridMovementManagerMoveEntity(self->view->gridMovementManager, self->pc, x, y);
+   gridMovementManagerMoveActor(self->view->gridMovementManager, self->pc, x, y);
 }
 
 void pcManagerMoveRelative(PCManager *self, short x, short y) {
-   //gridMovementManagerMoveEntityRelative(self->view->gridMovementManager, self->pc, x, y);
+   gridMovementManagerMoveActorRelative(self->view->gridMovementManager, self->pc, x, y);
 }
 
 void pcManagerToggleTorch(PCManager *self) {

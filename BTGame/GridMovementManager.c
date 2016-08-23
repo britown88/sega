@@ -287,7 +287,6 @@ void gridMovementManagerMoveActor(GridMovementManager *self, Actor *a, short x, 
 
 void gridMovementManagerMoveActorRelative(GridMovementManager *self, Actor *a, short x, short y) {
    //GridComponent *gc = entityGet(GridComponent)(e);
-
    //gridMovementManagerMoveEntity(self, e, gc->x + x, gc->y + y);
 }
 

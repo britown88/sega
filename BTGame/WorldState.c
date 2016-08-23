@@ -26,7 +26,7 @@ typedef struct {
 }WorldState;
 
 static void _worldStateCreate(WorldState *self) { 
-   //testRain(self->view->weather);
+   testRain(self->view->weather);
 
 }
 static void _worldStateDestroy(WorldState *self){   
@@ -64,7 +64,7 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    pcManagerUpdate(view->pcManager);
    actorManagerUpdate(view->actorManager);
 
-   textAreaUpdate(state->smallbox, state->view);
+   textAreaUpdate(state->smallbox);
 }
 
 
@@ -232,6 +232,9 @@ void _worldRender(WorldState *state, GameStateRender *m){
    frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
 
    gridManagerRender(state->view->gridManager, frame);
+
+   actorManagerRender(state->view->actorManager, frame);
+
    weatherRender(state->view->weather, frame);
    gridManagerRenderLighting(state->view->gridManager, frame);
    verbManagerRender(state->view->verbManager, frame);

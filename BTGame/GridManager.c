@@ -27,15 +27,32 @@ static void _partitionDestroy(Partition *p) {
    }
 }
 
-
 #define VectorT Partition
 #include "segautils/Vector_Create.h"
 
 #define VectorT TileSchema
 #include "segautils/Vector_Create.h"
 
+
+struct GridToken_t {
+   GridManager *parent;
+   Actor *owner;
+   vec(size_t) *occupyingPartitions;
+};
+
+typedef GridToken *GridTokenPtr;
+#define VectorT GridTokenPtr
+#include "segautils/Vector_Create.h"
+
+void gridTokenPtrDestroy(GridTokenPtr *self) {
+   vecDestroy(size_t)((*self)->occupyingPartitions);
+   checkedFree(*self);
+}
+
 struct GridManager_t {
    WorldView *view;
+
+   vec(GridTokenPtr) *tokens;
 
    //The tile atlas
    ManagedImage *tilePalette;
@@ -67,6 +84,89 @@ static Tile *_tileAt(GridManager *self, int x, int y) {
    return mapGetTiles(self->map) + (y * self->width + x);
 }
 
+static void _gridAddActor(GridManager *self, Actor *a, Partition *partition) {
+   GridToken *gt = actorGetGridToken(a);
+   if (partition) {
+      vecPushBack(size_t)(gt->occupyingPartitions, &partition->index);
+      vecPushBack(ActorPtr)(partition->actors, &a);
+   }
+}
+
+static void _gridRemoveActor(GridManager *self, Actor *a, Partition *old) {
+   GridToken *gt = actorGetGridToken(a);
+   if (gt) {
+      vec(size_t) *nodes = gt->occupyingPartitions;
+
+      if (old) {
+         vecRemove(size_t)(nodes, &old->index);
+         vecRemove(ActorPtr)(old->actors, &a);
+      }
+   }
+}
+
+static void _gridMoveActor(GridManager *self, Actor *a, Partition *old, Partition *new) {
+
+   if (old && new && old != new) {
+      _gridRemoveActor(self, a, old);
+      _gridAddActor(self, a, new);
+   }
+}
+
+static Partition *_partitionAt(GridManager *self, size_t index) {
+   if (index < self->partitionCount) {
+      Partition *p = vecAt(Partition)(self->partitionTable, index);
+      if (!p->actors) {
+         p->actors = vecCreate(ActorPtr)(NULL);
+         p->index = index;
+      }
+      return p;
+   }
+   else {
+      return NULL;
+   }
+}
+
+static Partition *_partitionFromXY(GridManager *self, short x, short y) {
+   size_t index;
+   Partition *p;
+   if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
+      return NULL;
+   }
+
+   index = self->partitionWidth * (y / PARTITION_SIZE) + (x / PARTITION_SIZE);
+   p = vecAt(Partition)(self->partitionTable, index);
+   if (!p->actors) {
+      p->actors = vecCreate(ActorPtr)(NULL);
+      p->index = index;
+   }
+
+   return p;
+}
+
+static void _rebuildPartitionTable(GridManager *self) {
+   //clear current partitions for every entity currently loaded
+   vecForEach(GridTokenPtr, gtp, self->tokens, {
+      GridToken *gt = *gtp;
+      vecClear(size_t)(gt->occupyingPartitions);
+   });
+
+   //part table
+   vecClear(Partition)(self->partitionTable);
+   self->partitionWidth = self->width / PARTITION_SIZE + (self->width%PARTITION_SIZE ? 1 : 0);
+   self->partitionHeight = self->height / PARTITION_SIZE + (self->height%PARTITION_SIZE ? 1 : 0);
+   self->partitionCount = self->partitionHeight * self->partitionWidth;
+   vecResize(Partition)(self->partitionTable, self->partitionWidth * self->partitionHeight, &(Partition){NULL});
+
+   //go back voer and reinsert every entity
+   vecForEach(GridTokenPtr, gtp, self->tokens, {
+      GridToken *gt = *gtp;
+      Actor *a = gt->owner;
+      Int2 aPos = actorGetGridPosition(a);
+
+      _gridAddActor(self, a, _partitionFromXY(self, aPos.x, aPos.y));
+   });
+}
+
 
 static void _createTestGrid(GridManager *self) {
    int i;
@@ -83,9 +183,17 @@ static void _createTestGrid(GridManager *self) {
       }
    }
 
+   _rebuildPartitionTable(self);
+
 }
 
+void gridTokenMove(GridToken *self, Int2 newPos) {
+   Int2 oldPos = actorGetGridPosition(self->owner);
+   Partition *old = _partitionFromXY(self->parent, oldPos.x, oldPos.y);
+   Partition *new = _partitionFromXY(self->parent, newPos.x, newPos.y);
 
+   _gridMoveActor(self->parent, self->owner, old, new);
+}
 
 void gridManagerSetAmbientLight(GridManager *self, byte level) {
    lightGridSetAmbientLight(self->lightGrid, level);
@@ -118,16 +226,6 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    }
    
    return count;
-}
-
-void gridManagerSnapActor(GridManager *self, Actor *a) {
-   //GridComponent *gc = entityGet(GridComponent)(e);
-   //PositionComponent *pc = entityGet(PositionComponent)(e);
-
-   //if (gc && pc) {
-   //   pc->x = gc->x * GRID_CELL_SIZE;
-   //   pc->y = gc->y * GRID_CELL_SIZE;
-   //}
 }
 
 short gridManagerWidth(GridManager *self) {
@@ -180,7 +278,7 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
    self->height = mapHeight(map);
    self->cellCount = self->width * self->height;
 
-   //_rebuildPartitionTable(self);
+   _rebuildPartitionTable(self);
 }
 TileSchema *gridManagerGetSchema(GridManager *self, size_t index) {
    size_t count = vecSize(TileSchema)(self->schemas);
@@ -203,6 +301,8 @@ GridManager *gridManagerCreate(WorldView *view) {
    out->inViewActors = vecCreate(ActorPtr)(NULL);
    out->schemas = vecCreate(TileSchema)(NULL);
 
+   out->tokens = vecCreate(GridTokenPtr)(&gridTokenPtrDestroy);
+
    out->lightGrid = lightGridCreate(out);
    //_createTestSchemas(out);
    _createTestGrid(out);
@@ -217,11 +317,38 @@ void gridManagerDestroy(GridManager *self) {
    }
    lightGridDestroy(self->lightGrid);
 
+   vecDestroy(GridTokenPtr)(self->tokens);
    vecDestroy(Partition)(self->partitionTable);
    vecDestroy(ActorPtr)(self->inViewActors);
    vecDestroy(TileSchema)(self->schemas);
    
    checkedFree(self);
+}
+
+LightSource *gridManagerCreateLightSource(GridManager *self) {
+   return lightGridCreateLightSource(self->lightGrid);
+}
+
+GridToken *gridManagerCreateToken(GridManager *self, Actor *owner) {
+   GridToken *out = checkedCalloc(1, sizeof(GridToken));
+   out->parent = self;
+   out->owner = owner;
+   out->occupyingPartitions = vecCreate(size_t)(NULL);
+   vecPushBack(GridTokenPtr)(self->tokens, &out);
+   return out;
+}
+
+void gridTokenDestroy(GridToken *self) {
+
+   //remove from partiitons
+   vecForEach(size_t, node, self->occupyingPartitions, {
+      Partition *old = _partitionAt(self->parent, *node);
+      if (old) {
+         vecRemove(ActorPtr)(old->actors, &self->owner);
+      }
+   });
+   
+   vecRemove(GridTokenPtr)(self->parent->tokens, &self);
 }
 
 void gridManagerUpdate(GridManager *self) {
@@ -230,38 +357,38 @@ void gridManagerUpdate(GridManager *self) {
 
 vec(ActorPtr) *gridManagerQueryActors(GridManager *self) {
    Viewport *vp = self->view->viewport;
-   //bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
-   //bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
+   bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
+   bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
 
-   //byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
-   //byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
+   byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
+   byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
 
-   //int x = vp->worldPos.x / GRID_CELL_SIZE;
-   //int y = vp->worldPos.y / GRID_CELL_SIZE;
+   int x = vp->worldPos.x / GRID_CELL_SIZE;
+   int y = vp->worldPos.y / GRID_CELL_SIZE;
 
-   //Recti area = { x, y, x + xcount, y + ycount };
+   Recti area = { x, y, x + xcount, y + ycount };
 
-   //
-   //gridManagerQueryEntitiesRect(self, area, self->inViewEntities);
+   
+   gridManagerQueryActorsRect(self, area, self->inViewActors);
    return self->inViewActors;
 }
 
 void gridManagerQueryActorsRect(GridManager *self, Recti area, vec(ActorPtr) *outlist) {
-   //int x, y;
-   //int xstart = area.left / PARTITION_SIZE, xend = area.right / PARTITION_SIZE;
-   //int ystart = area.top / PARTITION_SIZE, yend = area.bottom / PARTITION_SIZE;
-   //vecClear(EntityPtr)(outlist);
+   int x, y;
+   int xstart = area.left / PARTITION_SIZE, xend = area.right / PARTITION_SIZE;
+   int ystart = area.top / PARTITION_SIZE, yend = area.bottom / PARTITION_SIZE;
+   vecClear(ActorPtr)(outlist);
 
-   //for (y = ystart; y <= yend; ++y) {
-   //   for (x = xstart; x <= xend; ++x) {
-   //      Partition *p = _partitionAt(self, y * self->partitionWidth + x);
-   //      if (p && p->entities) {
-   //         vecForEach(EntityPtr, e, p->entities, {
-   //            vecPushBack(EntityPtr)(outlist, e);
-   //         });
-   //      }
-   //   }
-   //}
+   for (y = ystart; y <= yend; ++y) {
+      for (x = xstart; x <= xend; ++x) {
+         Partition *p = _partitionAt(self, y * self->partitionWidth + x);
+         if (p && p->actors) {
+            vecForEach(ActorPtr, e, p->actors, {
+               vecPushBack(ActorPtr)(outlist, e);
+            });
+         }
+      }
+   }
 }
 
 Actor *gridManagerActorFromScreenPosition(GridManager *self, Int2 pos) {

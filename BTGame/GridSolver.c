@@ -143,7 +143,7 @@ void _solverDestroy(GridSolver *self) {
 }
 
 static void _processSingleActorCollision(GridSolver *self, Actor *a, Recti *r) {
-   Int2 aPos = actorGetPosition(a);
+   Int2 aPos = actorGetGridPosition(a);
 
    int localX = aPos.x - r->left;
    int localY = aPos.y - r->top;

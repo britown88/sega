@@ -5,6 +5,7 @@
 #include "GameState.h"
 #include "GameHelpers.h"
 #include "ImageLibrary.h"
+#include "Weather.h"
 
 #include "SEGA\Input.h"
 #include "SEGA\App.h"
@@ -145,6 +146,9 @@ void _consoleRender(ConsoleState *state, GameStateRender *m) {
    frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
 
    gridManagerRender(state->view->gridManager, frame);
+   actorManagerRender(state->view->actorManager, frame);
+   weatherRender(state->view->weather, frame);
+   gridManagerRenderLighting(state->view->gridManager, frame);
 
    cursorManagerRender(state->view->cursorManager, frame);
 

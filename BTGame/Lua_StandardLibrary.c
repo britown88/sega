@@ -10,6 +10,8 @@
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
+#include "AssetHelpers.h"
+
 #include "DB.h"
 
 static int slua_consolePrint(lua_State *L);
@@ -84,8 +86,6 @@ int slua_setPalette(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    StringView id = NULL;
    int result = 0;
-   byte *buffer;
-   int bSize;
 
    int inType = lua_type(L, -1);
 

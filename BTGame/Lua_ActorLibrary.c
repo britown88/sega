@@ -415,8 +415,8 @@ int slua_actorTeleport(lua_State *L) {
       lua_error(L);
    }
 
-   actorSetPosition(a, (Int2) { x, y });
-   gridManagerSnapActor(view->gridManager, a);
+   actorSetGridPosition(a, (Int2) { x, y });
+   actorSnap(a);
 
    return 0;
 }
@@ -452,7 +452,7 @@ int slua_actorDistanceTo(lua_State *L) {
       lua_error(L);
    }
 
-   aPos = actorGetPosition(a);
+   aPos = actorGetGridPosition(a);
 
    lua_pushinteger(L, gridDistance(aPos.x, aPos.y, x, y));
    return 1;
@@ -470,7 +470,7 @@ int slua_actorPosition(lua_State *L) {
       lua_error(L);
    }
 
-   aPos = actorGetPosition(a);
+   aPos = actorGetGridPosition(a);
 
    lua_pushnumber(L, aPos.x);
    lua_pushnumber(L, aPos.y);

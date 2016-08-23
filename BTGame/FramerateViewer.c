@@ -3,6 +3,8 @@
 #include "segalib/EGA.h"
 #include "segashared/CheckedMemory.h"
 
+#include <stdio.h>
+
 
 struct FramerateViewer_t {
    WorldView *view;

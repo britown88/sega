@@ -7,6 +7,7 @@
 #include "Managers.h"
 #include "TextArea.h"
 #include "RenderHelpers.h"
+#include "Actors.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"

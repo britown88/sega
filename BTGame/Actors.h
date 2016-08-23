@@ -2,6 +2,7 @@
 
 #include "segautils/Time.h"
 #include "segautils/Vector.h"
+#include "segashared/Strings.h"
 
 typedef struct WorldView_t WorldView;
 typedef struct Frame_t Frame;
@@ -23,13 +24,28 @@ void actorManagerRender(ActorManager *self, Frame *f);
 
 void actorDestroy(Actor *self);
 
-Int2 actorGetPosition(Actor *self);
-void actorSetPosition(Actor *self, Int2 pos);
+Int2 actorGetGridPosition(Actor *self);
+void actorSetGridPosition(Actor *self, Int2 pos);
+
+void actorSnap(Actor *self);
+
+//helper to combine grid pos with offsets
+Int2 actorGetWorldPosition(Actor *self);
 
 Milliseconds actorGetMoveTime(Actor *self);
 Milliseconds actorGetMoveDelay(Actor *self);
 void actorSetMoveTime(Actor *self, Milliseconds time);
 void actorSetMoveDelay(Actor *self, Milliseconds delay);
+
+void actorSetImage(Actor *self, StringView imgId);
+void actorSetImagePos(Actor *self, Int2 imgPos);
+
+typedef struct GridToken_t GridToken;
+GridToken *actorGetGridToken(Actor *self);
+
+typedef struct LightSource_t LightSource;
+LightSource *actorGetLightSource(Actor *self);
+
 
 
 

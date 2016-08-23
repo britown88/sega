@@ -86,6 +86,7 @@ void lightGridDestroy(LightGrid *self) {
 
 LightSource *lightGridCreateLightSource(LightGrid *self) {
    LightSource *out = checkedCalloc(1, sizeof(LightSource));
+   out->parent = self;
    out->params.on = true;
    vecPushBack(LightSourcePtr)(self->sources, &out);
    return out;

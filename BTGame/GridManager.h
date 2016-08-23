@@ -27,8 +27,19 @@ typedef struct WorldView_t WorldView;
 
 typedef struct OcclusionCell_t OcclusionCell;
 
+typedef struct GridToken_t GridToken;//ties an actor to the grid partition table
+void gridTokenDestroy(GridToken *self);
+void gridTokenMove(GridToken *self, Int2 newPos);
+
 GridManager *gridManagerCreate(WorldView *view);
 void gridManagerDestroy(GridManager *self);
+
+GridToken *gridManagerCreateToken(GridManager *self, Actor *owner);
+
+typedef struct LightSource_t LightSource;
+LightSource *gridManagerCreateLightSource(GridManager *self);//the gr5id manager owns the light source so
+
+
 void gridManagerRender(GridManager *self, Frame *frame);
 void gridManagerRenderLighting(GridManager *self, Frame *frame);
 void gridManagerSetAmbientLight(GridManager *self, byte level);
@@ -40,8 +51,6 @@ void gridManagerClearSchemas(GridManager *self);
 TileSchema *gridManagerGetSchema(GridManager *self, size_t index);
 size_t gridManagerGetSchemaCount(GridManager *self);
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *vp, short x, short y);
-
-void gridManagerSnapActor(GridManager *self, Actor *a);
 
 //returns pointer to the entity array that contains all gridded entities currently in view
 vec(ActorPtr) *gridManagerQueryActors(GridManager *self);

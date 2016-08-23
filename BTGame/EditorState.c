@@ -169,23 +169,14 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    frameClear(frame, FrameRegionFULL, 0);
 
    gridManagerRender(state->view->gridManager, frame);
+   actorManagerRender(state->view->actorManager, frame);
    weatherRender(state->view->weather, frame);
-   gridManagerRenderLighting(state->view->gridManager, frame);
-   
-
-   
-   
-
-   
+   gridManagerRenderLighting(state->view->gridManager, frame);   
 
    frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
-
    mapEditorRenderSchemas(state->editor, m->frame);
-
    mapEditorRenderXYDisplay(state->editor, m->frame);
-
    cursorManagerRender(state->view->cursorManager, frame);
-
    framerateViewerRender(state->view->framerateViewer, frame);
 }
 
