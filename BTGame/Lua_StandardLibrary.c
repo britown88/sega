@@ -68,7 +68,7 @@ int slua_rand(lua_State *L) {
 
 int slua_toggleStats(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   renderManagerToggleFPS(view->managers->renderManager);
+   framerateViewerToggle(view->framerateViewer);
    return 0;
 }
 

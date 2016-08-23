@@ -1,43 +1,67 @@
 #include "Managers.h"
 #include "Verbs.h"
-#include "Entities/Entities.h"
-#include "CoreComponents.h"
 #include "WorldView.h"
 #include "segashared/CheckedMemory.h"
 #include "segautils/Defs.h"
 #include "Lua.h"
 #include "GridManager.h"
 #include "ImageLibrary.h"
+#include "segalib/EGA.h"
 
 #define BTN_SIZE 22
 #define BTN_SPACE 1
 #define BTN_TOP 175
 #define BTN_LEFT 16
 
+
+typedef struct  {
+   Int2 pos, imgPos;
+}Verb;
+
 struct VerbManager_t {
-   Manager m;
    WorldView *view;
-   Entity *buttons[Verb_COUNT];
    Verbs focus, current;
    bool enabled;
+   StringView atlas;
+   ManagedImage *atlasImg;
+
+   Verb verbs[Verb_COUNT];
 };
 
-ImplManagerVTable(VerbManager)
+static void _createVerbs(VerbManager *self) {
+   int i;
+   self->atlas = stringIntern(IMG_VERBS);
+   for (i = 0; i < Verb_COUNT; ++i) {
+      int x = BTN_LEFT + ((BTN_SIZE + BTN_SPACE) * i);
+      int y = BTN_TOP;
+      int imgX = BTN_SIZE * i;
+      int imgY = 0;
 
-VerbManager *createVerbManager(WorldView *view) {
+      self->verbs[i].pos = (Int2) { x, y };
+      self->verbs[i].imgPos = (Int2) { imgX, imgY };
+   }
+}
+
+
+VerbManager *verbManagerCreate(WorldView *view) {
    VerbManager *out = checkedCalloc(1, sizeof(VerbManager));
    out->view = view;
-   out->m.vTable = CreateManagerVTable(VerbManager);
    out->focus = out->current = Verb_COUNT;
    out->enabled = true;
+
+   _createVerbs(out);
+
    return out;
 }
 
-void _destroy(VerbManager *self) {
+void verbManagerDestroy(VerbManager *self) {
+
+   if (self->atlasImg) {
+      managedImageDestroy(self->atlasImg);
+   }
+
    checkedFree(self);
 }
-void _onDestroy(VerbManager *self, Entity *e) {}
-void _onUpdate(VerbManager *self, Entity *e) {}
 
 typedef enum {
    Pressed = 0,
@@ -45,43 +69,16 @@ typedef enum {
 }VerbActions;
 
 void _btnState(VerbManager *self, Verbs v, VerbActions action) {
-   ImageComponent *ic = entityGet(ImageComponent)(self->buttons[v]);
-   ic->y = action == Pressed ? BTN_SIZE : 0;
+   self->verbs[v].imgPos.y = (action == Pressed ? BTN_SIZE : 0);
 
    if (action == Released) {
-      cursorManagerSetVerb(self->view->managers->cursorManager, v);
+      cursorManagerSetVerb(self->view->cursorManager, v);
       self->current = v;
    }
 }
 
-void verbManagerCreateVerbs(VerbManager *self) {
-   int i;
-   StringView atlas = stringIntern(IMG_VERBS);
-   for (i = 0; i < Verb_COUNT; ++i) {
-      int x = BTN_LEFT + ((BTN_SIZE + BTN_SPACE) * i);
-      int y = BTN_TOP;
-      int imgX = BTN_SIZE * i;
-      int imgY = 0;
-
-      Entity *e = entityCreate(self->view->entitySystem);
-      COMPONENT_ADD(e, PositionComponent, x, y);
-      COMPONENT_ADD(e, SizeComponent, BTN_SIZE, BTN_SIZE);
-      COMPONENT_ADD(e, ImageComponent, .imgID = atlas, .partial = true, .x = imgX, .y = imgY, .width = BTN_SIZE, .height = BTN_SIZE);
-      COMPONENT_ADD(e, LayerComponent, LayerUI);
-      COMPONENT_ADD(e, RenderedUIComponent, 0);
-      COMPONENT_ADD(e, VisibilityComponent, .shown = true);
-      entityUpdate(e);
-      
-      self->buttons[i] = e;
-   }
-}
-
 void verbManagerSetEnabled(VerbManager *self, bool enabled) {
-   int i;
    self->enabled = enabled;
-   for (i = 0; i < Verb_COUNT; ++i) {
-      entityGet(VisibilityComponent)(self->buttons[i])->shown = enabled;
-   }
 }
 
 int verbManagerMouseButton(VerbManager *self, MouseEvent *e) {
@@ -149,12 +146,12 @@ int verbManagerMouseButton(VerbManager *self, MouseEvent *e) {
    else if (rectiContains(vpArea, e->pos)) {
       if (e->action == SegaMouse_Released) {
          if (self->current < Verb_COUNT) {
-            Entity *entity = gridMangerEntityFromScreenPosition(self->view->managers->gridManager, e->pos);
-            if (entity) {
-               luaActorInteract(self->view->L, entity, self->current);
+            Actor *a = gridManagerActorFromScreenPosition(self->view->gridManager, e->pos);
+            if (a) {
+               luaActorInteract(self->view->L, a, self->current);
             }
             self->current = Verb_COUNT;
-            cursorManagerClearVerb(self->view->managers->cursorManager);
+            cursorManagerClearVerb(self->view->cursorManager);
             return 1;
          }
       }
@@ -175,4 +172,21 @@ void verbManagerKeyButton(VerbManager *self, Verbs v, SegaKeyActions action) {
       _btnState(self, v, Released);
    }
    
+}
+
+void verbManagerRender(VerbManager *self, Frame *frame) {
+   if (self->enabled) {
+      int i;
+      if (!self->atlasImg) {
+         self->atlasImg = imageLibraryGetImage(self->view->imageLibrary, self->atlas);
+      }
+
+      for (i = 0; i < Verb_COUNT; ++i) {
+         frameRenderImagePartial(frame, FrameRegionFULL,
+            self->verbs[i].pos.x, self->verbs[i].pos.y,
+            managedImageGetImage(self->atlasImg),
+            self->verbs[i].imgPos.x, self->verbs[i].imgPos.y, 
+            BTN_SIZE, BTN_SIZE);
+      }
+   }
 }

@@ -2,10 +2,9 @@
 
 #include "WorldView.h"
 #include "Managers.h"
-#include "Entities/Entities.h"
-#include "CoreComponents.h"
 #include "Console.h"
 #include "GridManager.h"
+#include "Actors.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -25,7 +24,7 @@ static int slua_actorSetMoveSpeed(lua_State *L);
 
 //C API FUNCTIONS
 static int slua_actorAddActor(lua_State *L) {
-   Entity *e = lua_touserdata(L, 1);
+   Actor *a = lua_touserdata(L, 1);
    lua_getglobal(L, LLIB_ACTORS);
    lua_pushliteral(L, "add");
    lua_gettable(L, -2);
@@ -36,7 +35,7 @@ static int slua_actorAddActor(lua_State *L) {
    lua_getglobal(L, LLIB_ACTOR);
    lua_call(L, 1, 1);
 
-   luaPushUserDataTable(L, "entity", e);
+   luaPushUserDataTable(L, "actor", a);
 
    lua_pushliteral(L, "scripts");
    lua_newtable(L);
@@ -53,34 +52,34 @@ static int slua_actorAddActor(lua_State *L) {
    return 0;
 }
 static int slua_actorRemoveActor(lua_State *L) {
-   Entity *e = lua_touserdata(L, 1);
+   Actor *a = lua_touserdata(L, 1);
    lua_getglobal(L, LLIB_ACTORS);
    lua_pushliteral(L, "remove");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
 
    lua_newtable(L);
-   luaPushUserDataTable(L, "entity", e);
+   luaPushUserDataTable(L, "actor", a);
    lua_call(L, 2, 0);
 
    lua_pop(L, 1);
    return 0;
 }
 static int slua_actorPushActor(lua_State *L) {
-   Entity *e = lua_touserdata(L, 1);
+   Actor *a = lua_touserdata(L, 1);
    lua_getglobal(L, LLIB_ACTORS);//push actors
    lua_pushliteral(L, "get");
    lua_gettable(L, -2);//push get func
    lua_pushvalue(L, -2);//copy table to top
 
    lua_newtable(L);//add new entity
-   luaPushUserDataTable(L, "entity", e);//set its udata
+   luaPushUserDataTable(L, "actor", a);//set its udata
    lua_call(L, 2, 1);
    lua_remove(L, -2);//remove the Actors table
    return 1;
 }
 static int slua_actorMakeActorGlobal(lua_State *L) {
-   Entity *e = lua_touserdata(L, 1);
+   Actor *a = lua_touserdata(L, 1);
    const char *name = lua_tostring(L, 2);
 
    lua_pushcfunction(L, &slua_actorPushActor);
@@ -98,14 +97,14 @@ static int slua_actorMakeActorGlobal(lua_State *L) {
    return 0;
 }
 static int slua_actorGetIndex(lua_State *L) {
-   Entity *e = lua_touserdata(L, 1);
+   Actor *a = lua_touserdata(L, 1);
    lua_getglobal(L, LLIB_ACTORS);//push actors
    lua_pushliteral(L, "indexOf");
    lua_gettable(L, -2);
    lua_pushvalue(L, -2);
 
    lua_newtable(L);
-   luaPushUserDataTable(L, "entity", e);
+   luaPushUserDataTable(L, "actor", a);
    lua_call(L, 2, 1);
 
    lua_remove(L, -2);//remove the Actors table
@@ -133,7 +132,7 @@ static int slua_actorStepAllScripts(lua_State *L) {
    return 0;
 }
 static int slua_actorInteract(lua_State *L) {
-   Entity *e = lua_touserdata(L, 1); //1, the entity
+   Actor *a = lua_touserdata(L, 1); //1, the entity
    Verbs v = (Verbs)lua_tointeger(L, 2); // 2, the v
 
    lua_pushcfunction(L, &slua_actorPushActor);
@@ -178,10 +177,10 @@ static int slua_actorInteract(lua_State *L) {
    return 0;
 }
 
-//add an entity to the actors table (called by adding an ActorComponent)
-void luaActorAddActor(lua_State *L, Entity *e) {
+//add an actor to the actor table (done on actor creation)
+void luaActorAddActor(lua_State *L, Actor *a) {
    lua_pushcfunction(L, &slua_actorAddActor);
-   lua_pushlightuserdata(L, e);
+   lua_pushlightuserdata(L, a);
    if (lua_pcall(L, 1, 0, 0)) {
       WorldView *view = luaGetWorldView(L);
       consolePrintLuaError(view->console, "Error adding actor");
@@ -189,9 +188,9 @@ void luaActorAddActor(lua_State *L, Entity *e) {
 }
 
 //remove an added actor from the actors table (called by removing an actorComponent)
-void luaActorRemoveActor(lua_State *L, Entity *e) {
+void luaActorRemoveActor(lua_State *L, Actor *a) {
    lua_pushcfunction(L, &slua_actorRemoveActor);
-   lua_pushlightuserdata(L, e);
+   lua_pushlightuserdata(L, a);
    if (lua_pcall(L, 1, 0, 0)) {
       WorldView *view = luaGetWorldView(L);
       consolePrintLuaError(view->console, "Error removing actor");
@@ -199,9 +198,9 @@ void luaActorRemoveActor(lua_State *L, Entity *e) {
 }
 
 //make an ALREADY_ADDED actor global (ie: player)
-void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name) {
+void luaActorMakeActorGlobal(lua_State *L, Actor *a, const char *name) {
    lua_pushcfunction(L, &slua_actorMakeActorGlobal);
-   lua_pushlightuserdata(L, e);
+   lua_pushlightuserdata(L, a);
    lua_pushstring(L, name);
    if (lua_pcall(L, 2, 0, 0)) {
       WorldView *view = luaGetWorldView(L);
@@ -210,10 +209,10 @@ void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name) {
 }
 
 //returns the current 1-based index of the actor in the actors table.  returns 0 for failure
-int luaActorGetIndex(lua_State *L, Entity *e) {
+int luaActorGetIndex(lua_State *L, Actor *a) {
    int out = 0;
    lua_pushcfunction(L, &slua_actorGetIndex);
-   lua_pushlightuserdata(L, e);
+   lua_pushlightuserdata(L, a);
    if (lua_pcall(L, 1, 1, 0)) {
       WorldView *view = luaGetWorldView(L);
       consolePrintLuaError(view->console, "Error retreiving actor index");
@@ -235,9 +234,9 @@ int luaActorStepAllScripts(WorldView *view, lua_State *L) {
    return lua_pcall(L, 0, 0, 0);
 }
 
-void luaActorInteract(lua_State *L, Entity *e, Verbs v) {
+void luaActorInteract(lua_State *L, Actor *a, Verbs v) {
    lua_pushcfunction(L, &slua_actorInteract);
-   lua_pushlightuserdata(L, e);
+   lua_pushlightuserdata(L, a);
    lua_pushinteger(L, (int)v);
    if (lua_pcall(L, 2, 0, 0)) {
       WorldView *view = luaGetWorldView(L);
@@ -248,8 +247,8 @@ void luaActorInteract(lua_State *L, Entity *e, Verbs v) {
 void luaLoadActorLibrary(lua_State *L) {
    lua_newtable(L);
 
-   //Entity*
-   luaPushUserDataTable(L, "entity", NULL);
+   //Actor*
+   luaPushUserDataTable(L, "actor", NULL);
 
    //add empty scripts table
    lua_pushliteral(L, "scripts");
@@ -389,39 +388,35 @@ int slua_actorMove(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    int x = (int)luaL_checknumber(L, 2);
    int y = (int)luaL_checknumber(L, 3);
-   Entity *e = NULL;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   gridMovementManagerMoveEntity(view->managers->gridMovementManager, e, x, y);
+   gridMovementManagerMoveActor(view->gridMovementManager, a, x, y);
    return 0;
 }
 int slua_actorTeleport(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    int x = (int)luaL_checknumber(L, 2);
    int y = (int)luaL_checknumber(L, 3);
-   Entity *e = NULL;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   COMPONENT_LOCK(GridComponent, gc, e, {
-      gc->x = x;
-      gc->y = y;
-   })
-
-   gridManagerSnapEntity(view->managers->gridManager, e);
+   actorSetPosition(a, (Int2) { x, y });
+   gridManagerSnapActor(view->gridManager, a);
 
    return 0;
 }
@@ -429,96 +424,88 @@ int slua_actorMoveRelative(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    int x = (int)luaL_checknumber(L, 2);
    int y = (int)luaL_checknumber(L, 3);
-   Entity *e = NULL;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   gridMovementManagerMoveEntityRelative(view->managers->gridMovementManager, e, x, y);
+   gridMovementManagerMoveActorRelative(view->gridMovementManager, a, x, y);
    return 0;
 }
 int slua_actorDistanceTo(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   Entity *e = NULL;
+   Actor *a = NULL;
    int x = (int)luaL_checknumber(L, 2);
    int y = (int)luaL_checknumber(L, 3);
    luaL_checktype(L, 1, LUA_TTABLE);
-   GridComponent *gc;
+   Int2 aPos;
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   gc = entityGet(GridComponent)(e);
-   if (!gc) {
-      lua_pushliteral(L, "Actor Entity has no Grid Component.");
-      lua_error(L);
-   }
+   aPos = actorGetPosition(a);
 
-   lua_pushinteger(L, gridDistance(gc->x, gc->y, x, y));
+   lua_pushinteger(L, gridDistance(aPos.x, aPos.y, x, y));
    return 1;
 }
 int slua_actorPosition(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   Entity *e = NULL;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
-   GridComponent *gc;
+   Int2 aPos;
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   gc = entityGet(GridComponent)(e);
-   if (!gc) {
-      lua_pushliteral(L, "Actor Entity has no Grid Component.");
-      lua_error(L);
-   }
+   aPos = actorGetPosition(a);
 
-   lua_pushnumber(L, gc->x);
-   lua_pushnumber(L, gc->y);
+   lua_pushnumber(L, aPos.x);
+   lua_pushnumber(L, aPos.y);
 
    return 2;
 }
 int slua_actorStop(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   Entity *e = NULL;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   gridMovementManagerStopEntity(view->managers->gridMovementManager, e);
+   gridMovementManagerStopActor(view->gridMovementManager, a);
 
    return 0;
 }
 int slua_actorIsMoving(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   Entity *e = NULL;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   if (gridMovementManagerEntityIsMoving(view->managers->gridMovementManager, e)) {
+   if (gridMovementManagerActorIsMoving(view->gridMovementManager, a)) {
       lua_pushboolean(L, true);
    }
    else {
@@ -529,25 +516,23 @@ int slua_actorIsMoving(lua_State *L) {
 }
 int slua_actorMoveSpeed(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   Entity *e = NULL;
-   ActorComponent *ac;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   ac = entityGet(ActorComponent)(e);
-   lua_pushinteger(L, ac->moveTime);
-   lua_pushinteger(L, ac->moveDelay);
+   lua_pushinteger(L, actorGetMoveTime(a));
+   lua_pushinteger(L, actorGetMoveDelay(a));
    return 2;
 }
 int slua_actorSetMoveSpeed(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   Entity *e = NULL;
+   Actor *a = NULL;
    luaL_checktype(L, 1, LUA_TTABLE);
    Milliseconds moveTime, moveDelay;
    bool hasDelay = false, hasTime = false;
@@ -586,22 +571,20 @@ int slua_actorSetMoveSpeed(lua_State *L) {
       return 0;
    }
 
-   e = luaGetUserDataFromTable(L, 1, "entity");
+   a = luaGetUserDataFromTable(L, 1, "actor");
 
-   if (!e) {
+   if (!a) {
       lua_pushliteral(L, "Actor Entity not valid.");
       lua_error(L);
    }
 
-   COMPONENT_LOCK(ActorComponent, ac, e, {
-      if (hasTime) {
-         ac->moveTime = moveTime;
-      }
-      
-      if (hasDelay) {
-         ac->moveDelay = moveDelay;
-      }   
-   });
+   if (hasTime) {
+      actorSetMoveTime(a, moveTime);
+   }
+
+   if (hasDelay) {
+      actorSetMoveTime(a, moveDelay);
+   }
 
    return 0;
 }

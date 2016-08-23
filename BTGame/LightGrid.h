@@ -23,16 +23,29 @@ typedef struct OcclusionCell_t {
    Recti area;
 }OcclusionCell;
 
+typedef struct LightSourceParams_t{
+   byte radius;
+   byte centerLevel;
+   byte fadeWidth; // number of tiles devoted to fading out... actual radius will be adjusted toa  minimum of this
+   bool on;
+}LightSourceParams;
+
+typedef struct LightSource_t LightSource;
+LightSourceParams *lightSourceParams(LightSource *self);
+Int2 *lightSourcePosition(LightSource *self);
+void lightSourceDestroy(LightSource *self);//lightsources are registered inside the grid so make sure to free these
+
 typedef struct LightGrid_t LightGrid;
 typedef struct Frame_t Frame;
 typedef struct FrameRegion_t FrameRegion;
-typedef struct EntitySystem_t EntitySystem;
 
 LightGrid *lightGridCreate(GridManager *parent);
 void lightGridDestroy(LightGrid *self);
 
+LightSource *lightGridCreateLightSource(LightGrid *self);
+
 //clears the light levels and recalculates
-void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy);
+void lightGridUpdate(LightGrid *self, short vpx, short vpy);
 
 void lightGridSetAmbientLight(LightGrid *self, byte level);
 

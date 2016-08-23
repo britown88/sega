@@ -5,6 +5,7 @@
 #include "segalib/EGA.h"
 #include "segautils/Time.h"
 #include "SEGA/App.h"
+#include "GameClock.h"
 
 #include "segashared/CheckedMemory.h"
 

@@ -39,7 +39,7 @@ int slua_mapNew(lua_State *L) {
    int x = (int)luaL_checkinteger(L, 1);
    int y = (int)luaL_checkinteger(L, 2);
    Map *map = mapCreate(x, y);
-   gridManagerLoadMap(view->managers->gridManager, map);
+   gridManagerLoadMap(view->gridManager, map);
    return 0;
 }
 
@@ -47,9 +47,9 @@ int slua_mapResize(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    int x = (int)luaL_checkinteger(L, 1);
    int y = (int)luaL_checkinteger(L, 2);
-   Map *map = gridManagerGetMap(view->managers->gridManager);
+   Map *map = gridManagerGetMap(view->gridManager);
    mapResize(map, x, y);
-   gridManagerLoadMap(view->managers->gridManager, map);
+   gridManagerLoadMap(view->gridManager, map);
    return 0;
 }
 
@@ -63,13 +63,13 @@ int slua_mapLoad(lua_State *L) {
       lua_error(L);
    }
 
-   gridManagerLoadMap(view->managers->gridManager, map);
+   gridManagerLoadMap(view->gridManager, map);
    return 0;
 }
 int slua_mapSave(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    const char *path = luaL_checkstring(L, 1);
-   Map *map = gridManagerGetMap(view->managers->gridManager);
+   Map *map = gridManagerGetMap(view->gridManager);
 
    if (!map) {
       lua_pushliteral(L, "No map currently loaded?");
@@ -92,10 +92,10 @@ int slua_mapSetSchemas(lua_State *L) {
    len = (int)lua_tointeger(L, -1);
    lua_pop(L, 1);
 
-   gridManagerClearSchemas(view->managers->gridManager);
+   gridManagerClearSchemas(view->gridManager);
 
    for (i = 0; i < len; ++i) {
-      TileSchema *schema = gridManagerGetSchema(view->managers->gridManager, i);
+      TileSchema *schema = gridManagerGetSchema(view->gridManager, i);
 
       int j;
 
@@ -166,7 +166,7 @@ int slua_mapAmbient(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    byte level = (byte)MAX(0, MIN(MAX_BRIGHTNESS, (int)luaL_checkinteger(L, 1)));
 
-   gridManagerSetAmbientLight(view->managers->gridManager, level);
+   gridManagerSetAmbientLight(view->gridManager, level);
 
    return 0;
 }

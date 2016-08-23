@@ -1,10 +1,9 @@
 #include "MapEditor.h"
 #include "Managers.h"
-#include "Entities/Entities.h"
 #include "segashared/CheckedMemory.h"
 #include "GridManager.h"
 #include "RichText.h"
-#include "CoreComponents.h"
+#include "TextArea.h"
 
 #include <stdio.h>
 
@@ -18,71 +17,33 @@
 
 struct MapEditor_t {
    WorldView *view;
-   bool enabled;
 
    byte schemaIndex;
    byte schemaRowIndex;
 
    Int2 mouseGridPos;
-   Entity *statsEntity;
-   
-   RichText *rt;
-   vec(RichTextLine) *rtLines;
+
+   TextArea *xyDisplay;
 };
 
-static void _createStatsEntity(MapEditor *self) {
-   //self->statsEntity = entityCreate(self->view->entitySystem);
-
-   Entity *e = entityCreate(self->view->entitySystem);
-   TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
-
-   vecPushBack(TextLine)(tc.lines, &(TextLine){
-      .x = STATS_LEFT, .y = STATS_TOP, 
-      .line = vecCreate(Span)(&spanDestroy)
-   });
-
-   vecPushBack(TextLine)(tc.lines, &(TextLine){
-      .x = STATS_LEFT, .y = STATS_TOP + 1,
-      .line = vecCreate(Span)(&spanDestroy)
-   });
-
-   COMPONENT_ADD(e, LayerComponent, LayerUI);
-   COMPONENT_ADD(e, RenderedUIComponent, 0);
-   COMPONENT_ADD(e, VisibilityComponent, .shown = self->enabled);
-   entityAdd(TextComponent)(e, &tc);
-   entityUpdate(e);
-
-   self->statsEntity = e;
-}
 
 MapEditor *mapEditorCreate(WorldView *view) {
    MapEditor *out = checkedCalloc(1, sizeof(MapEditor));
    out->view = view;
 
-   out->rt = richTextCreateFromRaw("");
-   out->rtLines = vecCreate(RichTextLine)(&richTextLineDestroy);
-
    out->schemaIndex = out->schemaRowIndex = 0;
-
-   _createStatsEntity(out);
+   out->xyDisplay = textAreaCreate(STATS_LEFT, STATS_TOP, EGA_RES_WIDTH, 2);
 
    return out;
 }
 void mapEditorDestroy(MapEditor *self) {
 
-   richTextDestroy(self->rt);
-   vecDestroy(RichTextLine)(self->rtLines);
-
+   textAreaDestroy(self->xyDisplay);
    checkedFree(self);
 }
 
-void mapEditorInitialize(MapEditor *self) {
-
-}
-void mapEditorSetEnabled(MapEditor *self, bool enabled) {
-   self->enabled = enabled;
+void mapEditorReset(MapEditor *self) {
    self->schemaIndex = self->schemaRowIndex = 0;
-   entityGet(VisibilityComponent)(self->statsEntity)->shown = enabled;
 }
 
 bool mapEditorPointInSchemaWindow(MapEditor *self, Int2 p) {
@@ -101,7 +62,7 @@ void mapEditorSelectSchema(MapEditor *self, Int2 mousePos) {
       schemaX;
 }
 void mapEditorScrollSchemas(MapEditor *self, int deltaY) {
-   GridManager *gm = self->view->managers->gridManager;
+   GridManager *gm = self->view->gridManager;
    int sCount = (int)gridManagerGetSchemaCount(gm);
    int sRowCount = (sCount / SCHEMA_COLUMNS) + (sCount % SCHEMA_COLUMNS ? 1 : 0);
    int maxRow = MAX(sRowCount - SCHEMA_ROWS, 0);
@@ -119,7 +80,7 @@ byte mapEditorGetSelectedSchema(MapEditor *self) {
 }
 
 void mapEditorSetSelectedSchema(MapEditor *self, byte schema) {
-   GridManager *gm = self->view->managers->gridManager;
+   GridManager *gm = self->view->gridManager;
    int sCount = (int)gridManagerGetSchemaCount(gm);
    int sRowCount = (sCount / SCHEMA_COLUMNS) + (sCount % SCHEMA_COLUMNS ? 1 : 0);
    int schemaRow = schema / SCHEMA_COLUMNS;
@@ -137,9 +98,9 @@ void mapEditorSetSelectedSchema(MapEditor *self, byte schema) {
    }
 }
 
-void mapEditorRender(MapEditor *self, Frame *frame) {
+void mapEditorRenderSchemas(MapEditor *self, Frame *frame)  {
    
-   GridManager *gm = self->view->managers->gridManager;
+   GridManager *gm = self->view->gridManager;
    int count = (int)gridManagerGetSchemaCount(gm);
    int x, y;
 
@@ -167,25 +128,16 @@ void mapEditorRender(MapEditor *self, Frame *frame) {
    
 }
 
+void mapEditorRenderXYDisplay(MapEditor *self, Frame *frame) {
+   textAreaRender(self->xyDisplay, self->view, frame);
+}
+
 void mapEditorUpdateStats(MapEditor *self, Int2 mouseGridPos) {
    if (self->mouseGridPos.x != mouseGridPos.x || self->mouseGridPos.y != mouseGridPos.y) {
-      TextComponent *tc = entityGet(TextComponent)(self->statsEntity);
-      TextLine *xLine = vecAt(TextLine)(tc->lines, 0);
-      TextLine *yLine = vecAt(TextLine)(tc->lines, 1);
-
       char buff[128];
-
       sprintf(buff, "X: [c=0,5]%d[/c]\nY: [c=0,5]%d[/c]", mouseGridPos.x, mouseGridPos.y);
-
-      richTextResetFromRaw(self->rt, buff);
-
-      vecClear(RichTextLine)(self->rtLines);
-      richTextRenderToLines(self->rt, 0, self->rtLines);
-
-      richTextLineCopy(*vecAt(RichTextLine)(self->rtLines, 0), xLine->line);
-      richTextLineCopy(*vecAt(RichTextLine)(self->rtLines, 1), yLine->line);
-
-      self->mouseGridPos = mouseGridPos;
+      textAreaSetText(self->xyDisplay, buff);
+      self->mouseGridPos = mouseGridPos;      
    }
 }
 

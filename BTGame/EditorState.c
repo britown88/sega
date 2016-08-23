@@ -1,6 +1,5 @@
 #include "WorldView.h"
 #include "Managers.h"
-#include "CoreComponents.h"
 #include "LightGrid.h"
 #include "Console.h"
 #include "GameState.h"
@@ -8,11 +7,10 @@
 #include "ImageLibrary.h"
 #include "MapEditor.h"
 
-#include "Entities\Entities.h"
-
 #include "SEGA\Input.h"
 #include "SEGA\App.h"
 #include "GameClock.h"
+#include "Weather.h"
 
 #include "segashared\CheckedMemory.h"
 
@@ -21,11 +19,16 @@
 
 typedef struct {
    WorldView *view;
+   MapEditor *editor;
+   ManagedImage *bg;
    bool pop;
 }EditorState;
 
-static void _editorStateCreate(EditorState *state) {}
+static void _editorStateCreate(EditorState *state) {
+   state->editor = mapEditorCreate(state->view);
+}
 static void _editorStateDestroy(EditorState *self) {
+   mapEditorDestroy(self->editor);
    checkedFree(self);
 }
 
@@ -43,34 +46,21 @@ static void _editor(EditorState *state, Type *t, Message m) {
    else if (t == GetRTTI(StateExit)) { _editorExit(state, m); }
 }
 
-static void _registerGridRenders(EditorState *state) {
-   LayerRenderer schemas;
-   closureInit(LayerRenderer)(&schemas, state->view->mapEditor, &mapEditorRender, NULL);
-   renderManagerAddLayerRenderer(state->view->managers->renderManager, LayerConsole, schemas);
-}
 
 void _editorEnter(EditorState *state, StateEnter *m) {
-   BTManagers *managers = state->view->managers;
-
-   changeBackground(state->view, IMG_BG_EDITOR);
-   _registerGridRenders(state);
-
-   mapEditorSetEnabled(state->view->mapEditor, true);
-
+   state->bg = imageLibraryGetImage(state->view->imageLibrary, stringIntern(IMG_BG_EDITOR));
+   mapEditorReset(state->editor);
 }
 void _editorExit(EditorState *state, StateExit *m) {
-   BTManagers *managers = state->view->managers;
-
-   renderManagerRemoveLayerRenderer(managers->renderManager, LayerConsole);
-   mapEditorSetEnabled(state->view->mapEditor, false);
+   managedImageDestroy(state->bg);
 }
 
 void _editorUpdate(EditorState *state, GameStateUpdate *m) {
-   BTManagers *managers = state->view->managers;
+   WorldView *view = state->view;
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
 
-   cursorManagerUpdate(managers->cursorManager, mousePos.x, mousePos.y);
+   cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
    
    if (state->pop) {
       fsmPop(state->view->gameState);
@@ -79,10 +69,10 @@ void _editorUpdate(EditorState *state, GameStateUpdate *m) {
 }
 
 static void _handleKeyboard(EditorState *state) {
-   BTManagers *managers = state->view->managers;
+   WorldView *view = state->view;
    Keyboard *k = appGetKeyboard(appGet());
    KeyboardEvent e = { 0 };
-   Viewport *vp = state->view->viewport;
+   Viewport *vp = view->viewport;
    short speed;
 
    while (keyboardPopEvent(k, &e)) {
@@ -92,7 +82,7 @@ static void _handleKeyboard(EditorState *state) {
             state->pop = true;
             break;
          case SegaKey_GraveAccent:
-            fsmPush(state->view->gameState, gameStateCreateConsole(state->view));
+            fsmPush(view->gameState, gameStateCreateConsole(view));
             break;
          }
       }
@@ -104,14 +94,14 @@ static void _handleKeyboard(EditorState *state) {
       vp->worldPos.y = MAX(0, vp->worldPos.y - speed);
    }
    if (keyboardIsDown(k, SegaKey_S)) {
-      short maxY = (gridManagerHeight(state->view->managers->gridManager) * GRID_CELL_SIZE) - vp->region.height;
+      short maxY = (gridManagerHeight(view->gridManager) * GRID_CELL_SIZE) - vp->region.height;
       vp->worldPos.y = MIN(maxY, vp->worldPos.y + speed);
    }
    if (keyboardIsDown(k, SegaKey_A)) {
       vp->worldPos.x = MAX(0, vp->worldPos.x - speed);
    }
    if (keyboardIsDown(k, SegaKey_D)) {
-      short maxX = (gridManagerWidth(state->view->managers->gridManager) * GRID_CELL_SIZE) - vp->region.width;
+      short maxX = (gridManagerWidth(view->gridManager) * GRID_CELL_SIZE) - vp->region.width;
       vp->worldPos.x = MIN(maxX, vp->worldPos.x + speed);
    }
 }
@@ -121,7 +111,7 @@ static void _handleMouse(EditorState *state) {
    MouseEvent event = { 0 };
    Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = state->view->viewport;
-   MapEditor *me = state->view->mapEditor;
+   MapEditor *me = state->editor;
    Recti vpArea = { 
       vp->region.origin_x, 
       vp->region.origin_y, 
@@ -143,7 +133,7 @@ static void _handleMouse(EditorState *state) {
             mapEditorSelectSchema(me, pos);
          }
          else if (gridOperation && event.button == SegaMouseBtn_Right) {
-            Tile *t = gridManagerTileAtScreenPos(state->view->managers->gridManager, pos.x, pos.y);
+            Tile *t = gridManagerTileAtScreenPos(state->view->gridManager, pos.x, pos.y);
 
             if (t) {
                mapEditorSetSelectedSchema(me, t->schema);
@@ -161,7 +151,7 @@ static void _handleMouse(EditorState *state) {
       mapEditorUpdateStats(me, vpPos);
 
       if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
-         Tile *t = gridManagerTileAtXY(state->view->managers->gridManager, vpPos.x, vpPos.y);
+         Tile *t = gridManagerTileAtXY(state->view->gridManager, vpPos.x, vpPos.y);
          if (t) {
             t->schema = mapEditorGetSelectedSchema(me);
          }
@@ -175,7 +165,28 @@ void _editorHandleInput(EditorState *state, GameStateHandleInput *m) {
 }
 
 void _editorRender(EditorState *state, GameStateRender *m) {
-   renderManagerRender(state->view->managers->renderManager, m->frame);
+   Frame *frame = m->frame;
+   frameClear(frame, FrameRegionFULL, 0);
+
+   gridManagerRender(state->view->gridManager, frame);
+   weatherRender(state->view->weather, frame);
+   gridManagerRenderLighting(state->view->gridManager, frame);
+   
+
+   
+   
+
+   
+
+   frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
+
+   mapEditorRenderSchemas(state->editor, m->frame);
+
+   mapEditorRenderXYDisplay(state->editor, m->frame);
+
+   cursorManagerRender(state->view->cursorManager, frame);
+
+   framerateViewerRender(state->view->framerateViewer, frame);
 }
 
 StateClosure gameStateCreateEditor(WorldView *view) {

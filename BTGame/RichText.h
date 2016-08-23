@@ -15,7 +15,7 @@ typedef struct {
    byte fg, bg;
 }SpanStyle;
 
-typedef struct {
+typedef struct Span_t{
    SpanStyle style;
    String *string;
 } Span;

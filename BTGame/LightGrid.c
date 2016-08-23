@@ -3,8 +3,6 @@
 #include "segalib/EGA.h"
 
 #include "Viewport.h"
-#include "Entities/Entities.h"
-#include "CoreComponents.h"
 
 #include <math.h>
 #include "segautils/Math.h"
@@ -50,22 +48,57 @@ static const byte LightMasks[LIGHT_LEVEL_COUNT][16] =
 
 #pragma endregion
 
+struct LightSource_t {
+   LightGrid *parent;
+   LightSourceParams params;
+   Int2 pos;
+};
+
+typedef LightSource *LightSourcePtr;
+#define VectorT LightSourcePtr
+#include "segautils/Vector_Create.h"
+
+void lightSourcePtrDestroy(LightSourcePtr *self) {
+   checkedFree(*self);
+}
+
 typedef struct LightGrid_t {
    LightData grid[LIGHT_GRID_CELL_COUNT];
    OcclusionCell *occlusion;
    GridManager *parent;
    byte ambientLevel;
+   vec(LightSourcePtr) *sources;
 }LightGrid;
 
 LightGrid *lightGridCreate(GridManager *parent) {
    LightGrid *out = checkedCalloc(1, sizeof(LightGrid));
    out->occlusion = checkedCalloc(LIGHT_GRID_CELL_COUNT, sizeof(OcclusionCell));
    out->parent = parent;
+
+   out->sources = vecCreate(LightSourcePtr)(&lightSourcePtrDestroy);
    return out;
 }
 void lightGridDestroy(LightGrid *self) {
+   vecDestroy(LightSourcePtr)(self->sources);
    checkedFree(self->occlusion);
    checkedFree(self);
+}
+
+LightSource *lightGridCreateLightSource(LightGrid *self) {
+   LightSource *out = checkedCalloc(1, sizeof(LightSource));
+   out->params.on = true;
+   vecPushBack(LightSourcePtr)(self->sources, &out);
+   return out;
+}
+
+LightSourceParams *lightSourceParams(LightSource *self) {
+   return &self->params;
+}
+Int2 *lightSourcePosition(LightSource *self) {
+   return &self->pos;
+}
+void lightSourceDestroy(LightSource *self) {
+   vecRemove(LightSourcePtr)(self->parent->sources, &self);
 }
 
 typedef struct {
@@ -342,7 +375,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
    //}
 }
 
-void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
+void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
    int i = 0;
    memset(self->grid, 0, sizeof(self->grid));
 
@@ -373,19 +406,17 @@ void lightGridUpdate(LightGrid *self, EntitySystem *es, short vpx, short vpy) {
       }
    }
 
-
-   COMPONENT_QUERY(es, LightComponent, lc, {
-      Entity *e = componentGetParent(lc, es);
-      PositionComponent *pc = entityGet(PositionComponent)(e);
-
+   vecForEach(LightSourcePtr, src, self->sources, {
+      LightSourceParams *lsp = &(*src)->params;
+      Int2 *lsPos = &(*src)->pos;
       _addPoint(self, (PointLight) {
-            .origin = {
-               .x = ((pc->x + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpx,
-               .y = ((pc->y + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpy
-            },
-            .radius = lc->radius,
-            .level = lc->centerLevel,
-            .fadeWidth = lc->fadeWidth
+         .origin = {
+            .x = ((lsPos->x + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpx,
+            .y = ((lsPos->y + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpy
+         },
+            .radius = lsp->radius,
+            .level = lsp->centerLevel,
+            .fadeWidth = lsp->fadeWidth
       });
    });
 }

@@ -13,11 +13,15 @@ typedef enum {
 
 typedef struct VerbManager_t VerbManager;
 
-VerbManager *createVerbManager(WorldView *view);
-void verbManagerCreateVerbs(VerbManager *self);
+typedef struct Frame_t Frame;
+
+VerbManager *verbManagerCreate(WorldView *view);
+void verbManagerDestroy(VerbManager *self);
 
 void verbManagerSetEnabled(VerbManager *self, bool enabled);
 
 //returns nonzero if event occurs
 int verbManagerMouseButton(VerbManager *self, MouseEvent *e);
 void verbManagerKeyButton(VerbManager *self, Verbs v, SegaKeyActions action);
+
+void verbManagerRender(VerbManager *self, Frame *frame);

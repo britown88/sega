@@ -42,9 +42,6 @@
     <ClInclude Include="ImageLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CoreComponents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -117,12 +114,18 @@
     <ClInclude Include="AssetHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Actors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprites.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CoreComponents.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameClock.c">
@@ -140,9 +143,6 @@
     <ClCompile Include="CursorManager.c">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="RenderManager.c">
-      <Filter>Source Files\Managers</Filter>
-    </ClCompile>
     <ClCompile Include="WorldState.c">
       <Filter>Source Files\Game States</Filter>
     </ClCompile>
@@ -151,9 +151,6 @@
     </ClCompile>
     <ClCompile Include="LightGrid.c">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InterpolationManager.c">
-      <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="GridMovementManager.c">
       <Filter>Source Files\Managers</Filter>
@@ -172,9 +169,6 @@
     </ClCompile>
     <ClCompile Include="RichText.c">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WaitManager.c">
-      <Filter>Source Files\Managers</Filter>
     </ClCompile>
     <ClCompile Include="Lua.c">
       <Filter>Source Files\Lua</Filter>
@@ -234,6 +228,12 @@
       <Filter>Source Files\Generated</Filter>
     </ClCompile>
     <ClCompile Include="AssetHelpers.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderHelpers.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FramerateViewer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

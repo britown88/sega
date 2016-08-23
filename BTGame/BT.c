@@ -3,8 +3,6 @@
 #include "segashared\CheckedMemory.h"
 #include "segashared\Strings.h"
 
-#include "Entities\Entities.h"
-#include "CoreComponents.h"
 #include "WorldView.h"
 #include "GameClock.h"
 #include "ImageLibrary.h"
@@ -22,26 +20,33 @@
 #include "assets.h"
 #include "Weather.h"
 #include "TextArea.h"
+#include "Actors.h"
+#include "RenderHelpers.h"
 
 typedef struct {
    VirtualApp vApp;
    AppData data;
 
-   BTManagers managers;
+   RenderManager *renderManager;
+   CursorManager *cursorManager;
+   GridManager *gridManager;
+   GridMovementManager *gridMovementManager;
+   PCManager *pcManager;
+   VerbManager *verbManager;
+   ActorManager *actorManager;
+   TextAreaManager *textAreaManager;
 
-   EntitySystem *entitySystem;
+   FramerateViewer *framerateViewer;
+   FontFactory *fontFactory;
    ImageLibrary *imageLibrary;
    FSM *gameState;
-   GameClock *gameClock;
    Viewport viewport;
    GridSolver *gridSolver;
    WorldView view;
    Console *console;
-   MapEditor *mapEditor;
    ChoicePrompt *choicePrompt;
    DB_assets *db;
    Weather *weather;
-   TextAreaManager *textAreaManager;
 
    lua_State *L;
 
@@ -87,92 +92,63 @@ AppData *_getData(BTGame *self) {
 
 #pragma endregion
 
-#define RegisterManager(member, funcCall) \
-   member = funcCall; \
-   entitySystemRegisterManager(self->entitySystem, (Manager*)member);
-
-void _initEntitySystem(BTGame *self){
-   self->entitySystem = entitySystemCreate();
-   self->view.entitySystem = self->entitySystem;//this is important
-
-   RegisterManager(self->managers.renderManager, createRenderManager(&self->view, &self->data.fps));
-   RegisterManager(self->managers.cursorManager, createCursorManager(&self->view));
-   RegisterManager(self->managers.gridManager, createGridManager(&self->view));
-   RegisterManager(self->managers.interpolationManager, createInterpolationManager(&self->view));
-   RegisterManager(self->managers.waitManager, createWaitManager(&self->view));
-   RegisterManager(self->managers.gridMovementManager, createGridMovementManager(&self->view));
-   RegisterManager(self->managers.pcManager, createPCManager(&self->view));
-   RegisterManager(self->managers.verbManager, createVerbManager(&self->view));
-   RegisterManager(self->managers.actorManager, createActorManager(&self->view));
-}
-
-void _destroyEntitySystem(BTGame *self){
-   entitySystemDestroy(self->entitySystem);
-}
+#define CREATE_AND_VIEW(NAME, CALL) r->NAME = CALL; \
+   r->view.NAME = r->NAME;
 
 VirtualApp *btCreate() {
    BTGame *r = checkedCalloc(1, sizeof(BTGame));
    r->vApp.vTable = getVtable();
    r->data = createData();
-
-   //Other constructor shit goes here   
-   r->imageLibrary = imageLibraryCreate(&r->view);
-   r->gameState = fsmCreate();
-   r->gameClock = gameClockCreate();
    
    r->viewport = (Viewport){   
       .region = { GRID_POS_X, GRID_POS_Y, GRID_PX_WIDTH, GRID_PX_HEIGHT },
       .worldPos = { 0, 0 } 
    };
-
-   //init the view
-   r->view.imageLibrary = r->imageLibrary;
-   r->view.gameState = r->gameState;
-   r->view.managers = &r->managers;
-   r->view.gameClock = r->gameClock;
    r->view.viewport = &r->viewport;
 
-   _initEntitySystem(r);
+   r->view.gameClock = gameClockGet();
 
-   r->gridSolver = gridSolverCreate(&r->view);
-   r->view.gridSolver = r->gridSolver;
+   CREATE_AND_VIEW(imageLibrary, imageLibraryCreate(&r->view));
+   CREATE_AND_VIEW(gameState, fsmCreate());
 
-   r->console = consoleCreate(&r->view);
-   r->view.console = r->console;
+   CREATE_AND_VIEW(cursorManager, cursorManagerCreate(&r->view));
+   CREATE_AND_VIEW(gridManager, gridManagerCreate(&r->view));
+   CREATE_AND_VIEW(gridMovementManager, gridMovementManagerCreate(&r->view));
+   CREATE_AND_VIEW(pcManager, pcManagerCreate(&r->view));
+   CREATE_AND_VIEW(verbManager, verbManagerCreate(&r->view));
+   CREATE_AND_VIEW(actorManager, actorManagerCreate(&r->view));
+   CREATE_AND_VIEW(textAreaManager, textAreaManagerCreate(&r->view));
 
-   r->mapEditor = mapEditorCreate(&r->view);
-   r->view.mapEditor = r->mapEditor;
-
-   r->L = luaCreate();
-
-   r->db = db_assetsCreate();
-   r->view.db = r->db;
-
-   r->weather = createWeather(&r->view);
-   r->view.weather = r->weather;
-
-   r->choicePrompt = createChoicePrompt(&r->view);
-   r->view.choicePrompt = r->choicePrompt;
-
-   r->textAreaManager = textAreaManagerCreate(&r->view);
-   r->view.textAreaManager = r->textAreaManager;
+   CREATE_AND_VIEW(framerateViewer, framerateViewerCreate(&r->view, &r->data.fps));
+   CREATE_AND_VIEW(gridSolver, gridSolverCreate(&r->view));
+   CREATE_AND_VIEW(console, consoleCreate(&r->view));
+   CREATE_AND_VIEW(L, luaCreate());
+   CREATE_AND_VIEW(db, db_assetsCreate());
+   CREATE_AND_VIEW(weather, createWeather(&r->view));
+   CREATE_AND_VIEW(choicePrompt, createChoicePrompt(&r->view));
 
    return (VirtualApp*)r;
 }
 
+#undef CREATE_AND_VIEW
+
 void _destroy(BTGame *self){
    fsmDestroy(self->gameState);
 
-   //kill the console before the entity system tries throwing errors to it!
    consoleDestroy(self->console);
-   self->console = self->view.console = NULL;
-   
-   _destroyEntitySystem(self);
+   self->console = self->view.console = NULL;   
 
+   verbManagerDestroy(self->verbManager);
+   gridMovementManagerDestroy(self->gridMovementManager);
+   cursorManagerDestroy(self->cursorManager);
+   actorManagerDestroy(self->actorManager);
+   gridManagerDestroy(self->gridManager);
+   pcManagerDestroy(self->pcManager);
+
+   fontFactoryDestroy(self->fontFactory);
+   framerateViewerDestroy(self->framerateViewer);
    imageLibraryDestroy(self->imageLibrary);
-   gameClockDestroy(self->gameClock);
    gridSolverDestroy(self->gridSolver);
-   mapEditorDestroy(self->mapEditor);
    choicePromptDestroy(self->choicePrompt);
    db_assetsDestroy(self->db);
    weatherDestroy(self->weather);
@@ -183,37 +159,37 @@ void _destroy(BTGame *self){
 }
 
 static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
-   Tile *t = gridManagerTileAtXY(app->managers.gridManager, x, y);
-   Entity *e = entityCreate(app->entitySystem);
-   COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, SizeComponent, 14, 14);
-   //COMPONENT_ADD(e, RectangleComponent, 0);
+   //Tile *t = gridManagerTileAtXY(app->managers.gridManager, x, y);
+   //Entity *e = entityCreate(app->entitySystem);
+   //COMPONENT_ADD(e, PositionComponent, 0, 0);
+   //COMPONENT_ADD(e, SizeComponent, 14, 14);
+   ////COMPONENT_ADD(e, RectangleComponent, 0);
 
-   COMPONENT_ADD(e, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
-   COMPONENT_ADD(e, LayerComponent, LayerGrid);
-   COMPONENT_ADD(e, InViewComponent, 0);
-   COMPONENT_ADD(e, GridComponent, x, y);
-   COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
-   COMPONENT_ADD(e, ActorComponent, .moveTime = DEFAULT_MOVE_SPEED, .moveDelay = DEFAULT_MOVE_DELAY);
+   //COMPONENT_ADD(e, ImageComponent, .imgID = stringIntern(IMG_TILE_ATLAS), .partial = true, .x = imgX, .y = imgY, .width = 14, .height = 14);
+   //COMPONENT_ADD(e, LayerComponent, LayerGrid);
+   //COMPONENT_ADD(e, InViewComponent, 0);
+   //COMPONENT_ADD(e, GridComponent, x, y);
+   //COMPONENT_ADD(e, LightComponent, .radius = 0, .centerLevel = 0, .fadeWidth = 0);
+   //COMPONENT_ADD(e, ActorComponent, .moveTime = DEFAULT_MOVE_SPEED, .moveDelay = DEFAULT_MOVE_DELAY);
 
-   if (t) {
-      t->schema = 3;
-      t->collision = 0;
-   }
+   //if (t) {
+   //   t->schema = 3;
+   //   t->collision = 0;
+   //}
 
-   entityUpdate(e);
+   //entityUpdate(e);
 }
 
 static void _addTestEntities(BTGame *app) {
    int i;
-   Entity *e = entityCreate(app->entitySystem);
-   COMPONENT_ADD(e, PositionComponent, 0, 0);
-   COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/bg.ega"));
-   COMPONENT_ADD(e, LayerComponent, LayerBackground);
-   COMPONENT_ADD(e, RenderedUIComponent, 0);
-   entityUpdate(e);
+   //Entity *e = entityCreate(app->entitySystem);
+   //COMPONENT_ADD(e, PositionComponent, 0, 0);
+   //COMPONENT_ADD(e, ImageComponent, stringIntern("assets/img/bg.ega"));
+   //COMPONENT_ADD(e, LayerComponent, LayerBackground);
+   //COMPONENT_ADD(e, RenderedUIComponent, 0);
+   //entityUpdate(e);
 
-   app->view.backgroundEntity = e;
+   //app->view.backgroundEntity = e;
 
    {
       StringView boxName = stringIntern("smallbox");
@@ -241,7 +217,6 @@ void _onStart(BTGame *self){
 
    //we need the console alive to print errors!
    consoleCreateLines(self->console);   
-   mapEditorInitialize(self->mapEditor);
 
    luaLoadAllLibraries(self->L, &self->view);
    luaLoadAssets(self->L);
@@ -266,12 +241,14 @@ void _onStart(BTGame *self){
       appSetPalette(appGet(), &defPal);
    }
 
-   renderManagerInitialize(self->managers.renderManager);
-   cursorManagerCreateCursor(self->managers.cursorManager);
-   pcManagerCreatePC(self->managers.pcManager);
-   verbManagerCreateVerbs(self->managers.verbManager);
+   //load our font factory fopr the font rendering
+   self->fontFactory = initFontFactory(&self->view);
+   self->view.fontFactory = self->fontFactory;
 
-   gridManagerSetAmbientLight(self->managers.gridManager, MAX_BRIGHTNESS);
+   cursorManagerCreateCursor(self->cursorManager);
+   pcManagerCreatePC(self->pcManager);
+
+   gridManagerSetAmbientLight(self->gridManager, MAX_BRIGHTNESS);
 
    _addTestEntities(self);
 

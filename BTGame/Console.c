@@ -1,12 +1,12 @@
 #include "Console.h"
 #include "segalib/EGA.h"
-#include "Entities/Entities.h"
 #include "segashared/CheckedMemory.h"
-#include "CoreComponents.h"
 
 #include "segautils/StandardVectors.h"
 #include "GameClock.h"
 #include "Managers.h"
+#include "TextArea.h"
+#include "RenderHelpers.h"
 
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
@@ -25,9 +25,25 @@
 #define PREFIX_LEN 2
 #define SHOWN_INPUT_LEN (WIDTH - PREFIX_LEN - 1)
 
+//gonna jsut plug this in from the old entity rendering because this 
+//files really large and in charge and i dont want to make it work with
+//the new text areas
+typedef struct {
+   byte x, y;
+   RichTextLine line;
+}TextLine;
+
+void textLineDestroy(TextLine *self) {
+   vecDestroy(Span)(self->line);
+}
+
+#define VectorT TextLine
+#include "segautils/Vector_Create.h"
+
 struct Console_t {
    WorldView *view;
-   Entity *e, *notif;
+   TextArea *notification;
+
    bool enabled;
    vec(StringPtr) *inputHistory, *shiftLines;   
    String *input;
@@ -35,6 +51,7 @@ struct Console_t {
 
    RichText *rt;
    vec(RichTextLine) *queue;
+   vec(TextLine) *lines;
 
    int historyLocation;
    int cursorPos, selectionWidth;
@@ -54,15 +71,18 @@ Console *consoleCreate(WorldView *view) {
    out->shiftLines = vecCreate(StringPtr)(&stringPtrDestroy);
    out->input = stringCreate("");
    out->rt = richTextCreateFromRaw("");
+   out->lines = vecCreate(TextLine)(&textLineDestroy);
 
+   out->notification = textAreaCreate(0, EGA_TEXT_RES_HEIGHT - 1, 10, 1);
    out->showLineCount = MIN_LINE_COUNT;
 
    return out;
 }
 void consoleDestroy(Console *self) {
-
+   textAreaDestroy(self->notification);
    richTextDestroy(self->rt);
    stringDestroy(self->input);
+   vecDestroy(TextLine)(self->lines);
    vecDestroy(RichTextLine)(self->queue);
    vecDestroy(StringPtr)(self->inputHistory);
    vecDestroy(StringPtr)(self->shiftLines);
@@ -70,7 +90,7 @@ void consoleDestroy(Console *self) {
 }
 
 static RichTextLine _inputLine(Console *self) {
-   return (vecEnd(TextLine)(entityGet(TextComponent)(self->e)->lines) - 1)->line;
+   return (vecEnd(TextLine)(self->lines) - 1)->line;
 }
 
 static void _updateInputLine(Console *self) {
@@ -120,10 +140,9 @@ static void _updateConsoleLines(Console *self) {
    size_t queuelen = vecSize(RichTextLine)(self->queue) - self->queuePos;
    size_t drawnCount = MIN(self->showLineCount, queuelen);
    size_t skipCount = MAX_LINE_COUNT - drawnCount;
-   TextComponent *tc = entityGet(TextComponent)(self->e);
-   
+
    for (i = 0; i < MAX_LINE_COUNT; ++i) {
-      TextLine *line = vecAt(TextLine)(tc->lines, i + 1);
+      TextLine *line = vecAt(TextLine)(self->lines, i + 1);
       vecClear(Span)(line->line);
       if (i >= skipCount) {
          //render the spans onto the component
@@ -158,17 +177,10 @@ static void _printStackItem(lua_State *L, Console *self, int index) {
 }
 
 static void _updateNotification(Console *self) {
-   TextComponent *tc = entityGet(TextComponent)(self->notif);
-   TextLine *line = vecBegin(TextLine)(tc->lines);
-   Span *span = vecBegin(Span)(line->line);
-
-   if (self->errorCount == 0) {
-      stringClear(span->string);
-   }
-   else {
-      static char buff[8];
-      sprintf(buff, "!%d", self->errorCount);
-      stringSet(span->string, buff);
+   if (self->errorCount > 0) {
+      static char buff[32];
+      sprintf(buff, "[c=10,0]!%d[/c]", self->errorCount);
+      textAreaSetText(self->notification, buff);
    }
 }
 
@@ -287,40 +299,15 @@ static void _commitInput(Console *self, bool shift) {
 
 void consoleCreateLines(Console *self) {
    int y;
-   Entity *e = entityCreate(self->view->entitySystem);
-   TextComponent tc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
-   TextComponent notiftc = { .lines = vecCreate(TextLine)(&textLineDestroy) };
    int bottomLine = BOTTOM;//last line on screen
    int topLine = bottomLine - MAX_LINE_COUNT - 1;//account for input line
 
    for (y = topLine; y <= bottomLine; ++y) {
-      vecPushBack(TextLine)(tc.lines, &(TextLine){
+      vecPushBack(TextLine)(self->lines, &(TextLine){
          .x = LEFT, .y = y,
          .line = vecCreate(Span)(&spanDestroy)
       });
    }
-
-   vecPushBack(TextLine)(notiftc.lines, &(TextLine){
-         .x = 0, .y = EGA_TEXT_RES_HEIGHT - 1,
-         .line = vecCreate(Span)(&spanDestroy)
-   });
-
-   //i apologize to the faint of heart for this line
-   vecPushBack(Span)(vecBegin(TextLine)(notiftc.lines)->line, &(Span){ .string = stringCreate(""), .style = { .flags = Style_Color, .bg = 0, .fg = 13 } });
-
-   self->e = entityCreate(self->view->entitySystem);
-   COMPONENT_ADD(self->e, LayerComponent, LayerConsole);
-   COMPONENT_ADD(self->e, RenderedUIComponent, 0);
-   COMPONENT_ADD(self->e, VisibilityComponent, .shown = self->enabled);
-   entityAdd(TextComponent)(self->e, &tc);
-   entityUpdate(self->e);
-
-   self->notif = entityCreate(self->view->entitySystem);
-   COMPONENT_ADD(self->notif, LayerComponent, LayerConsole);
-   COMPONENT_ADD(self->notif, RenderedUIComponent, 0);
-   COMPONENT_ADD(self->notif, VisibilityComponent, .shown = !self->enabled);
-   entityAdd(TextComponent)(self->notif, &notiftc);
-   entityUpdate(self->notif);
 
    //consolePushLine(self,
    //   "---------------------------\n"
@@ -342,8 +329,6 @@ void consoleClear(Console *self) {
 
 void consoleSetEnabled(Console *self, bool enabled) {
    self->enabled = enabled;
-   entityGet(VisibilityComponent)(self->e)->shown = enabled;
-   entityGet(VisibilityComponent)(self->notif)->shown = !enabled;
 
    if (enabled) {
       if (self->errorCount > 0) {
@@ -352,7 +337,7 @@ void consoleSetEnabled(Console *self, bool enabled) {
       }      
    }
    else {
-      actorManagerClearErrorFlag(self->view->managers->actorManager);
+      actorManagerClearErrorFlag(self->view->actorManager);
    }
 }
 
@@ -528,11 +513,31 @@ void consoleMacroGridPos(Console *self, short x, short y) {
    _insertInput(self, buff);   
 }
 
-void consoleMacroActor(Console *self, Entity *e) {
-   int i = luaActorGetIndex(self->view->L, e);
+void consoleMacroActor(Console *self, Actor *a) {
+   int i = luaActorGetIndex(self->view->L, a);
    char buff[32];
    if (i > 0) {
       sprintf(buff, "actors[%d]", i);
       _insertInput(self, buff);
+   }
+}
+
+void consoleRenderNotification(Console *self, Frame *frame) {
+   if (self->errorCount > 0) {
+      textAreaRender(self->notification, self->view, frame);
+   }
+}
+void consoleRenderLines(Console *self, Frame *frame) {
+   if (self->lines) {
+      //default font
+      Font *defaultFont = fontFactoryGetFont(self->view->fontFactory, 0, 15);
+
+      vecForEach(TextLine, line, self->lines, {
+         byte x = line->x;
+         byte y = line->y;
+         vecForEach(Span, span, line->line,{
+            frameRenderSpan(self->view, frame, &x, &y, span);
+         });
+      });
    }
 }

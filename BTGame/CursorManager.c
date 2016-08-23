@@ -2,9 +2,7 @@
 
 #include "Managers.h"
 #include "ImageLibrary.h"
-#include "Entities\Entities.h"
 
-#include "CoreComponents.h"
 #include "WorldView.h"
 #include "segashared\CheckedMemory.h"
 #include "segalib\EGA.h"
@@ -15,71 +13,52 @@
 
 #define CURSOR_SIZE 22
 
-typedef struct{
-   byte flag;
-}TCursorComponent;
-
-#define TComponentT TCursorComponent
-#include "Entities\ComponentDeclTransient.h"
 
 struct CursorManager_t{
-   Manager m;
    WorldView *view;
-   Entity *e;
+   ManagedImage *cursorImg;
+   Int2 pos, imgPos;
+
 };
 
-ImplManagerVTable(CursorManager)
 
-CursorManager *createCursorManager(WorldView *view){
+CursorManager *cursorManagerCreate(WorldView *view){
    CursorManager *out = checkedCalloc(1, sizeof(CursorManager));
    out->view = view;
-   out->m.vTable = CreateManagerVTable(CursorManager);
 
    return out;
 }
 
-void _destroy(CursorManager *self){
+void cursorManagerDestroy(CursorManager *self){
+   managedImageDestroy(self->cursorImg);
    checkedFree(self);
 }
-void _onDestroy(CursorManager *self, Entity *e){}
-void _onUpdate(CursorManager *self, Entity *e){}
 
 void cursorManagerCreateCursor(CursorManager *self){
-   self->e = entityCreate(self->view->entitySystem);
-
-   COMPONENT_ADD(self->e, PositionComponent, 0, 0);
-   COMPONENT_ADD(self->e, ImageComponent, .imgID = stringIntern(IMG_CURSOR), .partial = true, .height = CURSOR_SIZE, .width = CURSOR_SIZE, .x = 0, .y = 0);
-   COMPONENT_ADD(self->e, TCursorComponent, 0);
-   COMPONENT_ADD(self->e, LayerComponent, LayerCursor);
-   COMPONENT_ADD(self->e, RenderedUIComponent, 0);
-   COMPONENT_ADD(self->e, VisibilityComponent, true);
-   entityUpdate(self->e);
-}
-
-void cursorManagerSetShown(CursorManager *self, bool shown) {
-   entityGet(VisibilityComponent)(self->e)->shown = shown;
+   self->cursorImg = imageLibraryGetImage(self->view->imageLibrary, stringIntern(IMG_CURSOR));
 }
 
 void cursorManagerSetVerb(CursorManager *self, Verbs v) {
-   ImageComponent *ic = entityGet(ImageComponent)(self->e);
-
    if (v < Verb_COUNT) {
-      ic->x = (v + 1) * CURSOR_SIZE;
+      self->imgPos.x = (v + 1) * CURSOR_SIZE;
    }
    else {
-      ic->x = 0;
+      self->imgPos.x = 0;
    }
 }
 
 void cursorManagerClearVerb(CursorManager *self) {
-   entityGet(ImageComponent)(self->e)->x = 0;
+   self->imgPos.x = 0;
 }
 
 void cursorManagerUpdate(CursorManager *self, int x, int y){
-   PositionComponent *pc = entityGet(PositionComponent)(self->e);
-   if (pc){
-      pc->x = x;
-      pc->y = y;
-   }
+   self->pos = (Int2) { x, y };
+}
+
+void cursorManagerRender(CursorManager *self, Frame *frame) {
+   frameRenderImagePartial(frame, FrameRegionFULL,
+      self->pos.x, self->pos.y,
+      managedImageGetImage(self->cursorImg),
+      self->imgPos.x, self->imgPos.y, CURSOR_SIZE, CURSOR_SIZE);
 }
 

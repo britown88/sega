@@ -1,7 +1,5 @@
 #include "Managers.h"
 #include "segashared\CheckedMemory.h"
-#include "Entities\Entities.h"
-#include "CoreComponents.h"
 #include "SEGA\App.h"
 #include "SEGA\Input.h"
 #include "WorldView.h"
@@ -17,24 +15,18 @@
 #pragma pack(push, 1)
 
 typedef struct {
-   vec(EntityPtr) *entities;
+   vec(ActorPtr) *actors;
    size_t index;
 }Partition;
-
-typedef struct {
-   vec(size_t) *occupyingPartitions;
-}TGridComponent;
 
 #pragma pack(pop)
 
 static void _partitionDestroy(Partition *p) {
-   if (p->entities) {
-      vecDestroy(EntityPtr)(p->entities);
+   if (p->actors) {
+      vecDestroy(ActorPtr)(p->actors);
    }
 }
 
-#define TComponentT TGridComponent
-#include "Entities\ComponentDeclTransient.h"
 
 #define VectorT Partition
 #include "segautils/Vector_Create.h"
@@ -43,7 +35,6 @@ static void _partitionDestroy(Partition *p) {
 #include "segautils/Vector_Create.h"
 
 struct GridManager_t {
-   Manager m;
    WorldView *view;
 
    //The tile atlas
@@ -63,7 +54,7 @@ struct GridManager_t {
    int tileAnimSecondCount;
 
    // entities needing drawing this frame (ref to this is returned)
-   vec(EntityPtr) *inViewEntities;
+   vec(ActorPtr) *inViewActors;
 
    // entity partition members
    vec(Partition) *partitionTable;
@@ -72,106 +63,10 @@ struct GridManager_t {
 
 };
 
-ImplManagerVTable(GridManager)
-
 static Tile *_tileAt(GridManager *self, int x, int y) {
    return mapGetTiles(self->map) + (y * self->width + x);
 }
 
-static void _gridAddEntity(GridManager *self, Entity *e, Partition *partition) {
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-   if (partition) {
-      vecPushBack(size_t)(tgc->occupyingPartitions, &partition->index);
-      vecPushBack(EntityPtr)(partition->entities, &e);
-   }
-}
-
-static void _gridRemoveEntity(GridManager *self, Entity *e, Partition *old) {
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-   if (tgc) {
-      vec(size_t) *nodes = tgc->occupyingPartitions;
-
-      if (old) {
-         vecRemove(size_t)(nodes, &old->index);
-         vecRemove(EntityPtr)(old->entities, &e);
-      }
-   }
-}
-
-static void _gridMoveEntity(GridManager *self, Entity *e, Partition *old, Partition *new) {
-
-   if (old && new && old != new) {
-      _gridRemoveEntity(self, e, old);
-      _gridAddEntity(self, e, new);
-   }
-}
-
-static Partition *_partitionAt(GridManager *self, size_t index) {
-   if (index < self->partitionCount) {
-      Partition *p = vecAt(Partition)(self->partitionTable, index);
-      if (!p->entities) {
-         p->entities = vecCreate(EntityPtr)(NULL);
-         p->index = index;
-      }
-      return p;
-   }
-   else {
-      return NULL;
-   }
-}
-
-static Partition *_partitionFromXY(GridManager *self, short x, short y) {
-   size_t index;
-   Partition *p;
-   if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
-      return NULL;
-   }
-
-   index = self->partitionWidth * (y / PARTITION_SIZE) + (x / PARTITION_SIZE);
-   p = vecAt(Partition)(self->partitionTable, index);
-   if (!p->entities) {
-      p->entities = vecCreate(EntityPtr)(NULL);
-      p->index = index;
-   }
-
-   return p;
-}
-
-static void _rebuildPartitionTable(GridManager *self) {
-   //clear current partitions for every entity currently loaded
-   COMPONENT_QUERY(self->view->entitySystem, TGridComponent, tgc, {
-      vecClear(size_t)(tgc->occupyingPartitions);
-   });
-
-   //part table
-   vecClear(Partition)(self->partitionTable);
-   self->partitionWidth = self->width / PARTITION_SIZE + (self->width%PARTITION_SIZE ? 1 : 0);
-   self->partitionHeight = self->height / PARTITION_SIZE + (self->height%PARTITION_SIZE ? 1 : 0);
-   self->partitionCount = self->partitionHeight * self->partitionWidth;
-   vecResize(Partition)(self->partitionTable, self->partitionWidth * self->partitionHeight, &(Partition){NULL});
-
-   //go back voer and reinsert every entity
-   COMPONENT_QUERY(self->view->entitySystem, TGridComponent, tgc, {
-      Entity *e = componentGetParent(tgc, self->view->entitySystem);
-      GridComponent *gc = entityGet(GridComponent)(e);
-      _gridAddEntity(self, e, _partitionFromXY(self, gc->x, gc->y));
-   });
-}
-
-static void _createTestSchemas(GridManager *self) {
-   int i;
-
-   for (i = 0; i < 8; ++i) {
-      *gridManagerGetSchema(self, i) = (TileSchema) { .img = { i }, .imgCount = 1, .occlusion = 0 };
-   }   
-
-   gridManagerGetSchema(self, 5)->img[1] = 21;
-   gridManagerGetSchema(self, 5)->imgCount = 2;
-
-   gridManagerGetSchema(self, 6)->occlusion = 1;
-   gridManagerGetSchema(self, 7)->occlusion = 1;
-
-}
 
 static void _createTestGrid(GridManager *self) {
    int i;
@@ -188,31 +83,9 @@ static void _createTestGrid(GridManager *self) {
       }
    }
 
-   _rebuildPartitionTable(self);
 }
 
-static void _gridComponentUpdate(GridManager *self, Entity *e, GridComponent *oldGC) {
-   GridComponent *gc = entityGet(GridComponent)(e);
 
-   Partition *old = _partitionFromXY(self, oldGC->x, oldGC->y);
-   Partition *new = _partitionFromXY(self, gc->x, gc->y);
-
-   _gridMoveEntity(self, e, old, new);
-}
-
-static void _registerUpdateDelegate(GridManager *self, EntitySystem *system) {
-   ComponentUpdate update;
-
-   closureInit(ComponentUpdate)(&update, self, (ComponentUpdateFunc)&_gridComponentUpdate, NULL);
-   compRegisterUpdateDelegate(GridComponent)(system, update);
-}
-
-static void _removeEntityFromNode(GridManager *self, Entity *e, size_t node) {
-   Partition *old = _partitionAt(self, node);
-   if (old) {
-      vecRemove(EntityPtr)(old->entities, &e);
-   }
-}
 
 void gridManagerSetAmbientLight(GridManager *self, byte level) {
    lightGridSetAmbientLight(self->lightGrid, level);
@@ -247,14 +120,14 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    return count;
 }
 
-void gridManagerSnapEntity(GridManager *self, Entity *e) {
-   GridComponent *gc = entityGet(GridComponent)(e);
-   PositionComponent *pc = entityGet(PositionComponent)(e);
+void gridManagerSnapActor(GridManager *self, Actor *a) {
+   //GridComponent *gc = entityGet(GridComponent)(e);
+   //PositionComponent *pc = entityGet(PositionComponent)(e);
 
-   if (gc && pc) {
-      pc->x = gc->x * GRID_CELL_SIZE;
-      pc->y = gc->y * GRID_CELL_SIZE;
-   }
+   //if (gc && pc) {
+   //   pc->x = gc->x * GRID_CELL_SIZE;
+   //   pc->y = gc->y * GRID_CELL_SIZE;
+   //}
 }
 
 short gridManagerWidth(GridManager *self) {
@@ -307,7 +180,7 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
    self->height = mapHeight(map);
    self->cellCount = self->width * self->height;
 
-   _rebuildPartitionTable(self);
+   //_rebuildPartitionTable(self);
 }
 TileSchema *gridManagerGetSchema(GridManager *self, size_t index) {
    size_t count = vecSize(TileSchema)(self->schemas);
@@ -322,129 +195,87 @@ void gridManagerClearSchemas(GridManager *self) {
    vecClear(TileSchema)(self->schemas);
 }
 
-GridManager *createGridManager(WorldView *view) {
+GridManager *gridManagerCreate(WorldView *view) {
    GridManager *out = checkedCalloc(1, sizeof(GridManager));
    out->view = view;
-   out->m.vTable = CreateManagerVTable(GridManager);
+
    out->partitionTable = vecCreate(Partition)(&_partitionDestroy);
-   out->inViewEntities = vecCreate(EntityPtr)(NULL);
+   out->inViewActors = vecCreate(ActorPtr)(NULL);
    out->schemas = vecCreate(TileSchema)(NULL);
 
    out->lightGrid = lightGridCreate(out);
-   _createTestSchemas(out);
+   //_createTestSchemas(out);
    _createTestGrid(out);
-
-   _registerUpdateDelegate(out, view->entitySystem);
 
 
    return out;
 }
 
-void _destroy(GridManager *self) {
+void gridManagerDestroy(GridManager *self) {
    if (self->map) {
       mapDestroy(self->map);
    }
    lightGridDestroy(self->lightGrid);
 
    vecDestroy(Partition)(self->partitionTable);
-   vecDestroy(EntityPtr)(self->inViewEntities);
+   vecDestroy(ActorPtr)(self->inViewActors);
    vecDestroy(TileSchema)(self->schemas);
    
    checkedFree(self);
-}
-void _onDestroy(GridManager *self, Entity *e) {
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-   if (tgc) {
-      vecForEach(size_t, node, tgc->occupyingPartitions, {
-         Partition *old = _partitionAt(self, *node);
-         if (old) {
-            vecRemove(EntityPtr)(old->entities, &e);
-         }
-      });
-      vecDestroy(size_t)(tgc->occupyingPartitions);
-   }
-}
-void _onUpdate(GridManager *self, Entity *e) {
-   TGridComponent *tgc = entityGet(TGridComponent)(e);
-   GridComponent *gc = entityGet(GridComponent)(e);
-
-   if (gc) {
-      if (!tgc) {
-         PositionComponent *pc = entityGet(PositionComponent)(e);
-         if (pc) {
-            pc->x = gc->x * GRID_CELL_SIZE;
-            pc->y = gc->y * GRID_CELL_SIZE;
-         }
-
-         //new grid entry
-         COMPONENT_ADD(e, TGridComponent, vecCreate(size_t)(NULL));
-         _gridAddEntity(self, e, _partitionFromXY(self, gc->x, gc->y));
-      }
-   }
-   else {
-      if (tgc) {
-         //no longer on grid, remove from occupying nodes
-         vecForEach(size_t, node, tgc->occupyingPartitions, {
-            _removeEntityFromNode(self, e, *node);
-         });
-         vecDestroy(size_t)(tgc->occupyingPartitions);
-         entityRemove(TGridComponent)(e);
-      }
-   }
 }
 
 void gridManagerUpdate(GridManager *self) {
 
 }
 
-vec(EntityPtr) *gridManagerQueryEntities(GridManager *self) {
+vec(ActorPtr) *gridManagerQueryActors(GridManager *self) {
    Viewport *vp = self->view->viewport;
-   bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
-   bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
+   //bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
+   //bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
 
-   byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
-   byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
+   //byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
+   //byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
 
-   int x = vp->worldPos.x / GRID_CELL_SIZE;
-   int y = vp->worldPos.y / GRID_CELL_SIZE;
+   //int x = vp->worldPos.x / GRID_CELL_SIZE;
+   //int y = vp->worldPos.y / GRID_CELL_SIZE;
 
-   Recti area = { x, y, x + xcount, y + ycount };
+   //Recti area = { x, y, x + xcount, y + ycount };
 
-   
-   gridManagerQueryEntitiesRect(self, area, self->inViewEntities);
-   return self->inViewEntities;
+   //
+   //gridManagerQueryEntitiesRect(self, area, self->inViewEntities);
+   return self->inViewActors;
 }
 
-void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) *outlist) {
-   int x, y;
-   int xstart = area.left / PARTITION_SIZE, xend = area.right / PARTITION_SIZE;
-   int ystart = area.top / PARTITION_SIZE, yend = area.bottom / PARTITION_SIZE;
-   vecClear(EntityPtr)(outlist);
+void gridManagerQueryActorsRect(GridManager *self, Recti area, vec(ActorPtr) *outlist) {
+   //int x, y;
+   //int xstart = area.left / PARTITION_SIZE, xend = area.right / PARTITION_SIZE;
+   //int ystart = area.top / PARTITION_SIZE, yend = area.bottom / PARTITION_SIZE;
+   //vecClear(EntityPtr)(outlist);
 
-   for (y = ystart; y <= yend; ++y) {
-      for (x = xstart; x <= xend; ++x) {
-         Partition *p = _partitionAt(self, y * self->partitionWidth + x);
-         if (p && p->entities) {
-            vecForEach(EntityPtr, e, p->entities, {
-               vecPushBack(EntityPtr)(outlist, e);
-            });
-         }
-      }
-   }
+   //for (y = ystart; y <= yend; ++y) {
+   //   for (x = xstart; x <= xend; ++x) {
+   //      Partition *p = _partitionAt(self, y * self->partitionWidth + x);
+   //      if (p && p->entities) {
+   //         vecForEach(EntityPtr, e, p->entities, {
+   //            vecPushBack(EntityPtr)(outlist, e);
+   //         });
+   //      }
+   //   }
+   //}
 }
 
-Entity *gridMangerEntityFromScreenPosition(GridManager *self, Int2 pos) {
+Actor *gridManagerActorFromScreenPosition(GridManager *self, Int2 pos) {
    Int2 worldPos = screenToWorld(self->view, pos);
 
-   gridManagerQueryEntities(self);
+   gridManagerQueryActors(self);
 
-   vecForEach(EntityPtr, e, self->inViewEntities, {
-      PositionComponent *pc = entityGet(PositionComponent)(*e);
-      Recti area = { pc->x, pc->y, pc->x + GRID_CELL_SIZE, pc->y + GRID_CELL_SIZE };
-      if (rectiContains(area, worldPos)) {
-         return *e;
-      }
-   });
+   //vecForEach(ActorPtr, a, self->inViewEntities, {
+   //   PositionComponent *pc = entityGet(PositionComponent)(*e);
+   //   Recti area = { pc->x, pc->y, pc->x + GRID_CELL_SIZE, pc->y + GRID_CELL_SIZE };
+   //   if (rectiContains(area, worldPos)) {
+   //      return *e;
+   //   }
+   //});
 
    return NULL;
 }
@@ -487,30 +318,6 @@ void _updateTileAnimationIndex(GridManager *self) {
    }
 }
 
-void _hideEntitySquare(GridManager *self, Frame *frame, Entity *e, int xstart, int xend, int ystart, int yend) {
-   GridComponent *gc = entityGet(GridComponent)(e);
-   //size_t lastindex = gridMovementManagerGetEntityLastPosition(self->view->managers->gridMovementManager, e);
-   //int lastX = 0, lastY = 0;
-
-   if (gc->x >= xstart && gc->x < xend && gc->y >= ystart && gc->y < yend) {
-      _renderBlank(self, frame, gc->x, gc->y);
-   }   
-
-   //if (lastindex < INF) {
-   //   gridManagerXYFromCellID(self, lastindex, &lastX, &lastY);
-   //   if (lastX >= xstart && lastX < xend && lastY >= ystart && lastY < yend) {
-   //      _renderBlank(self, frame, lastX, lastY);
-   //   }
-   //}
-}
-
-void _hideEntitySquares(GridManager *self, Frame *frame, int xstart, int xend, int ystart, int yend) {
-   gridManagerQueryEntities(self);
-
-   vecForEach(EntityPtr, e, self->inViewEntities, {
-      _hideEntitySquare(self, frame, *e, xstart, xend, ystart, yend);
-   });
-}
 
 void gridManagerRender(GridManager *self, Frame *frame) {
    Viewport *vp = self->view->viewport;
@@ -536,7 +343,7 @@ void gridManagerRender(GridManager *self, Frame *frame) {
    }
 
    _updateTileAnimationIndex(self);
-   lightGridUpdate(self->lightGrid, self->view->entitySystem, x, y);
+   lightGridUpdate(self->lightGrid, x, y);
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
@@ -556,8 +363,6 @@ void gridManagerRender(GridManager *self, Frame *frame) {
          }
       }
    }
-
-  // _hideEntitySquares(self, frame, xstart, xend, ystart, yend);
 }
 
 void gridManagerRenderLighting(GridManager *self, Frame *frame) {

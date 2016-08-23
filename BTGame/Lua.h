@@ -3,7 +3,7 @@
 #include "Verbs.h"
 #include "segashared/Strings.h"
 
-typedef struct Entity_t Entity;
+typedef struct Actor_t Actor;
 typedef struct lua_State lua_State;
 typedef int(*lua_CFunction) (lua_State *L);
 typedef struct WorldView_t WorldView;
@@ -52,12 +52,12 @@ void luaLoadStandardLibrary(lua_State *L);
 void luaLoadMapLibrary(lua_State *L);
 
 void luaLoadActorLibrary(lua_State *L);
-void luaActorAddActor(lua_State *L, Entity *e);//add an entity to the actors table (called by adding an ActorComponent)
-void luaActorRemoveActor(lua_State *L, Entity *e);//remove an added actor from the actors table (called by removing an actorComponent)
-void luaActorMakeActorGlobal(lua_State *L, Entity *e, const char *name);//make an ALREADY_ADDED actor global (ie: player)
-int luaActorGetIndex(lua_State *L, Entity *e);//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
+void luaActorAddActor(lua_State *L, Actor *a);//add an entity to the actors table (called by adding an ActorComponent)
+void luaActorRemoveActor(lua_State *L, Actor *a);//remove an added actor from the actors table (called by removing an actorComponent)
+void luaActorMakeActorGlobal(lua_State *L, Actor *a, const char *name);//make an ALREADY_ADDED actor global (ie: player)
+int luaActorGetIndex(lua_State *L, Actor *a);//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
 int luaActorStepAllScripts(WorldView *view, lua_State *L);//calls stepScript on every loaded actor
-void luaActorInteract(lua_State *L, Entity *e, Verbs v);//actor:pushScript(actor.responses.verb) if it is available
+void luaActorInteract(lua_State *L, Actor *a, Verbs v);//actor:pushScript(actor.responses.verb) if it is available
 
 void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name, TextArea *area);

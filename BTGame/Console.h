@@ -6,7 +6,7 @@
 
 typedef struct Frame_t Frame;
 typedef struct Console_t Console;
-typedef struct Entity_t Entity;
+typedef struct Actor_t Actor;
 
 Console *consoleCreate(WorldView *view);
 void consoleDestroy(Console *self);
@@ -21,8 +21,11 @@ void consolePushLine(Console *self, const char *line);
 void consoleClear(Console *self);
 void consoleScrollLog(Console *self, int direction);
 void consoleMacroGridPos(Console *self, short x, short y);
-void consoleMacroActor(Console *self, Entity *e);
+void consoleMacroActor(Console *self, Actor *a);
 void consolePrintLuaError(Console *self, const char *tag);
+
+void consoleRenderNotification(Console *self, Frame *frame);
+void consoleRenderLines(Console *self, Frame *frame);
 
 #define consolePrintLine(CONSOLE, STR, ...) {\
    char buffer[256] = {0}; \

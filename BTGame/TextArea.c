@@ -3,6 +3,7 @@
 #include "RichText.h"
 #include "Managers.h"
 #include "Lua.h"
+#include "RenderHelpers.h"
 #include "segalib/EGA.h"
 
 #include "segautils/StandardVectors.h"
@@ -138,6 +139,13 @@ void textAreaPushText(TextArea *self, const char *msg) {
    String *msgstr = stringCreate(msg);
    vecPushBack(StringPtr)(self->queue, &msgstr);
 }
+void textAreaSetText(TextArea *self, const char *msg) {
+   String *msgstr = stringCreate(msg);
+   vecClear(StringPtr)(self->queue);
+   vecPushBack(StringPtr)(self->queue, &msgstr);
+   self->done = true;
+   textAreaUpdate(self);
+}
 bool textAreaIsDone(TextArea *self) {
    return self->done;
 }
@@ -221,7 +229,8 @@ static void _updateLines(TextArea *self) {
    }
 }
 
-void textAreaUpdate(TextArea *self, WorldView *view) {
+void textAreaUpdate(TextArea *self) {
+   GameClock *gameClock = gameClockGet();
    if (self->done) {//not scrolling
       if (!vecIsEmpty(StringPtr)(self->queue)) {
          //next message!
@@ -229,15 +238,15 @@ void textAreaUpdate(TextArea *self, WorldView *view) {
          self->currentChar = 0;
          self->currentLine = 0;
          self->done = false;
-         self->nextChar = gameClockGetTime(view->gameClock);
+         self->nextChar = gameClockGetTime(gameClock);
 
          _renderNextMessageToLines(self);
-         textAreaUpdate(self, view);//first update
+         textAreaUpdate(self);//first update
       }
    }
    else if (!vecIsEmpty(RichTextLine)(self->lines)) {
       //we're drawing so gogo
-      Microseconds time = gameClockGetTime(view->gameClock);
+      Microseconds time = gameClockGetTime(gameClock);
       if (time >= self->nextChar) {
          while ((time >= self->nextChar || self->textSpeed == 0) && !self->done) {
 
@@ -262,7 +271,7 @@ void textAreaUpdate(TextArea *self, WorldView *view) {
             default:  delay = self->textSpeed; break;
             }
 
-            self->nextChar = gameClockGetTime(view->gameClock) + t_m2u(delay) - (time - self->nextChar);
+            self->nextChar = gameClockGetTime(gameClock) + t_m2u(delay) - (time - self->nextChar);
 
             ++self->currentChar;
             if (self->currentChar >= (int)stringLen(line)) {
@@ -290,7 +299,7 @@ void textAreaRender(TextArea *self, WorldView *view, Frame *frame) {
 
    vecForEach(RichTextLine, line, self->shownLines, {      
       vecForEach(Span, span, *line, {
-         renderManagerRenderSpan(view->managers->renderManager, frame, &x, &y, span);
+         frameRenderSpan(view, frame, &x, &y, span);
       });
       x = self->x;
       ++y;

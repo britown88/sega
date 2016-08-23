@@ -108,9 +108,6 @@
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Entities\Entities.vcxproj">
-      <Project>{c01298c5-f64b-4e7d-ad46-f6bcdf59c4a9}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\liblua\liblua.vcxproj">
       <Project>{221073a0-4ab3-4c7d-9b10-5f09732836a2}</Project>
     </ProjectReference>
@@ -131,12 +128,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actors.h" />
     <ClInclude Include="AssetHelpers.h" />
     <ClInclude Include="assets.h" />
     <ClInclude Include="BT.h" />
     <ClInclude Include="ChoicePrompt.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="CoreComponents.h" />
     <ClInclude Include="DB.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameHelpers.h" />
@@ -150,9 +147,11 @@
     <ClInclude Include="Map.h" />
     <ClInclude Include="MapEditor.h" />
     <ClInclude Include="MeshRendering.h" />
+    <ClInclude Include="RenderHelpers.h" />
     <ClInclude Include="RenderLayers.h" />
     <ClInclude Include="RichText.h" />
     <ClInclude Include="assets.dbh" />
+    <ClInclude Include="Sprites.h" />
     <ClInclude Include="TextArea.h" />
     <ClInclude Include="Tiles.h" />
     <ClInclude Include="Verbs.h" />
@@ -169,11 +168,11 @@
     <ClCompile Include="ConsoleState.c" />
     <ClCompile Include="DB.c" />
     <ClCompile Include="EditorState.c" />
+    <ClCompile Include="FramerateViewer.c" />
     <ClCompile Include="GameHelpers.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridMovementManager.c" />
     <ClCompile Include="GridSolver.c" />
-    <ClCompile Include="InterpolationManager.c" />
     <ClCompile Include="LightGrid.c" />
     <ClCompile Include="Lua.c" />
     <ClCompile Include="Lua_ActorLibrary.c" />
@@ -185,21 +184,19 @@
     <ClCompile Include="Map.c" />
     <ClCompile Include="MapEditor.c" />
     <ClCompile Include="PCManager.c" />
+    <ClCompile Include="RenderHelpers.c" />
     <ClCompile Include="RichText.c" />
     <ClCompile Include="SplashState.c" />
     <ClCompile Include="TextArea.c" />
     <ClCompile Include="VerbManager.c" />
-    <ClCompile Include="WaitManager.c" />
     <ClCompile Include="Weather.c" />
     <ClCompile Include="WorldState.c" />
     <ClCompile Include="BT.c" />
-    <ClCompile Include="CoreComponents.c" />
     <ClCompile Include="CursorManager.c" />
     <ClCompile Include="GameClock.c" />
     <ClCompile Include="GameState.c" />
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="MeshRendering.c" />
-    <ClCompile Include="RenderManager.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,8 +2,8 @@
 
 #include "segautils/Defs.h"
 #include "segautils/Rect.h"
-#include "Entities/Entities.h"
 #include "Tiles.h"
+#include "Actors.h"
 
 typedef struct Map_t Map;
 typedef struct GridManager_t GridManager;
@@ -27,7 +27,8 @@ typedef struct WorldView_t WorldView;
 
 typedef struct OcclusionCell_t OcclusionCell;
 
-GridManager *createGridManager(WorldView *view);
+GridManager *gridManagerCreate(WorldView *view);
+void gridManagerDestroy(GridManager *self);
 void gridManagerRender(GridManager *self, Frame *frame);
 void gridManagerRenderLighting(GridManager *self, Frame *frame);
 void gridManagerSetAmbientLight(GridManager *self, byte level);
@@ -40,12 +41,12 @@ TileSchema *gridManagerGetSchema(GridManager *self, size_t index);
 size_t gridManagerGetSchemaCount(GridManager *self);
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *vp, short x, short y);
 
-void gridManagerSnapEntity(GridManager *self, Entity *e);
+void gridManagerSnapActor(GridManager *self, Actor *a);
 
 //returns pointer to the entity array that contains all gridded entities currently in view
-vec(EntityPtr) *gridManagerQueryEntities(GridManager *self);
-void gridManagerQueryEntitiesRect(GridManager *self, Recti area, vec(EntityPtr) *outlist);
-Entity *gridMangerEntityFromScreenPosition(GridManager *self, Int2 pos);
+vec(ActorPtr) *gridManagerQueryActors(GridManager *self);
+void gridManagerQueryActorsRect(GridManager *self, Recti area, vec(ActorPtr) *outlist);
+Actor *gridManagerActorFromScreenPosition(GridManager *self, Int2 pos);
 
 short gridManagerWidth(GridManager *self);
 short gridManagerHeight(GridManager *self);
