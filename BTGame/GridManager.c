@@ -524,3 +524,7 @@ void gridManagerRenderLighting(GridManager *self, Frame *frame) {
    }
 
 }
+
+int gridDistance(int x0, int y0, int x1, int y1) {
+   return abs(x0 - x1) + abs(y0 - y1);
+}

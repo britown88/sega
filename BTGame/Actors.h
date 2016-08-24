@@ -30,6 +30,10 @@ Int2 actorGetGridPosition(Actor *self);
 void actorSetGridPosition(Actor *self, Int2 pos);
 
 void actorSnap(Actor *self);
+void actorStop(Actor *self);
+void actorMove(Actor *self, short x, short y);
+void actorMoveRelative(Actor *self, short x, short y);
+bool actorIsMoving(Actor *self);
 
 //helper to combine grid pos with offsets
 Int2 actorGetWorldPosition(Actor *self);

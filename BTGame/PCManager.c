@@ -82,15 +82,15 @@ void pcManagerCreatePC(PCManager *self) {
 }
 
 void pcManagerStop(PCManager *self) {
-   gridMovementManagerStopActor(self->view->gridMovementManager, self->pc);
+   actorStop(self->pc);
 }
 
 void pcManagerMove(PCManager *self, short x, short y) {
-   gridMovementManagerMoveActor(self->view->gridMovementManager, self->pc, x, y);
+   actorMove(self->pc, x, y);
 }
 
 void pcManagerMoveRelative(PCManager *self, short x, short y) {
-   gridMovementManagerMoveActorRelative(self->view->gridMovementManager, self->pc, x, y);
+   actorMoveRelative(self->pc, x, y);
 }
 
 void pcManagerToggleTorch(PCManager *self) {

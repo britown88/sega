@@ -70,4 +70,5 @@ Tile *gridManagerTileAt(GridManager *self, size_t index);
 Tile *gridManagerTileAtXY(GridManager *self, int x, int y);
 Tile *gridManagerTileAtScreenPos(GridManager *self, int x, int y);
 
+int gridDistance(int x0, int y0, int x1, int y1);
 

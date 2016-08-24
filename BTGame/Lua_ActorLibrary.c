@@ -398,7 +398,7 @@ int slua_actorMove(lua_State *L) {
       lua_error(L);
    }
 
-   gridMovementManagerMoveActor(view->gridMovementManager, a, x, y);
+   actorMove(a, x, y);
    return 0;
 }
 int slua_actorTeleport(lua_State *L) {
@@ -434,7 +434,7 @@ int slua_actorMoveRelative(lua_State *L) {
       lua_error(L);
    }
 
-   gridMovementManagerMoveActorRelative(view->gridMovementManager, a, x, y);
+   actorMoveRelative(a, x, y);
    return 0;
 }
 int slua_actorDistanceTo(lua_State *L) {
@@ -489,7 +489,7 @@ int slua_actorStop(lua_State *L) {
       lua_error(L);
    }
 
-   gridMovementManagerStopActor(view->gridMovementManager, a);
+   actorStop(a);
 
    return 0;
 }
@@ -505,7 +505,7 @@ int slua_actorIsMoving(lua_State *L) {
       lua_error(L);
    }
 
-   if (gridMovementManagerActorIsMoving(view->gridMovementManager, a)) {
+   if (actorIsMoving(a)) {
       lua_pushboolean(L, true);
    }
    else {

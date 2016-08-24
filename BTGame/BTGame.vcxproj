@@ -171,7 +171,6 @@
     <ClCompile Include="FramerateViewer.c" />
     <ClCompile Include="GameHelpers.c" />
     <ClCompile Include="GridManager.c" />
-    <ClCompile Include="GridMovementManager.c" />
     <ClCompile Include="GridSolver.c" />
     <ClCompile Include="LightGrid.c" />
     <ClCompile Include="Lua.c" />

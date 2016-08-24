@@ -16,7 +16,6 @@ typedef struct TextAreaManager_t TextAreaManager;
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
 typedef struct GridManager_t GridManager;
-typedef struct GridMovementManager_t GridMovementManager;
 typedef struct PCManager_t PCManager;
 typedef struct VerbManager_t VerbManager;
 typedef struct ActorManager_t ActorManager;
@@ -29,7 +28,6 @@ typedef struct WorldView_t {
 
    CursorManager *cursorManager;
    GridManager *gridManager;
-   GridMovementManager *gridMovementManager;
    PCManager *pcManager;
    VerbManager *verbManager;
    ActorManager *actorManager;

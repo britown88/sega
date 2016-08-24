@@ -12,7 +12,6 @@
 typedef struct RenderManager_t RenderManager;
 typedef struct CursorManager_t CursorManager;
 typedef struct GridManager_t GridManager;
-typedef struct GridMovementManager_t GridMovementManager;
 typedef struct PCManager_t PCManager;
 typedef struct VerbManager_t VerbManager;
 typedef struct ActorManager_t ActorManager;
@@ -35,15 +34,6 @@ void cursorManagerUpdate(CursorManager *self, int x, int y);
 void cursorManagerSetVerb(CursorManager *self, Verbs v);
 void cursorManagerClearVerb(CursorManager *self);
 void cursorManagerRender(CursorManager *self, Frame *frame);
-
-GridMovementManager *gridMovementManagerCreate(WorldView *view);
-void gridMovementManagerDestroy(GridMovementManager *self);
-void gridMovementManagerUpdate(GridMovementManager *self);
-void gridMovementManagerStopActor(GridMovementManager *self, Actor *a);
-void gridMovementManagerMoveActor(GridMovementManager *self, Actor *a, short x, short y);
-void gridMovementManagerMoveActorRelative(GridMovementManager *self, Actor *a, short x, short y);
-bool gridMovementManagerActorIsMoving(GridMovementManager *self, Actor *a);
-int gridDistance(int x0, int y0, int x1, int y1);
 
 PCManager *pcManagerCreate(WorldView *view);
 void pcManagerDestroy(PCManager *self);

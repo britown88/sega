@@ -30,7 +30,6 @@ typedef struct {
    RenderManager *renderManager;
    CursorManager *cursorManager;
    GridManager *gridManager;
-   GridMovementManager *gridMovementManager;
    PCManager *pcManager;
    VerbManager *verbManager;
    ActorManager *actorManager;
@@ -115,7 +114,6 @@ VirtualApp *btCreate() {
 
    CREATE_AND_VIEW(cursorManager, cursorManagerCreate(&r->view));
    CREATE_AND_VIEW(gridManager, gridManagerCreate(&r->view));
-   CREATE_AND_VIEW(gridMovementManager, gridMovementManagerCreate(&r->view));
    CREATE_AND_VIEW(pcManager, pcManagerCreate(&r->view));
    CREATE_AND_VIEW(verbManager, verbManagerCreate(&r->view));
    CREATE_AND_VIEW(actorManager, actorManagerCreate(&r->view));
@@ -145,7 +143,6 @@ void _destroy(BTGame *self){
    vecDestroy(ActorPtr)(self->testActors);
 
    verbManagerDestroy(self->verbManager);
-   gridMovementManagerDestroy(self->gridMovementManager);
    cursorManagerDestroy(self->cursorManager);
    
    

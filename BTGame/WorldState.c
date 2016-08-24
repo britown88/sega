@@ -60,7 +60,6 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    Int2 mousePos = mouseGetPosition(mouse);
 
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
-   gridMovementManagerUpdate(view->gridMovementManager);
    pcManagerUpdate(view->pcManager);
    actorManagerUpdate(view->actorManager);
 
@@ -239,7 +238,7 @@ void _worldRender(WorldState *state, GameStateRender *m){
    gridManagerRenderLighting(state->view->gridManager, frame);
    verbManagerRender(state->view->verbManager, frame);
 
-
+   choicePromptRender(state->view->choicePrompt, frame);
    textAreaRender(state->smallbox, state->view, frame);
    cursorManagerRender(state->view->cursorManager, frame);
 

@@ -76,10 +76,6 @@ void actorSetGridPosition(Actor *self, Int2 pos) {
    *lightSourcePosition(self->lightSource) = pos;
    self->pos = pos;
 }
-void actorSnap(Actor *self) {
-   //snapo offset
-   self->offset = (Int2) { 0 };
-}
 
 Int2 actorGetWorldPosition(Actor *self) {
    return (Int2){
@@ -154,4 +150,22 @@ void actorManagerRender(ActorManager *self, Frame *f) {
    vecForEach(ActorPtr, a, gridManagerQueryActors(self->view->gridManager), {
       _renderActor(self, f, *a);
    });
+}
+
+
+void actorSnap(Actor *self) {
+   //snapo offset
+   self->offset = (Int2) { 0 };
+}
+void actorStop(Actor *self) {
+
+}
+void actorMove(Actor *self, short x, short y) {
+
+}
+void actorMoveRelative(Actor *self, short x, short y) {
+
+}
+bool actorIsMoving(Actor *self) {
+   return false;
 }
