@@ -26,20 +26,12 @@
 #define PREFIX_LEN 2
 #define SHOWN_INPUT_LEN (WIDTH - PREFIX_LEN - 1)
 
-//gonna jsut plug this in from the old entity rendering because this 
-//files really large and in charge and i dont want to make it work with
-//the new text areas
-typedef struct {
-   byte x, y;
-   RichTextLine line;
-}TextLine;
-
 void textLineDestroy(TextLine *self) {
    vecDestroy(Span)(self->line);
 }
 
-#define VectorT TextLine
-#include "segautils/Vector_Create.h"
+#define VectorTPart TextLine
+#include "segautils/Vector_Impl.h"
 
 struct Console_t {
    WorldView *view;
@@ -149,7 +141,7 @@ static void _updateConsoleLines(Console *self) {
          //render the spans onto the component
          RichTextLine queueline = *(vecEnd(RichTextLine)(self->queue) - (MAX_LINE_COUNT - skipCount) - self->queuePos + (i - skipCount));
 
-         //push the queueline spans into the console entity
+         //push the queueline spans into the console line
          richTextLineCopy(queueline, line->line);
       }
    }

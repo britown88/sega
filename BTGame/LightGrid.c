@@ -412,8 +412,8 @@ void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
       Int2 *lsPos = &(*src)->pos;
       _addPoint(self, (PointLight) {
          .origin = {
-            .x = ((lsPos->x + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpx,
-            .y = ((lsPos->y + (GRID_CELL_SIZE / 2)) / GRID_CELL_SIZE) - vpy
+            .x = lsPos->x - vpx,
+            .y = lsPos->y - vpy
          },
             .radius = lsp->radius,
             .level = lsp->centerLevel,

@@ -52,7 +52,7 @@ TileSchema *gridManagerGetSchema(GridManager *self, size_t index);
 size_t gridManagerGetSchemaCount(GridManager *self);
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *vp, short x, short y);
 
-//returns pointer to the entity array that contains all gridded entities currently in view
+//returns pointer to the actor array that contains all gridded entities currently in view
 vec(ActorPtr) *gridManagerQueryActors(GridManager *self);
 void gridManagerQueryActorsRect(GridManager *self, Recti area, vec(ActorPtr) *outlist);
 Actor *gridManagerActorFromScreenPosition(GridManager *self, Int2 pos);

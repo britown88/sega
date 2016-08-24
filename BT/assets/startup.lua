@@ -1,7 +1,7 @@
 --openEditor()
 
 loadMap 'testWilderness'
-map.setAmbient(7)
+map.setAmbient(2)
 setPalette 'default'
 player:teleport(24, 17)
 

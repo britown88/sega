@@ -20,7 +20,7 @@ typedef struct {
 
    float lowestHeuristic;
    GridNodePublic *closestNode;
-   Actor *actor;//the entity doing the solution
+   Actor *actor;//the actor doing the solution
 }GridSolvingData;
 
 static float _singleDistance(GridManager *manager, size_t d0, size_t d1) {

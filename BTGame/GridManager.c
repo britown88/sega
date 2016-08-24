@@ -73,7 +73,7 @@ struct GridManager_t {
    // entities needing drawing this frame (ref to this is returned)
    vec(ActorPtr) *inViewActors;
 
-   // entity partition members
+   // actor partition members
    vec(Partition) *partitionTable;
    short partitionWidth, partitionHeight;
    size_t partitionCount;
@@ -144,7 +144,7 @@ static Partition *_partitionFromXY(GridManager *self, short x, short y) {
 }
 
 static void _rebuildPartitionTable(GridManager *self) {
-   //clear current partitions for every entity currently loaded
+   //clear current partitions for every actor currently loaded
    vecForEach(GridTokenPtr, gtp, self->tokens, {
       GridToken *gt = *gtp;
       vecClear(size_t)(gt->occupyingPartitions);
@@ -157,7 +157,7 @@ static void _rebuildPartitionTable(GridManager *self) {
    self->partitionCount = self->partitionHeight * self->partitionWidth;
    vecResize(Partition)(self->partitionTable, self->partitionWidth * self->partitionHeight, &(Partition){NULL});
 
-   //go back voer and reinsert every entity
+   //go back voer and reinsert every actor
    vecForEach(GridTokenPtr, gtp, self->tokens, {
       GridToken *gt = *gtp;
       Actor *a = gt->owner;
@@ -396,13 +396,13 @@ Actor *gridManagerActorFromScreenPosition(GridManager *self, Int2 pos) {
 
    gridManagerQueryActors(self);
 
-   //vecForEach(ActorPtr, a, self->inViewEntities, {
-   //   PositionComponent *pc = entityGet(PositionComponent)(*e);
-   //   Recti area = { pc->x, pc->y, pc->x + GRID_CELL_SIZE, pc->y + GRID_CELL_SIZE };
-   //   if (rectiContains(area, worldPos)) {
-   //      return *e;
-   //   }
-   //});
+   vecForEach(ActorPtr, a, self->inViewActors, {
+      Int2 aPos = actorGetWorldPosition(*a);
+      Recti area = { aPos.x, aPos.y, aPos.x + GRID_CELL_SIZE, aPos.y + GRID_CELL_SIZE };
+      if (rectiContains(area, worldPos)) {
+         return *a;
+      }
+   });
 
    return NULL;
 }

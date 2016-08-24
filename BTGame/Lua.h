@@ -52,8 +52,8 @@ void luaLoadStandardLibrary(lua_State *L);
 void luaLoadMapLibrary(lua_State *L);
 
 void luaLoadActorLibrary(lua_State *L);
-void luaActorAddActor(lua_State *L, Actor *a);//add an entity to the actors table (called by adding an ActorComponent)
-void luaActorRemoveActor(lua_State *L, Actor *a);//remove an added actor from the actors table (called by removing an actorComponent)
+void luaActorAddActor(lua_State *L, Actor *a);//add an actor to the actors table (called by actor creation)
+void luaActorRemoveActor(lua_State *L, Actor *a);//remove an added actor from the actors table (called by actorDestroy)
 void luaActorMakeActorGlobal(lua_State *L, Actor *a, const char *name);//make an ALREADY_ADDED actor global (ie: player)
 int luaActorGetIndex(lua_State *L, Actor *a);//returns the current 1-based index of the actor in the actors table.  returns 0 for failure
 int luaActorStepAllScripts(WorldView *view, lua_State *L);//calls stepScript on every loaded actor

@@ -73,6 +73,7 @@ Int2 actorGetGridPosition(Actor *self) {
 }
 void actorSetGridPosition(Actor *self, Int2 pos) {
    gridTokenMove(self->gridToken, pos);
+   *lightSourcePosition(self->lightSource) = pos;
    self->pos = pos;
 }
 void actorSnap(Actor *self) {

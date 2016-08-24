@@ -72,7 +72,7 @@ static int slua_actorPushActor(lua_State *L) {
    lua_gettable(L, -2);//push get func
    lua_pushvalue(L, -2);//copy table to top
 
-   lua_newtable(L);//add new entity
+   lua_newtable(L);//add new actor
    luaPushUserDataTable(L, "actor", a);//set its udata
    lua_call(L, 2, 1);
    lua_remove(L, -2);//remove the Actors table
@@ -132,11 +132,11 @@ static int slua_actorStepAllScripts(lua_State *L) {
    return 0;
 }
 static int slua_actorInteract(lua_State *L) {
-   Actor *a = lua_touserdata(L, 1); //1, the entity
+   Actor *a = lua_touserdata(L, 1); //1, the actor
    Verbs v = (Verbs)lua_tointeger(L, 2); // 2, the v
 
    lua_pushcfunction(L, &slua_actorPushActor);
-   lua_pushvalue(L, 1);//copy the entity
+   lua_pushvalue(L, 1);//copy the actor
    lua_call(L, 1, 1);
    //3, the actor
 
@@ -394,7 +394,7 @@ int slua_actorMove(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -411,7 +411,7 @@ int slua_actorTeleport(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -430,7 +430,7 @@ int slua_actorMoveRelative(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -448,7 +448,7 @@ int slua_actorDistanceTo(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -466,7 +466,7 @@ int slua_actorPosition(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -485,7 +485,7 @@ int slua_actorStop(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -501,7 +501,7 @@ int slua_actorIsMoving(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -522,7 +522,7 @@ int slua_actorMoveSpeed(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
@@ -574,7 +574,7 @@ int slua_actorSetMoveSpeed(lua_State *L) {
    a = luaGetUserDataFromTable(L, 1, "actor");
 
    if (!a) {
-      lua_pushliteral(L, "Actor Entity not valid.");
+      lua_pushliteral(L, "Actor not valid.");
       lua_error(L);
    }
 
