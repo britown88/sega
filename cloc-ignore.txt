@@ -1,5 +1,8 @@
+sqlite
 liblua
 libpng
+BTGame/assets.h
+BTGame/assets.c
 Debug
 Release
 cloc-ignore.txt

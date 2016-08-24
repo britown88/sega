@@ -7,3 +7,19 @@ struct Palette{
    SELECT PRIMARY_KEY UNIQUE REPLACE_ON_CONFLICT String id;
    Blob palette;
 };
+
+struct Sprite{
+   SELECT PRIMARY_KEY UNIQUE REPLACE_ON_CONFLICT String id;
+   int width;
+   int height;
+};
+
+struct Frame{
+   PRIMARY_KEY AUTOINCREMENT UNIQUE int id;
+   SELECT String sprite;
+   String image;
+   int index;
+   int imgX;
+   int imgY;
+   
+};

@@ -847,7 +847,7 @@ void sourceWriteCreateTable(FILE *f, FileData *fd, DBStruct *strct) {
    int i = 0;
    bool first = true;
    if (!SQLTypes[0]) {
-      SQLTypes[i++] = stringIntern("INT");
+      SQLTypes[i++] = stringIntern("INTEGER");
       SQLTypes[i++] = stringIntern("STRING");
       SQLTypes[i++] = stringIntern("REAL");
       SQLTypes[i++] = stringIntern("BOOLEAN");
@@ -962,11 +962,12 @@ void sourceWriteUpdate(FILE *f, FileData *fd, DBStruct *strct) {
       , strct->name);
 
    vecForEach(DBMember, member, strct->members, {
-      if (!(member->mods&MOD(MODIFIER_AUTOINCREMENT))) {
-         if (member->mods&MOD(MODIFIER_PRIMARY_KEY)) {
-            pkey = member;
-            continue;
-         }
+      if (member->mods&MOD(MODIFIER_PRIMARY_KEY)) {
+         pkey = member;
+         continue;
+      }
+
+      if (!(member->mods&MOD(MODIFIER_AUTOINCREMENT))) {         
 
          if (!first) {
             fprintf(f, ", ");
