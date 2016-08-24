@@ -73,6 +73,10 @@ void pcManagerUpdate(PCManager *self) {
 void pcManagerCreatePC(PCManager *self) {
    self->pc = actorManagerCreateActor(self->view->actorManager);
 
+
+   actorSetMoveDelay(self->pc, DEFAULT_MOVE_DELAY);
+   actorSetMoveTime(self->pc, DEFAULT_MOVE_SPEED);
+
    actorSetImage(self->pc, stringIntern(IMG_TILE_ATLAS));
 
    _updateLight(self);

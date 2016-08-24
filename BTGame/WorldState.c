@@ -60,8 +60,9 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    Int2 mousePos = mouseGetPosition(mouse);
 
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
-   pcManagerUpdate(view->pcManager);
    actorManagerUpdate(view->actorManager);
+   pcManagerUpdate(view->pcManager);
+   
 
    textAreaUpdate(state->smallbox);
 }
