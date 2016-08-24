@@ -14,7 +14,7 @@ struct Sprite{
    int height;
 };
 
-struct Frame{
+struct SpriteFrame{
    PRIMARY_KEY AUTOINCREMENT UNIQUE int id;
    SELECT String sprite;
    String image;

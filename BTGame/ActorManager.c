@@ -302,7 +302,7 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Actor *a, Mi
       a->interp.y = a->gridPos.y * GRID_CELL_SIZE;
 
       a->state = Moving;
-      a->time = gameClockGetTime(gameClockGet()) - overflow;
+      a->time = gameClockGetTime() - overflow;
    }
 }
 
@@ -310,7 +310,7 @@ static void _stepMovement(GridManager *manager, GridSolver *solver, Actor *a, Mi
 
 void _updateActorMovement(ActorManager *self, Actor *a) {
    WorldView *view = self->view;
-   Microseconds time = gameClockGetTime(view->gameClock);
+   Microseconds time = gameClockGetTime();
    Microseconds overflow = 0;
 
    *lightSourcePosition(a->lightSource) = a->worldPos;

@@ -238,7 +238,7 @@ void textAreaUpdate(TextArea *self) {
          self->currentChar = 0;
          self->currentLine = 0;
          self->done = false;
-         self->nextChar = gameClockGetTime(gameClock);
+         self->nextChar = gameClockGetTime();
 
          _renderNextMessageToLines(self);
          textAreaUpdate(self);//first update
@@ -246,7 +246,7 @@ void textAreaUpdate(TextArea *self) {
    }
    else if (!vecIsEmpty(RichTextLine)(self->lines)) {
       //we're drawing so gogo
-      Microseconds time = gameClockGetTime(gameClock);
+      Microseconds time = gameClockGetTime();
       if (time >= self->nextChar) {
          while ((time >= self->nextChar || self->textSpeed == 0) && !self->done) {
 
@@ -271,7 +271,7 @@ void textAreaUpdate(TextArea *self) {
             default:  delay = self->textSpeed; break;
             }
 
-            self->nextChar = gameClockGetTime(gameClock) + t_m2u(delay) - (time - self->nextChar);
+            self->nextChar = gameClockGetTime() + t_m2u(delay) - (time - self->nextChar);
 
             ++self->currentChar;
             if (self->currentChar >= (int)stringLen(line)) {

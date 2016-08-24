@@ -16,8 +16,8 @@ void dbPaletteDestroyStatements(DB_assets *db);
 int dbPaletteCreateTable(DB_assets *db);
 void dbSpriteDestroyStatements(DB_assets *db);
 int dbSpriteCreateTable(DB_assets *db);
-void dbFrameDestroyStatements(DB_assets *db);
-int dbFrameCreateTable(DB_assets *db);
+void dbSpriteFrameDestroyStatements(DB_assets *db);
+int dbSpriteFrameCreateTable(DB_assets *db);
 
 typedef struct {
    sqlite3_stmt *insert;
@@ -53,14 +53,14 @@ typedef struct {
    sqlite3_stmt *deleteAll;
    sqlite3_stmt *selectBysprite;
    sqlite3_stmt *deleteBysprite;
-} DBFrameStmts;
+} DBSpriteFrameStmts;
 
 struct DB_assets{
    DBBase base;
    DBImageStmts ImageStmts;
    DBPaletteStmts PaletteStmts;
    DBSpriteStmts SpriteStmts;
-   DBFrameStmts FrameStmts;
+   DBSpriteFrameStmts SpriteFrameStmts;
 };
 
 DB_assets *db_assetsCreate(){
@@ -73,7 +73,7 @@ void db_assetsDestroy(DB_assets *self){
    dbImageDestroyStatements(self);
    dbPaletteDestroyStatements(self);
    dbSpriteDestroyStatements(self);
-   dbFrameDestroyStatements(self);
+   dbSpriteFrameDestroyStatements(self);
    checkedFree(self);
 }
 
@@ -83,7 +83,7 @@ int db_assetsCreateTables(DB_assets *self){
    if((result = dbImageCreateTable(self)) != DB_SUCCESS){ return result; }
    if((result = dbPaletteCreateTable(self)) != DB_SUCCESS){ return result; }
    if((result = dbSpriteCreateTable(self)) != DB_SUCCESS){ return result; }
-   if((result = dbFrameCreateTable(self)) != DB_SUCCESS){ return result; }
+   if((result = dbSpriteFrameCreateTable(self)) != DB_SUCCESS){ return result; }
 
    return DB_SUCCESS;
 }
@@ -571,10 +571,10 @@ void dbSpriteDeleteAll(DB_assets *db){
 void dbSpriteDeleteByid(DB_assets *db, const char *id){
 
 }
-#define VectorTPart DBFrame
+#define VectorTPart DBSpriteFrame
 #include "segautils/Vector_Impl.h"
 
-void dbFrameDestroy(DBFrame *self){
+void dbSpriteFrameDestroy(DBSpriteFrame *self){
    if(self->sprite){
       stringDestroy(self->sprite);
       self->sprite = NULL;
@@ -584,76 +584,76 @@ void dbFrameDestroy(DBFrame *self){
       self->image = NULL;
    }
 }
-void dbFrameDestroyStatements(DB_assets *db){
-   if(db->FrameStmts.insert){
-      sqlite3_finalize(db->FrameStmts.insert);
-      db->FrameStmts.insert = NULL;
+void dbSpriteFrameDestroyStatements(DB_assets *db){
+   if(db->SpriteFrameStmts.insert){
+      sqlite3_finalize(db->SpriteFrameStmts.insert);
+      db->SpriteFrameStmts.insert = NULL;
    }
-   if(db->FrameStmts.update){
-      sqlite3_finalize(db->FrameStmts.update);
-      db->FrameStmts.update = NULL;
+   if(db->SpriteFrameStmts.update){
+      sqlite3_finalize(db->SpriteFrameStmts.update);
+      db->SpriteFrameStmts.update = NULL;
    }
-   if(db->FrameStmts.selectAll){
-      sqlite3_finalize(db->FrameStmts.selectAll);
-      db->FrameStmts.selectAll = NULL;
+   if(db->SpriteFrameStmts.selectAll){
+      sqlite3_finalize(db->SpriteFrameStmts.selectAll);
+      db->SpriteFrameStmts.selectAll = NULL;
    }
-   if(db->FrameStmts.deleteAll){
-      sqlite3_finalize(db->FrameStmts.deleteAll);
-      db->FrameStmts.deleteAll = NULL;
+   if(db->SpriteFrameStmts.deleteAll){
+      sqlite3_finalize(db->SpriteFrameStmts.deleteAll);
+      db->SpriteFrameStmts.deleteAll = NULL;
    }
-   if(db->FrameStmts.selectBysprite){
-      sqlite3_finalize(db->FrameStmts.selectBysprite);
-      db->FrameStmts.selectBysprite = NULL;
+   if(db->SpriteFrameStmts.selectBysprite){
+      sqlite3_finalize(db->SpriteFrameStmts.selectBysprite);
+      db->SpriteFrameStmts.selectBysprite = NULL;
    }
-   if(db->FrameStmts.deleteBysprite){
-      sqlite3_finalize(db->FrameStmts.deleteBysprite);
-      db->FrameStmts.deleteBysprite = NULL;
+   if(db->SpriteFrameStmts.deleteBysprite){
+      sqlite3_finalize(db->SpriteFrameStmts.deleteBysprite);
+      db->SpriteFrameStmts.deleteBysprite = NULL;
    }
 }
-int dbFrameCreateTable(DB_assets *db){
-   static const char *cmd = "CREATE TABLE \"Frame\" (\"id\" INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, \"sprite\" STRING, \"image\" STRING, \"index\" INTEGER, \"imgX\" INTEGER, \"imgY\" INTEGER);";
+int dbSpriteFrameCreateTable(DB_assets *db){
+   static const char *cmd = "CREATE TABLE \"SpriteFrame\" (\"id\" INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, \"sprite\" STRING, \"image\" STRING, \"index\" INTEGER, \"imgX\" INTEGER, \"imgY\" INTEGER);";
    return dbExecute((DBBase*)db, cmd);
 }
-int dbFrameInsert(DB_assets *db, const DBFrame *obj){
+int dbSpriteFrameInsert(DB_assets *db, const DBSpriteFrame *obj){
    int result = 0;
-   static const char *stmt = "INSERT INTO \"Frame\" (\"sprite\", \"image\", \"index\", \"imgX\", \"imgY\") VALUES (:sprite, :image, :index, :imgX, :imgY);";
-   if(dbPrepareStatement((DBBase*)db, &db->FrameStmts.insert, stmt) != DB_SUCCESS){
+   static const char *stmt = "INSERT INTO \"SpriteFrame\" (\"sprite\", \"image\", \"index\", \"imgX\", \"imgY\") VALUES (:sprite, :image, :index, :imgX, :imgY);";
+   if(dbPrepareStatement((DBBase*)db, &db->SpriteFrameStmts.insert, stmt) != DB_SUCCESS){
       return DB_FAILURE;
    }
 
    //bind the values
-   result = sqlite3_bind_text(db->FrameStmts.insert, 1, c_str(obj->sprite), -1, NULL);
+   result = sqlite3_bind_text(db->SpriteFrameStmts.insert, 1, c_str(obj->sprite), -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_text(db->FrameStmts.insert, 2, c_str(obj->image), -1, NULL);
+   result = sqlite3_bind_text(db->SpriteFrameStmts.insert, 2, c_str(obj->image), -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_int(db->FrameStmts.insert, 3, (int)obj->index);
+   result = sqlite3_bind_int(db->SpriteFrameStmts.insert, 3, (int)obj->index);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_int(db->FrameStmts.insert, 4, (int)obj->imgX);
+   result = sqlite3_bind_int(db->SpriteFrameStmts.insert, 4, (int)obj->imgX);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_int(db->FrameStmts.insert, 5, (int)obj->imgY);
+   result = sqlite3_bind_int(db->SpriteFrameStmts.insert, 5, (int)obj->imgY);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
    //now run it
-   result = sqlite3_step(db->FrameStmts.insert);
+   result = sqlite3_step(db->SpriteFrameStmts.insert);
    if (result != SQLITE_DONE) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
@@ -661,53 +661,53 @@ int dbFrameInsert(DB_assets *db, const DBFrame *obj){
 
    return DB_SUCCESS;
 }
-int dbFrameUpdate(DB_assets *db, const DBFrame *obj){
+int dbSpriteFrameUpdate(DB_assets *db, const DBSpriteFrame *obj){
    int result = 0;
-   static const char *stmt = "UPDATE \"Frame\" SET (\"sprite\" = :sprite, \"image\" = :image, \"index\" = :index, \"imgX\" = :imgX, \"imgY\" = :imgY) WHERE (\"id\" = :id)";
-   if(dbPrepareStatement((DBBase*)db, &db->FrameStmts.update, stmt) != DB_SUCCESS){
+   static const char *stmt = "UPDATE \"SpriteFrame\" SET (\"sprite\" = :sprite, \"image\" = :image, \"index\" = :index, \"imgX\" = :imgX, \"imgY\" = :imgY) WHERE (\"id\" = :id)";
+   if(dbPrepareStatement((DBBase*)db, &db->SpriteFrameStmts.update, stmt) != DB_SUCCESS){
       return DB_FAILURE;
    }
 
    //bind the values
-   result = sqlite3_bind_text(db->FrameStmts.update, 1, c_str(obj->sprite), -1, NULL);
+   result = sqlite3_bind_text(db->SpriteFrameStmts.update, 1, c_str(obj->sprite), -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_text(db->FrameStmts.update, 2, c_str(obj->image), -1, NULL);
+   result = sqlite3_bind_text(db->SpriteFrameStmts.update, 2, c_str(obj->image), -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_int(db->FrameStmts.update, 3, (int)obj->index);
+   result = sqlite3_bind_int(db->SpriteFrameStmts.update, 3, (int)obj->index);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_int(db->FrameStmts.update, 4, (int)obj->imgX);
+   result = sqlite3_bind_int(db->SpriteFrameStmts.update, 4, (int)obj->imgX);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
-   result = sqlite3_bind_int(db->FrameStmts.update, 5, (int)obj->imgY);
+   result = sqlite3_bind_int(db->SpriteFrameStmts.update, 5, (int)obj->imgY);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
    //primary key:
-   result = sqlite3_bind_int(db->FrameStmts.update, 6, (int)obj->id);
+   result = sqlite3_bind_int(db->SpriteFrameStmts.update, 6, (int)obj->id);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
    }
 
    //now run it
-   result = sqlite3_step(db->FrameStmts.update);
+   result = sqlite3_step(db->SpriteFrameStmts.update);
    if (result != SQLITE_DONE) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return DB_FAILURE;
@@ -715,101 +715,101 @@ int dbFrameUpdate(DB_assets *db, const DBFrame *obj){
 
    return DB_SUCCESS;
 }
-vec(DBFrame) *dbFrameSelectAll(DB_assets *db){
+vec(DBSpriteFrame) *dbSpriteFrameSelectAll(DB_assets *db){
    int result = 0;
-   static const char *stmt = "SELECT * FROM \"Frame\";";
-   if(dbPrepareStatement((DBBase*)db, &db->FrameStmts.selectAll, stmt) != DB_SUCCESS){
+   static const char *stmt = "SELECT * FROM \"SpriteFrame\";";
+   if(dbPrepareStatement((DBBase*)db, &db->SpriteFrameStmts.selectAll, stmt) != DB_SUCCESS){
       return NULL;
    }
 
-   vec(DBFrame) *out = vecCreate(DBFrame)(&dbFrameDestroy);
+   vec(DBSpriteFrame) *out = vecCreate(DBSpriteFrame)(&dbSpriteFrameDestroy);
 
-   while((result = sqlite3_step(db->FrameStmts.selectAll)) == SQLITE_ROW){
-      DBFrame newObj = {0};
+   while((result = sqlite3_step(db->SpriteFrameStmts.selectAll)) == SQLITE_ROW){
+      DBSpriteFrame newObj = {0};
 
-      newObj.id = sqlite3_column_int(db->FrameStmts.selectAll, 0);
-      newObj.sprite = stringCreate(sqlite3_column_text(db->FrameStmts.selectAll, 1));
-      newObj.image = stringCreate(sqlite3_column_text(db->FrameStmts.selectAll, 2));
-      newObj.index = sqlite3_column_int(db->FrameStmts.selectAll, 3);
-      newObj.imgX = sqlite3_column_int(db->FrameStmts.selectAll, 4);
-      newObj.imgY = sqlite3_column_int(db->FrameStmts.selectAll, 5);
+      newObj.id = sqlite3_column_int(db->SpriteFrameStmts.selectAll, 0);
+      newObj.sprite = stringCreate(sqlite3_column_text(db->SpriteFrameStmts.selectAll, 1));
+      newObj.image = stringCreate(sqlite3_column_text(db->SpriteFrameStmts.selectAll, 2));
+      newObj.index = sqlite3_column_int(db->SpriteFrameStmts.selectAll, 3);
+      newObj.imgX = sqlite3_column_int(db->SpriteFrameStmts.selectAll, 4);
+      newObj.imgY = sqlite3_column_int(db->SpriteFrameStmts.selectAll, 5);
       
-      vecPushBack(DBFrame)(out, &newObj);
+      vecPushBack(DBSpriteFrame)(out, &newObj);
 
    };
 
    if(result != SQLITE_DONE){
-      vecDestroy(DBFrame)(out);
+      vecDestroy(DBSpriteFrame)(out);
       return NULL;
    }
 
    return out;
 }
-DBFrame dbFrameSelectFirstBysprite(DB_assets *db, const char *sprite){
-   DBFrame out = {0};
+DBSpriteFrame dbSpriteFrameSelectFirstBysprite(DB_assets *db, const char *sprite){
+   DBSpriteFrame out = {0};
    int result = 0;
-   static const char *stmt = "SELECT * FROM \"Frame\" WHERE \"sprite\" = :sprite;";
-   if(dbPrepareStatement((DBBase*)db, &db->FrameStmts.selectBysprite, stmt) != DB_SUCCESS){
+   static const char *stmt = "SELECT * FROM \"SpriteFrame\" WHERE \"sprite\" = :sprite;";
+   if(dbPrepareStatement((DBBase*)db, &db->SpriteFrameStmts.selectBysprite, stmt) != DB_SUCCESS){
       return out;
    }
 
-   result = sqlite3_bind_text(db->FrameStmts.selectBysprite, 1, sprite, -1, NULL);
+   result = sqlite3_bind_text(db->SpriteFrameStmts.selectBysprite, 1, sprite, -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return out;
    }
 
-   if((result = sqlite3_step(db->FrameStmts.selectBysprite)) == SQLITE_ROW){
-      out.id = sqlite3_column_int(db->FrameStmts.selectBysprite, 0);
-      out.sprite = stringCreate(sqlite3_column_text(db->FrameStmts.selectBysprite, 1));
-      out.image = stringCreate(sqlite3_column_text(db->FrameStmts.selectBysprite, 2));
-      out.index = sqlite3_column_int(db->FrameStmts.selectBysprite, 3);
-      out.imgX = sqlite3_column_int(db->FrameStmts.selectBysprite, 4);
-      out.imgY = sqlite3_column_int(db->FrameStmts.selectBysprite, 5);
+   if((result = sqlite3_step(db->SpriteFrameStmts.selectBysprite)) == SQLITE_ROW){
+      out.id = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 0);
+      out.sprite = stringCreate(sqlite3_column_text(db->SpriteFrameStmts.selectBysprite, 1));
+      out.image = stringCreate(sqlite3_column_text(db->SpriteFrameStmts.selectBysprite, 2));
+      out.index = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 3);
+      out.imgX = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 4);
+      out.imgY = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 5);
    };
 
    return out;
 }
-vec(DBFrame) *dbFrameSelectBysprite(DB_assets *db, const char *sprite){
+vec(DBSpriteFrame) *dbSpriteFrameSelectBysprite(DB_assets *db, const char *sprite){
    int result = 0;
-   vec(DBFrame) *out = NULL;
-   static const char *stmt = "SELECT * FROM \"Frame\" WHERE \"sprite\" = :sprite;";
-   if(dbPrepareStatement((DBBase*)db, &db->FrameStmts.selectBysprite, stmt) != DB_SUCCESS){
+   vec(DBSpriteFrame) *out = NULL;
+   static const char *stmt = "SELECT * FROM \"SpriteFrame\" WHERE \"sprite\" = :sprite;";
+   if(dbPrepareStatement((DBBase*)db, &db->SpriteFrameStmts.selectBysprite, stmt) != DB_SUCCESS){
       return NULL;
    }
 
-   result = sqlite3_bind_text(db->FrameStmts.selectBysprite, 1, sprite, -1, NULL);
+   result = sqlite3_bind_text(db->SpriteFrameStmts.selectBysprite, 1, sprite, -1, NULL);
    if (result != SQLITE_OK) {
       stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
       return out;
    }
 
-   out = vecCreate(DBFrame)(&dbFrameDestroy);
+   out = vecCreate(DBSpriteFrame)(&dbSpriteFrameDestroy);
 
-   while((result = sqlite3_step(db->FrameStmts.selectAll)) == SQLITE_ROW){
-      DBFrame newObj = {0};
+   while((result = sqlite3_step(db->SpriteFrameStmts.selectBysprite)) == SQLITE_ROW){
+      DBSpriteFrame newObj = {0};
 
-      newObj.id = sqlite3_column_int(db->FrameStmts.selectAll, 0);
-      newObj.sprite = stringCreate(sqlite3_column_text(db->FrameStmts.selectAll, 1));
-      newObj.image = stringCreate(sqlite3_column_text(db->FrameStmts.selectAll, 2));
-      newObj.index = sqlite3_column_int(db->FrameStmts.selectAll, 3);
-      newObj.imgX = sqlite3_column_int(db->FrameStmts.selectAll, 4);
-      newObj.imgY = sqlite3_column_int(db->FrameStmts.selectAll, 5);
+      newObj.id = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 0);
+      newObj.sprite = stringCreate(sqlite3_column_text(db->SpriteFrameStmts.selectBysprite, 1));
+      newObj.image = stringCreate(sqlite3_column_text(db->SpriteFrameStmts.selectBysprite, 2));
+      newObj.index = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 3);
+      newObj.imgX = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 4);
+      newObj.imgY = sqlite3_column_int(db->SpriteFrameStmts.selectBysprite, 5);
       
-      vecPushBack(DBFrame)(out, &newObj);
+      vecPushBack(DBSpriteFrame)(out, &newObj);
 
    };
 
    if(result != SQLITE_DONE){
-      vecDestroy(DBFrame)(out);
+      vecDestroy(DBSpriteFrame)(out);
       return NULL;
    }
 
    return out;
 }
-void dbFrameDeleteAll(DB_assets *db){
+void dbSpriteFrameDeleteAll(DB_assets *db){
 
 }
-void dbFrameDeleteBysprite(DB_assets *db, const char *sprite){
+void dbSpriteFrameDeleteBysprite(DB_assets *db, const char *sprite){
 
 }

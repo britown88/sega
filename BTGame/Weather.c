@@ -42,7 +42,7 @@ void testRain(Weather *self) {
 
    for (int i = 0; i < 10; ++i) {
       Raindrop r = {
-         .startTime = gameClockGetTime(self->view->gameClock),
+         .startTime = gameClockGetTime(),
          .distance = appRand(app, 50, 150),
          .slope = {n.x, n.y},
          .startPos = {appRand(app, left, right), appRand(app, top, bottom)},
@@ -68,7 +68,7 @@ void weatherDestroy(Weather *self) {
 }
 
 static void _renderRaindrop(Weather *self, Raindrop *r, Frame *frame) {
-   Microseconds currentTime = gameClockGetTime(self->view->gameClock);
+   Microseconds currentTime = gameClockGetTime();
 
    if (currentTime - r->startTime > t_m2u(r->distance * r->speed)) {
       //reboot

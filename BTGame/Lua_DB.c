@@ -18,6 +18,7 @@ static int slua_DBInsertImage(lua_State *L);
 static int slua_DBInsertImageFolder(lua_State *L);
 static int slua_DBInsertPalette(lua_State *L);
 static int slua_DBInsertPaletteFolder(lua_State *L);
+static int slua_DBInsertSprite(lua_State *L);
 
 
 void luaLoadDBLibrary(lua_State *L) {
@@ -27,7 +28,7 @@ void luaLoadDBLibrary(lua_State *L) {
    luaPushFunctionTable(L, "insertImageFolder", &slua_DBInsertImageFolder);
    luaPushFunctionTable(L, "insertPalette", &slua_DBInsertPalette);
    luaPushFunctionTable(L, "insertPaletteFolder", &slua_DBInsertPaletteFolder);
-
+   luaPushFunctionTable(L, "insertSprite", &slua_DBInsertSprite);
 
    lua_setglobal(L, LLIB_DB);
 
@@ -140,6 +141,105 @@ int slua_DBInsertPaletteFolder(lua_State *L) {
       consolePrintLine(view->console, "Inserted [c=0,5]%i[/c] palette.", 0);
    }
 
+
+   return 0;
+}
+
+int slua_DBInsertSprite(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   DBSprite newSprite = { 0 };
+   int fCount = 0, i = 0;
+
+   luaL_checktype(L, -1, LUA_TTABLE);
+
+   lua_pushliteral(L, "id");
+   lua_gettable(L, -2);//push id
+   newSprite.id = stringCreate(luaL_checkstring(L, -1));
+   lua_pop(L, 1);//pop id
+
+   lua_pushliteral(L, "size");
+   lua_gettable(L, -2);//push size
+   luaL_checktype(L, -1, LUA_TTABLE);
+
+   //check the size
+   lua_len(L, -1);//push len
+   if (luaL_checkinteger(L, -1) != 2) {
+      lua_pushliteral(L, "Size must contain two integers, x then y.");
+      lua_error(L);
+   }
+   lua_pop(L, 1);//pop the len
+
+   //width
+   lua_pushinteger(L, 1);
+   lua_gettable(L, -2);//push width
+   newSprite.width = luaL_checkinteger(L, -1);
+   lua_pop(L, 1);//pop width
+
+   //height
+   lua_pushinteger(L, 2);
+   lua_gettable(L, -2);//push height
+   newSprite.height = luaL_checkinteger(L, -1);
+   lua_pop(L, 1);//pop height
+
+   lua_pop(L, 1);//pop the size table
+   
+   //sprites done now we need the frames
+   //push frames table and get size
+   lua_pushliteral(L, "frames");
+   lua_gettable(L, -2);//push frames table
+   luaL_checktype(L, -1, LUA_TTABLE);
+   lua_len(L, -1);//push len
+   fCount = luaL_checkinteger(L, -1);
+   lua_pop(L, 1);//pop the len
+
+   for (i = 0; i < fCount; ++i) {
+      DBSpriteFrame newFrame = { 0 };
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, -2);//push currnet frame
+      luaL_checktype(L, -1, LUA_TTABLE);
+
+      newFrame.index = i;
+      newFrame.sprite = stringCopy(newSprite.id);
+
+      lua_pushliteral(L, "image");
+      lua_gettable(L, -2);//push img
+      newFrame.image = stringCreate(luaL_checkstring(L, -1));
+      lua_pop(L, 1);//pop img
+
+      lua_pushliteral(L, "pos");
+      lua_gettable(L, -2);//push pos
+      luaL_checktype(L, -1, LUA_TTABLE);
+
+      //check the size
+      lua_len(L, -1);//push len
+      if (luaL_checkinteger(L, -1) != 2) {
+         lua_pushliteral(L, "Pos must contain two integers, x then y.");
+         lua_error(L);
+      }
+      lua_pop(L, 1);//pop the len
+
+      //x
+      lua_pushinteger(L, 1);
+      lua_gettable(L, -2);//push x
+      newFrame.imgX = luaL_checkinteger(L, -1);
+      lua_pop(L, 1);//pop x
+
+      //y
+      lua_pushinteger(L, 2);
+      lua_gettable(L, -2);//push y
+      newFrame.imgY = luaL_checkinteger(L, -1);
+      lua_pop(L, 1);//pop y
+
+      lua_pop(L, 1);//pop the pos table
+      lua_pop(L, 1);//pop the current frame
+      dbSpriteFrameInsert(view->db, &newFrame);
+      dbSpriteFrameDestroy(&newFrame);
+   }
+
+   lua_pop(L, 1);//pop the frames table
+
+   dbSpriteInsert(view->db, &newSprite);
+   dbSpriteDestroy(&newSprite);
 
    return 0;
 }

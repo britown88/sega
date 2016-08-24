@@ -76,17 +76,17 @@ typedef struct {
    int index;
    int imgX;
    int imgY;
-} DBFrame;
+} DBSpriteFrame;
 
-#define VectorTPart DBFrame
+#define VectorTPart DBSpriteFrame
 #include "segautils/Vector_Decl.h"
 
-void dbFrameDestroy(DBFrame *self); //this does not call free on self!!
-int dbFrameInsert(DB_assets *db, const DBFrame *obj);
-int dbFrameUpdate(DB_assets *db, const DBFrame *obj); //will base on primary key
-vec(DBFrame) *dbFrameSelectAll(DB_assets *db);
-DBFrame dbFrameSelectFirstBysprite(DB_assets *db, const char *sprite);
-vec(DBFrame) *dbFrameSelectBysprite(DB_assets *db, const char *sprite);
-void dbFrameDeleteAll(DB_assets *db);
-void dbFrameDeleteBysprite(DB_assets *db, const char *sprite);
+void dbSpriteFrameDestroy(DBSpriteFrame *self); //this does not call free on self!!
+int dbSpriteFrameInsert(DB_assets *db, const DBSpriteFrame *obj);
+int dbSpriteFrameUpdate(DB_assets *db, const DBSpriteFrame *obj); //will base on primary key
+vec(DBSpriteFrame) *dbSpriteFrameSelectAll(DB_assets *db);
+DBSpriteFrame dbSpriteFrameSelectFirstBysprite(DB_assets *db, const char *sprite);
+vec(DBSpriteFrame) *dbSpriteFrameSelectBysprite(DB_assets *db, const char *sprite);
+void dbSpriteFrameDeleteAll(DB_assets *db);
+void dbSpriteFrameDeleteBysprite(DB_assets *db, const char *sprite);
 

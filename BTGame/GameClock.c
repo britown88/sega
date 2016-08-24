@@ -21,7 +21,8 @@ static void _updateTime(GameClock *self) {
    self->appTime = newTime;
 }
 
-Microseconds gameClockGetTime(GameClock *self) {
+Microseconds gameClockGetTime() {
+   GameClock *self = gameClockGet();
    if (!self->paused) {
       _updateTime(self);
    }

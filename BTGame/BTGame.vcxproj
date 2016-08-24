@@ -186,6 +186,7 @@
     <ClCompile Include="RenderHelpers.c" />
     <ClCompile Include="RichText.c" />
     <ClCompile Include="SplashState.c" />
+    <ClCompile Include="Sprites.c" />
     <ClCompile Include="TextArea.c" />
     <ClCompile Include="VerbManager.c" />
     <ClCompile Include="Weather.c" />

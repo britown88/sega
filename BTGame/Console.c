@@ -472,9 +472,9 @@ void consolePushLine(Console *self, const char *line) {
 
 void consoleUpdate(Console *self) {
    if (!self->cursorClock) {
-      self->cursorClock = gameClockGetTime(self->view->gameClock);
+      self->cursorClock = gameClockGetTime();
    }
-   else if (gameClockGetTime(self->view->gameClock) > self->cursorClock) {
+   else if (gameClockGetTime() > self->cursorClock) {
       self->cursorClock += t_m2u(500);
       self->invertCursor = !self->invertCursor;
       _updateInputLine(self);

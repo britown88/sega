@@ -233,5 +233,8 @@
     <ClCompile Include="FramerateViewer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sprites.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

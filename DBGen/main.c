@@ -1129,15 +1129,15 @@ void sourceWriteSelectBy(FILE *f, FileData *fd, DBStruct *strct, DBMember *membe
    fprintf(f,
       "   out = vecCreate(DB%s)(&db%sDestroy);\n\n"
 
-      "   while((result = sqlite3_step(db->%sStmts.selectAll)) == SQLITE_ROW){\n"
+      "   while((result = sqlite3_step(db->%sStmts.%s)) == SQLITE_ROW){\n"
       "      DB%s newObj = {0};\n\n"
-      , strct->name, strct->name, strct->name, strct->name
+      , strct->name, strct->name, strct->name, stmtName, strct->name
       );
 
 
    i = 0;
    vecForEach(DBMember, member, strct->members, {
-      sourceWriteGetColumn(f, fd, strct, member, "selectAll", i++, "newObj");
+      sourceWriteGetColumn(f, fd, strct, member, stmtName, i++, "newObj");
    });
 
    fprintf(f,

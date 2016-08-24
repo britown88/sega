@@ -5,7 +5,7 @@
 typedef struct GameClock_t GameClock;
 
 
-Microseconds gameClockGetTime(GameClock *self);
+Microseconds gameClockGetTime();
 void gameClockPause(GameClock *self);
 void gameClockResume(GameClock *self);
 

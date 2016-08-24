@@ -17,7 +17,7 @@
 #include "segashared\CheckedMemory.h"
 
 #include "ImageLibrary.h"
-
+#include "Sprites.h"
 #include "AssetHelpers.h"
 
 #define VP_SPEED 3
@@ -28,9 +28,8 @@ typedef struct {
    bool pop;
 
    TextArea *select, *cont, *new, *ack, *quit, *copyright;
-   ManagedImage *frames[10];
    ManagedImage *splash;
-
+   Sprite *fire;
 }SplashState;
 
 static void _splashStateCreate(SplashState *state) {
@@ -66,35 +65,11 @@ static void _splash(SplashState *state, Type *t, Message m) {
    else if (t == GetRTTI(StateExit)) { _splashExit(state, m); }
 }
 
-static void _testSplashText(SplashState *self, Frame *frame) {
-
-   
-}
-
-static void _registerTextRenders(SplashState *state) {
-   //LayerRenderer splash;
-   //closureInit(LayerRenderer)(&splash, state, &_testSplashText, NULL);
-   //renderManagerAddLayerRenderer(state->view->managers->renderManager, LayerConsole, splash);
-}
-
 void _splashEnter(SplashState *state, StateEnter *m) {
    WorldView *view = state->view;
 
    state->splash = imageLibraryGetImage(state->view->imageLibrary, stringIntern("splash"));
-
-
-   state->frames[0] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire1"));
-   state->frames[1] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire2"));
-   state->frames[2] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire3"));
-   state->frames[3] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire4"));
-   state->frames[4] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire5"));
-   state->frames[5] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire6"));
-   state->frames[6] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire7"));
-   state->frames[7] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire8"));
-   state->frames[8] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire9"));
-   state->frames[9] = imageLibraryGetImage(view->imageLibrary, stringIntern("fire10"));
-
-   _registerTextRenders(state);
+   state->fire = spriteGet(view, stringIntern("fire"));
 
    textAreaSetText(state->select, "Select");
    textAreaSetText(state->cont, "[i]Journey forth[/i]");
@@ -104,24 +79,14 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    textAreaSetText(state->copyright, "Copyright 1988 BDT");
    
    verbManagerSetEnabled(view->verbManager, false);
-   //changeBackground(view, "splash");
-
-   //cursorManagerSetShown(view->cursorManager, false);
-
    assetsSetPalette(view->db, stringIntern("splash"));
-   
 
 }
 void _splashExit(SplashState *state, StateExit *m) {
    WorldView *view = state->view;
-   int i = 0;
-   for (i = 0; i < 10; ++i) {
-      managedImageDestroy(state->frames[i]);
-   }
 
+   spriteDestroy(state->fire);
    managedImageDestroy(state->splash);
-
-   //cursorManagerSetShown(view->cursorManager, true);
 }
 
 void _splashUpdate(SplashState *state, GameStateUpdate *m) {
@@ -165,7 +130,7 @@ void _splashHandleInput(SplashState *state, GameStateHandleInput *m) {
 }
 
 void _splashRender(SplashState *state, GameStateRender *m) {
-   Milliseconds t = t_u2m(gameClockGetTime(state->view->gameClock));
+   Milliseconds t = t_u2m(gameClockGetTime());
    int f = (int)(t / 200.0f) % 10;
    Frame *frame = m->frame;
 
@@ -173,7 +138,7 @@ void _splashRender(SplashState *state, GameStateRender *m) {
 
 
    frameRenderImage(frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->splash));
-   frameRenderImage(frame, FrameRegionFULL, 79, 80, managedImageGetImage(state->frames[f]));
+   frameRenderSprite(frame, FrameRegionFULL, 79, 80, state->fire);
 
    textAreaRender(state->select, state->view, frame);
    textAreaRender(state->cont, state->view, frame);
