@@ -29,7 +29,7 @@ struct Weather_t {
 };
 
 void testRain(Weather *self) {
-   Float3 n = vNormalized((Float3){-1.0f, 3.0f, 0.0f});
+   Float3 n = vNormalized((Float3){-2.0f, 3.0f, 0.0f});
    Float2 n2 = { n.x, n.y };
    Microseconds speed = t_m2u(1000);
 
@@ -40,15 +40,15 @@ void testRain(Weather *self) {
 
    App *app = appGet();
 
-   for (int i = 0; i < 500; ++i) {
+   for (int i = 0; i < 10; ++i) {
       Raindrop r = {
          .startTime = gameClockGetTime(self->view->gameClock),
          .distance = appRand(app, 50, 150),
          .slope = {n.x, n.y},
          .startPos = {appRand(app, left, right), appRand(app, top, bottom)},
-         .speed = 10,
+         .speed = 4,
          .color = 7,
-         .length = 15
+         .length = 20
       };
       vecPushBack(Raindrop)(self->rain, &r);
    }

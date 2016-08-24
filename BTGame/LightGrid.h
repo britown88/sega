@@ -32,7 +32,7 @@ typedef struct LightSourceParams_t{
 
 typedef struct LightSource_t LightSource;
 LightSourceParams *lightSourceParams(LightSource *self);
-Int2 *lightSourcePosition(LightSource *self);
+Int2 *lightSourcePosition(LightSource *self);//world positions!
 void lightSourceDestroy(LightSource *self);//lightsources are registered inside the grid so make sure to free these
 
 typedef struct LightGrid_t LightGrid;

@@ -90,7 +90,6 @@ Int2 actorGetGridPosition(Actor *self) {
 }
 void actorSetGridPosition(Actor *self, Int2 pos) {
    gridTokenMove(self->gridToken, pos);
-   *lightSourcePosition(self->lightSource) = pos;
    self->gridPos = pos;
 }
 
@@ -313,6 +312,8 @@ void _updateActorMovement(ActorManager *self, Actor *a) {
    WorldView *view = self->view;
    Microseconds time = gameClockGetTime(view->gameClock);
    Microseconds overflow = 0;
+
+   *lightSourcePosition(a->lightSource) = a->worldPos;
 
    if (!a->ordered) {
       return;
