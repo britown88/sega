@@ -241,11 +241,31 @@ DBImage dbImageSelectFirstByid(DB_assets *db, const char *id){
 
    return out;
 }
-void dbImageDeleteAll(DB_assets *db){
-
+int dbImageDeleteAll(DB_assets *db){
+return DB_SUCCESS;
 }
-void dbImageDeleteByid(DB_assets *db, const char *id){
+int dbImageDeleteByid(DB_assets *db, const char *id){
+   int result = 0;
+   static const char *stmt = "DELETE FROM \"Image\" WHERE (\"id\" = :id);";
+   if(dbPrepareStatement((DBBase*)db, &db->ImageStmts.deleteByid, stmt) != DB_SUCCESS){
+      return DB_FAILURE;
+   }
 
+   //primary key:
+   result = sqlite3_bind_text(db->ImageStmts.deleteByid, 1, id, -1, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   //now run it
+   result = sqlite3_step(db->ImageStmts.deleteByid);
+   if (result != SQLITE_DONE) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   return DB_SUCCESS;
 }
 #define VectorTPart DBPalette
 #include "segautils/Vector_Impl.h"
@@ -400,11 +420,31 @@ DBPalette dbPaletteSelectFirstByid(DB_assets *db, const char *id){
 
    return out;
 }
-void dbPaletteDeleteAll(DB_assets *db){
-
+int dbPaletteDeleteAll(DB_assets *db){
+return DB_SUCCESS;
 }
-void dbPaletteDeleteByid(DB_assets *db, const char *id){
+int dbPaletteDeleteByid(DB_assets *db, const char *id){
+   int result = 0;
+   static const char *stmt = "DELETE FROM \"Palette\" WHERE (\"id\" = :id);";
+   if(dbPrepareStatement((DBBase*)db, &db->PaletteStmts.deleteByid, stmt) != DB_SUCCESS){
+      return DB_FAILURE;
+   }
 
+   //primary key:
+   result = sqlite3_bind_text(db->PaletteStmts.deleteByid, 1, id, -1, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   //now run it
+   result = sqlite3_step(db->PaletteStmts.deleteByid);
+   if (result != SQLITE_DONE) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   return DB_SUCCESS;
 }
 #define VectorTPart DBSprite
 #include "segautils/Vector_Impl.h"
@@ -565,11 +605,31 @@ DBSprite dbSpriteSelectFirstByid(DB_assets *db, const char *id){
 
    return out;
 }
-void dbSpriteDeleteAll(DB_assets *db){
-
+int dbSpriteDeleteAll(DB_assets *db){
+return DB_SUCCESS;
 }
-void dbSpriteDeleteByid(DB_assets *db, const char *id){
+int dbSpriteDeleteByid(DB_assets *db, const char *id){
+   int result = 0;
+   static const char *stmt = "DELETE FROM \"Sprite\" WHERE (\"id\" = :id);";
+   if(dbPrepareStatement((DBBase*)db, &db->SpriteStmts.deleteByid, stmt) != DB_SUCCESS){
+      return DB_FAILURE;
+   }
 
+   //primary key:
+   result = sqlite3_bind_text(db->SpriteStmts.deleteByid, 1, id, -1, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   //now run it
+   result = sqlite3_step(db->SpriteStmts.deleteByid);
+   if (result != SQLITE_DONE) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   return DB_SUCCESS;
 }
 #define VectorTPart DBSpriteFrame
 #include "segautils/Vector_Impl.h"
@@ -807,9 +867,29 @@ vec(DBSpriteFrame) *dbSpriteFrameSelectBysprite(DB_assets *db, const char *sprit
 
    return out;
 }
-void dbSpriteFrameDeleteAll(DB_assets *db){
-
+int dbSpriteFrameDeleteAll(DB_assets *db){
+return DB_SUCCESS;
 }
-void dbSpriteFrameDeleteBysprite(DB_assets *db, const char *sprite){
+int dbSpriteFrameDeleteBysprite(DB_assets *db, const char *sprite){
+   int result = 0;
+   static const char *stmt = "DELETE FROM \"SpriteFrame\" WHERE (\"sprite\" = :sprite);";
+   if(dbPrepareStatement((DBBase*)db, &db->SpriteFrameStmts.deleteBysprite, stmt) != DB_SUCCESS){
+      return DB_FAILURE;
+   }
 
+   //primary key:
+   result = sqlite3_bind_text(db->SpriteFrameStmts.deleteBysprite, 1, sprite, -1, NULL);
+   if (result != SQLITE_OK) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   //now run it
+   result = sqlite3_step(db->SpriteFrameStmts.deleteBysprite);
+   if (result != SQLITE_DONE) {
+      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));
+      return DB_FAILURE;
+   }
+
+   return DB_SUCCESS;
 }

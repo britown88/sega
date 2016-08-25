@@ -32,8 +32,8 @@ int dbImageInsert(DB_assets *db, const DBImage *obj);
 int dbImageUpdate(DB_assets *db, const DBImage *obj); //will base on primary key
 vec(DBImage) *dbImageSelectAll(DB_assets *db);
 DBImage dbImageSelectFirstByid(DB_assets *db, const char *id);
-void dbImageDeleteAll(DB_assets *db);
-void dbImageDeleteByid(DB_assets *db, const char *id);
+int dbImageDeleteAll(DB_assets *db);
+int dbImageDeleteByid(DB_assets *db, const char *id);
 
 typedef struct {
    String *id;
@@ -49,8 +49,8 @@ int dbPaletteInsert(DB_assets *db, const DBPalette *obj);
 int dbPaletteUpdate(DB_assets *db, const DBPalette *obj); //will base on primary key
 vec(DBPalette) *dbPaletteSelectAll(DB_assets *db);
 DBPalette dbPaletteSelectFirstByid(DB_assets *db, const char *id);
-void dbPaletteDeleteAll(DB_assets *db);
-void dbPaletteDeleteByid(DB_assets *db, const char *id);
+int dbPaletteDeleteAll(DB_assets *db);
+int dbPaletteDeleteByid(DB_assets *db, const char *id);
 
 typedef struct {
    String *id;
@@ -66,8 +66,8 @@ int dbSpriteInsert(DB_assets *db, const DBSprite *obj);
 int dbSpriteUpdate(DB_assets *db, const DBSprite *obj); //will base on primary key
 vec(DBSprite) *dbSpriteSelectAll(DB_assets *db);
 DBSprite dbSpriteSelectFirstByid(DB_assets *db, const char *id);
-void dbSpriteDeleteAll(DB_assets *db);
-void dbSpriteDeleteByid(DB_assets *db, const char *id);
+int dbSpriteDeleteAll(DB_assets *db);
+int dbSpriteDeleteByid(DB_assets *db, const char *id);
 
 typedef struct {
    int id;
@@ -87,6 +87,6 @@ int dbSpriteFrameUpdate(DB_assets *db, const DBSpriteFrame *obj); //will base on
 vec(DBSpriteFrame) *dbSpriteFrameSelectAll(DB_assets *db);
 DBSpriteFrame dbSpriteFrameSelectFirstBysprite(DB_assets *db, const char *sprite);
 vec(DBSpriteFrame) *dbSpriteFrameSelectBysprite(DB_assets *db, const char *sprite);
-void dbSpriteFrameDeleteAll(DB_assets *db);
-void dbSpriteFrameDeleteBysprite(DB_assets *db, const char *sprite);
+int dbSpriteFrameDeleteAll(DB_assets *db);
+int dbSpriteFrameDeleteBysprite(DB_assets *db, const char *sprite);
 

@@ -8,6 +8,7 @@
 #include "LightGrid.h"
 #include "GameHelpers.h"
 #include "Map.h"
+#include <stdlib.h>
 
 #define SCHEMA_COUNT 256
 #define PARTITION_SIZE 16

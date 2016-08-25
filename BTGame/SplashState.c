@@ -69,7 +69,7 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    WorldView *view = state->view;
 
    state->splash = imageLibraryGetImage(state->view->imageLibrary, stringIntern("splash"));
-   state->fire = spriteGet(view, stringIntern("fire"));
+   state->fire = spriteManagerGetSprite(view->spriteManager, stringIntern("fire"));
 
    textAreaSetText(state->select, "Select");
    textAreaSetText(state->cont, "[i]Journey forth[/i]");

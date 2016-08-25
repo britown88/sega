@@ -22,6 +22,7 @@
 #include "TextArea.h"
 #include "Actors.h"
 #include "RenderHelpers.h"
+#include "Sprites.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -38,6 +39,7 @@ typedef struct {
    FramerateViewer *framerateViewer;
    FontFactory *fontFactory;
    ImageLibrary *imageLibrary;
+   SpriteManager *spriteManager;
    FSM *gameState;
    Viewport viewport;
    GridSolver *gridSolver;
@@ -110,6 +112,7 @@ VirtualApp *btCreate() {
    r->view.gameClock = gameClockGet();
 
    CREATE_AND_VIEW(imageLibrary, imageLibraryCreate(&r->view));
+   CREATE_AND_VIEW(spriteManager, spriteManagerCreate(&r->view));
    CREATE_AND_VIEW(gameState, fsmCreate());
 
    CREATE_AND_VIEW(cursorManager, cursorManagerCreate(&r->view));
@@ -152,6 +155,7 @@ void _destroy(BTGame *self){
 
    fontFactoryDestroy(self->fontFactory);
    framerateViewerDestroy(self->framerateViewer);
+   spriteManagerDestroy(self->spriteManager);
    imageLibraryDestroy(self->imageLibrary);
    gridSolverDestroy(self->gridSolver);
    choicePromptDestroy(self->choicePrompt);

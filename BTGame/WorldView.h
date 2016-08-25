@@ -3,6 +3,7 @@
 #include "Viewport.h"
 
 typedef struct ImageLibrary_t ImageLibrary;
+typedef struct SpriteManager_t SpriteManager;
 typedef struct FSM_t FSM;
 typedef struct GameClock_t GameClock;
 typedef struct GridSolver_t GridSolver;
@@ -36,6 +37,7 @@ typedef struct WorldView_t {
    FramerateViewer *framerateViewer;
    FontFactory *fontFactory;
    ImageLibrary *imageLibrary;
+   SpriteManager *spriteManager;
    FSM *gameState;
    GameClock *gameClock;
    GridSolver *gridSolver;

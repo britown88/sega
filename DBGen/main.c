@@ -636,12 +636,12 @@ void headerCreateStruct(FILE *f, FileData *fd, DBStruct *strct) {
       }
    });
 
-   fprintf(f, "void db%sDeleteAll(DB_%s *db);\n", strct->name, c_str(fd->inputFileOnly));
+   fprintf(f, "int db%sDeleteAll(DB_%s *db);\n", strct->name, c_str(fd->inputFileOnly));
 
    vecForEach(DBMember, member, strct->members, {
       if (member->mods&MOD(MODIFIER_SELECT)) {
 
-         fprintf(f, "void db%sDeleteBy%s(DB_%s *db, %s%s);\n",
+         fprintf(f, "int db%sDeleteBy%s(DB_%s *db, %s%s);\n",
             strct->name, member->name,
             c_str(fd->inputFileOnly), CTypes[member->type], member->name);
 
@@ -748,7 +748,7 @@ void sourceWriteBindMember(FILE *f, FileData *fd, DBStruct *strct, DBMember *mem
       "   }\n\n");
 }
 
-void sourceWriteBindMemberSelect(FILE *f, FileData *fd, DBStruct *strct, DBMember *member, const char *stmt, size_t index) {
+void sourceWriteBindMemberSelect(FILE *f, FileData *fd, DBStruct *strct, DBMember *member, const char *stmt, size_t index, const char *outName) {
 
    switch (member->type) {
    case TYPE_INT:
@@ -774,8 +774,8 @@ void sourceWriteBindMemberSelect(FILE *f, FileData *fd, DBStruct *strct, DBMembe
    fprintf(f,
       "   if (result != SQLITE_OK) {\n"
       "      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));\n"
-      "      return out;\n"
-      "   }\n\n");
+      "      return %s;\n"
+      "   }\n\n", outName);
 }
 
 void sourceWriteGetColumn(FILE *f, FileData *fd, DBStruct *strct, DBMember *member, const char *stmt, size_t index, const char *objName) {
@@ -1079,7 +1079,7 @@ void sourceWriteSelectFirst(FILE *f, FileData *fd, DBStruct *strct, DBMember *me
       "   }\n\n", strct->name, stmtName
       );
 
-   sourceWriteBindMemberSelect(f, fd, strct, member, stmtName, 1);
+   sourceWriteBindMemberSelect(f, fd, strct, member, stmtName, 1, "out");
 
    fprintf(f,
       "   if((result = sqlite3_step(db->%sStmts.%s)) == SQLITE_ROW){\n"
@@ -1124,7 +1124,7 @@ void sourceWriteSelectBy(FILE *f, FileData *fd, DBStruct *strct, DBMember *membe
       "   }\n\n", strct->name, stmtName
       );
 
-   sourceWriteBindMemberSelect(f, fd, strct, member, stmtName, 1);
+   sourceWriteBindMemberSelect(f, fd, strct, member, stmtName, 1, "out");
 
    fprintf(f,
       "   out = vecCreate(DB%s)(&db%sDestroy);\n\n"
@@ -1154,12 +1154,49 @@ void sourceWriteSelectBy(FILE *f, FileData *fd, DBStruct *strct, DBMember *membe
    fprintf(f, "}\n");
 }
 void sourceWriteDeleteAll(FILE *f, FileData *fd, DBStruct *strct) {
-   fprintf(f, "void db%sDeleteAll(DB_%s *db){\n\n}\n", strct->name, c_str(fd->inputFileOnly));
+   fprintf(f, "int db%sDeleteAll(DB_%s *db){\nreturn DB_SUCCESS;\n}\n", strct->name, c_str(fd->inputFileOnly));
 }
 void sourceWriteDeleteBy(FILE *f, FileData *fd, DBStruct *strct, DBMember *member) {
-   fprintf(f, "void db%sDeleteBy%s(DB_%s *db, %s%s){\n\n}\n",
+   
+
+   bool first = true;
+   int i = 0;
+   char stmtName[256] = { 0 };
+
+   sprintf(stmtName, "deleteBy%s", member->name);
+
+   fprintf(f, "int db%sDeleteBy%s(DB_%s *db, %s%s){\n",
       strct->name, member->name,
       c_str(fd->inputFileOnly), CTypes[member->type], member->name);
+
+   fprintf(f,
+      "   int result = 0;\n"
+      "   static const char *stmt = \"DELETE FROM \\\"%s\\\" WHERE (\\\"%s\\\" = :%s);\";\n"
+      , strct->name, member->name, member->name);
+
+   fprintf(f,
+      "   if(dbPrepareStatement((DBBase*)db, &db->%sStmts.%s, stmt) != DB_SUCCESS){\n"
+      "      return DB_FAILURE;\n"
+      "   }\n\n", strct->name, stmtName
+      );
+
+
+   //and the pkey
+   fprintf(f, "   //primary key:\n");
+   sourceWriteBindMemberSelect(f, fd, strct, member, stmtName, 1, "DB_FAILURE");
+
+   //now run it
+   fprintf(f,
+      "   //now run it\n"
+      "   result = sqlite3_step(db->%sStmts.%s);\n"
+      "   if (result != SQLITE_DONE) {\n"
+      "      stringSet(db->base.err, sqlite3_errmsg(db->base.conn));\n"
+      "      return DB_FAILURE;\n"
+      "   }\n\n"
+      "   return DB_SUCCESS;\n", strct->name, stmtName
+      );
+
+   fprintf(f, "}\n");
 }
 
 

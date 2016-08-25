@@ -5,6 +5,7 @@
 #include "Managers.h"
 #include "GameState.h"
 #include "ImageLibrary.h"
+#include "Sprites.h"
 #include "SEGA/App.h"
 
 #include "liblua/lauxlib.h"
@@ -19,7 +20,8 @@ static int slua_consoleClear(lua_State *L);
 static int slua_rand(lua_State *L);
 static int slua_toggleStats(lua_State *L);
 static int slua_openEditor(lua_State *L);
-static int slua_clearCache(lua_State *L);
+static int slua_clearImageCache(lua_State *L);
+static int slua_clearSpriteCache(lua_State *L);
 static int slua_setPalette(lua_State *L);
 
 
@@ -36,7 +38,8 @@ void luaLoadStandardLibrary(lua_State *L) {
    luaPushFunctionGlobal(L, "setPalette", &slua_setPalette);
 
    lua_newtable(L);
-   luaPushFunctionTable(L, "clearCache", &slua_clearCache);
+   luaPushFunctionTable(L, "clearImageCache", &slua_clearImageCache);
+   luaPushFunctionTable(L, "clearSpriteCache", &slua_clearSpriteCache);
    lua_setglobal(L, LLIB_IMG);
 }
 
@@ -74,11 +77,15 @@ int slua_toggleStats(lua_State *L) {
    return 0;
 }
 
-int slua_clearCache(lua_State *L) {
+int slua_clearImageCache(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-
    imageLibraryClear(view->imageLibrary);
+   return 0;
+}
 
+int slua_clearSpriteCache(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   spriteManagerClear(view->spriteManager);
    return 0;
 }
 
