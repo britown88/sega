@@ -226,7 +226,7 @@ void frameRenderSprite(Frame *frame, FrameRegion *vp, short x, short y, Sprite *
 
       if (f) {
          frameRenderImagePartial(frame, vp, x, y, managedImageGetImage(f->img),
-            f->imgPos.x * sprite->size.x, f->imgPos.y * sprite->size.x,
+            f->imgPos.x * sprite->size.x, f->imgPos.y * sprite->size.y,
             sprite->size.x, sprite->size.y);
       }
    }

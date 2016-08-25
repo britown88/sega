@@ -72,12 +72,14 @@ int slua_DBInsertImage(lua_State *L) {
 
    DBImage img = {.id = stringCreate(interned) };
    if (!(img.image = readFullFile(path, &img.imageSize))) {      
+      dbImageDestroy(&img);
       lua_pushstring(L, "Unable to open image file");
       lua_error(L);
    }
 
 
    if (dbImageInsert(view->db, &img)) {
+      dbImageDestroy(&img);
       lua_pushstring(L, dbGetError((DBBase*)view->db));
       lua_error(L);
    }
@@ -96,6 +98,7 @@ int slua_DBInsertPalette(lua_State *L) {
    Palette p = paletteDeserialize(path);
 
    if (!memcmp(&p, &(Palette){0}, sizeof(Palette))) {
+      dbPaletteDestroy(&pal);
       lua_pushstring(L, "Failed to open palette file");
       lua_error(L);
    }
@@ -104,6 +107,7 @@ int slua_DBInsertPalette(lua_State *L) {
    pal.paletteSize = sizeof(Palette);
 
    if (dbPaletteInsert(view->db, &pal)) {
+      dbPaletteDestroy(&pal);
       lua_pushstring(L, dbGetError((DBBase*)view->db));
       lua_error(L);
    }
@@ -184,6 +188,9 @@ int slua_DBInsertSprite(lua_State *L) {
    lua_pop(L, 1);//pop the size table
    
    //sprites done now we need the frames
+   //first we're gonna delete any frames under this name that may already be there
+   dbSpriteFrameDeleteBysprite(view->db, c_str(newSprite.id));
+
    //push frames table and get size
    lua_pushliteral(L, "frames");
    lua_gettable(L, -2);//push frames table
