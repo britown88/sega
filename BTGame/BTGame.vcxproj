@@ -132,6 +132,7 @@
     <ClInclude Include="AssetHelpers.h" />
     <ClInclude Include="assets.h" />
     <ClInclude Include="BT.h" />
+    <ClInclude Include="Calendar.h" />
     <ClInclude Include="ChoicePrompt.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="DB.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="ActorManager.c" />
     <ClCompile Include="AssetHelpers.c" />
     <ClCompile Include="assets.c" />
+    <ClCompile Include="Calendar.c" />
     <ClCompile Include="ChoicePrompt.c" />
     <ClCompile Include="Console.c" />
     <ClCompile Include="ConsoleState.c" />

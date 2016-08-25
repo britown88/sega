@@ -23,6 +23,7 @@
 #include "Actors.h"
 #include "RenderHelpers.h"
 #include "Sprites.h"
+#include "Calendar.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -48,6 +49,7 @@ typedef struct {
    ChoicePrompt *choicePrompt;
    DB_assets *db;
    Weather *weather;
+   Calendar *calendar;
 
    lua_State *L;
 
@@ -128,6 +130,7 @@ VirtualApp *btCreate() {
    CREATE_AND_VIEW(L, luaCreate());
    CREATE_AND_VIEW(db, db_assetsCreate());
    CREATE_AND_VIEW(weather, createWeather(&r->view));
+   CREATE_AND_VIEW(calendar, calendarCreate(&r->view));
    CREATE_AND_VIEW(choicePrompt, createChoicePrompt(&r->view));
 
    r->testActors = vecCreate(ActorPtr)(&actorPtrDestroy);
@@ -162,6 +165,7 @@ void _destroy(BTGame *self){
    db_assetsDestroy(self->db);
    weatherDestroy(self->weather);
    textAreaManagerDestroy(self->textAreaManager);
+   calendarDestroy(self->calendar);
    
    luaDestroy(self->L);
    checkedFree(self);

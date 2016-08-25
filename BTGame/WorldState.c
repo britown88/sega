@@ -8,6 +8,7 @@
 #include "ChoicePrompt.h"
 #include "Weather.h"
 #include "TextArea.h"
+#include "Calendar.h"
 
 #include "SEGA\Input.h"
 #include "SEGA\App.h"
@@ -62,9 +63,9 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
    actorManagerUpdate(view->actorManager);
    pcManagerUpdate(view->pcManager);
-   
-
    textAreaUpdate(state->smallbox);
+
+   calendarUpdate(view->calendar);
 }
 
 
@@ -238,6 +239,8 @@ void _worldRender(WorldState *state, GameStateRender *m){
    weatherRender(state->view->weather, frame);
    gridManagerRenderLighting(state->view->gridManager, frame);
    verbManagerRender(state->view->verbManager, frame);
+
+   calendarRenderClock(state->view->calendar, m->frame);
 
    choicePromptRender(state->view->choicePrompt, frame);
    textAreaRender(state->smallbox, state->view, frame);

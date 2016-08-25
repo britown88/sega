@@ -20,7 +20,7 @@ typedef struct GridManager_t GridManager;
 typedef struct PCManager_t PCManager;
 typedef struct VerbManager_t VerbManager;
 typedef struct ActorManager_t ActorManager;
-typedef struct ClockManager_t ClockManager;
+typedef struct Calendar_t Calendar;
 
 typedef struct FramerateViewer_t FramerateViewer;
 
@@ -47,5 +47,6 @@ typedef struct WorldView_t {
    ChoicePrompt *choicePrompt;
    DB_assets *db;
    Weather *weather;
+   Calendar *calendar;
    
 }WorldView;
