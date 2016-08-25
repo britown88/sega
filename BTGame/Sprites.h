@@ -12,6 +12,9 @@ typedef struct Sprite_t Sprite;
 
 void spriteDestroy(Sprite *self);//destroy in-memory object
 
+void spriteAttachToGlobalSpeed(Sprite *self);
+void spriteDetachFromGlobalSpeed(Sprite *self);
+
 void spriteSetAnimationSpeed(Sprite *self, Milliseconds timePerFrame);
 void spriteSetRepeat(Sprite *self, bool repeat);//default repeat is true
 void spriteReset(Sprite *self);//resets the animation

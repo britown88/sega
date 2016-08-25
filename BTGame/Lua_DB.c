@@ -19,6 +19,9 @@ static int slua_DBInsertImageFolder(lua_State *L);
 static int slua_DBInsertPalette(lua_State *L);
 static int slua_DBInsertPaletteFolder(lua_State *L);
 static int slua_DBInsertSprite(lua_State *L);
+static int slua_DBInsertTileSchema(lua_State *L);
+static int slua_DBBegin(lua_State *L);
+static int slua_DBEnd(lua_State *L);
 
 
 void luaLoadDBLibrary(lua_State *L) {
@@ -29,9 +32,30 @@ void luaLoadDBLibrary(lua_State *L) {
    luaPushFunctionTable(L, "insertPalette", &slua_DBInsertPalette);
    luaPushFunctionTable(L, "insertPaletteFolder", &slua_DBInsertPaletteFolder);
    luaPushFunctionTable(L, "insertSprite", &slua_DBInsertSprite);
+   luaPushFunctionTable(L, "insertTileSchema", &slua_DBInsertTileSchema);
+
+   luaPushFunctionTable(L, "beginTransaction", &slua_DBBegin);
+   luaPushFunctionTable(L, "endTransaction", &slua_DBEnd);
 
    lua_setglobal(L, LLIB_DB);
 
+}
+
+int slua_DBBegin(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   if (dbExecute((DBBase*)view->db, "BEGIN TRANSACTION;") != DB_SUCCESS) {
+      lua_pushstring(L, dbGetError((DBBase*)view->db));
+      lua_error(L);
+   }
+   return 0;
+}
+int slua_DBEnd(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   if (dbExecute((DBBase*)view->db, "END TRANSACTION;") != DB_SUCCESS) {
+      lua_pushstring(L, dbGetError((DBBase*)view->db));
+      lua_error(L);
+   }
+   return 0;
 }
 
 int slua_DBInsertImageFolder(lua_State *L) {
@@ -152,6 +176,7 @@ int slua_DBInsertPaletteFolder(lua_State *L) {
 int slua_DBInsertSprite(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    DBSprite newSprite = { 0 };
+   String *lastImage = stringCreate("");
    int fCount = 0, i = 0;
 
    luaL_checktype(L, -1, LUA_TTABLE);
@@ -210,7 +235,20 @@ int slua_DBInsertSprite(lua_State *L) {
 
       lua_pushliteral(L, "image");
       lua_gettable(L, -2);//push img
-      newFrame.image = stringCreate(luaL_checkstring(L, -1));
+      if (lua_isnil(L, -1)) {
+         //no image means we should use the last image used
+         if (i == 0) {
+            lua_pushliteral(L, "Frame must have an image or else a previous entry that defines one");
+            lua_error(L);
+         }
+
+         newFrame.image = stringCopy(lastImage);
+      }
+      else {
+         newFrame.image = stringCreate(luaL_checkstring(L, -1));
+         stringSet(lastImage, c_str(newFrame.image));
+      }
+      
       lua_pop(L, 1);//pop img
 
       lua_pushliteral(L, "pos");
@@ -248,6 +286,83 @@ int slua_DBInsertSprite(lua_State *L) {
    dbSpriteInsert(view->db, &newSprite);
    dbSpriteDestroy(&newSprite);
 
+   stringDestroy(lastImage);
    return 0;
 }
+
+int slua_DBInsertTileSchema(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   String *setName = NULL;
+   int count = 0, i = 0;
+
+   luaL_checktype(L, -1, LUA_TTABLE);
+
+   lua_pushliteral(L, "set");
+   lua_gettable(L, -2);//push setname
+   setName = stringCreate(luaL_checkstring(L, -1));
+   lua_pop(L, 1);//pop setname
+
+   //push tiles table and get size
+   lua_pushliteral(L, "tiles");
+   lua_gettable(L, -2);//push tiles table
+   luaL_checktype(L, -1, LUA_TTABLE);
+   lua_len(L, -1);//push len
+   count = luaL_checkinteger(L, -1);
+   lua_pop(L, 1);//pop the len
+
+   //kill any old members of the set
+   dbTileSchemaDeleteByset(view->db, c_str(setName));
+
+   for (i = 0; i < count; ++i) {
+      DBTileSchema newTile = { 0 };
+      newTile.set = stringCopy(setName);
+
+      lua_pushinteger(L, i + 1);
+      lua_gettable(L, -2);//push currnet tile
+      luaL_checktype(L, -1, LUA_TTABLE);
+
+      lua_pushliteral(L, "sprite");
+      lua_gettable(L, -2);//push sprite
+      newTile.sprite = stringCreate(luaL_checkstring(L, -1));
+      lua_pop(L, 1);//pop sprite
+
+      lua_pushliteral(L, "occlusion");
+      lua_gettable(L, -2);//push 
+      if (lua_isboolean(L, -1)) { newTile.occlusion = lua_toboolean(L, -1); }
+      lua_pop(L, 1);//pop 
+
+      lua_pushliteral(L, "lit");
+      lua_gettable(L, -2);//push 
+      if (lua_isboolean(L, -1)) { newTile.lit = lua_toboolean(L, -1); }
+      lua_pop(L, 1);//pop 
+
+      if (newTile.lit) {
+         lua_pushliteral(L, "radius");
+         lua_gettable(L, -2);//push 
+         if (lua_isinteger(L, -1)) { newTile.radius = lua_tointeger(L, -1); }
+         lua_pop(L, 1);//pop 
+
+         lua_pushliteral(L, "fadeWidth");
+         lua_gettable(L, -2);//push 
+         if (lua_isinteger(L, -1)) { newTile.fadeWidth = lua_tointeger(L, -1); }
+         lua_pop(L, 1);//pop 
+
+         lua_pushliteral(L, "centerLevel");
+         lua_gettable(L, -2);//push 
+         if (lua_isinteger(L, -1)) { newTile.centerLevel = lua_tointeger(L, -1); }
+         lua_pop(L, 1);//pop 
+      }
+
+
+      lua_pop(L, 1);//pop the current frame
+      dbTileSchemaInsert(view->db, &newTile);
+      dbTileSchemaDestroy(&newTile);
+   }
+
+   lua_pop(L, 1);//pop the frames table
+   stringDestroy(setName);
+   return 0;
+
+}
+
 

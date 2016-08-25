@@ -47,7 +47,7 @@ void gridManagerSetAmbientLight(GridManager *self, byte level);
 Map *gridManagerGetMap(GridManager *self);
 void gridManagerLoadMap(GridManager *self, Map *map);
 
-void gridManagerClearSchemas(GridManager *self);
+void gridManagerLoadSchemaTable(GridManager *self, const char *set);
 TileSchema *gridManagerGetSchema(GridManager *self, size_t index);
 size_t gridManagerGetSchemaCount(GridManager *self);
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *vp, short x, short y);

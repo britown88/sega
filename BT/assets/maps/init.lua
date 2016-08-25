@@ -1,4 +1,4 @@
-require 'maps.schemas'
+--require 'maps.schemas'
 
 map = map or {}
 map.directory = "assets/maps/"

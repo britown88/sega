@@ -68,8 +68,8 @@ static void _splash(SplashState *state, Type *t, Message m) {
 void _splashEnter(SplashState *state, StateEnter *m) {
    WorldView *view = state->view;
 
-   state->splash = imageLibraryGetImage(state->view->imageLibrary, stringIntern("splash"));
-   state->fire = spriteManagerGetSprite(view->spriteManager, stringIntern("fire"));
+   state->splash = imageLibraryGetImage(state->view->imageLibrary, stringIntern("splash.bg"));
+   state->fire = spriteManagerGetSprite(view->spriteManager, stringIntern("splash.fire"));
 
    textAreaSetText(state->select, "Select");
    textAreaSetText(state->cont, "[i]Journey forth[/i]");
@@ -98,7 +98,6 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
 
    if (state->pop) {
       assetsSetPalette(state->view->db, stringIntern("default"));
-
       fsmPush(state->view->gameState, gameStateCreateWorld(state->view));
 
       luaStartup(state->view->L);

@@ -8,6 +8,8 @@
 #include "LightGrid.h"
 #include "GameHelpers.h"
 #include "Map.h"
+#include "Sprites.h"
+#include "assets.h"
 #include <stdlib.h>
 
 #define SCHEMA_COUNT 256
@@ -290,8 +292,36 @@ TileSchema *gridManagerGetSchema(GridManager *self, size_t index) {
    return vecAt(TileSchema)(self->schemas, index);
 }
 
-void gridManagerClearSchemas(GridManager *self) {
-   vecClear(TileSchema)(self->schemas);
+static void _addNewSchema(GridManager *self, DBTileSchema *fromDB) {
+   TileSchema newSchema = { 0 };
+   newSchema.sprite = spriteManagerGetSprite(self->view->spriteManager, stringIntern(c_str(fromDB->sprite)));
+   newSchema.occlusion = fromDB->occlusion;
+   newSchema.lit = fromDB->lit;
+   if (newSchema.lit) {
+      newSchema.centerLevel = fromDB->centerLevel;
+      newSchema.fadeWidth = fromDB->fadeWidth;
+      newSchema.radius = fromDB->radius;
+
+   }
+
+   spriteAttachToGlobalSpeed(newSchema.sprite);
+   vecPushBack(TileSchema)(self->schemas, &newSchema);
+}
+
+void gridManagerLoadSchemaTable(GridManager *self, const char *set) {
+   vec(DBTileSchema) *schemas = dbTileSchemaSelectByset(self->view->db, set);
+
+   if (schemas) {
+      vecClear(TileSchema)(self->schemas);
+      vecForEach(DBTileSchema, s, schemas, {
+         _addNewSchema(self, s);
+      });
+      vecDestroy(DBTileSchema)(schemas);
+   }
+}
+
+static void _tileSchemaDestroy(TileSchema *self) {
+   spriteDestroy(self->sprite);
 }
 
 GridManager *gridManagerCreate(WorldView *view) {
@@ -300,7 +330,7 @@ GridManager *gridManagerCreate(WorldView *view) {
 
    out->partitionTable = vecCreate(Partition)(&_partitionDestroy);
    out->inViewActors = vecCreate(ActorPtr)(NULL);
-   out->schemas = vecCreate(TileSchema)(NULL);
+   out->schemas = vecCreate(TileSchema)(&_tileSchemaDestroy);
 
    out->tokens = vecCreate(GridTokenPtr)(&gridTokenPtrDestroy);
 
@@ -411,23 +441,13 @@ Actor *gridManagerActorFromScreenPosition(GridManager *self, Int2 pos) {
 size_t gridManagerGetSchemaCount(GridManager *self) {
    return vecSize(TileSchema)(self->schemas);
 }
-short _getImageIndex(GridManager *self, TileSchema *schema) {
-   return schema->img[self->tileAnimFrameIndex % schema->imgCount];
-}
+
 
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *region, short x, short y) {
    Viewport *vp = self->view->viewport;
    TileSchema *schema = gridManagerGetSchema(self, index);
 
-   if (!schema->imgCount) {
-      return;
-   }
-  
-   short img = _getImageIndex(self, schema);
-   short imgX = (img % 16) * GRID_CELL_SIZE;
-   short imgY = (img / 16) * GRID_CELL_SIZE;
-
-   frameRenderImagePartial(frame, region, x, y, managedImageGetImage(self->tilePalette), imgX, imgY, GRID_CELL_SIZE, GRID_CELL_SIZE);
+   frameRenderSprite(frame, region, x, y, schema->sprite);
 }
 
 static void _renderBlank(GridManager *self, Frame *frame, short x, short y) {

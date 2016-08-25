@@ -23,3 +23,14 @@ struct SpriteFrame{
    int imgY;
    
 };
+
+struct TileSchema{
+   PRIMARY_KEY AUTOINCREMENT UNIQUE int id;
+   SELECT String set;
+   String sprite;
+   bool lit;
+   int radius;
+   int centerLevel;
+   int fadeWidth;
+   bool occlusion;
+};

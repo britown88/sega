@@ -9,6 +9,8 @@
 #define COL_SOLID_RIGHT (1 << 3)
 #define COL_SOLID (COL_SOLID_TOP|COL_SOLID_LEFT|COL_SOLID_BOTTOM|COL_SOLID_RIGHT)
 
+typedef struct Sprite_t Sprite;
+
 #pragma pack(push, 1)
 
 typedef struct {
@@ -17,8 +19,7 @@ typedef struct {
 }Tile;
 
 typedef struct {
-   short img[3];
-   byte imgCount;
+   Sprite *sprite;
    byte occlusion;
 
    //lighting

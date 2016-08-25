@@ -1,4 +1,5 @@
 --openEditor()
+map.setTileSchema("default")
 
 loadMap 'testWilderness'
 map.setAmbient(2)

@@ -6,6 +6,8 @@
 #include "segashared/Strings.h"
 #include "WorldView.h"
 
+#define GLOBAL_ANIMATION_SPEED 1000
+
 typedef struct {
    Int2 imgPos;
    ManagedImage *img;   
@@ -23,7 +25,7 @@ void spriteFrameDestroy(SpriteFrame *self) {
 struct Sprite_t {
    Int2 size;
    vec(SpriteFrame) *frames;
-   bool repeat;
+   bool repeat, attached;
    Milliseconds msPerFrame;
    Microseconds startTime;
 
@@ -57,10 +59,19 @@ static void _SpriteEntryDestroy(SpriteEntry *p) {
    checkedFree(p->value);
 }
 
+void spriteAttachToGlobalSpeed(Sprite *self) {
+   self->attached = true;
+}
+void spriteDetachFromGlobalSpeed(Sprite *self) {
+   self->attached = false;
+}
+
 
 struct SpriteManager_t {
    WorldView *view;
    ht(SpriteEntry) *sprites;
+
+   Microseconds globalStartTime;
 };
 
 SpriteManager *spriteManagerCreate(WorldView *view) {
@@ -195,6 +206,8 @@ static SpriteFrame *_getFrame(Sprite *self) {
    Milliseconds delta = 0;
    size_t index = 0;
    size_t fCount = vecSize(SpriteFrame)(self->frames);
+   Microseconds startTime = 0;
+   Milliseconds msPerFrame = 0;
 
    if (!fCount) {
       return NULL;
@@ -204,13 +217,16 @@ static SpriteFrame *_getFrame(Sprite *self) {
       self->startTime = gameClockGetTime();
    }
 
-   delta = t_u2m(gameClockGetTime() - self->startTime);
+   startTime = self->attached ? self->parent->globalStartTime : self->startTime;
+   msPerFrame = self->attached ? GLOBAL_ANIMATION_SPEED : self->msPerFrame;
 
-   if (!self->repeat && delta >= fCount * self->msPerFrame) {
+   delta = t_u2m(gameClockGetTime() - startTime);
+
+   if (!self->repeat && delta >= fCount * msPerFrame) {
       index = fCount - 1;
    }
    else {
-      index = (delta / self->msPerFrame) % fCount;
+      index = (delta / msPerFrame) % fCount;
    }
 
    return vecAt(SpriteFrame)(self->frames, index);
