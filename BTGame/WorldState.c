@@ -238,6 +238,7 @@ void _worldRender(WorldState *state, GameStateRender *m){
 
    weatherRender(state->view->weather, frame);
    gridManagerRenderLighting(state->view->gridManager, frame);
+
    verbManagerRender(state->view->verbManager, frame);
 
    calendarRenderClock(state->view->calendar, m->frame);

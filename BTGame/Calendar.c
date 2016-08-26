@@ -3,6 +3,7 @@
 #include "segashared/CheckedMemory.h"
 #include "GameClock.h"
 #include "segalib/EGA.h"
+#include "ImageLibrary.h"
 
 struct Calendar_t {
    WorldView *view;
@@ -11,6 +12,8 @@ struct Calendar_t {
 
    Microseconds startTime;
    Milliseconds tickDelay;
+
+   ManagedImage *clock;
 };
 
 Time timeFromMinute(Minute m) {
@@ -55,10 +58,12 @@ Calendar *calendarCreate(WorldView *view) {
    out->view = view;
    
    out->tickDelay = 500;   
+   out->clock = imageLibraryGetImage(view->imageLibrary, stringIntern("clock"));
 
    return out;
 }
 void calendarDestroy(Calendar *self) {
+   managedImageDestroy(self->clock);
    checkedFree(self);
 }
 
@@ -94,7 +99,7 @@ void calendarSetTickLength(Calendar *self, DateTime tick) {
 }
 
 void calendarRenderClock(Calendar *self, Frame *frame) {
-
+   frameRenderImage(frame, FrameRegionFULL, 96, 0, managedImageGetImage(self->clock));
 }
 
 void calendarUpdate(Calendar *self) {

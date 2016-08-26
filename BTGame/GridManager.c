@@ -56,6 +56,7 @@ struct GridManager_t {
    WorldView *view;
 
    vec(GridTokenPtr) *tokens;
+   bool lightMode;
 
    //The tile atlas
    ManagedImage *tilePalette;
@@ -68,10 +69,6 @@ struct GridManager_t {
    size_t cellCount;
    LightGrid *lightGrid;
    Map *map;
-
-   //the tile animation clock
-   byte tileAnimFrameIndex;
-   int tileAnimSecondCount;
 
    // entities needing drawing this frame (ref to this is returned)
    vec(ActorPtr) *inViewActors;
@@ -443,28 +440,39 @@ size_t gridManagerGetSchemaCount(GridManager *self) {
 }
 
 
+static void _renderBlank(Frame *frame, FrameRegion *region, short x, short y, byte color) {
+
+   frameRenderRect(frame, region, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, color);
+}
+
+
+
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *region, short x, short y) {
    Viewport *vp = self->view->viewport;
    TileSchema *schema = gridManagerGetSchema(self, index);
 
-   frameRenderSprite(frame, region, x, y, schema->sprite);
-}
-
-static void _renderBlank(GridManager *self, Frame *frame, short x, short y) {
-   Viewport *vp = self->view->viewport;
-   FrameRegion *region = &self->view->viewport->region;
-   short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
-   short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
-   frameRenderRect(frame, region, renderX, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 0);
-}
-
-void _updateTileAnimationIndex(GridManager *self) {
-   int currentSecond = (int)t_u2s(appGetTime(appGet()));
-   if (currentSecond != self->tileAnimSecondCount) {
-      self->tileAnimSecondCount = currentSecond;
-      self->tileAnimFrameIndex = (self->tileAnimFrameIndex + 1) ;
+   if (self->lightMode) {
+      if (schema->occlusion) {
+         if (schema->lit) {
+            _renderBlank(frame, region, x, y, 13);
+         }
+         else {
+            _renderBlank(frame, region, x, y, 4);
+         }
+      }
+      else if (schema->lit) {
+         _renderBlank(frame, region, x, y, 14);
+      }
+      else {
+         _renderBlank(frame, region, x, y, 15);
+      }
+   }
+   else {
+      frameRenderSprite(frame, region, x, y, schema->sprite);
    }
 }
+
+
 
 
 void gridManagerRender(GridManager *self, Frame *frame) {
@@ -490,7 +498,6 @@ void gridManagerRender(GridManager *self, Frame *frame) {
       self->tilePalette = imageLibraryGetImage(self->view->imageLibrary, stringIntern(IMG_TILE_ATLAS));
    }
 
-   _updateTileAnimationIndex(self);
    lightGridUpdate(self->lightGrid, x, y);
 
    for (y = ystart; y < yend; ++y) {
@@ -548,4 +555,45 @@ void gridManagerRenderLighting(GridManager *self, Frame *frame) {
 
 int gridDistance(int x0, int y0, int x1, int y1) {
    return abs(x0 - x1) + abs(y0 - y1);
+}
+void gridManagerToggleLightMode(GridManager *self) {
+   self->lightMode = !self->lightMode;
+}
+
+void gridManagerRenderGridLineTest(GridManager *self, Frame *frame) {
+   Viewport *vp = self->view->viewport;
+   Int2 wp = self->view->viewport->worldPos;
+   Int2 start = { 0 };
+   Int2 end = screenToWorld(self->view, mouseGetPosition(appGetMouse(appGet())));
+
+   int dx = end.x - start.x;
+   int dy = end.y - start.y;
+   int steps = dx > dy ? abs(dx) : abs(dy);
+   float xinc = dx / (float)steps;
+   float yinc = dy / (float)steps;
+   float fx = start.x, fy = start.y;
+   int i = 0;
+   size_t currentTile = INF;
+   float iSize = 1.0f / GRID_CELL_SIZE;
+
+
+   for (i = 0; i < steps; ++i) {
+      size_t t = 0;
+      int ix, iy;
+      fx += xinc;
+      fy += yinc;
+
+      ix = (int)(fx * iSize);
+      iy = (int)(fy * iSize);
+
+      t = gridManagerCellIDFromXY(self, ix, iy);
+      if (t != currentTile) {
+         int rx = ix * GRID_CELL_SIZE - wp.x;
+         int ry = iy * GRID_CELL_SIZE - wp.y;
+         currentTile = t;
+         frameRenderRect(frame, vp, rx, ry, rx + GRID_CELL_SIZE, ry + GRID_CELL_SIZE, 15);
+      }
+   }
+
+   frameRenderLine(frame, vp, start.x - wp.x, start.y - wp.y, end.x - wp.x, end.y - wp.y, 0);
 }

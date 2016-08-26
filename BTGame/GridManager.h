@@ -72,3 +72,5 @@ Tile *gridManagerTileAtScreenPos(GridManager *self, int x, int y);
 
 int gridDistance(int x0, int y0, int x1, int y1);
 
+void gridManagerToggleLightMode(GridManager *self);
+

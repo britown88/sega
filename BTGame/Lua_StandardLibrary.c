@@ -12,6 +12,7 @@
 #include "liblua/lualib.h"
 
 #include "AssetHelpers.h"
+#include "GridManager.h"
 
 #include "DB.h"
 
@@ -23,6 +24,7 @@ static int slua_openEditor(lua_State *L);
 static int slua_clearImageCache(lua_State *L);
 static int slua_clearSpriteCache(lua_State *L);
 static int slua_setPalette(lua_State *L);
+static int slua_toggleLightMode(lua_State *L);
 
 
 void luaLoadStandardLibrary(lua_State *L) {
@@ -36,6 +38,7 @@ void luaLoadStandardLibrary(lua_State *L) {
    luaPushFunctionGlobal(L, "toggleStats", &slua_toggleStats);
    luaPushFunctionGlobal(L, "openEditor", &slua_openEditor);
    luaPushFunctionGlobal(L, "setPalette", &slua_setPalette);
+   luaPushFunctionGlobal(L, "toggleLightMode", &slua_toggleLightMode);
 
    lua_newtable(L);
    luaPushFunctionTable(L, "clearImageCache", &slua_clearImageCache);
@@ -59,6 +62,12 @@ int slua_consoleClear(lua_State *L) {
 int slua_openEditor(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
    fsmSend(view->gameState, GameStateOpenMapEditor);
+   return 0;
+}
+
+int slua_toggleLightMode(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   gridManagerToggleLightMode(view->gridManager);
    return 0;
 }
 
