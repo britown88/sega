@@ -538,6 +538,8 @@ void gridManagerRender(GridManager *self, Frame *frame) {
    }
 }
 
+void gridManagerRenderGridLineTest(GridManager *self, Frame *frame);
+
 void gridManagerRenderLighting(GridManager *self, Frame *frame) {
    Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
@@ -569,6 +571,8 @@ void gridManagerRenderLighting(GridManager *self, Frame *frame) {
       }
    }
 
+
+   //gridManagerRenderGridLineTest(self, frame);
 }
 
 int gridDistance(int x0, int y0, int x1, int y1) {
@@ -581,12 +585,12 @@ void gridManagerToggleLightMode(GridManager *self) {
 void gridManagerRenderGridLineTest(GridManager *self, Frame *frame) {
    Viewport *vp = self->view->viewport;
    Int2 wp = self->view->viewport->worldPos;
-   Int2 start = { 0 };
+   Int2 start = { 100, 100 };
    Int2 end = screenToWorld(self->view, mouseGetPosition(appGetMouse(appGet())));
 
    int dx = end.x - start.x;
    int dy = end.y - start.y;
-   int steps = dx > dy ? abs(dx) : abs(dy);
+   int steps = abs(dx) > abs(dy) ? abs(dx) : abs(dy);
    float xinc = dx / (float)steps;
    float yinc = dy / (float)steps;
    float fx = start.x, fy = start.y;

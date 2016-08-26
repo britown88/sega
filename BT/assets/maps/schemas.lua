@@ -15,11 +15,12 @@ db.insertTileSchema {
     {sprite = 'tiles.bridge'},
     {sprite = 'tiles.water2'},
     {sprite = 'tiles.wcorner1'},
-    {sprite = 'tiles.campfire', lit = true, radius = 10, fadeWidth = 3, centerLevel = 6},
-    {sprite = 'tiles.mountain2', occlusion = true},
+    {sprite = 'tiles.campfire', lit = true, radius = 5, fadeWidth = 3, centerLevel = 6},
+    {sprite = 'tiles.mountain2'},
     {sprite = 'tiles.wcorner2'},
     {sprite = 'tiles.wcorner3'},
-    {sprite = 'tiles.wcorner4'}
+    {sprite = 'tiles.wcorner4'},
+    {sprite = 'tiles.bridge', occlusion = true}
   }
 }
 
