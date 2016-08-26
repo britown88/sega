@@ -65,6 +65,7 @@ short gridManagerHeight(GridManager *self);
 int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *grid);
 
 size_t gridManagerCellIDFromXY(GridManager *self, int x, int y);
+size_t gridManagerCellFromTile(GridManager *self, Tile *t);
 void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y);
 Tile *gridManagerTileAt(GridManager *self, size_t index);
 Tile *gridManagerTileAtXY(GridManager *self, int x, int y);

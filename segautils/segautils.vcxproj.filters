@@ -90,9 +90,6 @@
     <ClInclude Include="Vector_Decl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vector_Impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Vector_Functions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -139,6 +136,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector_Impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

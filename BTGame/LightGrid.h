@@ -12,10 +12,10 @@
 #define LIGHTFLAGS_DIRECTLYLIT 1 << 0
 #define LIGHTFLAGS_FILTERED 1 << 1
 
-typedef struct {
-   byte level;
-   byte flags;
-}LightData;
+
+
+typedef struct LightData_t LightData;
+byte lightDataGetLevel(LightData *self);
 
 typedef struct OcclusionCell_t {
    byte level;

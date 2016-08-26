@@ -175,7 +175,7 @@ static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
 
    Actor *a =  actorManagerCreateActor(app->actorManager);
 
-   lightSourceSetParams(actorGetLightSource(a), (LightSourceParams){ 5, 7, 5, true });
+   lightSourceSetParams(actorGetLightSource(a), (LightSourceParams){ 0, 7, 4, true });
 
    actorSetImage(a, stringIntern(IMG_TILE_ATLAS));   
    actorSetImagePos(a, (Int2) { imgX, imgY });

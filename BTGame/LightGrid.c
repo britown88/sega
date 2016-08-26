@@ -8,6 +8,16 @@
 #include "segautils/Math.h"
 #include "segautils/StandardVectors.h"
 
+struct LightData_t {
+   byte level;
+   byte flags;
+   bool tileLightAdded;
+};
+
+byte lightDataGetLevel(LightData *self) {
+   return self->level;
+}
+
 #define TILE_GRID_SIZE 8 //height and width of a block of tilesd for purpose of light storage
 
 #pragma region MASKS
@@ -89,6 +99,7 @@ typedef struct LightGrid_t {
    vec(TileLights) *tileGrid;
    Int2 tileSize;
    size_t tileCount;
+   vec(size_t) *usedLights;//used to stop double-lighting
 }LightGrid;
 
 LightGrid *lightGridCreate(GridManager *parent) {
@@ -98,11 +109,13 @@ LightGrid *lightGridCreate(GridManager *parent) {
 
    out->sources = vecCreate(LightSourcePtr)(&lightSourcePtrDestroy);
    out->tileGrid = vecCreate(TileLights)(&tileLightsDestroy);
+   out->usedLights = vecCreate(size_t)(NULL);
    return out;
 }
 void lightGridDestroy(LightGrid *self) {
    vecDestroy(LightSourcePtr)(self->sources);
    vecDestroy(TileLights(self->tileGrid));
+   vecDestroy(size_t)(self->usedLights);
    checkedFree(self->occlusion);
    checkedFree(self);
 }
@@ -118,11 +131,12 @@ void lightGridLoadMap(LightGrid *self, int width, int height) {
 }
 
 static Recti _tileAABB(TileSchema *schema, Int2 pos) {
+   int adjRadius = MAX(0, MAX(schema->radius, schema->fadeWidth));
    return (Recti) {
-      pos.x - schema->radius,
-      pos.y - schema->radius,
-      pos.x + schema->radius,
-      pos.y + schema->radius
+      pos.x - adjRadius,
+      pos.y - adjRadius,
+      pos.x + adjRadius,
+      pos.y + adjRadius
    };
 }
 
@@ -201,11 +215,12 @@ LightSource *lightGridCreateLightSource(LightGrid *self) {
 static void _updateLightSourceAABB(LightSource *self) {
    int x = self->pos.x / GRID_CELL_SIZE;
    int y = self->pos.y / GRID_CELL_SIZE;
+   int adjRadius = MAX(0, MAX(self->params.radius, self->params.fadeWidth));
 
-   self->AABB.left = x - self->params.radius;
-   self->AABB.top = y - self->params.radius;   
-   self->AABB.right = x + self->params.radius;
-   self->AABB.bottom = y + self->params.radius;
+   self->AABB.left = x - adjRadius;
+   self->AABB.top = y - adjRadius;
+   self->AABB.right = x + adjRadius;
+   self->AABB.bottom = y + adjRadius;
 }
 
 void lightSourceSetParams(LightSource *self, LightSourceParams params) {
@@ -458,74 +473,81 @@ static void _addPoint(LightGrid *self, PointLight light) {
          }
       }
    }
+}
 
-   //this is a really hacky implementation of trying to light up contiguous squares but it is bad
-   //{
-   //   bool refresh = false;
-   //   //we want to do some post processing on occluders to shade in some that may have gotten missed
-   //   //if a tile is an occluder and has LIT occluders adjacent to it, it should be lit
-   //   do {
-   //      refresh = false;
-   //      for (i = 0; i < occluderCount; ++i) {
-   //         OcclusionCell *oc = self->occlusion + i;
-   //         LightData *light = lightGridAt(self, oc->x, oc->y);
+static void _addTileLight(LightGrid *self, size_t tile, short vpx, short vpy) {
+   Tile *t = gridManagerTileAt(self->parent, tile);
+   Int2 tpos = { 0 };
+   TileSchema *schema = gridManagerGetSchema(self->parent, tileGetSchema(t));
 
-   //         if (light && light->level == 0) {
-   //            int i;
-   //            for (i = 0; i < occluderCount; ++i) {
-   //               OcclusionCell *oc2 = self->occlusion + i;
-   //               LightData *light2 = lightGridAt(self, oc2->x, oc2->y);
-   //               if ((oc2->x == oc->x && oc2->y == oc->y + 1) ||
-   //                  (oc2->x == oc->x && oc2->y == oc->y - 1) ||
-   //                  (oc2->x == oc->x + 1 && oc2->y == oc->y) ||
-   //                  (oc2->x == oc->x - 1 && oc2->y == oc->y)) {
-   //                  if (light2 && light2->level > 0) {
-   //                     byte newLevel = MAX(light->level, (int)light2->level - 2);
-   //                     if (newLevel != light->level) {
-   //                        light->level = newLevel;
-   //                        refresh = true;
-   //                     }
-   //                  }
-   //               }
-   //            }
-   //         }
-   //      }
-   //   } while (refresh);
-   //}
+   gridManagerXYFromCellID(self->parent, tile, &tpos.x, &tpos.y);
+
+   if (schema->lit) {
+      PointLight p = { 0 };
+      p.origin = (Int2) {
+         .x = tpos.x - vpx,
+         .y = tpos.y - vpy
+      };
+      p.radius = schema->radius;
+      p.level = schema->centerLevel;
+      p.fadeWidth = schema->fadeWidth;
+
+      _addPoint(self, p); 
+   }
 }
 
 void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
    int i = 0;
    memset(self->grid, 0, sizeof(self->grid));
    Recti worldGrid = { vpx, vpy, vpx + LIGHT_GRID_WIDTH , vpy + LIGHT_GRID_HEIGHT };
-
+   Recti tileGrid = _tileGridAABB(self, &worldGrid);
+   int x, y;
 
    for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
       self->grid[i].level = self->ambientLevel;
    }
 
-   //add tile lights
-   for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
-      int x = (i % LIGHT_GRID_WIDTH) + vpx;
-      int y = (i / LIGHT_GRID_WIDTH) + vpy;
-      size_t index = gridManagerCellIDFromXY(self->parent, x, y);
+   vecClear(size_t)(self->usedLights);
 
-      if (index < INF) {
-         Tile *t = gridManagerTileAtXY(self->parent, x, y);
-         TileSchema *schema = gridManagerGetSchema(self->parent, tileGetSchema(t));
-         if (schema->lit) {
-            _addPoint(self, (PointLight) {
-               .origin = {
-                  .x = x - vpx,
-                  .y = y - vpy
-               },
-                  .radius = schema->radius,
-                  .level = schema->centerLevel,
-                  .fadeWidth = schema->fadeWidth
-            });
+   for (y = tileGrid.top; y <= tileGrid.bottom; ++y) {
+      for (x = tileGrid.left; x <= tileGrid.right; ++x) {
+         size_t index = _tileGridIndex(self, (Int2) { x, y });
+         if (index < INF) {
+            TileLights *tl = vecAt(TileLights)(self->tileGrid, index);
+            if (tl->tiles) {
+               vecForEach(size_t, i, tl->tiles, {
+                  if (vecIndexOf(size_t)(self->usedLights, i) == INF) {
+                     _addTileLight(self, *i, vpx, vpy);
+                     vecPushBack(size_t)(self->usedLights, i);
+                  }
+               });
+            }
          }
       }
    }
+
+   //add tile lights
+   //for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
+   //   int x = (i % LIGHT_GRID_WIDTH) + vpx;
+   //   int y = (i / LIGHT_GRID_WIDTH) + vpy;
+   //   size_t index = gridManagerCellIDFromXY(self->parent, x, y);
+
+   //   if (index < INF) {
+   //      Tile *t = gridManagerTileAtXY(self->parent, x, y);
+   //      TileSchema *schema = gridManagerGetSchema(self->parent, tileGetSchema(t));
+   //      if (schema->lit) {
+   //         _addPoint(self, (PointLight) {
+   //            .origin = {
+   //               .x = x - vpx,
+   //               .y = y - vpy
+   //            },
+   //               .radius = schema->radius,
+   //               .level = schema->centerLevel,
+   //               .fadeWidth = schema->fadeWidth
+   //         });
+   //      }
+   //   }
+   //}
 
    //add actor lights (from lightsources)
    vecForEach(LightSourcePtr, src, self->sources, {

@@ -43,6 +43,9 @@ Tile *mapTileAtXY(Map *self, int x, int y) {
 Tile *mapTileAt(Map *self, size_t i) {
    return self->grid + i;
 }
+size_t mapTileIndexFromPointer(Map *self, Tile *t) {
+   return t - self->grid;
+}
 
 Map *mapCreate(short x, short y) {
    Map *out = checkedCalloc(1, sizeof(Map));

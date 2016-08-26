@@ -234,6 +234,9 @@ size_t gridManagerCellIDFromXY(GridManager *self, int x, int y) {
 
    return out;
 }
+size_t gridManagerCellFromTile(GridManager *self, Tile *t) {
+   return mapTileIndexFromPointer(self->map, t);
+}
 void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y) {
    if (ID < self->cellCount) {
       *y = ID / self->width;
@@ -278,9 +281,7 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
    //we need to do this on load now for all the lights to be registered
    for (i = 0; i < self->cellCount; ++i) {
       TileSchema *s = gridManagerGetSchema(self, tileGetSchema(mapTileAt(self->map, i)));
-      if (s->lit) {
-         lightGridChangeTileSchema(self->lightGrid, i, s);
-      }
+      lightGridChangeTileSchema(self->lightGrid, i, s);
    }
 }
 
@@ -296,6 +297,7 @@ TileSchema *gridManagerGetSchema(GridManager *self, size_t index) {
 
 static void _addNewSchema(GridManager *self, DBTileSchema *fromDB) {
    TileSchema newSchema = { 0 };
+   
    newSchema.sprite = spriteManagerGetSprite(self->view->spriteManager, stringIntern(c_str(fromDB->sprite)));
    newSchema.occlusion = fromDB->occlusion;
    newSchema.lit = fromDB->lit;
@@ -303,7 +305,6 @@ static void _addNewSchema(GridManager *self, DBTileSchema *fromDB) {
       newSchema.centerLevel = fromDB->centerLevel;
       newSchema.fadeWidth = fromDB->fadeWidth;
       newSchema.radius = fromDB->radius;
-
    }
 
    spriteAttachToGlobalSpeed(newSchema.sprite);
@@ -311,6 +312,7 @@ static void _addNewSchema(GridManager *self, DBTileSchema *fromDB) {
 }
 
 void gridManagerLoadSchemaTable(GridManager *self, const char *set) {
+   size_t i = 0;
    vec(DBTileSchema) *schemas = dbTileSchemaSelectByset(self->view->db, set);
 
    if (schemas) {
@@ -319,6 +321,11 @@ void gridManagerLoadSchemaTable(GridManager *self, const char *set) {
          _addNewSchema(self, s);
       });
       vecDestroy(DBTileSchema)(schemas);
+
+      for (i = 0; i < self->cellCount; ++i) {
+         TileSchema *s = gridManagerGetSchema(self, tileGetSchema(mapTileAt(self->map, i)));
+         lightGridChangeTileSchema(self->lightGrid, i, s);
+      }
    }
 }
 
@@ -481,9 +488,6 @@ void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, Fram
    }
 }
 
-
-
-
 void gridManagerRender(GridManager *self, Frame *frame) {
    Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
@@ -513,7 +517,7 @@ void gridManagerRender(GridManager *self, Frame *frame) {
       for (x = xstart; x < xend; ++x) {
          LightData *lightLevel = lightGridAt(self->lightGrid, x - xstart, y - ystart);
          if (lightLevel) {
-            if (lightLevel->level > 0) {
+            if (lightDataGetLevel(lightLevel) > 0) {
                int gridIndex = y * self->width + x;
                size_t schema = tileGetSchema(mapTileAt(self->map, gridIndex));
                FrameRegion *region = &self->view->viewport->region;
