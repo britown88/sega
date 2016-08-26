@@ -19,8 +19,10 @@ byte lightDataGetLevel(LightData *self);
 
 typedef struct OcclusionCell_t {
    byte level;
-   int x, y;
+   int x, y;//lightgrid coords
+   int wx, wy;//world coords
    Recti area;
+   byte set;
 }OcclusionCell;
 
 typedef struct LightSourceParams_t{

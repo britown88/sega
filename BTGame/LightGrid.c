@@ -89,6 +89,14 @@ void tileLightsDestroy(TileLights *self) {
    }
 }
 
+typedef struct  {
+   size_t index;
+   byte set;
+}OcclusionMapEntry;
+
+#define VectorT OcclusionMapEntry
+#include "segautils/Vector_Create.h"
+
 typedef struct LightGrid_t {
    LightData grid[LIGHT_GRID_CELL_COUNT];
    OcclusionCell *occlusion;
@@ -100,6 +108,7 @@ typedef struct LightGrid_t {
    Int2 tileSize;
    size_t tileCount;
    vec(size_t) *usedLights;//used to stop double-lighting
+   vec(OcclusionMapEntry) *occMap;
 }LightGrid;
 
 LightGrid *lightGridCreate(GridManager *parent) {
@@ -110,12 +119,14 @@ LightGrid *lightGridCreate(GridManager *parent) {
    out->sources = vecCreate(LightSourcePtr)(&lightSourcePtrDestroy);
    out->tileGrid = vecCreate(TileLights)(&tileLightsDestroy);
    out->usedLights = vecCreate(size_t)(NULL);
+   out->occMap = vecCreate(OcclusionMapEntry)(NULL);
    return out;
 }
 void lightGridDestroy(LightGrid *self) {
    vecDestroy(LightSourcePtr)(self->sources);
    vecDestroy(TileLights(self->tileGrid));
    vecDestroy(size_t)(self->usedLights);
+   vecDestroy(OcclusionMapEntry)(self->occMap);
    checkedFree(self->occlusion);
    checkedFree(self);
 }
@@ -387,6 +398,38 @@ static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 o
    return (byte)(calculatedLevel * ((25 - occBlocks) * invertedThreshold));
 }
 
+static OcclusionMapEntry *_omeFromWorldCoords(LightGrid *self, int left, int top, int width, int x, int y) {
+   int occX = x - left;
+   int occY = y - top;
+   int occMapIndex = occY * width + occX;
+   return vecAt(OcclusionMapEntry)(self->occMap, occMapIndex);
+}
+
+//returns nonzero if invalid or already processed
+static int _processOcclusionNeighbors(LightGrid *self, Recti *area, int x, int y, byte set) {
+   int w = rectiWidth(area);
+   int h = rectiHeight(area);
+   size_t index = y*w + x;
+   OcclusionMapEntry *ome = NULL;
+
+   if (x < 0 || x >= w || y < 0 || y >= h) {
+      return 1;
+   }
+
+   ome = vecAt(OcclusionMapEntry)(self->occMap, index);
+   if (ome->index == INF || ome->set != 0) {
+      return 1;
+   }
+
+   ome->set = set;
+   _processOcclusionNeighbors(self, area, x - 1, y, set);
+   _processOcclusionNeighbors(self, area, x, y - 1, set);
+   _processOcclusionNeighbors(self, area, x + 1, y, set);
+   _processOcclusionNeighbors(self, area, x, y + 1, set);
+
+   return 0;
+}
+
 static void _addPoint(LightGrid *self, PointLight light) {   
    Recti unboundedLightArea, lightArea; 
    int width, height;
@@ -431,15 +474,38 @@ static void _addPoint(LightGrid *self, PointLight light) {
    }
 
    //get our occlusion list and generate their rects
+   //gridmanager will modify our rect to not go out of bounds
    occluderCount = gridManagerQueryOcclusion(self->parent, &unboundedLightArea, self->occlusion);
-   for (i = 0; i < occluderCount; ++i) {
-      OcclusionCell *oc = self->occlusion + i;
-      oc->area = (Recti){
-         .left = ((oc->x * GRID_CELL_SIZE) << 1),
-         .top = ((oc->y * GRID_CELL_SIZE) << 1),
-         .right = ((oc->x * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1),
-         .bottom = ((oc->y * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1)
-      };
+   if (occluderCount > 0) {
+      int left = unboundedLightArea.left;
+      int top = unboundedLightArea.top;
+      int w = unboundedLightArea.right - unboundedLightArea.left;
+      int h = unboundedLightArea.bottom - unboundedLightArea.top;
+      byte currentSet = 1;
+      vecClear(OcclusionMapEntry)(self->occMap);
+      vecResize(OcclusionMapEntry)(self->occMap, w * h, &(OcclusionMapEntry){INF, 0});
+
+      for (i = 0; i < occluderCount; ++i) {
+         OcclusionCell *oc = self->occlusion + i;
+         oc->area = (Recti) {
+            .left = ((oc->x * GRID_CELL_SIZE) << 1),
+            .top = ((oc->y * GRID_CELL_SIZE) << 1),
+            .right = ((oc->x * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1),
+            .bottom = ((oc->y * GRID_CELL_SIZE + GRID_CELL_SIZE) << 1)
+         };
+
+         //now save the indices into our occArray into their correct places inside the occMap            
+         _omeFromWorldCoords(self, left, top, w, oc->wx, oc->wy)->index = i;         
+      }
+
+      for (i = 0; i < occluderCount; ++i) {
+         OcclusionCell *oc = self->occlusion + i;
+         int occX = oc->wx - left;
+         int occY = oc->wy - top;
+         if (!_processOcclusionNeighbors(self, &unboundedLightArea, occX, occY, currentSet)) {
+            ++currentSet;
+         }
+      }
    }
 
    //brute force the whole area, we can square-check each tile without having to sqrt a bunch
@@ -461,8 +527,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
                   (Int2) { x, y }, //cell pos
                   (Int2) { light.origin.x , light.origin.y }, //light's origin
                   self->occlusion, occluderCount); //the occluder data
-            }
-            
+            }            
 
             if (calculatedLevel) {
                lightGridAt(self, x, y)->flags |= LIGHTFLAGS_DIRECTLYLIT;
@@ -498,17 +563,19 @@ static void _addTileLight(LightGrid *self, size_t tile, short vpx, short vpy) {
 
 void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
    int i = 0;
-   memset(self->grid, 0, sizeof(self->grid));
+   
    Recti worldGrid = { vpx, vpy, vpx + LIGHT_GRID_WIDTH , vpy + LIGHT_GRID_HEIGHT };
    Recti tileGrid = _tileGridAABB(self, &worldGrid);
    int x, y;
 
+   //ambient lights/reset
+   memset(self->grid, 0, sizeof(self->grid));   
    for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
       self->grid[i].level = self->ambientLevel;
    }
 
+   //add lightsd from tiles
    vecClear(size_t)(self->usedLights);
-
    for (y = tileGrid.top; y <= tileGrid.bottom; ++y) {
       for (x = tileGrid.left; x <= tileGrid.right; ++x) {
          size_t index = _tileGridIndex(self, (Int2) { x, y });
@@ -525,29 +592,6 @@ void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
          }
       }
    }
-
-   //add tile lights
-   //for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
-   //   int x = (i % LIGHT_GRID_WIDTH) + vpx;
-   //   int y = (i / LIGHT_GRID_WIDTH) + vpy;
-   //   size_t index = gridManagerCellIDFromXY(self->parent, x, y);
-
-   //   if (index < INF) {
-   //      Tile *t = gridManagerTileAtXY(self->parent, x, y);
-   //      TileSchema *schema = gridManagerGetSchema(self->parent, tileGetSchema(t));
-   //      if (schema->lit) {
-   //         _addPoint(self, (PointLight) {
-   //            .origin = {
-   //               .x = x - vpx,
-   //               .y = y - vpy
-   //            },
-   //               .radius = schema->radius,
-   //               .level = schema->centerLevel,
-   //               .fadeWidth = schema->fadeWidth
-   //         });
-   //      }
-   //   }
-   //}
 
    //add actor lights (from lightsources)
    vecForEach(LightSourcePtr, src, self->sources, {

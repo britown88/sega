@@ -12,6 +12,9 @@ void stringPtrDestroy(StringPtr *self) {
 #define VectorTPart char
 #include "Vector_Impl.h"
 
+#define VectorTPart byte
+#include "Vector_Impl.h"
+
 #define VectorTPart int
 #include "Vector_Impl.h"
 

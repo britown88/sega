@@ -197,26 +197,32 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    int vpx = vp->worldPos.x / GRID_CELL_SIZE;
    int vpy = vp->worldPos.y / GRID_CELL_SIZE;
    int count = 0;
-   Recti worldArea = {
+
+
+   *area = (Recti){
       MAX(0, MIN(self->width - 1, area->left + vpx)),
       MAX(0, MIN(self->height - 1, area->top + vpy)),
       MAX(0, MIN(self->width - 1, area->right + vpx)),
       MAX(0, MIN(self->height - 1, area->bottom + vpy))
    };
 
-   for (y = worldArea.top; y <= worldArea.bottom; ++y) {
-      for (x = worldArea.left; x <= worldArea.right; ++x) {
+   for (y = area->top; y <= area->bottom; ++y) {
+      for (x = area->left; x <= area->right; ++x) {
          int worldGridIndex = y * self->width + x;
-         Tile *t = mapTileAt(self->map, worldGridIndex);
-         
+         Tile *t = mapTileAt(self->map, worldGridIndex);         
          byte occlusionLevel = gridManagerGetSchema(self, tileGetSchema(t))->occlusion;
-
          if (occlusionLevel > 0) {
-            grid[count++] = (OcclusionCell) {.level = occlusionLevel, .x = x - vpx, .y = y - vpy };
+            OcclusionCell cell = { 0 };
+            cell.level = occlusionLevel;
+            cell.x = x - vpx;
+            cell.y = y - vpy;
+            cell.wx = x;
+            cell.wy = y;
+            grid[count++] = cell;
          }
       }
    }
-   
+
    return count;
 }
 
