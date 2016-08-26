@@ -136,7 +136,7 @@ static void _handleMouse(EditorState *state) {
             Tile *t = gridManagerTileAtScreenPos(state->view->gridManager, pos.x, pos.y);
 
             if (t) {
-               mapEditorSetSelectedSchema(me, t->schema);
+               mapEditorSetSelectedSchema(me, tileGetSchema(t));
             }
             
          }
@@ -151,9 +151,9 @@ static void _handleMouse(EditorState *state) {
       mapEditorUpdateStats(me, vpPos);
 
       if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
-         Tile *t = gridManagerTileAtXY(state->view->gridManager, vpPos.x, vpPos.y);
-         if (t) {
-            t->schema = mapEditorGetSelectedSchema(me);
+         size_t t = gridManagerCellIDFromXY(state->view->gridManager, vpPos.x, vpPos.y);
+         if (t < INF) {
+            gridManagerChangeTileSchema(state->view->gridManager, t, mapEditorGetSelectedSchema(me));
          }
       }
    }

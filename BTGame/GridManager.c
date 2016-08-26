@@ -15,14 +15,11 @@
 #define SCHEMA_COUNT 256
 #define PARTITION_SIZE 16
 
-#pragma pack(push, 1)
-
 typedef struct {
    vec(ActorPtr) *actors;
    size_t index;
 }Partition;
 
-#pragma pack(pop)
 
 static void _partitionDestroy(Partition *p) {
    if (p->actors) {
@@ -80,9 +77,7 @@ struct GridManager_t {
 
 };
 
-static Tile *_tileAt(GridManager *self, int x, int y) {
-   return mapGetTiles(self->map) + (y * self->width + x);
-}
+
 
 static void _gridAddActor(GridManager *self, Actor *a, Partition *partition) {
    GridToken *gt = actorGetGridToken(a);
@@ -176,11 +171,8 @@ static void _createTestGrid(GridManager *self) {
    self->map = mapCreate(self->width, self->height);
    
    for (i = 0; i < (int)self->cellCount; ++i) {
-      Tile *grid = mapGetTiles(self->map);
-      grid[i] = (Tile) {appRand(appGet(), 1, 7), 0};
-      if (grid[i].schema == 6 || grid[i].schema == 5) {
-         //self->grid[i].collision = GRID_SOLID;
-      }
+      Tile *t = mapTileAt(self->map, i);
+      tileSetSchema(t, appRand(appGet(), 1, 7));
    }
 
    _rebuildPartitionTable(self);
@@ -215,9 +207,9 @@ int gridManagerQueryOcclusion(GridManager *self, Recti *area, OcclusionCell *gri
    for (y = worldArea.top; y <= worldArea.bottom; ++y) {
       for (x = worldArea.left; x <= worldArea.right; ++x) {
          int worldGridIndex = y * self->width + x;
-         Tile *mapGrid = mapGetTiles(self->map);
+         Tile *t = mapTileAt(self->map, worldGridIndex);
          
-         byte occlusionLevel = gridManagerGetSchema(self, mapGrid[worldGridIndex].schema)->occlusion;
+         byte occlusionLevel = gridManagerGetSchema(self, tileGetSchema(t))->occlusion;
 
          if (occlusionLevel > 0) {
             grid[count++] = (OcclusionCell) {.level = occlusionLevel, .x = x - vpx, .y = y - vpy };
@@ -250,7 +242,7 @@ void gridManagerXYFromCellID(GridManager *self, size_t ID, int *x, int *y) {
 }
 Tile *gridManagerTileAt(GridManager *self, size_t index) {
    if (index < self->cellCount) {
-      return mapGetTiles(self->map) + index;
+      return mapTileAt(self->map, index);
    }
    return NULL;
 }
@@ -279,11 +271,15 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
    self->cellCount = self->width * self->height;
 
    _rebuildPartitionTable(self);
+
+   lightGridLoadMap(self->lightGrid, self->width, self->height);
 }
+
+
 TileSchema *gridManagerGetSchema(GridManager *self, size_t index) {
-   size_t count = vecSize(TileSchema)(self->schemas);
-   if (index >= count) {
-      vecResize(TileSchema)(self->schemas, index + 1, &(TileSchema){0});
+   if (index >= vecSize(TileSchema)(self->schemas)) {
+      static TileSchema out = { 0 };
+      return &out;
    }
 
    return vecAt(TileSchema)(self->schemas, index);
@@ -435,6 +431,12 @@ Actor *gridManagerActorFromScreenPosition(GridManager *self, Int2 pos) {
    return NULL;
 }
 
+void gridManagerChangeTileSchema(GridManager *self, size_t tile, byte schema) {
+   Tile *t = mapTileAt(self->map, tile);
+   lightGridChangeTileSchema(self->lightGrid, tile, gridManagerGetSchema(self, schema));
+   tileSetSchema(t, schema);
+}
+
 size_t gridManagerGetSchemaCount(GridManager *self) {
    return vecSize(TileSchema)(self->schemas);
 }
@@ -444,8 +446,6 @@ static void _renderBlank(Frame *frame, FrameRegion *region, short x, short y, by
 
    frameRenderRect(frame, region, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, color);
 }
-
-
 
 void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *region, short x, short y) {
    Viewport *vp = self->view->viewport;
@@ -506,8 +506,7 @@ void gridManagerRender(GridManager *self, Frame *frame) {
          if (lightLevel) {
             if (lightLevel->level > 0) {
                int gridIndex = y * self->width + x;
-               Tile *mapGrid = mapGetTiles(self->map);
-               size_t schema = mapGrid[gridIndex].schema;
+               size_t schema = tileGetSchema(mapTileAt(self->map, gridIndex));
                FrameRegion *region = &self->view->viewport->region;
                short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
                short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
@@ -591,9 +590,9 @@ void gridManagerRenderGridLineTest(GridManager *self, Frame *frame) {
          int rx = ix * GRID_CELL_SIZE - wp.x;
          int ry = iy * GRID_CELL_SIZE - wp.y;
          currentTile = t;
-         frameRenderRect(frame, vp, rx, ry, rx + GRID_CELL_SIZE, ry + GRID_CELL_SIZE, 15);
+         frameRenderRect(frame, &vp->region, rx, ry, rx + GRID_CELL_SIZE, ry + GRID_CELL_SIZE, 15);
       }
    }
 
-   frameRenderLine(frame, vp, start.x - wp.x, start.y - wp.y, end.x - wp.x, end.y - wp.y, 0);
+   frameRenderLine(frame, &vp->region, start.x - wp.x, start.y - wp.y, end.x - wp.x, end.y - wp.y, 0);
 }

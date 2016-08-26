@@ -31,8 +31,8 @@ typedef struct LightSourceParams_t{
 }LightSourceParams;
 
 typedef struct LightSource_t LightSource;
-LightSourceParams *lightSourceParams(LightSource *self);
-Int2 *lightSourcePosition(LightSource *self);//world positions!
+void lightSourceSetParams(LightSource *self, LightSourceParams params);
+void lightSourceSetPosition(LightSource *self, Int2 pos);//world positions!
 void lightSourceDestroy(LightSource *self);//lightsources are registered inside the grid so make sure to free these
 
 typedef struct LightGrid_t LightGrid;
@@ -42,17 +42,20 @@ typedef struct FrameRegion_t FrameRegion;
 LightGrid *lightGridCreate(GridManager *parent);
 void lightGridDestroy(LightGrid *self);
 
-LightSource *lightGridCreateLightSource(LightGrid *self);
+void lightGridLoadMap(LightGrid *self, int width, int height);
+void lightGridChangeTileSchema(LightGrid *self, size_t tile, TileSchema *schema);
 
-//clears the light levels and recalculates
-void lightGridUpdate(LightGrid *self, short vpx, short vpy);
+LightSource *lightGridCreateLightSource(LightGrid *self);
 
 void lightGridSetAmbientLight(LightGrid *self, byte level);
 
-//returns null if out of bounds
+//clears the light levels and recalculates (give grid position of the viewport)
+void lightGridUpdate(LightGrid *self, short vpx, short vpy);
+
+//returns null if out of bounds (x and y are coordinates into the last-updated light grid)
 LightData *lightGridAt(LightGrid *self, byte x, byte y);
 
-//render a given lightData tile at a given x,y (grid-agnostic!)
+//render a given lightData tile at a given x,y (pixel coordinates in region)
 void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, short y);
 
 

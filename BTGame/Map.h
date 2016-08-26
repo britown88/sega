@@ -15,3 +15,9 @@ short mapWidth(Map *self);
 short mapHeight(Map *self);
 
 Tile *mapGetTiles(Map *self);
+
+
+
+
+Tile *mapTileAtXY(Map *self, int x, int y);
+Tile *mapTileAt(Map *self, size_t i);

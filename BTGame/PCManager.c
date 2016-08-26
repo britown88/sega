@@ -43,18 +43,20 @@ static void _updateSprite(PCManager *self) {
 
 static void _updateLight(PCManager *self) {
    LightSource *ls = actorGetLightSource(self->pc);
-   LightSourceParams *light = lightSourceParams(ls);
+   LightSourceParams light;
 
    if (self->usingTorch && !self->sneaking) {
-      light->centerLevel = MAX_BRIGHTNESS;
-      light->radius = 0;
-      light->fadeWidth = MAX_BRIGHTNESS;
+      light.centerLevel = MAX_BRIGHTNESS;
+      light.radius = 0;
+      light.fadeWidth = MAX_BRIGHTNESS;
    }
    else {
-      light->centerLevel = 2;
-      light->radius = 0;
-      light->fadeWidth = 2;
+      light.centerLevel = 2;
+      light.radius = 0;
+      light.fadeWidth = 2;
    }
+
+   lightSourceSetParams(ls, light);
 }
 
 void pcManagerUpdate(PCManager *self) {

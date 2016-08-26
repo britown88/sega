@@ -2,6 +2,7 @@
 #include "segashared/CheckedMemory.h"
 #include "segautils/BitBuffer.h"
 #include "segautils/BitTwiddling.h"
+#include "GridManager.h"
 
 #include "segautils/Defs.h"
 
@@ -9,10 +10,39 @@
 #include <stdio.h>
 #include <string.h>
 
+struct Tile_t {
+   byte schema;
+   byte collision;//use "solid" flags
+};
+
+byte tileGetCollision(Tile *self) {
+   return self->collision;
+}
+byte tileGetSchema(Tile *self) {
+   return self->schema;
+}
+
+void tileSetCollision(Tile *self, byte col) {
+   self->collision = col;
+}
+void tileSetSchema(Tile *self,byte schema) {
+   self->schema = schema;
+}
+
+
 struct Map_t {
    short width, height;
    Tile *grid;
 };
+
+
+
+Tile *mapTileAtXY(Map *self, int x, int y) {
+   return self->grid + (y * self->width + x);
+}
+Tile *mapTileAt(Map *self, size_t i) {
+   return self->grid + i;
+}
 
 Map *mapCreate(short x, short y) {
    Map *out = checkedCalloc(1, sizeof(Map));

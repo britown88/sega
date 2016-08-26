@@ -313,7 +313,7 @@ void _updateActorMovement(ActorManager *self, Actor *a) {
    Microseconds time = gameClockGetTime();
    Microseconds overflow = 0;
 
-   *lightSourcePosition(a->lightSource) = a->worldPos;
+   lightSourceSetPosition(a->lightSource, a->worldPos);
 
    if (!a->ordered) {
       return;

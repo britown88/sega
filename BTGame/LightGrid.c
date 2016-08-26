@@ -6,6 +6,9 @@
 
 #include <math.h>
 #include "segautils/Math.h"
+#include "segautils/StandardVectors.h"
+
+#define TILE_GRID_SIZE 8 //height and width of a block of tilesd for purpose of light storage
 
 #pragma region MASKS
 
@@ -52,6 +55,7 @@ struct LightSource_t {
    LightGrid *parent;
    LightSourceParams params;
    Int2 pos;
+   Recti AABB;
 };
 
 typedef LightSource *LightSourcePtr;
@@ -62,12 +66,29 @@ void lightSourcePtrDestroy(LightSourcePtr *self) {
    checkedFree(*self);
 }
 
+typedef struct {
+   vec(size_t) *tiles;//can be null if nothings in it!!
+}TileLights;
+
+#define VectorT TileLights
+#include "segautils/Vector_Create.h"
+
+void tileLightsDestroy(TileLights *self) {
+   if (self->tiles) {
+      vecDestroy(size_t)(self->tiles);
+   }
+}
+
 typedef struct LightGrid_t {
    LightData grid[LIGHT_GRID_CELL_COUNT];
    OcclusionCell *occlusion;
    GridManager *parent;
    byte ambientLevel;
    vec(LightSourcePtr) *sources;
+
+   vec(TileLights) *tileGrid;
+   Int2 tileSize;
+   size_t tileCount;
 }LightGrid;
 
 LightGrid *lightGridCreate(GridManager *parent) {
@@ -76,12 +97,97 @@ LightGrid *lightGridCreate(GridManager *parent) {
    out->parent = parent;
 
    out->sources = vecCreate(LightSourcePtr)(&lightSourcePtrDestroy);
+   out->tileGrid = vecCreate(TileLights)(&tileLightsDestroy);
    return out;
 }
 void lightGridDestroy(LightGrid *self) {
    vecDestroy(LightSourcePtr)(self->sources);
+   vecDestroy(TileLights(self->tileGrid));
    checkedFree(self->occlusion);
    checkedFree(self);
+}
+
+void lightGridLoadMap(LightGrid *self, int width, int height) {
+   vecClear(TileLights(self->tileGrid));
+
+   self->tileSize.x = width / TILE_GRID_SIZE + (width%TILE_GRID_SIZE > 0 ? 1 : 0);
+   self->tileSize.y = height / TILE_GRID_SIZE + (height%TILE_GRID_SIZE > 0 ? 1 : 0);
+   self->tileCount = self->tileSize.x * self->tileSize.y;
+
+   vecResize(TileLights)(self->tileGrid, self->tileCount, &(TileLights){0});
+}
+
+static Recti _tileAABB(TileSchema *schema, Int2 pos) {
+   return (Recti) {
+      pos.x - schema->radius,
+      pos.y - schema->radius,
+      pos.x + schema->radius,
+      pos.y + schema->radius
+   };
+}
+
+static Recti _tileGridAABB(LightGrid *self, const Recti *tileaabb) {
+   return (Recti) {
+      MAX(0, tileaabb->left / TILE_GRID_SIZE),
+      MAX(0, tileaabb->top / TILE_GRID_SIZE),
+      MIN(self->tileSize.x - 1, tileaabb->right / TILE_GRID_SIZE),
+      MIN(self->tileSize.y - 1, tileaabb->bottom / TILE_GRID_SIZE)
+   };
+}
+
+static size_t _tileGridIndex(LightGrid *self, Int2 pos) {
+   size_t out = pos.y * self->tileSize.x + pos.x;
+   if (out >= self->tileCount) {
+      return INF;
+   }
+   return out;
+}
+
+void lightGridChangeTileSchema(LightGrid *self, size_t tile, TileSchema *schema) {
+   Int2 pos = { 0 };
+   Tile *t = gridManagerTileAt(self->parent, tile);
+   TileSchema *oldSchema = gridManagerGetSchema(self->parent, tileGetSchema(t));
+
+   gridManagerXYFromCellID(self->parent, tile, &pos.x, &pos.y);
+
+   //remove the old tile from the light grid table
+   if (oldSchema && oldSchema->lit) {      
+      Recti taabb = _tileAABB(oldSchema, pos);
+      Recti aabb = _tileGridAABB(self, &taabb);
+      int x, y;
+
+      for (y = aabb.top; y <= aabb.bottom; ++y) {
+         for (x = aabb.left; x <= aabb.right; ++x) {
+            size_t index = _tileGridIndex(self, (Int2) { x, y });
+            if (index < INF) {
+               TileLights *tl = vecAt(TileLights)(self->tileGrid, index);
+               if (tl->tiles) {
+                  vecRemove(size_t)(tl->tiles, &tile);
+               }
+            }
+         }
+      }
+   }
+
+   //and add the new one
+   if (schema && schema->lit) {
+      Recti taabb = _tileAABB(schema, pos);
+      Recti aabb = _tileGridAABB(self, &taabb);
+      int x, y;
+
+      for (y = aabb.top; y <= aabb.bottom; ++y) {
+         for (x = aabb.left; x <= aabb.right; ++x) {
+            size_t index = _tileGridIndex(self, (Int2) { x, y });
+            if (index < INF) {
+               TileLights *tl = vecAt(TileLights)(self->tileGrid, index);
+               if (!tl->tiles) {
+                  tl->tiles = vecCreate(size_t)(NULL);
+               }
+               vecPushBack(size_t)(tl->tiles, &tile);
+            }
+         }
+      }
+   }
 }
 
 LightSource *lightGridCreateLightSource(LightGrid *self) {
@@ -92,11 +198,20 @@ LightSource *lightGridCreateLightSource(LightGrid *self) {
    return out;
 }
 
-LightSourceParams *lightSourceParams(LightSource *self) {
-   return &self->params;
+static void _updateLightSourceAABB(LightSource *self) {
+   self->AABB.top = self->pos.y - self->params.radius;
+   self->AABB.left = self->pos.x - self->params.radius;
+   self->AABB.bottom = self->pos.y + self->params.radius;
+   self->AABB.right = self->pos.x + self->params.radius;
 }
-Int2 *lightSourcePosition(LightSource *self) {
-   return &self->pos;
+
+void lightSourceSetParams(LightSource *self, LightSourceParams params) {
+   self->params = params;
+   _updateLightSourceAABB(self);
+}
+void lightSourceSetPosition(LightSource *self, Int2 pos) {
+   self->pos = pos;
+   _updateLightSourceAABB(self);
 }
 void lightSourceDestroy(LightSource *self) {
    vecRemove(LightSourcePtr)(self->parent->sources, &self);
@@ -392,7 +507,7 @@ void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
 
       if (index < INF) {
          Tile *t = gridManagerTileAtXY(self->parent, x, y);
-         TileSchema *schema = gridManagerGetSchema(self->parent, t->schema);
+         TileSchema *schema = gridManagerGetSchema(self->parent, tileGetSchema(t));
          if (schema->lit) {
             _addPoint(self, (PointLight) {
                .origin = {

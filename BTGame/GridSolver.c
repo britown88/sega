@@ -206,7 +206,7 @@ static void _clearSolutionTable(GridSolver *self, size_t startCell) {
          node->data.ID = ID;         
          node->index = i;
 
-         node->data.collision |= t->collision;
+         node->data.collision |= tileGetCollision(t);
 
          //target cell will be left as 0
          if (ix != x || iy != y) {
