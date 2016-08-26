@@ -103,20 +103,20 @@ void calendarRenderClock(Calendar *self, Frame *frame) {
 }
 
 void calendarUpdate(Calendar *self) {
-   Microseconds t = gameClockGetTime();
+   //Microseconds t = gameClockGetTime();
 
-   if (self->startTime == 0) {
-      self->startTime = gameClockGetTime();
-   }
+   //if (self->startTime == 0) {
+   //   self->startTime = gameClockGetTime();
+   //}
 
-   while (t_u2m(t - self->startTime) >= self->tickDelay) {
-      self->startTime += t_m2u(self->tickDelay);
-      self->target += self->tickLength;
-   }
+   //while (t_u2m(t - self->startTime) >= self->tickDelay) {
+   //   self->startTime += t_m2u(self->tickDelay);
+   //   self->target += self->tickLength;
+   //}
 
-   while (self->current < self->target) {
-      ++self->current;
+   //while (self->current < self->target) {
+   //   ++self->current;
 
-      //here's where we can run events!
-   }
+   //   //here's where we can run events!
+   //}
 }

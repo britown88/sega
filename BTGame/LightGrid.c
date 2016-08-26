@@ -199,10 +199,13 @@ LightSource *lightGridCreateLightSource(LightGrid *self) {
 }
 
 static void _updateLightSourceAABB(LightSource *self) {
-   self->AABB.top = self->pos.y - self->params.radius;
-   self->AABB.left = self->pos.x - self->params.radius;
-   self->AABB.bottom = self->pos.y + self->params.radius;
-   self->AABB.right = self->pos.x + self->params.radius;
+   int x = self->pos.x / GRID_CELL_SIZE;
+   int y = self->pos.y / GRID_CELL_SIZE;
+
+   self->AABB.left = x - self->params.radius;
+   self->AABB.top = y - self->params.radius;   
+   self->AABB.right = x + self->params.radius;
+   self->AABB.bottom = y + self->params.radius;
 }
 
 void lightSourceSetParams(LightSource *self, LightSourceParams params) {
@@ -494,12 +497,14 @@ static void _addPoint(LightGrid *self, PointLight light) {
 void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
    int i = 0;
    memset(self->grid, 0, sizeof(self->grid));
+   Recti worldGrid = { vpx, vpy, vpx + LIGHT_GRID_WIDTH , vpy + LIGHT_GRID_HEIGHT };
 
 
    for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
       self->grid[i].level = self->ambientLevel;
    }
 
+   //add tile lights
    for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
       int x = (i % LIGHT_GRID_WIDTH) + vpx;
       int y = (i / LIGHT_GRID_WIDTH) + vpy;
@@ -522,18 +527,21 @@ void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
       }
    }
 
+   //add actor lights (from lightsources)
    vecForEach(LightSourcePtr, src, self->sources, {
-      LightSourceParams *lsp = &(*src)->params;
-      Int2 *lsPos = &(*src)->pos;
-      _addPoint(self, (PointLight) {
-         .origin = {
-            .x = ((lsPos->x + (GRID_CELL_SIZE >> 1)) / GRID_CELL_SIZE) - vpx,
-            .y = ((lsPos->y + (GRID_CELL_SIZE >> 1)) / GRID_CELL_SIZE) - vpy
-         },
-            .radius = lsp->radius,
-            .level = lsp->centerLevel,
-            .fadeWidth = lsp->fadeWidth
-      });
+      if (rectiIntersects(worldGrid, (*src)->AABB)) {
+         LightSourceParams *lsp = &(*src)->params;
+         Int2 *lsPos = &(*src)->pos;
+         _addPoint(self, (PointLight) {
+            .origin = {
+               .x = ((lsPos->x + (GRID_CELL_SIZE >> 1)) / GRID_CELL_SIZE) - vpx,
+               .y = ((lsPos->y + (GRID_CELL_SIZE >> 1)) / GRID_CELL_SIZE) - vpy
+            },
+               .radius = lsp->radius,
+               .level = lsp->centerLevel,
+               .fadeWidth = lsp->fadeWidth
+         });
+      }
    });
 }
 

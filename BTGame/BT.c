@@ -175,10 +175,15 @@ static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
 
    Actor *a =  actorManagerCreateActor(app->actorManager);
 
+   lightSourceSetParams(actorGetLightSource(a), (LightSourceParams){ 5, 7, 5, true });
+
    actorSetImage(a, stringIntern(IMG_TILE_ATLAS));   
    actorSetImagePos(a, (Int2) { imgX, imgY });
 
    actorSetGridPosition(a, (Int2) { x, y });
+
+
+
    actorSnap(a);
 
    vecPushBack(ActorPtr)(app->testActors, &a);

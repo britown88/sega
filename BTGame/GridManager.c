@@ -262,6 +262,7 @@ Map *gridManagerGetMap(GridManager *self) {
    return self->map;
 }
 void gridManagerLoadMap(GridManager *self, Map *map) {
+   size_t i = 0;
    if (self->map && map != self->map) {
       mapDestroy(self->map);
    }
@@ -273,6 +274,14 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
    _rebuildPartitionTable(self);
 
    lightGridLoadMap(self->lightGrid, self->width, self->height);
+
+   //we need to do this on load now for all the lights to be registered
+   for (i = 0; i < self->cellCount; ++i) {
+      TileSchema *s = gridManagerGetSchema(self, tileGetSchema(mapTileAt(self->map, i)));
+      if (s->lit) {
+         lightGridChangeTileSchema(self->lightGrid, i, s);
+      }
+   }
 }
 
 
