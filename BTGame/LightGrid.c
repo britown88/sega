@@ -281,6 +281,10 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, bool occludingOrigin, Light
    static float iSize = 1.0f / GRID_CELL_SIZE;
    byte lastSet = 0;
 
+   //half-pixel :D
+   fx += iSize * 0.5f;
+   fy += iSize * 0.5f;
+
    for (i = 0; i < steps; ++i) {
       size_t t = 0;
       int ix, iy;

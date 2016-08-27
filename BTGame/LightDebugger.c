@@ -4,6 +4,7 @@
 #include "Viewport.h"
 #include "WorldView.h"
 #include "GameClock.h"
+#include "GridManager.h"
 
 typedef struct {
    Int2 p1; 
@@ -20,6 +21,7 @@ struct LightDebugger_t {
    Recti source;
    Recti target;
    vec(Ray) *rays;
+   Int2 vpPos;
 
    Microseconds startTime;
 };
@@ -36,6 +38,10 @@ void lightDebuggerDestroy(LightDebugger *self) {
 }
 
 void lightDebuggerStartNewSet(LightDebugger *self, Recti source, Recti target) {
+   self->vpPos = self->view->viewport->worldPos;
+   self->vpPos.x /= GRID_CELL_SIZE;
+   self->vpPos.y /= GRID_CELL_SIZE;
+   
    self->enabled = true;
    vecClear(Ray)(self->rays);
    self->source = source;
@@ -55,14 +61,14 @@ void lightDebuggerRender(LightDebugger *self, Frame *frame) {
    if (self->enabled) {
       byte rectColor = 7;
       Viewport *vp = self->view->viewport;
-      int vpx = vp->worldPos.x;
-      int vpy = vp->worldPos.y;
+      int vpx = vp->worldPos.x - (self->vpPos.x * GRID_CELL_SIZE);
+      int vpy = vp->worldPos.y - (self->vpPos.y * GRID_CELL_SIZE);
       Milliseconds delta = t_u2m(gameClockGetTime() - self->startTime);
       static const Milliseconds period = 250;
       bool showAll = (delta % (period << 1)) >= period;
       size_t rayCount = vecSize(Ray)(self->rays);
 
-      frameRenderLineRect(frame, &vp->region, self->source.left-vpx, self->source.top - vpy, self->source.right - vpx, self->source.bottom - vpy, 6);
+      frameRenderLineRect(frame, &vp->region, self->source.left - vpx, self->source.top - vpy, self->source.right - vpx, self->source.bottom - vpy, 6);
       frameRenderLineRect(frame, &vp->region, self->target.left - vpx, self->target.top - vpy, self->target.right - vpx, self->target.bottom - vpy, 7);
 
       if (rayCount > 0) {

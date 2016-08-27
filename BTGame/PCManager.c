@@ -52,9 +52,9 @@ static void _updateLight(PCManager *self) {
       light.fadeWidth = 4;
    }
    else {
-      light.centerLevel = 0;
+      light.centerLevel = 2;
       light.radius = 0;
-      light.fadeWidth = 0;
+      light.fadeWidth = 2;
    }
 
    lightSourceSetParams(ls, light);
