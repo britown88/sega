@@ -181,8 +181,8 @@ static void _addActor(BTGame *app, int x, int y, int imgX, int imgY) {
    actorSetImagePos(a, (Int2) { imgX, imgY });
 
    actorSetGridPosition(a, (Int2) { x, y });
-
-
+   actorSetMoveDelay(a, DEFAULT_MOVE_DELAY);
+   actorSetMoveTime(a, DEFAULT_MOVE_SPEED);
 
    actorSnap(a);
 
@@ -195,13 +195,13 @@ static void _addTestEntities(BTGame *app) {
    {
       StringView boxName = stringIntern("smallbox");
       TextArea *area = textAreaCreate(15, 22, 23, 2);
-      textAreaPushText(area, "You are likely to be eaten by a [c=0,13]grue[/c].");
+      textAreaPushText(area, "Night is upon you.");
       textAreaSetSpeed(area, 50);
       textAreaManagerRegister(app->view.textAreaManager, boxName, area);
 
    }
 
-   for (i = 0; i < 10; ++i) {
+   for (i = 0; i < 0; ++i) {
       int x = appRand(appGet(), 0, 21);
       int y = appRand(appGet(), 0, 11);
       int sprite = appRand(appGet(), 0, 3);
@@ -264,6 +264,7 @@ void _onStep(BTGame *self){
    fsmSend(self->gameState, GameStateUpdate);
    fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);
 }
+
 
 
 

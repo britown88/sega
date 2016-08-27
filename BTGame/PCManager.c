@@ -5,6 +5,7 @@
 #include "ImageLibrary.h"
 #include "Lua.h"
 #include "Actors.h"
+#include "GameClock.h"
 
 
 struct PCManager_t {
@@ -48,7 +49,7 @@ static void _updateLight(PCManager *self) {
    if (self->usingTorch && !self->sneaking) {
       light.centerLevel = MAX_BRIGHTNESS;
       light.radius = 0;
-      light.fadeWidth = MAX_BRIGHTNESS;
+      light.fadeWidth = 4;
    }
    else {
       light.centerLevel = 2;
@@ -57,6 +58,33 @@ static void _updateLight(PCManager *self) {
    }
 
    lightSourceSetParams(ls, light);
+}
+
+static void _testLightFlicker(PCManager *self) {
+   static bool flickering = false;
+   static Milliseconds period = 500;
+   static Microseconds startTime = 0;
+   Milliseconds delta = 0;
+   
+   
+   if (startTime == 0) {
+      startTime = gameClockGetTime();
+   }
+
+   delta = t_u2m(gameClockGetTime() - startTime);
+
+   if (delta >= period) {
+      LightSource *ls = actorGetLightSource(self->pc);
+      LightSourceParams light;
+
+      light.centerLevel = MAX_BRIGHTNESS;
+      light.radius = 5;
+      light.fadeWidth = flickering ? 5 : 4;
+
+      lightSourceSetParams(ls, light);
+      startTime += t_m2u(period);
+      flickering = !flickering;
+   }
 }
 
 void pcManagerUpdate(PCManager *self) {
@@ -70,6 +98,10 @@ void pcManagerUpdate(PCManager *self) {
    int yOffset = MIN(gridHeight - (vp->region.height), MAX(0, aPos.y - yCenter));
 
    vp->worldPos = (Int2) { xOffset, yOffset };
+
+   //if (self->usingTorch && !self->sneaking) {
+   //   _testLightFlicker(self);
+   //}
 }
 
 void pcManagerCreatePC(PCManager *self) {

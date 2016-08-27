@@ -201,13 +201,13 @@ int slua_DBInsertSprite(lua_State *L) {
    //width
    lua_pushinteger(L, 1);
    lua_gettable(L, -2);//push width
-   newSprite.width = luaL_checkinteger(L, -1);
+   newSprite.width = (int)luaL_checkinteger(L, -1);
    lua_pop(L, 1);//pop width
 
    //height
    lua_pushinteger(L, 2);
    lua_gettable(L, -2);//push height
-   newSprite.height = luaL_checkinteger(L, -1);
+   newSprite.height = (int)luaL_checkinteger(L, -1);
    lua_pop(L, 1);//pop height
 
    lua_pop(L, 1);//pop the size table
@@ -221,7 +221,7 @@ int slua_DBInsertSprite(lua_State *L) {
    lua_gettable(L, -2);//push frames table
    luaL_checktype(L, -1, LUA_TTABLE);
    lua_len(L, -1);//push len
-   fCount = luaL_checkinteger(L, -1);
+   fCount = (int)luaL_checkinteger(L, -1);
    lua_pop(L, 1);//pop the len
 
    for (i = 0; i < fCount; ++i) {
@@ -266,13 +266,13 @@ int slua_DBInsertSprite(lua_State *L) {
       //x
       lua_pushinteger(L, 1);
       lua_gettable(L, -2);//push x
-      newFrame.imgX = luaL_checkinteger(L, -1);
+      newFrame.imgX = (int)luaL_checkinteger(L, -1);
       lua_pop(L, 1);//pop x
 
       //y
       lua_pushinteger(L, 2);
       lua_gettable(L, -2);//push y
-      newFrame.imgY = luaL_checkinteger(L, -1);
+      newFrame.imgY = (int)luaL_checkinteger(L, -1);
       lua_pop(L, 1);//pop y
 
       lua_pop(L, 1);//pop the pos table
@@ -307,7 +307,7 @@ int slua_DBInsertTileSchema(lua_State *L) {
    lua_gettable(L, -2);//push tiles table
    luaL_checktype(L, -1, LUA_TTABLE);
    lua_len(L, -1);//push len
-   count = luaL_checkinteger(L, -1);
+   count = (int)luaL_checkinteger(L, -1);
    lua_pop(L, 1);//pop the len
 
    //kill any old members of the set
@@ -339,17 +339,17 @@ int slua_DBInsertTileSchema(lua_State *L) {
       if (newTile.lit) {
          lua_pushliteral(L, "radius");
          lua_gettable(L, -2);//push 
-         if (lua_isinteger(L, -1)) { newTile.radius = lua_tointeger(L, -1); }
+         if (lua_isinteger(L, -1)) { newTile.radius = (int)lua_tointeger(L, -1); }
          lua_pop(L, 1);//pop 
 
          lua_pushliteral(L, "fadeWidth");
          lua_gettable(L, -2);//push 
-         if (lua_isinteger(L, -1)) { newTile.fadeWidth = lua_tointeger(L, -1); }
+         if (lua_isinteger(L, -1)) { newTile.fadeWidth = (int)lua_tointeger(L, -1); }
          lua_pop(L, 1);//pop 
 
          lua_pushliteral(L, "centerLevel");
          lua_gettable(L, -2);//push 
-         if (lua_isinteger(L, -1)) { newTile.centerLevel = lua_tointeger(L, -1); }
+         if (lua_isinteger(L, -1)) { newTile.centerLevel = (int)lua_tointeger(L, -1); }
          lua_pop(L, 1);//pop 
       }
 

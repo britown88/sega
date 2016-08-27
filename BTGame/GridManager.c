@@ -559,6 +559,8 @@ void gridManagerRenderLighting(GridManager *self, Frame *frame) {
    xend = MIN(self->width, xend);
    yend = MIN(self->height, yend);
 
+   //testLightRender(self->lightGrid, frame, vp);
+
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
          short renderX = (x * GRID_CELL_SIZE) - vp->worldPos.x;
@@ -593,7 +595,7 @@ void gridManagerRenderGridLineTest(GridManager *self, Frame *frame) {
    int steps = abs(dx) > abs(dy) ? abs(dx) : abs(dy);
    float xinc = dx / (float)steps;
    float yinc = dy / (float)steps;
-   float fx = start.x, fy = start.y;
+   float fx = (float)start.x, fy = (float)start.y;
    int i = 0;
    size_t currentTile = INF;
    float iSize = 1.0f / GRID_CELL_SIZE;

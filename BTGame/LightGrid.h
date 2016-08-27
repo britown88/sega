@@ -1,6 +1,7 @@
 #pragma once
 #include "segautils/Defs.h"
 #include "GridManager.h"
+#include "Viewport.h"
 
 #define LIGHT_LEVEL_COUNT 7
 #define MAX_BRIGHTNESS (LIGHT_LEVEL_COUNT - 1)
@@ -57,7 +58,9 @@ void lightGridUpdate(LightGrid *self, short vpx, short vpy);
 //returns null if out of bounds (x and y are coordinates into the last-updated light grid)
 LightData *lightGridAt(LightGrid *self, byte x, byte y);
 
+
 //render a given lightData tile at a given x,y (pixel coordinates in region)
 void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, short y);
+void testLightRender(LightGrid *self, Frame *frame, Viewport *vp);
 
 
