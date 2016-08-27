@@ -11,6 +11,7 @@
 #include "SEGA\App.h"
 #include "GameClock.h"
 #include "Weather.h"
+#include "LightDebugger.h"
 
 #include "segashared\CheckedMemory.h"
 
@@ -22,6 +23,9 @@ typedef struct {
    MapEditor *editor;
    ManagedImage *bg;
    bool pop;
+
+   int lightDebugSelection;
+   Int2 p1, p2;
 }EditorState;
 
 static void _editorStateCreate(EditorState *state) {
@@ -133,12 +137,33 @@ static void _handleMouse(EditorState *state) {
             mapEditorSelectSchema(me, pos);
          }
          else if (gridOperation && event.button == SegaMouseBtn_Right) {
-            Tile *t = gridManagerTileAtScreenPos(state->view->gridManager, pos.x, pos.y);
 
-            if (t) {
-               mapEditorSetSelectedSchema(me, tileGetSchema(t));
+            if (keyboardIsDown(appGetKeyboard(appGet()), SegaKey_LeftShift)) {
+               Int2 vpPos = screenToWorld(state->view, pos);
+               vpPos.x /= GRID_CELL_SIZE;
+               vpPos.y /= GRID_CELL_SIZE;
+
+               if (state->lightDebugSelection == 0) {
+                  state->p1 = vpPos;
+                  ++state->lightDebugSelection;
+               }
+               else if(state->lightDebugSelection == 1) {
+                  state->p2 = vpPos;
+                  gridManagerDebugLights(state->view->gridManager, state->p1, state->p2);
+                  ++state->lightDebugSelection;
+               }
+               else {
+                  state->lightDebugSelection = 0;
+                  lightDebuggerClear(state->view->lightDebugger);
+               }
             }
-            
+            else {
+               Tile *t = gridManagerTileAtScreenPos(state->view->gridManager, pos.x, pos.y);
+
+               if (t) {
+                  mapEditorSetSelectedSchema(me, tileGetSchema(t));
+               }
+            }
          }
       }
    }
@@ -178,6 +203,8 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    mapEditorRenderXYDisplay(state->editor, m->frame);
    cursorManagerRender(state->view->cursorManager, frame);
    framerateViewerRender(state->view->framerateViewer, frame);
+
+   lightDebuggerRender(state->view->lightDebugger, m->frame);
 }
 
 StateClosure gameStateCreateEditor(WorldView *view) {

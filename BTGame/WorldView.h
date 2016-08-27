@@ -21,6 +21,7 @@ typedef struct PCManager_t PCManager;
 typedef struct VerbManager_t VerbManager;
 typedef struct ActorManager_t ActorManager;
 typedef struct Calendar_t Calendar;
+typedef struct LightDebugger_t LightDebugger;
 
 typedef struct FramerateViewer_t FramerateViewer;
 
@@ -48,5 +49,6 @@ typedef struct WorldView_t {
    DB_assets *db;
    Weather *weather;
    Calendar *calendar;
+   LightDebugger *lightDebugger;
    
 }WorldView;

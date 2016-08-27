@@ -349,7 +349,7 @@ GridManager *gridManagerCreate(WorldView *view) {
 
    out->tokens = vecCreate(GridTokenPtr)(&gridTokenPtrDestroy);
 
-   out->lightGrid = lightGridCreate(out);
+   out->lightGrid = lightGridCreate(view);
    //_createTestSchemas(out);
    _createTestGrid(out);
 
@@ -483,7 +483,7 @@ void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, Fram
          }
       }
       else if (schema->lit) {
-         _renderBlank(frame, region, x, y, 14);
+         _renderBlank(frame, region, x, y, GRID_CELL_SIZE);
       }
       else {
          _renderBlank(frame, region, x, y, 15);
@@ -620,4 +620,11 @@ void gridManagerRenderGridLineTest(GridManager *self, Frame *frame) {
    }
 
    frameRenderLine(frame, &vp->region, start.x - wp.x, start.y - wp.y, end.x - wp.x, end.y - wp.y, 0);
+}
+
+void gridManagerDebugLights(GridManager *self, Int2 source, Int2 target) {
+   int vpx = self->view->viewport->worldPos.x / GRID_CELL_SIZE;
+   int vpy = self->view->viewport->worldPos.y / GRID_CELL_SIZE;
+
+   lightGridDebug(self->lightGrid, (Int2) { source.x - vpx, source.y - vpy }, (Int2) { target.x - vpx, target.y - vpy });
 }

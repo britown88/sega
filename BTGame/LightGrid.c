@@ -7,6 +7,9 @@
 #include <math.h>
 #include "segautils/Math.h"
 #include "segautils/StandardVectors.h"
+#include "LightDebugger.h"
+#include "WorldView.h"
+#include "GridManager.h"
 
 struct LightData_t {
    byte level;
@@ -98,9 +101,9 @@ typedef struct  {
 #include "segautils/Vector_Create.h"
 
 typedef struct LightGrid_t {
+   WorldView *view;
    LightData grid[LIGHT_GRID_CELL_COUNT];
    OcclusionCell *occlusion;
-   GridManager *parent;
    byte ambientLevel;
    vec(LightSourcePtr) *sources;
 
@@ -113,10 +116,10 @@ typedef struct LightGrid_t {
    Recti lightArea;//for testing
 }LightGrid;
 
-LightGrid *lightGridCreate(GridManager *parent) {
+LightGrid *lightGridCreate(WorldView *view) {
    LightGrid *out = checkedCalloc(1, sizeof(LightGrid));
    out->occlusion = checkedCalloc(LIGHT_GRID_CELL_COUNT, sizeof(OcclusionCell));
-   out->parent = parent;
+   out->view = view;
 
    out->sources = vecCreate(LightSourcePtr)(&lightSourcePtrDestroy);
    out->tileGrid = vecCreate(TileLights)(&tileLightsDestroy);
@@ -172,10 +175,11 @@ static size_t _tileGridIndex(LightGrid *self, Int2 pos) {
 
 void lightGridChangeTileSchema(LightGrid *self, size_t tile, TileSchema *schema) {
    Int2 pos = { 0 };
-   Tile *t = gridManagerTileAt(self->parent, tile);
-   TileSchema *oldSchema = gridManagerGetSchema(self->parent, tileGetSchema(t));
+   GridManager *gm = self->view->gridManager;
+   Tile *t = gridManagerTileAt(gm, tile);
+   TileSchema *oldSchema = gridManagerGetSchema(gm, tileGetSchema(t));
 
-   gridManagerXYFromCellID(self->parent, tile, &pos.x, &pos.y);
+   gridManagerXYFromCellID(gm, tile, &pos.x, &pos.y);
 
    //remove the old tile from the light grid table
    if (oldSchema && oldSchema->lit) {      
@@ -263,7 +267,7 @@ typedef struct  {
    LightGrid *lg;
 }BlockCheckData;
 
-static bool _lineIsBlocked(Int2 origin, Int2 target, LightGrid *lg) {
+static bool _lineIsBlocked(Int2 origin, Int2 target, bool occludingOrigin, LightGrid *lg) {
    int w = rectiWidth(&lg->lightArea);
    int dx = target.x - origin.x;
    int dy = target.y - origin.y;
@@ -306,7 +310,12 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, LightGrid *lg) {
             }
          }
          else if (lastSet > 0) {
-            return true;
+            if (occludingOrigin) {
+               return target.y <= (origin.y + GRID_CELL_SIZE);
+            }
+            else {
+               return true;
+            }
          }
          currentTile = t;
       }
@@ -325,91 +334,158 @@ Also, if the target is an occluder itself, it only needs to verify that a single
 */
 #define FULLY_LIT_THRESHOLD 13
 
-static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, bool occludingOrigin, LightGrid *self) {
-   static const float invertedThreshold = 1.0f / (float)FULLY_LIT_THRESHOLD;
-   static const int minimumBlocksForShading = 25 - FULLY_LIT_THRESHOLD + 1;
-
-   //build our rects... shifting by 1 for precision
-   Recti originArea = {
+static void _buildOccRects(Int2 target, Int2 origin, Recti *originArea, Recti *targetArea, Int2 *orCenter, Int2 *tarCenter) {
+   *originArea = (Recti){
       .left = (origin.x * GRID_CELL_SIZE),
       .top = (origin.y * GRID_CELL_SIZE),
       .right = (origin.x * GRID_CELL_SIZE + GRID_CELL_SIZE),
       .bottom = (origin.y * GRID_CELL_SIZE + GRID_CELL_SIZE)
    };
 
-   Recti targetArea = {
+   *targetArea = (Recti){
       .left = (target.x * GRID_CELL_SIZE),
       .top = (target.y * GRID_CELL_SIZE),
       .right = (target.x * GRID_CELL_SIZE + GRID_CELL_SIZE),
       .bottom = (target.y * GRID_CELL_SIZE + GRID_CELL_SIZE)
-   };   
+   };
 
-   Int2 orCenter = { originArea.left + (GRID_CELL_SIZE>>1) + 1, originArea.top + (GRID_CELL_SIZE>>1) + 1 };
-   Int2 tarCenter = { targetArea.left + (GRID_CELL_SIZE>>1), targetArea.top + (GRID_CELL_SIZE>>1) };
+   *orCenter = (Int2){ originArea->left + (GRID_CELL_SIZE >> 1), originArea->top + (GRID_CELL_SIZE >> 1)};
+   *tarCenter = (Int2){ targetArea->left + (GRID_CELL_SIZE >> 1), targetArea->top + (GRID_CELL_SIZE >> 1) };
+
+   originArea->left += 1;
+   originArea->top += 1;
+   originArea->right -= 2;
+   originArea->bottom -= 2;
+
+   targetArea->left += 1;
+   targetArea->top += 1;
+   targetArea->right -= 2;
+   targetArea->bottom -= 2;
+}
+
+static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, bool occludingOrigin, LightGrid *self) {
+   static const float invertedThreshold = 1.0f / (float)FULLY_LIT_THRESHOLD;
+   static const int minimumBlocksForShading = 25 - FULLY_LIT_THRESHOLD + 1;
    int occBlocks;
+   Int2 orCenter, tarCenter;
+   Recti originArea, targetArea;
 
 
-   originArea.left += 1;
-   originArea.top += 1;
-   originArea.right -= 1;
-   originArea.bottom -= 1;
-
-   if (occludingOrigin) {
-      originArea.left += 3;
-      originArea.top += 3;
-      originArea.right -= 4;
-   }
-
-   targetArea.left += 1;
-   targetArea.top += 1;
-   targetArea.right -= 1;
-   targetArea.bottom -= 1;
+   _buildOccRects(target, origin, &originArea, &targetArea, &orCenter, &tarCenter);
 
    occBlocks = 1;
 
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.top }, self);
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.top }, self);
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.bottom }, self);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, tarCenter, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, tarCenter, occludingOrigin, self);
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, occludingOrigin, self);
 
    //short circuiting, less than 3 blockers here means there wont be enough blocking to dim the light
    if (occBlocks < (minimumBlocksForShading - 10)) {
       return calculatedLevel;
    }
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, occludingOrigin, self);
 
    //short circuiting, same here, the minimum number of unlblocked rays for a fully lit tile is 13
    if (occBlocks < (minimumBlocksForShading - 5)) {
       return calculatedLevel;
    }
 
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
 
    if (occBlocks < minimumBlocksForShading) {
       return calculatedLevel;
    }
 
    return (byte)(calculatedLevel * ((25 - occBlocks) * invertedThreshold));
+}
+
+static void addDebugRay(int *occBlocks, Int2 r1, Int2 r2, LightGrid *self) {
+   LightDebugger * lb = self->view->lightDebugger;
+   bool blocked = _lineIsBlocked(r1, r2, false, self);
+   *occBlocks += blocked;
+   lightDebuggerAddRay(lb, r1, r2, blocked);
+}
+
+void lightGridDebug(LightGrid *self, Int2 source, Int2 target) {
+
+   static const float invertedThreshold = 1.0f / (float)FULLY_LIT_THRESHOLD;
+   static const int minimumBlocksForShading = 25 - FULLY_LIT_THRESHOLD + 1;
+   int occBlocks;
+   Int2 orCenter, tarCenter;
+   Recti originArea, targetArea;
+
+   LightDebugger * lb = self->view->lightDebugger;
+
+   
+   _buildOccRects(target, source, &originArea, &targetArea, &orCenter, &tarCenter);
+   lightDebuggerStartNewSet(lb, originArea, targetArea);
+
+   occBlocks = 1;
+
+   addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.right, targetArea.bottom }, self);
+
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, tarCenter, self);
+
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, tarCenter, self);
+
+   //short circuiting, less than 3 blockers here means there wont be enough blocking to dim the light
+   if (occBlocks < (minimumBlocksForShading - 10)) {
+      return;
+   }
+
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, tarCenter, self);
+
+   //short circuiting, same here, the minimum number of unlblocked rays for a fully lit tile is 13
+   if (occBlocks < (minimumBlocksForShading - 5)) {
+      return;
+   }
+
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
+
+   if (occBlocks < minimumBlocksForShading) {
+      return;
+   }
+
+   return;
 }
 
 
@@ -447,6 +523,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
    int i;
    float widthFactor = 0.0f;
    bool originOccludes = false;
+   GridManager *gm = self->view->gridManager;
 
    {
       int i = (5 << 1) + 1;
@@ -464,7 +541,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
    }
    
    //add 0.5 to radius before squaring, this is for quick distance checks
-   r2 = (((adjRadius << 1) + 1) * ((adjRadius << 1) + 1)) >> 2;
+   r2 = ((((adjRadius << 1) + 1) * ((adjRadius << 1) + 1)) >> 2) + 1;
    
    //create our area bounded within the vp
    unboundedLightArea = (Recti){
@@ -491,7 +568,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
 
    //get our occlusion list and generate their rects
    //gridmanager will modify our rect to not go out of bounds
-   occluderCount = gridManagerQueryOcclusion(self->parent, &unboundedLightArea, self->occlusion);
+   occluderCount = gridManagerQueryOcclusion(gm, &unboundedLightArea, self->occlusion);
    self->lightArea = unboundedLightArea;
    if (occluderCount > 0) {
       int left = self->lightArea.left;
@@ -571,11 +648,12 @@ static void _addPoint(LightGrid *self, PointLight light) {
 }
 
 static void _addTileLight(LightGrid *self, size_t tile, short vpx, short vpy) {
-   Tile *t = gridManagerTileAt(self->parent, tile);
+   GridManager *gm = self->view->gridManager;
+   Tile *t = gridManagerTileAt(gm, tile);
    Int2 tpos = { 0 };
-   TileSchema *schema = gridManagerGetSchema(self->parent, tileGetSchema(t));
+   TileSchema *schema = gridManagerGetSchema(gm, tileGetSchema(t));
 
-   gridManagerXYFromCellID(self->parent, tile, &tpos.x, &tpos.y);
+   gridManagerXYFromCellID(gm, tile, &tpos.x, &tpos.y);
 
    if (schema->lit) {
       PointLight p = { 0 };

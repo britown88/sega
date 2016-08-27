@@ -41,8 +41,9 @@ void lightSourceDestroy(LightSource *self);//lightsources are registered inside 
 typedef struct LightGrid_t LightGrid;
 typedef struct Frame_t Frame;
 typedef struct FrameRegion_t FrameRegion;
+typedef struct WorldView_t WOrldView;
 
-LightGrid *lightGridCreate(GridManager *parent);
+LightGrid *lightGridCreate(WorldView *view);
 void lightGridDestroy(LightGrid *self);
 
 void lightGridLoadMap(LightGrid *self, int width, int height);
@@ -58,9 +59,10 @@ void lightGridUpdate(LightGrid *self, short vpx, short vpy);
 //returns null if out of bounds (x and y are coordinates into the last-updated light grid)
 LightData *lightGridAt(LightGrid *self, byte x, byte y);
 
-
 //render a given lightData tile at a given x,y (pixel coordinates in region)
 void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, short y);
 void testLightRender(LightGrid *self, Frame *frame, Viewport *vp);
+
+void lightGridDebug(LightGrid *self, Int2 source, Int2 target);//VP GRID COORDS
 
 

@@ -1,16 +1,16 @@
 --openEditor()
 map.setTileSchema("default")
 
-loadMap 'testWilderness'
+loadMap 'lighttest'
 map.setAmbient(0)
-setPalette 'night'
-player:teleport(6, 5)
-toggleStats()
+setPalette 'default'
+player:teleport(30, 30)
+--toggleStats()
 
 
 --require 'lua.test'
 --player:pushScript(testText)
 
---toggleLightMode()
+toggleLightMode()
 --openEditor()
---map.setAmbient(0)
+map.setAmbient(0)

@@ -142,6 +142,7 @@
     <ClInclude Include="GridManager.h" />
     <ClInclude Include="GridSolver.h" />
     <ClInclude Include="ImageLibrary.h" />
+    <ClInclude Include="LightDebugger.h" />
     <ClInclude Include="LightGrid.h" />
     <ClInclude Include="Lua.h" />
     <ClInclude Include="Managers.h" />
@@ -174,6 +175,7 @@
     <ClCompile Include="GameHelpers.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridSolver.c" />
+    <ClCompile Include="LightDebugger.c" />
     <ClCompile Include="LightGrid.c" />
     <ClCompile Include="Lua.c" />
     <ClCompile Include="Lua_ActorLibrary.c" />

@@ -24,6 +24,7 @@
 #include "RenderHelpers.h"
 #include "Sprites.h"
 #include "Calendar.h"
+#include "LightDebugger.h"
 
 typedef struct {
    VirtualApp vApp;
@@ -50,6 +51,7 @@ typedef struct {
    DB_assets *db;
    Weather *weather;
    Calendar *calendar;
+   LightDebugger *lightDebugger;
 
    lua_State *L;
 
@@ -132,6 +134,7 @@ VirtualApp *btCreate() {
    CREATE_AND_VIEW(weather, createWeather(&r->view));
    CREATE_AND_VIEW(calendar, calendarCreate(&r->view));
    CREATE_AND_VIEW(choicePrompt, createChoicePrompt(&r->view));
+   CREATE_AND_VIEW(lightDebugger, lightDebuggerCreate(&r->view));
 
    r->testActors = vecCreate(ActorPtr)(&actorPtrDestroy);
 
@@ -166,6 +169,7 @@ void _destroy(BTGame *self){
    weatherDestroy(self->weather);
    textAreaManagerDestroy(self->textAreaManager);
    calendarDestroy(self->calendar);
+   lightDebuggerDestroy(self->lightDebugger);
    
    luaDestroy(self->L);
    checkedFree(self);
