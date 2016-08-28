@@ -281,7 +281,8 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, bool occludingOrigin, Light
    size_t currentTile = INF;
    static float iSize = 1.0f / GRID_CELL_SIZE;
    byte lastSet = 0;
-   bool passingThroughEdge = false;;
+   bool insideBlock = false;
+   int passedSets = 0;
 
    //half-pixel :D
    fx += iSize * 0.5f;
@@ -310,38 +311,81 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, bool occludingOrigin, Light
 
       if (t != currentTile) {
          OcclusionMapEntry *ome = vecAt(OcclusionMapEntry)(lg->occMap, t);
+         bool tileOccludes = ome->index < INF;
+         bool occludersEncountered = lastSet > 0;
 
-         if (ome->index < INF) {//if the current tile occludes
 
-            if (lastSet == 0) {//if its out first set weve reached
-               lastSet = ome->set;//set it and continue
+         /*
+         if exiting my first set of blocks and origin doesnt occlude, we're blocked
+         if exiting my first set of blocks and origin does occlude, we're only blocked if exiting the sides or top
+         if exiting my 2nd set of blocks and origin occludes, we're blocked
+         
+         
+         */
+
+         if (tileOccludes) {
+            if (!insideBlock) {
+               //ENTERING BLOCK
+               insideBlock = true;
             }
-            else {
+            
+         }
+         else {
+
+
+            if (insideBlock) {
+
+               //EXITING BLOCK
+               insideBlock = false;
+               ++passedSets;
+
                if (occludingOrigin) {
-                  passingThroughEdge = true;
+                  if (target.y <= (origin.y + GRID_CELL_SIZE)) {
+                     return true;
+                  }
+
+                  if (passedSets >= 2) {
+                     return true;
+                  }
                }
                else {
                   return true;
                }
-               
             }
+
          }
-         else if (lastSet > 0) {//this tile doesnt occlude but weve been through a set(so we're pasing out the other end)
 
-            if (occludingOrigin) {
-               if (passingThroughEdge) {
-                  return true;
-               }
+         //if (ome->index < INF) {//if the current tile occludes
 
-               if (target.y <= (origin.y + GRID_CELL_SIZE)) {
-                  return true;
-               }
+         //   if (lastSet == 0) {//if its out first set weve reached
+         //      lastSet = ome->set;//set it and continue
+         //   }
+         //   else {
+         //      if (occludingOrigin && hasExited) {
+         //         passingThroughEdge = true;
+         //      }
+         //      else {
+         //         return true;
+         //      }
+         //      
+         //   }
+         //}
+         //else if (lastSet > 0) {//this tile doesnt occlude but weve been through a set(so we're pasing out the other end)
+         //   hasExited = true;
+         //   if (occludingOrigin) {
+         //      if (passingThroughEdge) {
+         //         return true;
+         //      }
 
-            }
-            else {
-               return true;
-            }
-         }
+         //      if (target.y <= (origin.y + GRID_CELL_SIZE)) {
+         //         return true;
+         //      }
+
+         //   }
+         //   else {
+         //      return true;
+         //   }
+         //}
          currentTile = t;
       }
 
@@ -387,8 +431,8 @@ static void _buildOccRects(Int2 target, Int2 origin, Recti *originArea, Recti *t
 
    targetArea->left += 1;
    targetArea->top += 1;
-   targetArea->right -= 2;
-   targetArea->bottom -= 2;
+   targetArea->right -= 1;
+   targetArea->bottom -= 1;
 }
 
 static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, bool occludingOrigin, LightGrid *self) {
@@ -432,7 +476,7 @@ FILE *f;
 
 static void addDebugRay(Int2 r1, Int2 r2, LightGrid *self) {
    LightDebugger * lb = self->view->lightDebugger;
-   bool blocked = _lineIsBlocked(r1, r2, false, self);
+   bool blocked = _lineIsBlocked(r1, r2, true, self);
 
    lightDebuggerAddRay(lb, r1, r2, blocked);
 
