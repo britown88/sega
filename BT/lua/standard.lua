@@ -15,11 +15,9 @@ function dir(o)
   end
 end
 
-function reload(m)
-  if(not package.loaded[m]) then
-    error("Module is not loaded!")
-  end
 
+
+function reload(m)
   package.loaded[m] = nil
   require(m)
   console.print("Module reloaded!")
