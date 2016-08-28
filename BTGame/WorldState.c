@@ -66,6 +66,8 @@ void _worldUpdate(WorldState *state, GameStateUpdate *m){
    textAreaUpdate(state->smallbox);
 
    calendarUpdate(view->calendar);
+   calendarSetAmbientByTime(view->calendar);
+   calendarSetPaletteByTime(view->calendar);
 }
 
 

@@ -67,4 +67,7 @@ void calendarSetTickLength(Calendar *self, DateTime tick);
 
 void calendarRenderClock(Calendar *self, Frame *frame);
 
+void calendarSetAmbientByTime(Calendar *self);
+void calendarSetPaletteByTime(Calendar *self);
+
 
