@@ -10,6 +10,7 @@
 #include "LightDebugger.h"
 #include "WorldView.h"
 #include "GridManager.h"
+#include <stdio.h>
 
 struct LightData_t {
    byte level;
@@ -280,7 +281,7 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, bool occludingOrigin, Light
    size_t currentTile = INF;
    static float iSize = 1.0f / GRID_CELL_SIZE;
    byte lastSet = 0;
-   bool passed = false;
+   bool passingThroughEdge = false;;
 
    //half-pixel :D
    fx += iSize * 0.5f;
@@ -315,25 +316,25 @@ static bool _lineIsBlocked(Int2 origin, Int2 target, bool occludingOrigin, Light
             if (lastSet == 0) {//if its out first set weve reached
                lastSet = ome->set;//set it and continue
             }
-            else if (lastSet != ome->set) {//if weve seen a set and this is different, we're blocked
-               return true;
+            else {
+               if (occludingOrigin) {
+                  passingThroughEdge = true;
+               }
+               else {
+                  return true;
+               }
+               
             }
          }
          else if (lastSet > 0) {//this tile doesnt occlude but weve been through a set(so we're pasing out the other end)
 
             if (occludingOrigin) {
-               
-
-               //only llow pass through once!
-               if (passed) {
+               if (passingThroughEdge) {
                   return true;
                }
-               else {
-                  passed = true;
-                  //if the origin is occluding we can pass through the bottom (so only return otherwise
-                  if (target.y <= (origin.y + GRID_CELL_SIZE)) {
-                     return true;
-                  }
+
+               if (target.y <= (origin.y + GRID_CELL_SIZE)) {
+                  return true;
                }
 
             }
@@ -356,8 +357,10 @@ any less than (25 - FULLY_LIT_THRESHOLD + 1) _blocked_ rays will result in no da
 counts if enough blocked rays havent been found by given intervals
 Also, if the target is an occluder itself, it only needs to verify that a single edge is lit (defined by 4 of the 5 rays hitting each of two corners)
 */
-#define FULLY_LIT_THRESHOLD 10
+
 #define CHECK_COUNT 16
+#define MINIMUM_BLOCKED_RAYS_TO_DARKEN 5
+#define FULLY_LIT_THRESHOLD (CHECK_COUNT - MINIMUM_BLOCKED_RAYS_TO_DARKEN)
 
 static void _buildOccRects(Int2 target, Int2 origin, Recti *originArea, Recti *targetArea, Int2 *orCenter, Int2 *tarCenter) {
    *originArea = (Recti){
@@ -380,135 +383,99 @@ static void _buildOccRects(Int2 target, Int2 origin, Recti *originArea, Recti *t
    originArea->left += 1;
    originArea->top += 1;
    originArea->right -= 2;
-   originArea->bottom -= 1;
+   originArea->bottom -= 2;
 
    targetArea->left += 1;
    targetArea->top += 1;
-   targetArea->right -= 1;
-   targetArea->bottom -= 1;
+   targetArea->right -= 2;
+   targetArea->bottom -= 2;
 }
 
 static byte _calculateOcclusionOnPoint(byte calculatedLevel, Int2 target, Int2 origin, bool occludingOrigin, LightGrid *self) {
    static const float invertedThreshold = 1.0f / (float)FULLY_LIT_THRESHOLD;
-   static const int minimumBlocksForShading = CHECK_COUNT - FULLY_LIT_THRESHOLD + 1;
    int occBlocks;
    Int2 orCenter, tarCenter;
    Recti originArea, targetArea;
 
-
    _buildOccRects(target, origin, &originArea, &targetArea, &orCenter, &tarCenter);
 
-   occBlocks = 1;
-
-   //occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
-   //occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
-   //occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
-   //occBlocks += _lineIsBlocked(orCenter, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
+   occBlocks = 0;
 
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
-   //occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.top }, tarCenter, occludingOrigin, self);
 
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
-   //occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.top }, tarCenter, occludingOrigin, self);
-
-   //short circuiting, less than 3 blockers here means there wont be enough blocking to dim the light
-   //if (occBlocks < (minimumBlocksForShading - 8)) {
-   //   return calculatedLevel;
-   //}
-
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
-   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
-   //occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, tarCenter, occludingOrigin, self);
-
-   //short circuiting, same here, the minimum number of unlblocked rays for a fully lit tile is 13
-   //if (occBlocks < (minimumBlocksForShading - 4)) {
-   //   return calculatedLevel;
-   //}
-
+   
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
    occBlocks += _lineIsBlocked((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
 
-   //if (occBlocks < minimumBlocksForShading) {
-   //   return calculatedLevel;
-   //}
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, occludingOrigin, self);
+   occBlocks += _lineIsBlocked((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, occludingOrigin, self);
+
+   if (occBlocks < MINIMUM_BLOCKED_RAYS_TO_DARKEN) {
+      return calculatedLevel;
+   }
 
    return (byte)(calculatedLevel * ((CHECK_COUNT - occBlocks) * invertedThreshold));
 }
 
-static void addDebugRay(int *occBlocks, Int2 r1, Int2 r2, LightGrid *self) {
+FILE *f;
+
+static void addDebugRay(Int2 r1, Int2 r2, LightGrid *self) {
    LightDebugger * lb = self->view->lightDebugger;
    bool blocked = _lineIsBlocked(r1, r2, false, self);
-   *occBlocks += blocked;
+
    lightDebuggerAddRay(lb, r1, r2, blocked);
+
+   fprintf(f, "RAY: (%i, %i) to (%i, %i) %s\n", r1.x, r1.y, r2.x, r2.y, blocked ? "BLOCKED" : "CLEAR");
 }
 
 void lightGridDebug(LightGrid *self, Int2 source, Int2 target) {
-
-   static const float invertedThreshold = 1.0f / (float)FULLY_LIT_THRESHOLD;
-   static const int minimumBlocksForShading = CHECK_COUNT - FULLY_LIT_THRESHOLD + 1;
-   int occBlocks;
    Int2 orCenter, tarCenter;
    Recti originArea, targetArea;
 
+
    LightDebugger * lb = self->view->lightDebugger;
 
+   f = fopen("lightdebug.txt", "wt");
    
    _buildOccRects(target, source, &originArea, &targetArea, &orCenter, &tarCenter);
    lightDebuggerStartNewSet(lb, originArea, targetArea);
 
-   occBlocks = 1;
+   fprintf(f, "SOURCE - LEFT: %i   TOP: %i   RIGHT: %i   BOTTOM: %i\n", originArea.left, originArea.top, originArea.right, originArea.bottom);
+   fprintf(f, "TARGET - LEFT: %i   TOP: %i   RIGHT: %i   BOTTOM: %i\n", targetArea.left, targetArea.top, targetArea.right, targetArea.bottom);
 
-   //addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.left, targetArea.top }, self);
-   //addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.right, targetArea.top }, self);
-   //addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.left, targetArea.bottom }, self);
-   //addDebugRay(&occBlocks, orCenter, (Int2) { targetArea.right, targetArea.bottom }, self);
 
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);
-   //addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.top }, tarCenter, self);
+   addDebugRay((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay((Int2) { originArea.left, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);
 
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);
-   //addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.top }, tarCenter, self);
+   addDebugRay((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay((Int2) { originArea.right, originArea.top }, (Int2) { targetArea.right, targetArea.bottom }, self);   
 
-   //short circuiting, less than 3 blockers here means there wont be enough blocking to dim the light
-   //if (occBlocks < (minimumBlocksForShading - 10)) {
-   //   return;
-   //}
+   addDebugRay((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay((Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
 
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
-   //addDebugRay(&occBlocks, (Int2) { originArea.right, originArea.bottom }, tarCenter, self);
+   addDebugRay((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
+   addDebugRay((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
+   addDebugRay((Int2) { originArea.right, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
 
-   //short circuiting, same here, the minimum number of unlblocked rays for a fully lit tile is 13
-   //if (occBlocks < (minimumBlocksForShading - 5)) {
-   //   return;
-   //}
-
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.top }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.left, targetArea.bottom }, self);
-   addDebugRay(&occBlocks, (Int2) { originArea.left, originArea.bottom }, (Int2) { targetArea.right, targetArea.bottom }, self);
-
-   //if (occBlocks < minimumBlocksForShading) {
-   //   return;
-   //}
+   fclose(f);
 
    return;
 }
@@ -566,7 +533,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
    }
    
    //add 0.5 to radius before squaring, this is for quick distance checks
-   r2 = ((((adjRadius << 1) + 1) * ((adjRadius << 1) + 1)) >> 2) + 1;
+   r2 = ((((adjRadius << 1) + 1) * ((adjRadius << 1) + 1)) >> 2);
    
    //create our area bounded within the vp
    unboundedLightArea = (Recti){
@@ -660,10 +627,6 @@ static void _addPoint(LightGrid *self, PointLight light) {
                   originOccludes,
                   self); //the occluder data
             }            
-
-            if (calculatedLevel) {
-               lightGridAt(self, x, y)->flags |= LIGHTFLAGS_DIRECTLYLIT;
-            }
 
             //all done, add it in
             lightGridAt(self, x, y)->level += calculatedLevel;
