@@ -640,14 +640,14 @@ static void _addPoint(LightGrid *self, PointLight light) {
          }   
       }
 
-      for (i = 0; i < occluderCount; ++i) {
-         OcclusionCell *oc = self->occlusion + i;
-         int occX = oc->wx - left;
-         int occY = oc->wy - top;
-         if (!_processOcclusionNeighbors(self, &self->lightArea, occX, occY, currentSet)) {
-            ++currentSet;
-         }
-      }
+      //for (i = 0; i < occluderCount; ++i) {
+      //   OcclusionCell *oc = self->occlusion + i;
+      //   int occX = oc->wx - left;
+      //   int occY = oc->wy - top;
+      //   if (!_processOcclusionNeighbors(self, &self->lightArea, occX, occY, currentSet)) {
+      //      ++currentSet;
+      //   }
+      //}
    }
 
    //brute force the whole area, we can square-check each tile without having to sqrt a bunch

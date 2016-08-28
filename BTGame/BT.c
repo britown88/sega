@@ -160,9 +160,7 @@ void _destroy(BTGame *self){
    actorManagerDestroy(self->actorManager);
 
    fontFactoryDestroy(self->fontFactory);
-   framerateViewerDestroy(self->framerateViewer);
-   spriteManagerDestroy(self->spriteManager);
-   imageLibraryDestroy(self->imageLibrary);
+   framerateViewerDestroy(self->framerateViewer);   
    gridSolverDestroy(self->gridSolver);
    choicePromptDestroy(self->choicePrompt);
    db_assetsDestroy(self->db);
@@ -170,6 +168,9 @@ void _destroy(BTGame *self){
    textAreaManagerDestroy(self->textAreaManager);
    calendarDestroy(self->calendar);
    lightDebuggerDestroy(self->lightDebugger);
+
+   spriteManagerDestroy(self->spriteManager);
+   imageLibraryDestroy(self->imageLibrary);
    
    luaDestroy(self->L);
    checkedFree(self);
