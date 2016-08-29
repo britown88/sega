@@ -2,6 +2,7 @@
 
 #include "segautils/Defs.h"
 #include "segautils/Time.h"
+#include "segautils/Vector.h"
 
 #define SEASON_PER_YEAR 4
 #define MONTHS_PER_SEASON 2
@@ -79,5 +80,6 @@ void calendarToggleTestReadout(Calendar *self);
 
 typedef struct MouseEvent_t MouseEvent;
 int calendarMouseButton(Calendar *self, MouseEvent *e);
+int calendarEditorMouse(Calendar *self, MouseEvent *e, Int2 mousePos);
 
 

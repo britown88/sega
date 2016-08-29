@@ -371,6 +371,22 @@ int calendarMouseButton(Calendar *self, MouseEvent *e) {
 
 }
 
+int calendarEditorMouse(Calendar *self, MouseEvent *e, Int2 mousePos) {
+   Recti clockArea = { CALENDAR_LEFT, CALENDAR_TOP, CALENDAR_LEFT + CALENDAR_WIDTH, CALENDAR_TOP + CALENDAR_HEIGHT };
+
+   if (rectiContains(clockArea, mousePos)) {
+      if (e->action == SegaMouse_Scrolled) {
+         if (e->pos.y < 0 && self->target < -e->pos.y * 10) {
+            return 1;
+         }
+         self->target += e->pos.y * 10;
+         return true;
+      }
+   }
+
+   return 0;
+}
+
 void calendarToggleTestReadout(Calendar *self) {
    self->showReadout = !self->showReadout;
 }
@@ -399,6 +415,11 @@ void calendarRenderTestReadout(Calendar *self, Frame *frame) {
 void calendarUpdate(Calendar *self) {
 
    int jump = 0;
+
+   if (self->current > self->target) {
+      self->current = self->target;
+   }
+
    while (self->current < self->target && jump++ < MAX_JUMPS_PER_FRAME) {
       ++self->current;
 

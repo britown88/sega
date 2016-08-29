@@ -116,9 +116,58 @@ static void _handleKeyboard(EditorState *state) {
    }
 }
 
+static void lightDebugClick(EditorState *state, Int2 pos) {
+
+   
+   Int2 vpPos = screenToWorld(state->view, pos);
+   vpPos.x /= GRID_CELL_SIZE;
+   vpPos.y /= GRID_CELL_SIZE;
+
+   if (state->lightDebugSelection == 0) {
+      state->p1 = vpPos;
+      ++state->lightDebugSelection;
+   }
+   else if (state->lightDebugSelection == 1) {
+      state->p2 = vpPos;
+      gridManagerDebugLights(state->view->gridManager, state->p1, state->p2);
+      ++state->lightDebugSelection;
+   }
+   else {
+      state->lightDebugSelection = 0;
+      lightDebuggerClear(state->view->lightDebugger);
+   }
+}
+
+static void gridClickDown(EditorState *state, Int2 pos) {
+   
+}
+
+static void gridClickUp(EditorState *state, Int2 pos) {
+
+}
+
+static void gridClickMove(EditorState *state, Int2 pos) {
+   Mouse *mouse = appGetMouse(appGet());
+   Keyboard *k = appGetKeyboard(appGet());
+   MapEditor *me = state->editor;
+   Int2 vpPos = screenToWorld(state->view, pos);
+   vpPos.x /= GRID_CELL_SIZE;
+   vpPos.y /= GRID_CELL_SIZE;
+
+   mapEditorUpdateStats(me, vpPos);
+
+   if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
+      size_t t = gridManagerCellIDFromXY(state->view->gridManager, vpPos.x, vpPos.y);
+      if (t < INF) {
+         gridManagerChangeTileSchema(state->view->gridManager, t, mapEditorGetSelectedSchema(me));
+      }
+   }
+}
+
 static void _handleMouse(EditorState *state) {
    Mouse *mouse = appGetMouse(appGet());
    MouseEvent event = { 0 };
+   Keyboard *k = appGetKeyboard(appGet());
    Int2 pos = mouseGetPosition(mouse);
    Viewport *vp = state->view->viewport;
    MapEditor *me = state->editor;
@@ -131,9 +180,11 @@ static void _handleMouse(EditorState *state) {
    bool gridOperation = rectiContains(vpArea, pos);
    bool schemaOperation = mapEditorPointInSchemaWindow(me, pos);
 
-   while (mousePopEvent(mouse, &event)) {            
+   while (mousePopEvent(mouse, &event)) {    
+      calendarEditorMouse(state->view->calendar, &event, pos);
 
       if (event.action == SegaMouse_Scrolled) {
+         
          if (schemaOperation) {
             mapEditorScrollSchemas(me, event.pos.y);
          }
@@ -142,51 +193,33 @@ static void _handleMouse(EditorState *state) {
          if (schemaOperation) {
             mapEditorSelectSchema(me, pos);
          }
-         else if (gridOperation && event.button == SegaMouseBtn_Right) {
-
-            if (keyboardIsDown(appGetKeyboard(appGet()), SegaKey_LeftShift)) {
-               Int2 vpPos = screenToWorld(state->view, pos);
-               vpPos.x /= GRID_CELL_SIZE;
-               vpPos.y /= GRID_CELL_SIZE;
-
-               if (state->lightDebugSelection == 0) {
-                  state->p1 = vpPos;
-                  ++state->lightDebugSelection;
-               }
-               else if(state->lightDebugSelection == 1) {
-                  state->p2 = vpPos;
-                  gridManagerDebugLights(state->view->gridManager, state->p1, state->p2);
-                  ++state->lightDebugSelection;
+         else if (gridOperation) {
+            if (event.button == SegaMouseBtn_Right) {
+               if (keyboardIsDown(k, SegaKey_LeftShift)) {
+                  lightDebugClick(state, pos);
                }
                else {
-                  state->lightDebugSelection = 0;
-                  lightDebuggerClear(state->view->lightDebugger);
+                  Tile *t = gridManagerTileAtScreenPos(state->view->gridManager, pos.x, pos.y);
+                  if (t) {
+                     mapEditorSetSelectedSchema(me, tileGetSchema(t));
+                  }
                }
             }
+            
             else {
-               Tile *t = gridManagerTileAtScreenPos(state->view->gridManager, pos.x, pos.y);
-
-               if (t) {
-                  mapEditorSetSelectedSchema(me, tileGetSchema(t));
-               }
+               gridClickDown(state, pos);
             }
+         }
+      }
+      else if (event.action == SegaMouse_Released) {
+         if (gridOperation) {
+            gridClickUp(state, pos);
          }
       }
    }
 
    if (gridOperation) {
-      Int2 vpPos = screenToWorld(state->view, pos);
-      vpPos.x /= GRID_CELL_SIZE;
-      vpPos.y /= GRID_CELL_SIZE;
-
-      mapEditorUpdateStats(me, vpPos);
-
-      if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
-         size_t t = gridManagerCellIDFromXY(state->view->gridManager, vpPos.x, vpPos.y);
-         if (t < INF) {
-            gridManagerChangeTileSchema(state->view->gridManager, t, mapEditorGetSelectedSchema(me));
-         }
-      }
+      gridClickMove(state, pos);
    }
 }
 
@@ -205,11 +238,14 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    gridManagerRenderLighting(state->view->gridManager, frame);   
 
    frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
+   calendarRenderClock(state->view->calendar, m->frame);
+
+  
    mapEditorRenderSchemas(state->editor, m->frame);
    mapEditorRenderXYDisplay(state->editor, m->frame);
    cursorManagerRender(state->view->cursorManager, frame);
 
-   calendarRenderClock(state->view->calendar, m->frame);
+   
 
    framerateViewerRender(state->view->framerateViewer, frame);
    lightDebuggerRender(state->view->lightDebugger, m->frame);
