@@ -258,9 +258,9 @@ void calendarSetAmbientByTime(Calendar *self) {
    TimeofDay tod = getToD(self, &d);
    byte level = 0;
 
-   if (self->paused) {
-      return;
-   }
+   //if (self->paused) {
+   //   return;
+   //}
 
    switch (tod) {
    case Dawn:
@@ -296,8 +296,6 @@ void calendarSetPaletteByTime(Calendar *self) {
    if (!defPal) { defPal = stringIntern("default"); }
    if (!duskPal) { duskPal = stringIntern("dusk"); }
    if (!nightPal) { nightPal = stringIntern("night"); }
-
-   
 
    switch (tod) {
    case Dawn:

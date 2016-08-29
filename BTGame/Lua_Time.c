@@ -45,7 +45,7 @@ void luaLoadTimeLibrary(lua_State *L) {
 
 int slua_jumpMinutes(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   int m = luaL_checkinteger(L, -1);
+   int m = (int)luaL_checkinteger(L, -1);
 
    DateTime dt = { 0 };
    dt.time.minute = m;
@@ -55,7 +55,7 @@ int slua_jumpMinutes(lua_State *L) {
 }
 int slua_jumpHours(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   int h = luaL_checkinteger(L, -1);
+   int h = (int)luaL_checkinteger(L, -1);
 
    DateTime dt = { 0 };
    dt.time.hour = h;
@@ -65,7 +65,7 @@ int slua_jumpHours(lua_State *L) {
 }
 int slua_jumpDays(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   int h = luaL_checkinteger(L, -1);
+   int h = (int)luaL_checkinteger(L, -1);
 
    DateTime dt = { 0 };
    dt.date.day = h;
@@ -75,7 +75,7 @@ int slua_jumpDays(lua_State *L) {
 }
 int slua_jumpWeeks(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   int h = luaL_checkinteger(L, -1);
+   int h = (int)luaL_checkinteger(L, -1);
 
    DateTime dt = { 0 };
    dt.date.week = h;
@@ -85,7 +85,7 @@ int slua_jumpWeeks(lua_State *L) {
 }
 int slua_jumpMonths(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   int h = luaL_checkinteger(L, -1);
+   int h = (int)luaL_checkinteger(L, -1);
 
    DateTime dt = { 0 };
    dt.date.month = h;
@@ -95,7 +95,7 @@ int slua_jumpMonths(lua_State *L) {
 }
 int slua_jumpSeasons(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   int h = luaL_checkinteger(L, -1);
+   int h = (int)luaL_checkinteger(L, -1);
 
    DateTime dt = { 0 };
    dt.date.season = h;
@@ -105,7 +105,7 @@ int slua_jumpSeasons(lua_State *L) {
 }
 int slua_jumpYears(lua_State *L) {
    WorldView *view = luaGetWorldView(L);
-   int h = luaL_checkinteger(L, -1);
+   int h = (int)luaL_checkinteger(L, -1);
 
    DateTime dt = { 0 };
    dt.date.year = h;

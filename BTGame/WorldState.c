@@ -15,6 +15,8 @@
 
 #include "segashared\CheckedMemory.h"
 
+#include "MenuPanel.h"
+
 
 #define STARTING_AMBIENT_LEVEL MAX_BRIGHTNESS
 
@@ -24,6 +26,7 @@ typedef struct {
    TextArea *smallbox;
 
    ManagedImage *bg;
+
 }WorldState;
 
 static void _worldStateCreate(WorldState *self) { 
@@ -31,6 +34,7 @@ static void _worldStateCreate(WorldState *self) {
 
 }
 static void _worldStateDestroy(WorldState *self){   
+
    checkedFree(self);
 }
 
@@ -245,6 +249,7 @@ void _worldRender(WorldState *state, GameStateRender *m){
 
    weatherRender(state->view->weather, frame);
    gridManagerRenderLighting(state->view->gridManager, frame);
+
 
    verbManagerRender(state->view->verbManager, frame);
 

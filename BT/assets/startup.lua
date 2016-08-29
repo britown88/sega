@@ -15,6 +15,10 @@ player:teleport(6, 5)
 --openEditor()
 --map.setAmbient(0)
 
+time.jumpHours(12)
+time.pause()
+--toggleLightMode()
+
 function reloadSchemas()
   reload 'maps.schemas'
   map.setTileSchema 'default'

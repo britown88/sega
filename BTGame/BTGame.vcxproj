@@ -148,6 +148,7 @@
     <ClInclude Include="Managers.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="MapEditor.h" />
+    <ClInclude Include="MenuPanel.h" />
     <ClInclude Include="MeshRendering.h" />
     <ClInclude Include="RenderHelpers.h" />
     <ClInclude Include="RenderLayers.h" />
@@ -187,6 +188,7 @@
     <ClCompile Include="Lua_UILibrary.c" />
     <ClCompile Include="Map.c" />
     <ClCompile Include="MapEditor.c" />
+    <ClCompile Include="MenuPanel.c" />
     <ClCompile Include="PCManager.c" />
     <ClCompile Include="RenderHelpers.c" />
     <ClCompile Include="RichText.c" />
