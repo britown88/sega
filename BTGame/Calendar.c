@@ -399,18 +399,24 @@ void calendarRenderTestReadout(Calendar *self, Frame *frame) {
 }
 
 void calendarUpdate(Calendar *self) {
-   Microseconds t = gameClockGetTime();
 
+   int jump = 0;
+   while (self->current < self->target && jump++ < MAX_JUMPS_PER_FRAME) {
+      ++self->current;
+
+      //here's where we can run events!
+   }
+   
    if (self->paused) {
       return;
    }
 
+   Microseconds t = gameClockGetTime();
    if (self->startTime == 0 || self->startTime > t) {
       self->startTime = gameClockGetTime();
    }
 
    Microseconds delay = t_m2u(self->tickDelay);
-
    while (t - self->startTime >= delay) {
       self->target += self->tickLength;
       self->startTime += delay;
@@ -418,12 +424,5 @@ void calendarUpdate(Calendar *self) {
       if (self->startTime > t) {
          break;
       }
-   }
-
-   int jump = 0;
-   while(self->current < self->target && jump++ < MAX_JUMPS_PER_FRAME) {
-      ++self->current;
-
-      //here's where we can run events!
    }
 }
