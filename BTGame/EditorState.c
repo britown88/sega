@@ -16,8 +16,16 @@
 
 #include "segashared\CheckedMemory.h"
 
+#include "segautils/StandardVectors.h"
+
 #define VP_SPEED 3
 #define VP_FAST_SPEED 8
+
+typedef enum {
+   None = 0,
+   Paint,
+   Square
+}PaintStates;
 
 typedef struct {
    WorldView *view;
@@ -27,6 +35,9 @@ typedef struct {
 
    int lightDebugSelection;
    Int2 p1, p2;
+
+   PaintStates state;
+   Int2 squareStart, squareEnd;
 }EditorState;
 
 static void _editorStateCreate(EditorState *state) {
@@ -85,6 +96,8 @@ static void _handleKeyboard(EditorState *state) {
    Viewport *vp = view->viewport;
    short speed;
 
+   bool vpChange = false;
+
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released) {
          switch (e.key) {
@@ -102,23 +115,34 @@ static void _handleKeyboard(EditorState *state) {
 
    if (keyboardIsDown(k, SegaKey_W)) {
       vp->worldPos.y = MAX(0, vp->worldPos.y - speed);
+      vpChange = true;
    }
    if (keyboardIsDown(k, SegaKey_S)) {
       short maxY = (gridManagerHeight(view->gridManager) * GRID_CELL_SIZE) - vp->region.height;
       vp->worldPos.y = MIN(maxY, vp->worldPos.y + speed);
+      vpChange = true;
    }
    if (keyboardIsDown(k, SegaKey_A)) {
       vp->worldPos.x = MAX(0, vp->worldPos.x - speed);
+      vpChange = true;
    }
    if (keyboardIsDown(k, SegaKey_D)) {
       short maxX = (gridManagerWidth(view->gridManager) * GRID_CELL_SIZE) - vp->region.width;
       vp->worldPos.x = MIN(maxX, vp->worldPos.x + speed);
+      vpChange = true;
+   }
+
+   if (vpChange && state->state == Square) {
+      Int2 pos = mouseGetPosition(appGetMouse(appGet()));
+      Int2 vpPos = screenToWorld(state->view, pos);
+      vpPos.x /= GRID_CELL_SIZE;
+      vpPos.y /= GRID_CELL_SIZE;
+
+      state->squareEnd = vpPos;
    }
 }
 
-static void lightDebugClick(EditorState *state, Int2 pos) {
-
-   
+static void lightDebugClick(EditorState *state, Int2 pos) {   
    Int2 vpPos = screenToWorld(state->view, pos);
    vpPos.x /= GRID_CELL_SIZE;
    vpPos.y /= GRID_CELL_SIZE;
@@ -138,12 +162,109 @@ static void lightDebugClick(EditorState *state, Int2 pos) {
    }
 }
 
-static void gridClickDown(EditorState *state, Int2 pos) {
+static void _addTileToFloodFill(GridManager *gm, int x, int y, vec(size_t) *openList, vec(size_t) *closedList) {
+   size_t t = gridManagerCellIDFromXY(gm, x, y);
+
+   if (x < 0 || x >= gridManagerWidth(gm) || y < 0 || y >= gridManagerHeight(gm)) {
+      return;
+   }
+
+   if(vecIndexOf(size_t)(closedList, &t) == INF) {
+      if (gridManagerTileAt(gm, t)) {
+         vecPushBack(size_t)(openList, &t);
+      }
+   }
+}
+
+static void _floodFill(EditorState *state, byte baseSchema, byte selectedSchema, vec(size_t) *openList, vec(size_t) *closedList) {
+   GridManager *gm = state->view->gridManager;
    
+   size_t t = *vecAt(size_t)(openList, 0);
+   Tile *tile = gridManagerTileAt(gm, t);
+
+   if (tile && tileGetSchema(tile) == baseSchema) {
+      int x, y;
+
+      gridManagerChangeTileSchema(gm, t, selectedSchema);
+      gridManagerXYFromCellID(gm, t, &x, &y);
+
+      _addTileToFloodFill(gm, x - 1, y, openList, closedList);
+      _addTileToFloodFill(gm, x , y - 1, openList, closedList);
+      _addTileToFloodFill(gm, x + 1, y, openList, closedList);
+      _addTileToFloodFill(gm, x, y + 1, openList, closedList);
+   }
+
+   vecRemoveAt(size_t)(openList, 0);
+   vecPushBack(size_t)(closedList, &t);
+}
+
+static void gridClickDown(EditorState *state, Int2 pos) {
+   GridManager *gm = state->view->gridManager;
+   Keyboard *k = appGetKeyboard(appGet());
+   Int2 vpPos = screenToWorld(state->view, pos);
+   vpPos.x /= GRID_CELL_SIZE;
+   vpPos.y /= GRID_CELL_SIZE;
+
+   if (keyboardIsDown(k, SegaKey_LeftShift)) {
+      //start a quare
+      state->state = Square;
+      state->squareStart = state->squareEnd = vpPos;
+   }
+   else if (keyboardIsDown(k, SegaKey_LeftControl)) {
+      //do a fill
+      size_t tileID = gridManagerCellIDFromXY(gm, vpPos.x, vpPos.y);
+      if (tileID < INF) {
+         Tile *t = gridManagerTileAt(gm, tileID);
+         byte schema = tileGetSchema(t);
+         byte selectedSchema = mapEditorGetSelectedSchema(state->editor);
+
+         if (schema != selectedSchema) {
+            vec(size_t) *openList = vecCreate(size_t)(NULL);
+            vec(size_t) *closedList = vecCreate(size_t)(NULL);
+
+            vecPushBack(size_t)(openList, &tileID);
+            while (!vecIsEmpty(size_t)(openList)) {
+               _floodFill(state, schema, selectedSchema, openList, closedList);
+            }
+
+            vecDestroy(size_t)(openList);
+            vecDestroy(size_t)(closedList);
+         }
+      }
+
+      state->state = None;
+   }
+   else {
+      //regular painting
+      state->state = Paint;
+   }
 }
 
 static void gridClickUp(EditorState *state, Int2 pos) {
+   if (state->state == Square) {
+      MapEditor *me = state->editor;
+      Int2 vpPos = screenToWorld(state->view, pos);
+      vpPos.x /= GRID_CELL_SIZE;
+      vpPos.y /= GRID_CELL_SIZE;
+      state->squareEnd = vpPos;
 
+      int x, y;      
+      int startX = state->squareStart.x < state->squareEnd.x ? state->squareStart.x : state->squareEnd.x;
+      int startY = state->squareStart.y < state->squareEnd.y ? state->squareStart.y : state->squareEnd.y;
+      int endX = state->squareStart.x < state->squareEnd.x ? state->squareEnd.x : state->squareStart.x;
+      int endY = state->squareStart.y < state->squareEnd.y ? state->squareEnd.y : state->squareStart.y;
+
+      for (y = startY; y <= endY; ++y) {
+         for (x = startX; x <= endX; ++x) {
+            size_t tile = gridManagerCellIDFromXY(state->view->gridManager, x, y);
+            if (tile < INF) {
+               gridManagerChangeTileSchema(state->view->gridManager, tile, mapEditorGetSelectedSchema(me));
+            }
+         }
+      }
+   }
+
+   state->state = None;
 }
 
 static void gridClickMove(EditorState *state, Int2 pos) {
@@ -151,16 +272,23 @@ static void gridClickMove(EditorState *state, Int2 pos) {
    Keyboard *k = appGetKeyboard(appGet());
    MapEditor *me = state->editor;
    Int2 vpPos = screenToWorld(state->view, pos);
+   size_t tile;
    vpPos.x /= GRID_CELL_SIZE;
    vpPos.y /= GRID_CELL_SIZE;
 
    mapEditorUpdateStats(me, vpPos);
 
-   if (mouseIsDown(mouse, SegaMouseBtn_Left)) {
-      size_t t = gridManagerCellIDFromXY(state->view->gridManager, vpPos.x, vpPos.y);
-      if (t < INF) {
-         gridManagerChangeTileSchema(state->view->gridManager, t, mapEditorGetSelectedSchema(me));
+   switch (state->state) {
+   case Paint:
+      tile = gridManagerCellIDFromXY(state->view->gridManager, vpPos.x, vpPos.y);
+      if (tile < INF) {
+         gridManagerChangeTileSchema(state->view->gridManager, tile, mapEditorGetSelectedSchema(me));
       }
+      break;
+
+   case Square:
+      state->squareEnd = vpPos;
+      break;
    }
 }
 
@@ -206,15 +334,14 @@ static void _handleMouse(EditorState *state) {
                }
             }
             
-            else {
+            else if(event.button == SegaMouseBtn_Left){
                gridClickDown(state, pos);
             }
          }
       }
-      else if (event.action == SegaMouse_Released) {
-         if (gridOperation) {
-            gridClickUp(state, pos);
-         }
+      else if (event.action == SegaMouse_Released  && event.button == SegaMouseBtn_Left) {
+         gridClickUp(state, pos);
+
       }
    }
 
@@ -228,6 +355,31 @@ void _editorHandleInput(EditorState *state, GameStateHandleInput *m) {
    _handleMouse(state);
 }
 
+static void _renderSquare(EditorState *state, Frame *frame) {
+   int x, y;
+   GridManager *gm = state->view->gridManager;
+   Viewport *vp = state->view->viewport;
+
+   int startX = state->squareStart.x < state->squareEnd.x ? state->squareStart.x : state->squareEnd.x;
+   int startY = state->squareStart.y < state->squareEnd.y ? state->squareStart.y : state->squareEnd.y;
+   int endX = state->squareStart.x < state->squareEnd.x ? state->squareEnd.x : state->squareStart.x;
+   int endY = state->squareStart.y < state->squareEnd.y ? state->squareEnd.y : state->squareStart.y;
+
+   for (y = startY; y <= endY; ++y) {
+      for (x = startX; x <= endX; ++x) {
+         size_t tile = gridManagerCellIDFromXY(gm, x, y);
+         if (tile < INF) {
+            int renderX = x * GRID_CELL_SIZE - vp->worldPos.x;
+            int renderY = y * GRID_CELL_SIZE - vp->worldPos.y;
+            byte schema = mapEditorGetSelectedSchema(state->editor);
+            
+            frameRenderRect(frame, &vp->region, renderX, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 0);
+            gridManagerRenderSchema(gm, schema, frame, &vp->region, renderX, renderY);;
+         }
+      }
+   }
+}
+
 void _editorRender(EditorState *state, GameStateRender *m) {
    Frame *frame = m->frame;
    frameClear(frame, FrameRegionFULL, 0);
@@ -235,11 +387,14 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    gridManagerRender(state->view->gridManager, frame);
    actorManagerRender(state->view->actorManager, frame);
    weatherRender(state->view->weather, frame);
-   gridManagerRenderLighting(state->view->gridManager, frame);   
+   gridManagerRenderLighting(state->view->gridManager, frame);  
+
+   if (state->state == Square) {
+      _renderSquare(state, frame);
+   }
 
    frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
    calendarRenderClock(state->view->calendar, m->frame);
-
   
    mapEditorRenderSchemas(state->editor, m->frame);
    mapEditorRenderXYDisplay(state->editor, m->frame);
