@@ -54,6 +54,8 @@ void calendarUpdate(Calendar *self);
 
 void calendarSetDateTIme(Calendar *self, DateTime dt);
 void calendarJump(Calendar *self, DateTime dt);
+void calendarPause(Calendar *self);
+void calendarResume(Calendar *self);
 
 DateTime calendarGetDateTime(Calendar *self);
 Date calendarGetDate(Calendar *self);
@@ -69,5 +71,13 @@ void calendarRenderClock(Calendar *self, Frame *frame);
 
 void calendarSetAmbientByTime(Calendar *self);
 void calendarSetPaletteByTime(Calendar *self);
+
+void calendarRenderTestReadout(Calendar *self, Frame *frame);
+void calendarToggleTestReadout(Calendar *self);
+
+//returns nonzero if event occurs
+
+typedef struct MouseEvent_t MouseEvent;
+int calendarMouseButton(Calendar *self, MouseEvent *e);
 
 

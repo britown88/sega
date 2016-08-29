@@ -471,6 +471,10 @@ void consolePushLine(Console *self, const char *line) {
 }
 
 void consoleUpdate(Console *self) {
+   if (!self->enabled) {
+      return;
+   }
+
    if (!self->cursorClock) {
       self->cursorClock = gameClockGetTime();
    }

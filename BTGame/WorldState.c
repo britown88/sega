@@ -205,6 +205,11 @@ static void _handleMouse(WorldState *state) {
             if (verbManagerMouseButton(view->verbManager, &event)) {
                continue;
             }
+
+            if (calendarMouseButton(view->calendar, &event)) {
+               continue;
+            }
+
             break;
          case SegaMouseBtn_Right:
 
@@ -249,6 +254,7 @@ void _worldRender(WorldState *state, GameStateRender *m){
    textAreaRender(state->smallbox, state->view, frame);
    cursorManagerRender(state->view->cursorManager, frame);
 
+   calendarRenderTestReadout(state->view->calendar, frame);
    framerateViewerRender(state->view->framerateViewer, frame);
    consoleRenderNotification(state->view->console, frame);
 }

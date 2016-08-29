@@ -248,5 +248,8 @@
     <ClCompile Include="LightDebugger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Lua_Time.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

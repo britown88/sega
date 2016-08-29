@@ -10,6 +10,7 @@
 #include "SEGA\Input.h"
 #include "SEGA\App.h"
 #include "GameClock.h"
+#include "Calendar.h"
 
 #include "segashared\CheckedMemory.h"
 
@@ -152,6 +153,7 @@ void _consoleRender(ConsoleState *state, GameStateRender *m) {
 
    cursorManagerRender(state->view->cursorManager, frame);
 
+   calendarRenderTestReadout(state->view->calendar, frame);
    framerateViewerRender(state->view->framerateViewer, frame);
    consoleRenderLines(state->view->console, frame);
 }

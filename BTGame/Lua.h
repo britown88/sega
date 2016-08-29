@@ -51,6 +51,7 @@ void luaLoadStandardLibrary(lua_State *L);
 
 void luaLoadMapLibrary(lua_State *L);
 
+void luaLoadTimeLibrary(lua_State *L);
 void luaLoadActorLibrary(lua_State *L);
 void luaActorAddActor(lua_State *L, Actor *a);//add an actor to the actors table (called by actor creation)
 void luaActorRemoveActor(lua_State *L, Actor *a);//remove an added actor from the actors table (called by actorDestroy)

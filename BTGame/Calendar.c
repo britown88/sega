@@ -7,15 +7,22 @@
 #include "GridManager.h"
 #include "LightGrid.h"
 #include "AssetHelpers.h"
+#include "TextArea.h"
+#include "SEGA/Input.h"
 
 
 
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #define CALENDAR_TOP 0
 #define CALENDAR_LEFT 96
 #define CALENDAR_WIDTH 128
 #define CALENDAR_HEIGHT 11
+
+#define MAX_JUMPS_PER_FRAME 120
+
 
 static const Int2 RisePosition = { 6, 9 };
 static const Int2 NoonPosition = { 64, -1 };
@@ -56,6 +63,10 @@ struct Calendar_t {
    FrameRegion clockRegion;
 
    AstroCycle sunCycle, moonCycle;
+   bool paused;
+
+   TextArea *testReadout;
+   bool showReadout;
 
 };
 
@@ -142,12 +153,17 @@ Calendar *calendarCreate(WorldView *view) {
    out->clockRegion = (FrameRegion){ CALENDAR_LEFT, CALENDAR_TOP, CALENDAR_WIDTH, CALENDAR_HEIGHT };
    _buildCycleCircle(out);
 
+   out->testReadout = textAreaCreate(2, 2, EGA_RES_WIDTH - 4, EGA_RES_HEIGHT - 4);
+
+
    return out;
 }
 void calendarDestroy(Calendar *self) {
    managedImageDestroy(self->clock);
    managedImageDestroy(self->moon);
    managedImageDestroy(self->sun);
+
+   textAreaDestroy(self->testReadout);
    checkedFree(self);
 }
 
@@ -180,6 +196,17 @@ void calendarSetTickDelay(Calendar *self, Milliseconds msPerTick) {
 }
 void calendarSetTickLength(Calendar *self, DateTime tick) {
    self->tickLength = minuteFromDateTime(&tick);
+}
+
+void calendarPause(Calendar *self) {
+   self->paused = true;
+}
+void calendarResume(Calendar *self) {
+   if (self->paused) {
+      self->paused = false;
+      self->startTime = gameClockGetTime();
+   }
+   
 }
 
 typedef enum {
@@ -231,6 +258,10 @@ void calendarSetAmbientByTime(Calendar *self) {
    TimeofDay tod = getToD(self, &d);
    byte level = 0;
 
+   if (self->paused) {
+      return;
+   }
+
    switch (tod) {
    case Dawn:
       level = (byte)(MAX_BRIGHTNESS * d);
@@ -265,6 +296,8 @@ void calendarSetPaletteByTime(Calendar *self) {
    if (!defPal) { defPal = stringIntern("default"); }
    if (!duskPal) { duskPal = stringIntern("dusk"); }
    if (!nightPal) { nightPal = stringIntern("night"); }
+
+   
 
    switch (tod) {
    case Dawn:
@@ -328,8 +361,49 @@ void calendarRenderClock(Calendar *self, Frame *frame) {
    frameRenderImage(frame, &self->clockRegion, 0, 0, managedImageGetImage(self->clock));
 }
 
+int calendarMouseButton(Calendar *self, MouseEvent *e) {
+   Recti clockArea = { CALENDAR_LEFT, CALENDAR_TOP, CALENDAR_LEFT + CALENDAR_WIDTH, CALENDAR_TOP + CALENDAR_HEIGHT };
+
+   if (rectiContains(clockArea, e->pos)) {
+      calendarToggleTestReadout(self);
+      return true;
+   }
+
+   return 0;
+
+}
+
+void calendarToggleTestReadout(Calendar *self) {
+   self->showReadout = !self->showReadout;
+}
+
+void calendarRenderTestReadout(Calendar *self, Frame *frame) {
+
+   if (self->showReadout) {
+      char buff[256];
+      DateTime dt = dateTimeFromMinute(self->current);
+      Milliseconds time = t_u2m(gameClockGetTime());
+
+      sprintf(buff,
+         "Time: %02i%c%02i%s\n"
+         "Day: %02i/%02i/%04i",
+         dt.time.hour>12 ? dt.time.hour - 12 : dt.time.hour, time % 500>250 ? ':' : ' ', dt.time.minute, dt.time.hour>11 ? "PM" : "AM",
+         dt.date.day + dt.date.week * DAYS_PER_WEEK,
+         dt.date.month + dt.date.season * MONTHS_PER_SEASON,
+         dt.date.year
+         );
+
+      textAreaSetText(self->testReadout, buff);
+      textAreaRender(self->testReadout, self->view, frame);
+   }
+}
+
 void calendarUpdate(Calendar *self) {
    Microseconds t = gameClockGetTime();
+
+   if (self->paused) {
+      return;
+   }
 
    if (self->startTime == 0 || self->startTime > t) {
       self->startTime = gameClockGetTime();
@@ -346,7 +420,8 @@ void calendarUpdate(Calendar *self) {
       }
    }
 
-   while (self->current < self->target) {
+   int jump = 0;
+   while(self->current < self->target && jump++ < MAX_JUMPS_PER_FRAME) {
       ++self->current;
 
       //here's where we can run events!

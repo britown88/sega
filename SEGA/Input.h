@@ -144,7 +144,7 @@ typedef enum{
 }SegaKeys;
 
 /*----Mouse -------*/
-typedef struct {
+typedef struct MouseEvent_t {
    SegaMouseActions action;
    SegaMouseButtons button;
    Int2 pos;

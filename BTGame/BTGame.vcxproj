@@ -183,6 +183,7 @@
     <ClCompile Include="Lua_DB.c" />
     <ClCompile Include="Lua_Map.c" />
     <ClCompile Include="Lua_StandardLibrary.c" />
+    <ClCompile Include="Lua_Time.c" />
     <ClCompile Include="Lua_UILibrary.c" />
     <ClCompile Include="Map.c" />
     <ClCompile Include="MapEditor.c" />
