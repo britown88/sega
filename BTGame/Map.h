@@ -22,3 +22,6 @@ Tile *mapGetTiles(Map *self);
 Tile *mapTileAtXY(Map *self, int x, int y);
 Tile *mapTileAt(Map *self, size_t i);
 size_t mapTileIndexFromPointer(Map *self, Tile *t);
+
+Map *mapCopy(Map *self);
+void mapCopyInner(Map *dst, Map *src);

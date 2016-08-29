@@ -49,6 +49,17 @@ void gridTokenPtrDestroy(GridTokenPtr *self) {
    checkedFree(*self);
 }
 
+
+typedef Map *MapPtr;
+#define VectorT MapPtr
+#include "segautils/Vector_Create.h"
+
+#define MAX_SNAPSHOTS 1000
+
+void mapPtrDestroy(MapPtr *self) {
+   mapDestroy(*self);
+}
+
 struct GridManager_t {
    WorldView *view;
 
@@ -75,7 +86,16 @@ struct GridManager_t {
    short partitionWidth, partitionHeight;
    size_t partitionCount;
 
+   vec(MapPtr) *snapshots;
+   size_t currentSnapShot;
+
 };
+
+static void _clearSnapshots(GridManager *self) {
+   vecClear(MapPtr)(self->snapshots);
+   self->currentSnapShot = 0;
+   gridManagerSaveSnapshot(self);
+}
 
 
 
@@ -289,6 +309,8 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
       TileSchema *s = gridManagerGetSchema(self, tileGetSchema(mapTileAt(self->map, i)));
       lightGridChangeTileSchema(self->lightGrid, i, s);
    }
+
+   _clearSnapshots(self);
 }
 
 
@@ -353,6 +375,7 @@ GridManager *gridManagerCreate(WorldView *view) {
    //_createTestSchemas(out);
    _createTestGrid(out);
 
+   out->snapshots = vecCreate(MapPtr)(&mapPtrDestroy);
 
    return out;
 }
@@ -367,6 +390,7 @@ void gridManagerDestroy(GridManager *self) {
    vecDestroy(Partition)(self->partitionTable);
    vecDestroy(ActorPtr)(self->inViewActors);
    vecDestroy(TileSchema)(self->schemas);
+   vecDestroy(MapPtr)(self->snapshots);
    
    checkedFree(self);
 }
@@ -627,4 +651,41 @@ void gridManagerDebugLights(GridManager *self, Int2 source, Int2 target) {
    int vpy = self->view->viewport->worldPos.y / GRID_CELL_SIZE;
 
    lightGridDebug(self->lightGrid, (Int2) { source.x - vpx, source.y - vpy }, (Int2) { target.x - vpx, target.y - vpy });
+}
+
+void gridManagerSaveSnapshot(GridManager *self) {
+
+   //delete any redo-able snapshots
+   while (vecSize(MapPtr)(self->snapshots) > self->currentSnapShot) {
+      vecPopBack(MapPtr)(self->snapshots);
+   }
+
+   if (self->currentSnapShot == MAX_SNAPSHOTS) {
+      vecRemoveAt(MapPtr)(self->snapshots, 0);
+      self->currentSnapShot -= 1;
+   }
+
+   Map *copy = mapCopy(self->map);
+   vecPushBack(MapPtr)(self->snapshots, &copy);
+   self->currentSnapShot += 1;
+}
+void gridManagerUndo(GridManager *self) {
+   
+   
+   if (self->currentSnapShot <= 1) {
+      return;
+   }
+   
+   self->currentSnapShot -= 1;
+   mapCopyInner(self->map, *vecAt(MapPtr)(self->snapshots, self->currentSnapShot - 1));
+   
+}
+void gridManagerRedo(GridManager *self) {
+   if (self->currentSnapShot == vecSize(MapPtr)(self->snapshots)) {
+      return;
+   }
+
+   self->currentSnapShot += 1;
+   mapCopyInner(self->map, *vecAt(MapPtr)(self->snapshots, self->currentSnapShot - 1));
+   
 }

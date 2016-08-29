@@ -55,6 +55,19 @@ Map *mapCreate(short x, short y) {
    return out;
 }
 
+Map *mapCopy(Map *self) {
+   Map *out = mapCreate(self->width, self->height);
+   memcpy(out->grid, self->grid, self->width * self->height * sizeof(Tile));
+   return out;
+}
+
+void mapCopyInner(Map *dst, Map *src) {
+   if (dst->height != src->height || dst->width != src->width) {
+      return;
+   }
+   memcpy(dst->grid, src->grid, dst->width * dst->height * sizeof(Tile));
+}
+
 void mapResize(Map *self, short x, short y) {
    Tile *newGrid;
    short iy;

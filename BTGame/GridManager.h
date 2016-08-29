@@ -79,3 +79,8 @@ int gridDistance(int x0, int y0, int x1, int y1);
 void gridManagerToggleLightMode(GridManager *self);
 void gridManagerDebugLights(GridManager *self, Int2 source, Int2 target);//WORLD CGRID COORDS
 
+void gridManagerSaveSnapshot(GridManager *self);
+void gridManagerUndo(GridManager *self);
+void gridManagerRedo(GridManager *self);
+
+

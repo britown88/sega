@@ -109,6 +109,15 @@ static void _handleKeyboard(EditorState *state) {
             break;
          }
       }
+
+      else if (e.action == SegaKey_Pressed || e.action == SegaKey_Repeat) {
+         if (e.key == SegaKey_Z && keyboardIsDown(k, SegaKey_LeftControl)) {
+            gridManagerUndo(state->view->gridManager);
+         }
+         else if (e.key == SegaKey_Y && keyboardIsDown(k, SegaKey_LeftControl)) {
+            gridManagerRedo(state->view->gridManager);
+         }
+      }
    }
 
    speed = keyboardIsDown(k, SegaKey_LeftShift) ? VP_FAST_SPEED : VP_SPEED;
@@ -162,18 +171,23 @@ static void lightDebugClick(EditorState *state, Int2 pos) {
    }
 }
 
-static void _addTileToFloodFill(GridManager *gm, int x, int y, vec(size_t) *openList, vec(size_t) *closedList) {
+static void _addTileToFloodFill(GridManager *gm, byte baseSchema, int x, int y, vec(size_t) *openList, vec(size_t) *closedList) {
    size_t t = gridManagerCellIDFromXY(gm, x, y);
 
-   if (x < 0 || x >= gridManagerWidth(gm) || y < 0 || y >= gridManagerHeight(gm)) {
-      return;
-   }
+   if (x >= 0 && x < gridManagerWidth(gm) && y >= 0 && y < gridManagerHeight(gm)) {
+      Tile *tile = gridManagerTileAt(gm, t);
 
-   if(vecIndexOf(size_t)(closedList, &t) == INF) {
-      if (gridManagerTileAt(gm, t)) {
-         vecPushBack(size_t)(openList, &t);
+      if (tile && tileGetSchema(tile) == baseSchema) {
+         if (vecIndexOf(size_t)(closedList, &t) == INF) {
+            if (gridManagerTileAt(gm, t)) {
+               vecPushBack(size_t)(openList, &t);
+               return;
+            }
+         }
       }
    }
+   
+   vecPushBack(size_t)(closedList, &t);   
 }
 
 static void _floodFill(EditorState *state, byte baseSchema, byte selectedSchema, vec(size_t) *openList, vec(size_t) *closedList) {
@@ -188,10 +202,10 @@ static void _floodFill(EditorState *state, byte baseSchema, byte selectedSchema,
       gridManagerChangeTileSchema(gm, t, selectedSchema);
       gridManagerXYFromCellID(gm, t, &x, &y);
 
-      _addTileToFloodFill(gm, x - 1, y, openList, closedList);
-      _addTileToFloodFill(gm, x , y - 1, openList, closedList);
-      _addTileToFloodFill(gm, x + 1, y, openList, closedList);
-      _addTileToFloodFill(gm, x, y + 1, openList, closedList);
+      _addTileToFloodFill(gm, baseSchema, x - 1, y, openList, closedList);
+      _addTileToFloodFill(gm, baseSchema, x , y - 1, openList, closedList);
+      _addTileToFloodFill(gm, baseSchema, x + 1, y, openList, closedList);
+      _addTileToFloodFill(gm, baseSchema, x, y + 1, openList, closedList);
    }
 
    vecRemoveAt(size_t)(openList, 0);
@@ -233,6 +247,7 @@ static void gridClickDown(EditorState *state, Int2 pos) {
       }
 
       state->state = None;
+      gridManagerSaveSnapshot(gm);
    }
    else {
       //regular painting
@@ -264,7 +279,12 @@ static void gridClickUp(EditorState *state, Int2 pos) {
       }
    }
 
+   if (state->state != None) {
+      gridManagerSaveSnapshot(state->view->gridManager);
+   }
+
    state->state = None;
+
 }
 
 static void gridClickMove(EditorState *state, Int2 pos) {
