@@ -287,11 +287,22 @@ Tile *gridManagerTileAtScreenPos(GridManager *self, int x, int y) {
    return gridManagerTileAtXY(self, vpPos.x, vpPos.y);
 }
 
+static void _refreshLighting(GridManager *self) {
+   size_t i = 0;
+   lightGridLoadMap(self->lightGrid, self->width, self->height);
+
+   //we need to do this on load now for all the lights to be registered
+   for (i = 0; i < self->cellCount; ++i) {
+      TileSchema *s = gridManagerGetSchema(self, tileGetSchema(mapTileAt(self->map, i)));
+      lightGridChangeTileSchema(self->lightGrid, i, s);
+   }
+}
+
 Map *gridManagerGetMap(GridManager *self) {
    return self->map;
 }
 void gridManagerLoadMap(GridManager *self, Map *map) {
-   size_t i = 0;
+   
    if (self->map && map != self->map) {
       mapDestroy(self->map);
    }
@@ -302,13 +313,9 @@ void gridManagerLoadMap(GridManager *self, Map *map) {
 
    _rebuildPartitionTable(self);
 
-   lightGridLoadMap(self->lightGrid, self->width, self->height);
+   
 
-   //we need to do this on load now for all the lights to be registered
-   for (i = 0; i < self->cellCount; ++i) {
-      TileSchema *s = gridManagerGetSchema(self, tileGetSchema(mapTileAt(self->map, i)));
-      lightGridChangeTileSchema(self->lightGrid, i, s);
-   }
+   _refreshLighting(self);
 
    _clearSnapshots(self);
 }
@@ -678,6 +685,7 @@ void gridManagerUndo(GridManager *self) {
    
    self->currentSnapShot -= 1;
    mapCopyInner(self->map, *vecAt(MapPtr)(self->snapshots, self->currentSnapShot - 1));
+   _refreshLighting(self);
    
 }
 void gridManagerRedo(GridManager *self) {
@@ -687,5 +695,6 @@ void gridManagerRedo(GridManager *self) {
 
    self->currentSnapShot += 1;
    mapCopyInner(self->map, *vecAt(MapPtr)(self->snapshots, self->currentSnapShot - 1));
+   _refreshLighting(self);
    
 }

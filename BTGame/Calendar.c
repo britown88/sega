@@ -314,9 +314,9 @@ void calendarSetPaletteByTime(Calendar *self) {
       break;
 
    case Dusk:
-      if (currentPal != defPal) {
-         assetsSetPalette(self->view->db, defPal);
-         currentPal = defPal;
+      if (currentPal != duskPal) {
+         assetsSetPalette(self->view->db, duskPal);
+         currentPal = duskPal;
       }
       break;
 
