@@ -285,8 +285,14 @@ int appListFiles(const char *root, int type, vec(StringPtr) **out, const char *e
    StringCchCat(szDir, MAX_PATH, TEXT("\\*"));
 
    // Find the first file in the directory.
-
+#ifdef SEGA_UWP
+   //TODO: make this work with UWP
+   hFind = INVALID_HANDLE_VALUE;
+#else
    hFind = FindFirstFile(szDir, &ffd);
+#endif
+
+   
 
    if (INVALID_HANDLE_VALUE == hFind)   {
       //DisplayErrorBox(TEXT("FindFirstFile"));

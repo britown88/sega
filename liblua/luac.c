@@ -189,6 +189,8 @@ static int pmain(lua_State* L)
  return 0;
 }
 
+#ifndef SEGA_UWP
+
 int main(int argc, char* argv[])
 {
  lua_State* L;
@@ -204,6 +206,8 @@ int main(int argc, char* argv[])
  lua_close(L);
  return EXIT_SUCCESS;
 }
+
+#endif
 
 /*
 ** $Id: luac.c,v 1.75 2015/03/12 01:58:27 lhf Exp $

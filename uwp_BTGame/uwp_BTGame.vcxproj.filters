@@ -1,0 +1,237 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="existing">
+      <UniqueIdentifier>{18e259c4-2cc0-481e-b943-fcaaf0317494}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sqliteWrapper.cpp" />
+    <ClCompile Include="..\BTGame\ActorManager.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\AssetHelpers.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\assets.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\BT.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Calendar.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\ChoicePrompt.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Console.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\ConsoleState.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\CursorManager.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\DB.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\EditorState.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\FramerateViewer.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\GameClock.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\GameHelpers.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\GameState.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\GridManager.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\GridSolver.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\ImageLibrary.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\LightDebugger.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\LightGrid.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua_ActorLibrary.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua_AllLibraries.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua_DB.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua_Map.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua_StandardLibrary.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua_Time.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Lua_UILibrary.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Map.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\MapEditor.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\MenuPanel.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\MeshRendering.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\PCManager.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\RenderHelpers.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\RichText.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\SplashState.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Sprites.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\TextArea.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\VerbManager.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\Weather.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BTGame\WorldState.c">
+      <Filter>existing</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sqliteWrapper.h" />
+    <ClInclude Include="..\BTGame\Actors.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\AssetHelpers.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\assets.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\BT.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Calendar.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\ChoicePrompt.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Console.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\DB.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\GameClock.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\GameHelpers.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\GameState.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\GridManager.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\GridSolver.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\ImageLibrary.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\LightDebugger.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\LightGrid.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Lua.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Managers.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Map.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\MapEditor.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\MenuPanel.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\MeshRendering.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\RenderHelpers.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\RenderLayers.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\RichText.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Sprites.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\TextArea.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Tiles.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Verbs.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Viewport.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\Weather.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BTGame\WorldView.h">
+      <Filter>existing</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

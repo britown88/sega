@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\liblua\lapi.c" />
+    <ClCompile Include="..\liblua\lauxlib.c" />
+    <ClCompile Include="..\liblua\lbaselib.c" />
+    <ClCompile Include="..\liblua\lbitlib.c" />
+    <ClCompile Include="..\liblua\lcode.c" />
+    <ClCompile Include="..\liblua\lcorolib.c" />
+    <ClCompile Include="..\liblua\lctype.c" />
+    <ClCompile Include="..\liblua\ldblib.c" />
+    <ClCompile Include="..\liblua\ldebug.c" />
+    <ClCompile Include="..\liblua\ldo.c" />
+    <ClCompile Include="..\liblua\ldump.c" />
+    <ClCompile Include="..\liblua\lfunc.c" />
+    <ClCompile Include="..\liblua\lgc.c" />
+    <ClCompile Include="..\liblua\linit.c" />
+    <ClCompile Include="..\liblua\liolib.c" />
+    <ClCompile Include="..\liblua\llex.c" />
+    <ClCompile Include="..\liblua\lmathlib.c" />
+    <ClCompile Include="..\liblua\lmem.c" />
+    <ClCompile Include="..\liblua\loadlib.c" />
+    <ClCompile Include="..\liblua\lobject.c" />
+    <ClCompile Include="..\liblua\lopcodes.c" />
+    <ClCompile Include="..\liblua\loslib.c" />
+    <ClCompile Include="..\liblua\lparser.c" />
+    <ClCompile Include="..\liblua\lstate.c" />
+    <ClCompile Include="..\liblua\lstring.c" />
+    <ClCompile Include="..\liblua\lstrlib.c" />
+    <ClCompile Include="..\liblua\ltable.c" />
+    <ClCompile Include="..\liblua\ltablib.c" />
+    <ClCompile Include="..\liblua\ltm.c" />
+    <ClCompile Include="..\liblua\lua.c" />
+    <ClCompile Include="..\liblua\luac.c" />
+    <ClCompile Include="..\liblua\lundump.c" />
+    <ClCompile Include="..\liblua\lutf8lib.c" />
+    <ClCompile Include="..\liblua\lvm.c" />
+    <ClCompile Include="..\liblua\lzio.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\liblua\lapi.h" />
+    <ClInclude Include="..\liblua\lauxlib.h" />
+    <ClInclude Include="..\liblua\lcode.h" />
+    <ClInclude Include="..\liblua\lctype.h" />
+    <ClInclude Include="..\liblua\ldebug.h" />
+    <ClInclude Include="..\liblua\ldo.h" />
+    <ClInclude Include="..\liblua\lfunc.h" />
+    <ClInclude Include="..\liblua\lgc.h" />
+    <ClInclude Include="..\liblua\llex.h" />
+    <ClInclude Include="..\liblua\llimits.h" />
+    <ClInclude Include="..\liblua\lmem.h" />
+    <ClInclude Include="..\liblua\lobject.h" />
+    <ClInclude Include="..\liblua\lopcodes.h" />
+    <ClInclude Include="..\liblua\lparser.h" />
+    <ClInclude Include="..\liblua\lprefix.h" />
+    <ClInclude Include="..\liblua\lstate.h" />
+    <ClInclude Include="..\liblua\lstring.h" />
+    <ClInclude Include="..\liblua\ltable.h" />
+    <ClInclude Include="..\liblua\ltm.h" />
+    <ClInclude Include="..\liblua\lua.h" />
+    <ClInclude Include="..\liblua\lua.hpp" />
+    <ClInclude Include="..\liblua\luaconf.h" />
+    <ClInclude Include="..\liblua\lualib.h" />
+    <ClInclude Include="..\liblua\lundump.h" />
+    <ClInclude Include="..\liblua\lvm.h" />
+    <ClInclude Include="..\liblua\lzio.h" />
+  </ItemGroup>
+</Project>

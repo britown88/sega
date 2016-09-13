@@ -8,8 +8,11 @@
 #include "assets.h"
 #include "DB.h"
 #include "segashared/CheckedMemory.h"
+#ifdef SEGA_UWP
+#include "sqliteWrapper.h"
+#else
 #include "sqlite/sqlite3.h"
-
+#endif
 void dbImageDestroyStatements(DB_assets *db);
 int dbImageCreateTable(DB_assets *db);
 void dbPaletteDestroyStatements(DB_assets *db);

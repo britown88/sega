@@ -54,8 +54,10 @@
 
 #elif defined(LUA_USE_WINDOWS)	/* }{ */
 
+#ifndef SEGA_UWP
 #define l_popen(L,c,m)		(_popen(c,m))
 #define l_pclose(L,file)	(_pclose(file))
+#endif
 
 #else				/* }{ */
 
@@ -255,6 +257,7 @@ static int io_open (lua_State *L) {
 /*
 ** function to close 'popen' files
 */
+#ifndef SEGA_UWP
 static int io_pclose (lua_State *L) {
   LStream *p = tolstream(L);
   return luaL_execresult(L, l_pclose(L, p->f));
@@ -265,10 +268,13 @@ static int io_popen (lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
   const char *mode = luaL_optstring(L, 2, "r");
   LStream *p = newprefile(L);
+
   p->f = l_popen(L, filename, mode);
+
   p->closef = &io_pclose;
   return (p->f == NULL) ? luaL_fileresult(L, 0, filename) : 1;
 }
+#endif
 
 
 static int io_tmpfile (lua_State *L) {
@@ -680,7 +686,9 @@ static const luaL_Reg iolib[] = {
   {"lines", io_lines},
   {"open", io_open},
   {"output", io_output},
+#ifndef SEGA_UWP
   {"popen", io_popen},
+#endif
   {"read", io_read},
   {"tmpfile", io_tmpfile},
   {"type", io_type},

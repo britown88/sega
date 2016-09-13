@@ -535,6 +535,8 @@ static int runargs (lua_State *L, char **argv, int n) {
 
 static int handle_luainit (lua_State *L) {
   const char *name = "=" LUA_INITVARVERSION;
+#ifndef SEGA_UWP
+  lua_pushstring(L, getenv(luaL_checkstring(L, 1))); 
   const char *init = getenv(name + 1);
   if (init == NULL) {
     name = "=" LUA_INIT_VAR;
@@ -545,6 +547,10 @@ static int handle_luainit (lua_State *L) {
     return dofile(L, init+1);
   else
     return dostring(L, init, name);
+#else
+  lua_pushstring(L, NULL);
+  return LUA_OK;
+#endif
 }
 
 

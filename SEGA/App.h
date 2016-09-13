@@ -10,6 +10,8 @@
 #include "IRenderer.h"
 #include "IDeviceContext.h"
 
+#include "segautils/extern_c.h"
+
 //device context flags
 #define DC_FLAG_FULLSCREEN (1 << 0)
 
@@ -51,6 +53,8 @@ static void virtualAppOnStep(VirtualApp *self){self->vTable->onStep(self);}
 //app and functions
 typedef struct App_t App;
 
+SEXTERN_C
+
 DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context);
 
 DLL_PUBLIC int appRand(App *self, int lower, int upper);
@@ -82,6 +86,8 @@ DLL_PUBLIC void appSetPalette(App *self, Palette *p);
 #define APP_FILE_FILE_ONLY 3 //return only files
 
 DLL_PUBLIC int appListFiles(const char *root, int type, vec(StringPtr) **out, const char *ext);
+
+END_SEXTERN_C
 
 
 

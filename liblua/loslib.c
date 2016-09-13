@@ -121,7 +121,7 @@
 
 
 
-
+#ifndef SEGA_UWP
 static int os_execute (lua_State *L) {
   const char *cmd = luaL_optstring(L, 1, NULL);
   int stat = system(cmd);
@@ -132,6 +132,7 @@ static int os_execute (lua_State *L) {
     return 1;
   }
 }
+#endif
 
 
 static int os_remove (lua_State *L) {
@@ -159,7 +160,11 @@ static int os_tmpname (lua_State *L) {
 
 
 static int os_getenv (lua_State *L) {
+#ifndef SEGA_UWP
   lua_pushstring(L, getenv(luaL_checkstring(L, 1)));  /* if NULL push nil */
+#else
+   lua_pushstring(L, NULL);
+#endif
   return 1;
 }
 
@@ -348,7 +353,9 @@ static const luaL_Reg syslib[] = {
   {"clock",     os_clock},
   {"date",      os_date},
   {"difftime",  os_difftime},
+#ifndef SEGA_UWP
   {"execute",   os_execute},
+#endif
   {"exit",      os_exit},
   {"getenv",    os_getenv},
   {"remove",    os_remove},

@@ -28,7 +28,12 @@ typedef struct {
 } Recti;
 
 static Recti rectiCreate(int x, int y, int width, int height) {
-   return (Recti) {x, y, x + width, y + height};
+   Recti out;
+   out.left = x;
+   out.top = y;
+   out.right = x + width;
+   out.bottom = y + height;
+   return out;
 }
 
 static int rectiWidth(Recti *r) {

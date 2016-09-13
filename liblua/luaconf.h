@@ -53,7 +53,9 @@
 
 
 #if defined(LUA_USE_WINDOWS)
+#ifndef SEGA_UWP
 #define LUA_DL_DLL	/* enable support for DLL */
+#endif
 #define LUA_USE_C89	/* broadly, Windows is C89 */
 #endif
 
