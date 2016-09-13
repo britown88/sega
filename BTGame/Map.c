@@ -10,24 +10,34 @@
 #include <stdio.h>
 #include <string.h>
 
+#pragma pack(push, 1)
+
 struct Tile_t {
    byte schema;
-   byte collision;//use "solid" flags
+   byte collAndFlags;//4bits:collision, 4bits: flags
+   byte areas;//4bitsvision 4bitslogic
 };
 
+#pragma pack(pop)
+
+#define COLL_MASK   0xF
+#define FLAGS_MASK 0xF0
+
 byte tileGetCollision(Tile *self) {
-   return self->collision;
+   return self->collAndFlags & COLL_MASK;
 }
-byte tileGetSchema(Tile *self) {
-   return self->schema;
+void tileSetCollision(Tile *self, byte col) {
+   self->collAndFlags &= (FLAGS_MASK + (col&COLL_MASK));
 }
 
-void tileSetCollision(Tile *self, byte col) {
-   self->collision = col;
+byte tileGetSchema(Tile *self) {
+   return self->schema;
 }
 void tileSetSchema(Tile *self,byte schema) {
    self->schema = schema;
 }
+
+
 
 
 struct Map_t {

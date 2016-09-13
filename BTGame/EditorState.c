@@ -67,6 +67,7 @@ void _editorEnter(EditorState *state, StateEnter *m) {
    state->bg = imageLibraryGetImage(state->view->imageLibrary, stringIntern(IMG_BG_EDITOR));
    mapEditorReset(state->editor);
    calendarPause(state->view->calendar);
+   pcManagerUpdate(state->view->pcManager);
 }
 void _editorExit(EditorState *state, StateExit *m) {
    managedImageDestroy(state->bg);
@@ -78,6 +79,7 @@ void _editorUpdate(EditorState *state, GameStateUpdate *m) {
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
 
+   
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
    calendarUpdate(view->calendar);
    calendarSetAmbientByTime(view->calendar);

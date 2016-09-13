@@ -294,8 +294,12 @@ void calendarSetPaletteByTime(Calendar *self) {
    byte level = 0;
    
    if (!defPal) { defPal = stringIntern("default"); }
-   if (!duskPal) { duskPal = stringIntern("dusk"); }
+   if (!duskPal) { duskPal = stringIntern("dusk2"); }
    if (!nightPal) { nightPal = stringIntern("night"); }
+
+   if (tod == Dusk && d > 0.6) {
+      tod = Night;
+   }
 
    switch (tod) {
    case Dawn:

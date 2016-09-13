@@ -1,3 +1,15 @@
+local function addTile(name, posList)
+  local sprite = { id = name,  size = {14, 14}, frames = {{image = 'tiles', pos = posList[1]} }}
+
+  if #posList > 1 then
+    for i = 2, #posList do
+      sprite.frames[i] = {pos = posList[i]}
+    end
+  end
+
+  db.insertSprite(sprite)
+end
+
 db.beginTransaction()
 
 db.insertSprite{
@@ -9,24 +21,29 @@ db.insertSprite{
    }
 }
 
---TILES FOR DAYS
-db.insertSprite{ id = 'tiles.blank',  size = {14, 14}, frames = {{image = 'tiles', pos = {0, 0}} }}
-db.insertSprite{ id = 'tiles.grass1',  size = {14, 14}, frames = {{image = 'tiles', pos = {2, 1}} }}
-db.insertSprite{ id = 'tiles.grass2',  size = {14, 14}, frames = {{image = 'tiles', pos = {2, 0}} }}
-db.insertSprite{ id = 'tiles.grass3',  size = {14, 14}, frames = {{image = 'tiles', pos = {1, 0}} }}
-db.insertSprite{ id = 'tiles.tree1',  size = {14, 14}, frames = {{image = 'tiles', pos = {3, 0}} }}
-db.insertSprite{ id = 'tiles.tree2',  size = {14, 14}, frames = {{image = 'tiles', pos = {4, 0}} }}
-db.insertSprite{ id = 'tiles.water1',  size = {14, 14}, frames = {{image = 'tiles', pos = {5, 0}}, {pos = {5, 1}} }}
-db.insertSprite{ id = 'tiles.water2',  size = {14, 14}, frames = {{image = 'tiles', pos = {10, 0}}, {pos = {10, 1}} }}
-db.insertSprite{ id = 'tiles.mountain1',  size = {14, 14}, frames = {{image = 'tiles', pos = {6, 0}} }}
-db.insertSprite{ id = 'tiles.mountain2',  size = {14, 14}, frames = {{image = 'tiles', pos = {6, 1}} }}
-db.insertSprite{ id = 'tiles.wcorner1',  size = {14, 14}, frames = {{image = 'tiles', pos = {11, 0}}, {pos = {11, 1}} }}
-db.insertSprite{ id = 'tiles.wcorner2',  size = {14, 14}, frames = {{image = 'tiles', pos = {12, 0}}, {pos = {12, 1}} }}
-db.insertSprite{ id = 'tiles.wcorner3',  size = {14, 14}, frames = {{image = 'tiles', pos = {13, 0}}, {pos = {13, 1}} }}
-db.insertSprite{ id = 'tiles.wcorner4',  size = {14, 14}, frames = {{image = 'tiles', pos = {14, 0}}, {pos = {14, 1}} }}
-db.insertSprite{ id = 'tiles.campfire',  size = {14, 14}, frames = {{image = 'tiles', pos = {0, 1}}, {pos = {0, 2}} }}
-db.insertSprite{ id = 'tiles.bridge',  size = {14, 14}, frames = {{image = 'tiles', pos = {9, 0}} }}
-db.insertSprite{ id = 'tiles.torch',  size = {14, 14}, frames = {{image = 'tiles', pos = {8, 0}}, {pos = {8, 1}} }}
-db.insertSprite{ id = 'tiles.wall',  size = {14, 14}, frames = {{image = 'tiles', pos = {7, 0}} }}
+addTile('tiles.blank', {{0, 0}})
+addTile('tiles.grass1', {{2, 1}})
+addTile('tiles.grass2', {{2, 0}})
+addTile('tiles.grass3', {{1, 0}})
+addTile('tiles.tree1', {{3, 0}})
+addTile('tiles.tree2', {{4, 0}})
+addTile('tiles.water1', {{5, 0}, {5, 1}})
+addTile('tiles.water2', {{10, 0}, {10, 1}})
+addTile('tiles.mountain1', {{6, 0}})
+addTile('tiles.mountain2', {{6, 1}})
+addTile('tiles.wcorner1', {{11, 0}, {11, 1}})
+addTile('tiles.wcorner2', {{12, 0}, {12, 1}})
+addTile('tiles.wcorner3', {{13, 0}, {13, 1}})
+addTile('tiles.wcorner4', {{14, 0}, {14, 1}})
+addTile('tiles.campfire', {{0, 1}, {0, 2}})
+addTile('tiles.bridge', {{9, 0}})
+addTile('tiles.torch', {{8, 0}, {8, 1}})
+addTile('tiles.wall', {{7, 0}})
+addTile('tiles.path1', {{2, 2}})
+addTile('tiles.path2', {{3, 2}})
+addTile('tiles.path3', {{2, 3}})
+addTile('tiles.path4', {{3, 3}})
+addTile('tiles.path5', {{2, 4}})
+addTile('tiles.path6', {{3, 4}})
 
 db.endTransaction()

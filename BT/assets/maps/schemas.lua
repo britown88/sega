@@ -20,7 +20,13 @@ db.insertTileSchema {
     {sprite = 'tiles.wcorner2'},
     {sprite = 'tiles.wcorner3'},
     {sprite = 'tiles.wcorner4'},
-    {sprite = 'tiles.bridge', occlusion = true}
+    {sprite = 'tiles.bridge', occlusion = true},
+    {sprite = 'tiles.path1'},
+    {sprite = 'tiles.path2'},
+    {sprite = 'tiles.path3'},
+    {sprite = 'tiles.path4'},
+    {sprite = 'tiles.path5'},
+    {sprite = 'tiles.path6'}
   }
 }
 

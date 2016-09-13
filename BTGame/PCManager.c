@@ -32,13 +32,13 @@ void pcManagerDestroy(PCManager *self) {
 static void _updateSprite(PCManager *self) {
 
    if (self->sneaking) {
-      actorSetImagePos(self->pc, (Int2) {28, 28});
+      actorSetImagePos(self->pc, (Int2) {8, 8});
    }
    else if (self->usingTorch) {
-      actorSetImagePos(self->pc, (Int2) { 56, 28 });
+      actorSetImagePos(self->pc, (Int2) { 28, 0 });
    }
    else {
-      actorSetImagePos(self->pc, (Int2) { 42, 28 });
+      actorSetImagePos(self->pc, (Int2) { 14, 0 });
    }
 }
 
@@ -111,7 +111,7 @@ void pcManagerCreatePC(PCManager *self) {
    actorSetMoveDelay(self->pc, DEFAULT_MOVE_DELAY);
    actorSetMoveTime(self->pc, DEFAULT_MOVE_SPEED);
 
-   actorSetImage(self->pc, stringIntern(IMG_TILE_ATLAS));
+   actorSetImage(self->pc, stringIntern("characters"));
 
    _updateLight(self);
    _updateSprite(self);
