@@ -2,6 +2,7 @@
 
 #include "segautils\DLLBullshit.h"
 #include "segautils\Vector.h"
+#include "segautils/extern_c.h"
 
 #define SegaKey_Undefined -1
 
@@ -150,6 +151,8 @@ typedef struct MouseEvent_t {
    Int2 pos;
 }MouseEvent;
 
+SEXTERN_C
+
 #define ClosureTPart \
     CLOSURE_RET(Int2) \
     CLOSURE_NAME(MousePos) \
@@ -189,3 +192,5 @@ DLL_PUBLIC void keyboardPushEvent(Keyboard *self, KeyboardEvent *event);
 DLL_PUBLIC int keyboardPopEvent(Keyboard *self, KeyboardEvent *eventOut);
 DLL_PUBLIC int keyboardIsDown(Keyboard *self, SegaKeys key);
 DLL_PUBLIC void keyboardFlushQueue(Keyboard *self);
+
+END_SEXTERN_C

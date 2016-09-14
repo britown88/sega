@@ -20,7 +20,7 @@ static void _Destroy(UWPRenderer*);
 static IRendererVTable *_getTable() {
    static IRendererVTable *r = 0;
    if (!r) {
-      r = calloc(1, sizeof(IRendererVTable));
+      r = (IRendererVTable*)calloc(1, sizeof(IRendererVTable));
       r->init = (void(*)(IRenderer*))&_Init;
       r->renderFrame = (void(*)(IRenderer*, Frame*, byte*, Rectf *))&_RenderFrame;
       r->destroy = (void(*)(IRenderer*))&_Destroy;
@@ -30,7 +30,7 @@ static IRendererVTable *_getTable() {
 }
 
 IRenderer *createUWPRenderer(IDeviceContext *dc) {
-   UWPRenderer *r = checkedCalloc(1, sizeof(UWPRenderer));
+   UWPRenderer *r = (UWPRenderer*)checkedCalloc(1, sizeof(UWPRenderer));
    r->ir.vTable = _getTable();
    r->context = dc;
 
@@ -45,6 +45,5 @@ void _RenderFrame(UWPRenderer *self, Frame *frame, byte *palette, Rectf *vp) {
 
 }
 void _Destroy(UWPRenderer *self) {
-
-
+   checkedFree(self);
 }

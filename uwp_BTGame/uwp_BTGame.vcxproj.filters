@@ -10,7 +10,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sqliteWrapper.cpp" />
     <ClCompile Include="..\BTGame\ActorManager.c">
       <Filter>existing</Filter>
     </ClCompile>
@@ -136,7 +135,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sqliteWrapper.h" />
     <ClInclude Include="..\BTGame\Actors.h">
       <Filter>existing</Filter>
     </ClInclude>

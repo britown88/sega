@@ -2,10 +2,7 @@
 #include "UWPMain.h"
 #include "Common\DirectXHelper.h"
 
-#include "SEGA/App.h"
-#include "BTGame\BT.h"
-#include "DeviceContext.h"
-#include "Renderer.h"
+
 
 
 using namespace UWP;
@@ -32,11 +29,6 @@ UWPMain::UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_timer.SetTargetElapsedSeconds(1.0 / 60);
 	*/
 
-   IDeviceContext *context = createUWPContext();
-   runApp(btCreate(), createUWPRenderer(context), context);
-
-   auto r = appRand(nullptr, 0, 100);
-   r += 10;
 }
 
 UWPMain::~UWPMain()

@@ -57,6 +57,12 @@ SEXTERN_C
 
 DLL_PUBLIC void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context);
 
+DLL_PUBLIC void appStart(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context);
+DLL_PUBLIC int appRunning();
+DLL_PUBLIC void appStep();
+DLL_PUBLIC void appDestroy();
+
+
 DLL_PUBLIC int appRand(App *self, int lower, int upper);
 DLL_PUBLIC Int2 appWindowToWorld(App *self, Float2 coords);
 

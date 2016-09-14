@@ -174,13 +174,12 @@ void _destroyApp(App *self){
    checkedFree(self);
 }
 
-void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) {
+void appStart(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) {
    AppData *data = virtualAppGetData(subclass);
    Int2 winSize = data->defaultWindowSize;
-   App *app;
    int result = iDeviceContextInit(context, winSize.x, winSize.y, data->windowTitle, data->dcFlags);
 
-   if (result){
+   if (result) {
       return;
    }
 
@@ -189,13 +188,26 @@ void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) 
    //update winSize
    winSize = iDeviceContextWindowSize(context);
 
-   app = _createApp(subclass, context, renderer);
+   _createApp(subclass, context, renderer);
+}
+int appRunning() {
+   return g_App->running;
+}
+void appStep() {
+   _step(g_App);
+}
+void appDestroy() {
+   _destroyApp(g_App);
+}
 
-   while (app->running) {
-      _step(app);
+void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) {
+   appStart(subclass, renderer, context);
+
+   while (appRunning()) {
+      appStep();
    }
 
-   _destroyApp(app);   
+   appDestroy();
    
    return;
 }

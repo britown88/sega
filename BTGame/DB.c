@@ -5,13 +5,7 @@
 #include "Console.h"
 #include "segautils/BitBuffer.h"
 
-#ifdef SEGA_UWP
-#include "sqliteWrapper.h"
-#else
 #include "sqlite/sqlite3.h"
-#endif
-
-
 
 int dbConnect(DBBase *self, const char *filename, bool create) {
    int result = 0;

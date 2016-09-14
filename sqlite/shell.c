@@ -252,6 +252,7 @@ static GETPROCTIMES getProcessTimesAddr = NULL;
 ** support found (or found previously).
 */
 static int hasTimer(void){
+#if !SQLITE_OS_WINRT
   if( getProcessTimesAddr ){
     return 1;
   } else {
@@ -272,6 +273,7 @@ static int hasTimer(void){
       }
     }
   }
+#endif
   return 0;
 }
 
@@ -5165,7 +5167,7 @@ static void main_init(ShellState *data) {
 /*
 ** Output text to the console in a font that attracts extra attention.
 */
-#ifdef _WIN32
+#if defined(_WIN32) && !SQLITE_OS_WINRT
 static void printBold(const char *zText){
   HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
   CONSOLE_SCREEN_BUFFER_INFO defaultScreenInfo;

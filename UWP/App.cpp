@@ -3,7 +3,11 @@
 
 #include <ppltasks.h>
 
-using namespace UWP;
+#include "SEGA/App.h"
+#include "BTGame\BT.h"
+#include "DeviceContext.h"
+#include "Renderer.h"
+
 
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
@@ -26,18 +30,19 @@ int main(Platform::Array<Platform::String^>^)
 
 IFrameworkView^ Direct3DApplicationSource::CreateView()
 {
-	return ref new App();
+	return ref new UWP::App();
 }
 
-App::App() :
-	m_windowClosed(false),
-	m_windowVisible(true)
+UWP::App::App() :
+	m_windowVisible(true),
+   m_segaLoaded(false)
 {
 }
 
 // The first method called when the IFrameworkView is being created.
-void App::Initialize(CoreApplicationView^ applicationView)
+void UWP::App::Initialize(CoreApplicationView^ applicationView)
 {
+   using namespace UWP;
 	// Register event handlers for app lifecycle. This example includes Activated, so that we
 	// can make the CoreWindow active and start rendering on the window.
 	applicationView->Activated +=
@@ -55,8 +60,9 @@ void App::Initialize(CoreApplicationView^ applicationView)
 }
 
 // Called when the CoreWindow object is created (or re-created).
-void App::SetWindow(CoreWindow^ window)
+void UWP::App::SetWindow(CoreWindow^ window)
 {
+   using namespace UWP;
 	window->SizeChanged += 
 		ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &App::OnWindowSizeChanged);
 
@@ -77,57 +83,70 @@ void App::SetWindow(CoreWindow^ window)
 	DisplayInformation::DisplayContentsInvalidated +=
 		ref new TypedEventHandler<DisplayInformation^, Object^>(this, &App::OnDisplayContentsInvalidated);
 
+   m_window = window;
 	m_deviceResources->SetWindow(window);
+
+   
+   
+}
+
+Windows::Foundation::Rect UWP::App::WindowBounds() {
+   return m_window->Bounds;
 }
 
 // Initializes scene resources, or loads a previously saved app state.
-void App::Load(Platform::String^ entryPoint)
+void UWP::App::Load(Platform::String^ entryPoint)
 {
-	if (m_main == nullptr)
+	if (!m_segaLoaded)
 	{
-		m_main = std::unique_ptr<UWPMain>(new UWPMain(m_deviceResources));
+      IDeviceContext *context = createUWPContext(this);
+      IRenderer *renderer = createUWPRenderer(context);
+      VirtualApp *app = btCreate();
+
+      appStart(app, renderer, context);
+      m_segaLoaded = true;
 	}
 }
 
 // This method is called after the window becomes active.
-void App::Run()
+void UWP::App::Run()
 {
-	while (!m_windowClosed)
+   
+   using namespace UWP;
+	while (appRunning())
 	{
+      appStep();
 		if (m_windowVisible)
 		{
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-
-			m_main->Update();
-
-			if (m_main->Render())
-			{
-				m_deviceResources->Present();
-			}
+		   m_deviceResources->Present();
 		}
 		else
 		{
 			CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
 		}
 	}
+
+   appDestroy();
+   m_segaLoaded = false;
 }
 
 // Required for IFrameworkView.
 // Terminate events do not cause Uninitialize to be called. It will be called if your IFrameworkView
 // class is torn down while the app is in the foreground.
-void App::Uninitialize()
+void UWP::App::Uninitialize()
 {
 }
 
 // Application lifecycle event handlers.
 
-void App::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
+void UWP::App::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
 {
 	// Run() won't start until the CoreWindow is activated.
 	CoreWindow::GetForCurrentThread()->Activate();
 }
 
-void App::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
+void UWP::App::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 {
 	// Save app state asynchronously after requesting a deferral. Holding a deferral
 	// indicates that the application is busy performing suspending operations. Be
@@ -145,7 +164,7 @@ void App::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 	});
 }
 
-void App::OnResuming(Platform::Object^ sender, Platform::Object^ args)
+void UWP::App::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 {
 	// Restore any data or state that was unloaded on suspend. By default, data
 	// and state are persisted when resuming from suspend. Note that this event
@@ -156,41 +175,41 @@ void App::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 
 // Window event handlers.
 
-void App::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
+void UWP::App::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
 	m_deviceResources->SetLogicalSize(Size(sender->Bounds.Width, sender->Bounds.Height));
-	m_main->CreateWindowSizeDependentResources();
+	//m_main->CreateWindowSizeDependentResources();
 }
 
-void App::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
+void UWP::App::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
 	m_windowVisible = args->Visible;
 }
 
-void App::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
+void UWP::App::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 {
-	m_windowClosed = true;
+   appQuit(appGet());
 }
 
 // DisplayInformation event handlers.
 
-void App::OnDpiChanged(DisplayInformation^ sender, Object^ args)
+void UWP::App::OnDpiChanged(DisplayInformation^ sender, Object^ args)
 {
 	// Note: The value for LogicalDpi retrieved here may not match the effective DPI of the app
 	// if it is being scaled for high resolution devices. Once the DPI is set on DeviceResources,
 	// you should always retrieve it using the GetDpi method.
 	// See DeviceResources.cpp for more details.
 	m_deviceResources->SetDpi(sender->LogicalDpi);
-	m_main->CreateWindowSizeDependentResources();
+	//m_main->CreateWindowSizeDependentResources();
 }
 
-void App::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
+void UWP::App::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
 {
 	m_deviceResources->SetCurrentOrientation(sender->CurrentOrientation);
-	m_main->CreateWindowSizeDependentResources();
+	//m_main->CreateWindowSizeDependentResources();
 }
 
-void App::OnDisplayContentsInvalidated(DisplayInformation^ sender, Object^ args)
+void UWP::App::OnDisplayContentsInvalidated(DisplayInformation^ sender, Object^ args)
 {
 	m_deviceResources->ValidateDevice();
 }

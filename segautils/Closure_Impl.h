@@ -32,7 +32,8 @@ void CONCAT(ClosureTPart, Destroy)(ClosureTPart *self){
 }
 
 bool CONCAT(ClosureTPart, IsNull)(ClosureTPart *self){
-   return memcmp(self, &(ClosureTPart){ 0 }, sizeof(ClosureTPart)) == 0;
+   static ClosureTPart empty = { 0 };
+   return memcmp(self, &empty, sizeof(ClosureTPart)) == 0;
 }
 
 #undef CLOSURE_RET
