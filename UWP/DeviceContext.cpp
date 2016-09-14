@@ -14,11 +14,11 @@
 
 #include <malloc.h>
 #include <stddef.h>
-static UWP::App ^g_app;
 
 struct UWPWindow {
    Keyboard *keyboard;
    Mouse *mouse;
+   UWP::UWPMain *main;
 };
 
 
@@ -122,10 +122,10 @@ int uwpWindowShouldClose(UWPWindow *self) {
    return 0;
 }
 Int2 uwpWindowGetSize(UWPWindow *self) {
-   auto r = g_app->WindowBounds();
+   auto sz = self->main->getOutputSize();
    Int2 out = { 0 };
-   out.x = r.Width;
-   out.y = r.Height;
+   out.x = sz.Width;
+   out.y = sz.Height;
    return out;
 }
 Keyboard *uwpWindowGetKeyboard(UWPWindow *self) {
@@ -141,6 +141,7 @@ typedef struct  {
    uint64_t clockFreq;
    Microseconds startTime;
    UWPWindow *window;
+   UWP::UWPMain *main;
 }UWPContext;
 
 static int _init(UWPContext *self, int width, int height, StringView winTitle, int flags);
@@ -174,10 +175,10 @@ static IDeviceContextVTable *_getTable() {
    return out;
 }
 
-IDeviceContext *createUWPContext(UWP::App ^app) {
+IDeviceContext *createUWPContext(UWP::UWPMain *main) {
    UWPContext *out = (UWPContext*)checkedCalloc(1, sizeof(UWPContext));
    out->context.vTable = _getTable();
-   g_app = app;
+   out->main = main;
    return (IDeviceContext *)out;
 }
 
@@ -196,6 +197,7 @@ int _init(UWPContext *self, int width, int height, StringView winTitle, int flag
 
 
    self->window = uwpWindowCreate(size, winTitle);
+   self->window->main = self->main;
 
    //if (!self->window) {
    //   glfwTerminate();

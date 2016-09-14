@@ -2,17 +2,56 @@
 #include "UWPMain.h"
 #include "Common\DirectXHelper.h"
 
-
-
+#include "SEGA/App.h"
+#include "BTGame\BT.h"
+#include "DeviceContext.h"
+#include "Renderer.h"
 
 using namespace UWP;
 using namespace Windows::Foundation;
 using namespace Windows::System::Threading;
 using namespace Concurrency;
 
+class UWPMain::EGARenderer{
+   std::shared_ptr<DX::DeviceResources> m_deviceResources;
+public:
+   EGARenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :m_deviceResources(deviceResources) {
+
+   }
+
+   ~EGARenderer() {
+   }
+
+   void Render() {
+      auto context = m_deviceResources->GetD3DDeviceContext();
+
+      // Reset the viewport to target the whole screen.
+      auto viewport = m_deviceResources->GetScreenViewport();
+      context->RSSetViewports(1, &viewport);
+
+      // Reset render targets to the screen.
+      ID3D11RenderTargetView *const targets[1] = { m_deviceResources->GetBackBufferRenderTargetView() };
+      context->OMSetRenderTargets(1, targets, m_deviceResources->GetDepthStencilView());
+
+      // Clear the back buffer and depth stencil view.
+      context->ClearRenderTargetView(m_deviceResources->GetBackBufferRenderTargetView(), DirectX::Colors::CornflowerBlue);
+      context->ClearDepthStencilView(m_deviceResources->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+   }
+
+   virtual void OnDeviceLost() {
+
+   }
+   virtual void OnDeviceRestored() {
+
+   }
+};
+
+
+
 // Loads and initializes application assets when the application is loaded.
 UWPMain::UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
-	m_deviceResources(deviceResources)
+	m_deviceResources(deviceResources), m_renderer(new EGARenderer(deviceResources))
 {
 	// Register to be notified if the Device is lost or recreated
 	m_deviceResources->RegisterDeviceNotify(this);
@@ -28,13 +67,37 @@ UWPMain::UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_timer.SetFixedTimeStep(true);
 	m_timer.SetTargetElapsedSeconds(1.0 / 60);
 	*/
-
 }
 
 UWPMain::~UWPMain()
 {
 	// Deregister device notification
 	m_deviceResources->RegisterDeviceNotify(nullptr);
+}
+
+Windows::Foundation::Size UWPMain::getOutputSize() {
+   return m_deviceResources->GetOutputSize();
+}
+void UWPMain::RenderEGA() {
+
+}
+
+void UWPMain::CloseGame() {
+   appQuit(appGet());
+}
+bool UWPMain::GameShouldClose() {
+   return (bool)appRunning();
+}
+
+void UWPMain::DestroyGame() {
+   appDestroy();
+}
+void UWPMain::StartGame() {
+   IDeviceContext *context = createUWPContext(this);
+   IRenderer *renderer = createUWPRenderer(context, this);
+   VirtualApp *app = btCreate();
+
+   appStart(app, renderer, context);
 }
 
 // Updates application state when the window size changes (e.g. device orientation change)
@@ -47,12 +110,15 @@ void UWPMain::CreateWindowSizeDependentResources()
 // Updates the application state once per frame.
 void UWPMain::Update() 
 {
+   
 	// Update scene objects.
 	m_timer.Tick([&]()
 	{
 		// TODO: Replace this with your app's content update functions.
 		m_sceneRenderer->Update(m_timer);
 		m_fpsTextRenderer->Update(m_timer);
+
+      appStep();
 	});
 }
 

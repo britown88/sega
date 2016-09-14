@@ -6,5 +6,5 @@
 SEXTERN_C
 typedef struct IDeviceContext_t IDeviceContext;
 
-IDeviceContext *createUWPContext(UWP::App ^app);
+IDeviceContext *createUWPContext(UWP::UWPMain *main);
 END_SEXTERN_C

@@ -19,8 +19,6 @@ namespace UWP
 		virtual void Run();
 		virtual void Uninitialize();
 
-      Windows::Foundation::Rect WindowBounds();
-
 	protected:
 		// Application lifecycle event handlers.
 		void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
@@ -39,10 +37,13 @@ namespace UWP
 
 	private:
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
+
 		//std::unique_ptr<UWPMain> m_main;
-		bool m_windowVisible;
-      bool m_segaLoaded;
+      std::unique_ptr<UWPMain> m_main;
+      bool m_windowClosed;
+      bool m_windowVisible;
       Platform::Agile<Windows::UI::Core::CoreWindow> m_window;
+
 	};
 }
 

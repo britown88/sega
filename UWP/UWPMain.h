@@ -21,6 +21,15 @@ namespace UWP
 		virtual void OnDeviceLost();
 		virtual void OnDeviceRestored();
 
+      Windows::Foundation::Size getOutputSize();
+      void RenderEGA();
+
+      void CloseGame();
+      bool GameShouldClose();
+
+      void DestroyGame();
+      void StartGame();
+
 	private:
 		// Cached pointer to device resources.
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
@@ -28,6 +37,9 @@ namespace UWP
 		// TODO: Replace with your own content renderers.
 		std::unique_ptr<Sample3DSceneRenderer> m_sceneRenderer;
 		std::unique_ptr<SampleFpsTextRenderer> m_fpsTextRenderer;
+
+      class EGARenderer;
+      std::unique_ptr<EGARenderer> m_renderer;
 
 		// Rendering loop timer.
 		DX::StepTimer m_timer;

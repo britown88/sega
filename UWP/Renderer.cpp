@@ -1,4 +1,4 @@
-
+#include "pch.h"
 #include "Renderer.h"
 
 #include "SEGA\IDeviceContext.h"
@@ -7,10 +7,12 @@
 
 #include "segashared/CheckedMemory.h"
 
+
+
 typedef struct {
    IRenderer ir;
    IDeviceContext *context;
-
+   UWP::UWPMain *main;
 } UWPRenderer;
 
 static void _Init(UWPRenderer*);
@@ -29,10 +31,11 @@ static IRendererVTable *_getTable() {
    return r;
 }
 
-IRenderer *createUWPRenderer(IDeviceContext *dc) {
+IRenderer *createUWPRenderer(IDeviceContext *dc, UWP::UWPMain *main) {
    UWPRenderer *r = (UWPRenderer*)checkedCalloc(1, sizeof(UWPRenderer));
    r->ir.vTable = _getTable();
    r->context = dc;
+   r->main = main;
 
    return (IRenderer *)r;
 }
@@ -43,6 +46,7 @@ void _Init(UWPRenderer *self) {
 void _RenderFrame(UWPRenderer *self, Frame *frame, byte *palette, Rectf *vp) {
    //swap frames and palettes
 
+   self->main->RenderEGA();
 }
 void _Destroy(UWPRenderer *self) {
    checkedFree(self);
