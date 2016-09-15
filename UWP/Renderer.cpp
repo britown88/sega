@@ -73,7 +73,7 @@ void _RenderFrame(UWPRenderer *self, Frame *frame, byte *palette, Rectf *vp) {
       }
    }
 
-   self->main->RenderEGA(self->pixels);
+   self->main->RenderEGA(self->pixels, D2D1::RectF(vp->left, vp->top, vp->right, vp->bottom));
 }
 void _Destroy(UWPRenderer *self) {
    checkedFree(self->pixels);

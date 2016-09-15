@@ -37,6 +37,12 @@ App::App() :
 {
 }
 
+void App::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
+   auto p = args->CurrentPoint;
+   m_main->setMousePosition(p->Position);
+}
+
+
 // The first method called when the IFrameworkView is being created.
 void App::Initialize(CoreApplicationView^ applicationView)
 {
@@ -51,9 +57,16 @@ void App::Initialize(CoreApplicationView^ applicationView)
    CoreApplication::Resuming +=
       ref new EventHandler<Platform::Object^>(this, &App::OnResuming);
 
+
+
+
    // At this point we have access to the device. 
    // We can create the device-dependent resources.
    m_deviceResources = std::make_shared<DX::DeviceResources>();
+
+   
+
+   
 }
 
 // Called when the CoreWindow object is created (or re-created).
@@ -67,6 +80,10 @@ void App::SetWindow(CoreWindow^ window)
 
    window->Closed +=
       ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
+
+   window->PointerMoved +=
+      ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerMoved);
+
 
    DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
 
@@ -88,7 +105,7 @@ void App::Load(Platform::String^ entryPoint)
 {
    if (m_main == nullptr)
    {
-      m_main = std::unique_ptr<UWPMain>(new UWPMain(m_deviceResources));
+      m_main = std::unique_ptr<UWPMain>(new UWPMain(m_deviceResources, m_window.Get()));
 
    }
 }

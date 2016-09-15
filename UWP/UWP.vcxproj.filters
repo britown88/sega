@@ -87,24 +87,64 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="UWP_TemporaryKey.pfx" />
-    <None Include="chronicles.db" />
-    <None Include="lua\standard.lua" />
-    <None Include="lua\actions.lua" />
-    <None Include="lua\actors.lua" />
-    <None Include="lua\core.lua" />
-    <None Include="Assets\startup.lua" />
-    <None Include="Assets\init.lua" />
-    <None Include="Assets\maps\schemas.lua" />
-    <None Include="Assets\maps\init.lua" />
-    <None Include="Assets\lua\testChoices.lua" />
-    <None Include="Assets\lua\init.lua" />
-    <None Include="Assets\lua\shirley.lua" />
-    <None Include="Assets\lua\test.lua" />
-    <None Include="Assets\maps\lighttest.map" />
-    <None Include="Assets\maps\testlights.map" />
-    <None Include="Assets\maps\testlights2.map" />
-    <None Include="Assets\maps\testtown.map" />
-    <None Include="Assets\maps\testtown2.map" />
-    <None Include="Assets\maps\testwilderness.map" />
+    <None Include="Package.StoreAssociation.xml" />
+    <None Include="UWP_StoreKey.pfx" />
+    <None Include="Assets\maps\schemas.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\lua\shirley.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="lua\standard.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\startup.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\lua\test.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\lua\testChoices.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\maps\testlights.map">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\maps\testlights2.map">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\maps\testtown.map">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\maps\testtown2.map">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\maps\testwilderness.map">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\maps\lighttest.map">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\init.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\lua\init.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Assets\maps\init.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="lua\core.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="chronicles.db">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="lua\actors.lua">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="lua\actions.lua">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
 </Project>

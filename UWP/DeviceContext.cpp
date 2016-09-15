@@ -22,8 +22,12 @@ struct UWPWindow {
 };
 
 
-static Int2 _getMousePos() {
-   Int2 pos = { 0 };
+
+static Int2 _getMousePos(UWPWindow *self) {
+   auto cp = self->main->getMousePosition();
+   Int2 pos = { cp.X, cp.Y };
+
+
    return pos;
 }
 
@@ -67,7 +71,7 @@ static Int2 _getMousePos() {
 
 static void _uwpWindowInitMouseClosure(UWPWindow *self) {
    MousePos getPos;
-   closureInit(MousePos)(&getPos, NULL, (MousePosFunc)&_getMousePos, NULL);
+   closureInit(MousePos)(&getPos, self, (MousePosFunc)&_getMousePos, NULL);
    self->mouse = mouseCreate(getPos);
 }
 

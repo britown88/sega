@@ -105,11 +105,19 @@ static void _updateFPS(Microseconds delta, double *fps){
 
 }
 
+static void _appUpdateWindowSize(App *self) {
+   self->winSize = iDeviceContextWindowSize(self->context);
+   self->viewport = _buildProportionalViewport(self->winSize.x, self->winSize.y, &self->vpScale);
+}
+
 static void _singleUpdate(App *self, Microseconds frameLength) {
 
    virtualAppOnStep(self->subclass);
    iDeviceContextPreRender(self->context);
    //_renderUpdateFrameTime(self->subclass->currentFrame, frameLength);
+
+   _appUpdateWindowSize(self);
+
    iRendererRenderFrame(self->renderer,
       self->subclass->currentFrame,
       self->subclass->currentPalette.colors,
@@ -139,6 +147,8 @@ static void _step(App *self) {
       appSleep(0);
    }
 }
+
+
 
 App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *renderer){
    AppData *data = virtualAppGetData(subclass);

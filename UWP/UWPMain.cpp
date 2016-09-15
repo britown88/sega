@@ -26,6 +26,7 @@ class UWPMain::EGARenderer{
    Microsoft::WRL::ComPtr<ID2D1Bitmap1> m_backBmp;
 
    std::mutex m;
+   D2D1_RECT_F m_rect;
 public:
    EGARenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :m_deviceResources(deviceResources) {
 
@@ -46,7 +47,7 @@ public:
       auto dpi = m_deviceResources->GetDpi();
 
       D2D1_SIZE_U  size = { EGA_RES_WIDTH, EGA_RES_HEIGHT };
-      D2D1_BITMAP_PROPERTIES1 properties = { { DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE }, 0, 0, D2D1_BITMAP_OPTIONS_NONE, 0 };
+      D2D1_BITMAP_PROPERTIES1 properties = { { DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE }, dpi, dpi, D2D1_BITMAP_OPTIONS_NONE, 0 };
 
       int r = m_deviceResources->GetD2DDeviceContext()->CreateBitmap(size, nullptr, 0, &properties, &m_bmp);
       r = m_deviceResources->GetD2DDeviceContext()->CreateBitmap(size, nullptr, 0, &properties, &m_backBmp);
@@ -66,10 +67,12 @@ public:
       context->SaveDrawingState(m_stateBlock.Get());
       context->BeginDraw();
 
+      context->Clear();
+
 
       //context->DrawImage()
       m.lock();
-      context->DrawBitmap(m_bmp.Get());
+      context->DrawBitmap(m_bmp.Get(), &m_rect, 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR );
       m.unlock();
 
       //context->DrawLine(D2D1::Point2F(0.0f, 0.0f), D2D1::Point2F(100.0f, 100.0f), m_whiteBrush.Get(), 10.0f);
@@ -79,22 +82,15 @@ public:
 
    }
 
-   void SwapFrames(byte *pixels) {
+   void SwapFrames(byte *pixels, D2D1_RECT_F const &vp) {
       //drawe pixels to back bmp
+      static auto rect = D2D1::RectU(0, 0, EGA_RES_WIDTH, EGA_RES_HEIGHT);
+      static auto o = D2D1::Point2U();
+      m_backBmp->CopyFromMemory(&rect, pixels, EGA_RES_WIDTH * 4);
 
       m.lock();
-      auto rect = D2D1::RectU(0, 0, EGA_RES_WIDTH, EGA_RES_HEIGHT);
-
-      //for (int i = 0; i < EGA_RES_WIDTH*EGA_RES_HEIGHT; ++i) {
-      //   pixels[i * 4] = rand() % 255;
-      //   pixels[i * 4+1] = rand() % 255;
-      //   pixels[i * 4+2] = rand() % 255;
-      //}
-
-      //memset(pixels, 255, EGA_RES_WIDTH*EGA_RES_HEIGHT * 4);
-
-      int r = m_bmp->CopyFromMemory(&rect, pixels, EGA_RES_WIDTH*4);
-      //m_bmp
+      m_bmp->CopyFromBitmap(&o, m_backBmp.Get(), &rect);
+      m_rect = vp;
       m.unlock();
    }
 
@@ -104,8 +100,8 @@ public:
 
 
 // Loads and initializes application assets when the application is loaded.
-UWPMain::UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
-	m_deviceResources(deviceResources), m_renderer(new EGARenderer(deviceResources))
+UWPMain::UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources, Windows::UI::Core::CoreWindow ^window) :
+	m_deviceResources(deviceResources), m_renderer(new EGARenderer(deviceResources)), m_window(window)
 {
 	// Register to be notified if the Device is lost or recreated
 	m_deviceResources->RegisterDeviceNotify(this);
@@ -121,6 +117,11 @@ UWPMain::UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
 	m_timer.SetFixedTimeStep(true);
 	m_timer.SetTargetElapsedSeconds(1.0 / 60);
 	*/
+   m_timer.SetFixedTimeStep(false);
+   m_window->PointerCursor = nullptr;
+
+   m_dipScale = m_deviceResources->GetDpi() / 96.0f;
+
 }
 
 UWPMain::~UWPMain()
@@ -129,11 +130,21 @@ UWPMain::~UWPMain()
 	m_deviceResources->RegisterDeviceNotify(nullptr);
 }
 
+
+
+Windows::Foundation::Point UWPMain::getMousePosition() {
+   return m_mousePosition;
+}
+
+void UWPMain::setMousePosition(Windows::Foundation::Point p) {
+   m_mousePosition = p;
+}
+
 Windows::Foundation::Size UWPMain::getOutputSize() {
    return m_deviceResources->GetOutputSize();
 }
-void UWPMain::RenderEGA(unsigned char *pixels) {
-   m_renderer->SwapFrames(pixels);
+void UWPMain::RenderEGA(unsigned char *pixels, D2D1_RECT_F const &vp) {
+   m_renderer->SwapFrames(pixels, vp);
 }
 
 void UWPMain::CloseGame() {
@@ -170,8 +181,8 @@ void UWPMain::Update()
 	m_timer.Tick([&]()
 	{
 		// TODO: Replace this with your app's content update functions.
-		m_sceneRenderer->Update(m_timer);
-		m_fpsTextRenderer->Update(m_timer);
+		//m_sceneRenderer->Update(m_timer);
+		//m_fpsTextRenderer->Update(m_timer);
 
       appStep();
 	});
@@ -203,9 +214,11 @@ bool UWPMain::Render()
 
 	// Render the scene objects.
 	// TODO: Replace this with your app's content rendering functions.
-	m_sceneRenderer->Render();
-	m_fpsTextRenderer->Render();
+	//m_sceneRenderer->Render();
+	//m_fpsTextRenderer->Render();
    m_renderer->Render();
+
+   
 
 	return true;
 }

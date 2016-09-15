@@ -11,7 +11,7 @@ namespace UWP
 	class UWPMain : public DX::IDeviceNotify
 	{
 	public:
-		UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+		UWPMain(const std::shared_ptr<DX::DeviceResources>& deviceResources, Windows::UI::Core::CoreWindow ^window);
 		~UWPMain();
 		void CreateWindowSizeDependentResources();
 		void Update();
@@ -22,7 +22,9 @@ namespace UWP
 		virtual void OnDeviceRestored();
 
       Windows::Foundation::Size getOutputSize();
-      void RenderEGA(unsigned char *pixels);
+      Windows::Foundation::Point getMousePosition();
+      void setMousePosition(Windows::Foundation::Point p);
+      void RenderEGA(unsigned char *pixels, D2D1_RECT_F const &vp);
 
       void CloseGame();
       bool GameShouldClose();
@@ -43,5 +45,9 @@ namespace UWP
 
 		// Rendering loop timer.
 		DX::StepTimer m_timer;
+      Platform::Agile<Windows::UI::Core::CoreWindow> m_window;
+
+      float m_dipScale;
+      Windows::Foundation::Point m_mousePosition;
 	};
 }

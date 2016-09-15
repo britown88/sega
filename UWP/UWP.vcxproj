@@ -101,7 +101,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <PackageCertificateKeyFile>UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>UWP_StoreKey.pfx</PackageCertificateKeyFile>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
+    <PackageCertificateThumbprint>030590647E8D82D22771555131A403BE1EC0DA22</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -307,6 +311,7 @@
     <None Include="lua\standard.lua">
       <DeploymentContent>true</DeploymentContent>
     </None>
+    <None Include="UWP_StoreKey.pfx" />
     <None Include="UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -333,6 +338,9 @@
     <ProjectReference Include="..\segautils\segautils.vcxproj">
       <Project>{c928a7b6-88d1-4697-9e1d-771fa8a06c55}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
