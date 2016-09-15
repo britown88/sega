@@ -87,8 +87,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="UWP_TemporaryKey.pfx" />
-    <None Include="..\BT\chronicles.db">
-      <Filter>Assets</Filter>
-    </None>
+    <None Include="chronicles.db" />
+    <None Include="lua\standard.lua" />
+    <None Include="lua\actions.lua" />
+    <None Include="lua\actors.lua" />
+    <None Include="lua\core.lua" />
+    <None Include="Assets\startup.lua" />
+    <None Include="Assets\init.lua" />
+    <None Include="Assets\maps\schemas.lua" />
+    <None Include="Assets\maps\init.lua" />
+    <None Include="Assets\lua\testChoices.lua" />
+    <None Include="Assets\lua\init.lua" />
+    <None Include="Assets\lua\shirley.lua" />
+    <None Include="Assets\lua\test.lua" />
+    <None Include="Assets\maps\lighttest.map" />
+    <None Include="Assets\maps\testlights.map" />
+    <None Include="Assets\maps\testlights2.map" />
+    <None Include="Assets\maps\testtown.map" />
+    <None Include="Assets\maps\testtown2.map" />
+    <None Include="Assets\maps\testwilderness.map" />
   </ItemGroup>
 </Project>

@@ -250,9 +250,62 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="..\BT\chronicles.db">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</DeploymentContent>
+    <None Include="Assets\init.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\lua\init.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\lua\shirley.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\lua\test.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\lua\testChoices.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\init.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\lighttest.map">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\schemas.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\testlights.map">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\testlights2.map">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\testtown.map">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\testtown2.map">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\maps\testwilderness.map">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Assets\startup.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="chronicles.db">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="lua\actions.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="lua\actors.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="lua\core.lua">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="lua\standard.lua">
+      <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="UWP_TemporaryKey.pfx" />
   </ItemGroup>

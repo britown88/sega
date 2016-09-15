@@ -30,6 +30,8 @@ typedef struct {
    TextArea *select, *cont, *new, *ack, *quit, *copyright;
    ManagedImage *splash;
    Sprite *fire;
+
+   Milliseconds StartTIme;
 }SplashState;
 
 static void _splashStateCreate(SplashState *state) {
@@ -81,6 +83,8 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    verbManagerSetEnabled(view->verbManager, false);
    assetsSetPalette(view->db, stringIntern("splash"));
 
+   state->StartTIme = t_u2m(gameClockGetTime());
+
 }
 void _splashExit(SplashState *state, StateExit *m) {
    WorldView *view = state->view;
@@ -95,6 +99,10 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
    Int2 mousePos = mouseGetPosition(mouse);
 
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
+
+   if (t_u2m(gameClockGetTime()) - state->StartTIme > 5000) {
+      state->pop = true;
+   }
 
    if (state->pop) {
       assetsSetPalette(state->view->db, stringIntern("default"));

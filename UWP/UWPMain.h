@@ -22,7 +22,7 @@ namespace UWP
 		virtual void OnDeviceRestored();
 
       Windows::Foundation::Size getOutputSize();
-      void RenderEGA();
+      void RenderEGA(unsigned char *pixels);
 
       void CloseGame();
       bool GameShouldClose();
