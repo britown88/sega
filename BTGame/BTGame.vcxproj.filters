@@ -132,6 +132,9 @@
     <ClInclude Include="MenuPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Conways.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -255,6 +258,9 @@
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
     <ClCompile Include="MenuPanel.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Conways.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

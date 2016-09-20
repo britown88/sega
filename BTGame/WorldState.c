@@ -16,9 +16,12 @@
 #include "segashared\CheckedMemory.h"
 
 #include "MenuPanel.h"
+#include "Conways.h"
 
 
 #define STARTING_AMBIENT_LEVEL MAX_BRIGHTNESS
+
+
 
 typedef struct {
    WorldView *view;
@@ -27,10 +30,13 @@ typedef struct {
 
    ManagedImage *bg;
 
+   bool conways;
+
 }WorldState;
 
 static void _worldStateCreate(WorldState *self) { 
    testRain(self->view->weather);
+   self->conways = false;
 
 }
 static void _worldStateDestroy(WorldState *self){   
@@ -140,6 +146,9 @@ static void _handleKeyboard(WorldState *state) {
          case SegaKey_T:
             pcManagerToggleTorch(view->pcManager);
             break;
+         case SegaKey_C:
+            state->conways = !state->conways;
+            break;
          case SegaKey_W:
          case SegaKey_A:
          case SegaKey_S:
@@ -230,6 +239,7 @@ static void _handleMouse(WorldState *state) {
             (pos.y - vp->region.origin_y + vp->worldPos.y) / GRID_CELL_SIZE);
       }
    }
+
 }
 
 void _worldHandleInput(WorldState *state, GameStateHandleInput *m){
@@ -239,29 +249,42 @@ void _worldHandleInput(WorldState *state, GameStateHandleInput *m){
 
 void _worldRender(WorldState *state, GameStateRender *m){
    Frame *frame = m->frame;
-   frameClear(frame, FrameRegionFULL, 0);
+
+   if (!state->conways) {
+      frameClear(frame, FrameRegionFULL, 0);
+
+      frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
+
+      gridManagerRender(state->view->gridManager, frame);
+
+      actorManagerRender(state->view->actorManager, frame);
+
+      weatherRender(state->view->weather, frame);
+      gridManagerRenderLighting(state->view->gridManager, frame);
+
+
+      verbManagerRender(state->view->verbManager, frame);
+
+      calendarRenderClock(state->view->calendar, m->frame);
+
+      choicePromptRender(state->view->choicePrompt, frame);
+      textAreaRender(state->smallbox, state->view, frame);
+      cursorManagerRender(state->view->cursorManager, frame);
+
+      calendarRenderTestReadout(state->view->calendar, frame);
+      framerateViewerRender(state->view->framerateViewer, frame);
+      consoleRenderNotification(state->view->console, frame);
+   }
+   else {
+
+      cursorManagerRender(state->view->cursorManager, frame);
+
+
+      conwaysRender(frame, FrameRegionFULL);
+
+   }
+
    
-   frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
-
-   gridManagerRender(state->view->gridManager, frame);
-
-   actorManagerRender(state->view->actorManager, frame);
-
-   weatherRender(state->view->weather, frame);
-   gridManagerRenderLighting(state->view->gridManager, frame);
-
-
-   verbManagerRender(state->view->verbManager, frame);
-
-   calendarRenderClock(state->view->calendar, m->frame);
-
-   choicePromptRender(state->view->choicePrompt, frame);
-   textAreaRender(state->smallbox, state->view, frame);
-   cursorManagerRender(state->view->cursorManager, frame);
-
-   calendarRenderTestReadout(state->view->calendar, frame);
-   framerateViewerRender(state->view->framerateViewer, frame);
-   consoleRenderNotification(state->view->console, frame);
 }
 
 StateClosure gameStateCreateWorld(WorldView *view){

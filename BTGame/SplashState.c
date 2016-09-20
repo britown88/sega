@@ -19,9 +19,15 @@
 #include "ImageLibrary.h"
 #include "Sprites.h"
 #include "AssetHelpers.h"
+#include "Conways.h"
 
 #define VP_SPEED 3
 #define VP_FAST_SPEED 8
+
+typedef enum  {
+   Show,
+   Conways
+}SplashStates;
 
 typedef struct {
    WorldView *view;
@@ -31,7 +37,9 @@ typedef struct {
    ManagedImage *splash;
    Sprite *fire;
 
-   Milliseconds StartTIme;
+   Milliseconds StartTime;
+   SplashStates state;
+
 }SplashState;
 
 static void _splashStateCreate(SplashState *state) {
@@ -42,6 +50,8 @@ static void _splashStateCreate(SplashState *state) {
    state->ack = textAreaCreate(12, 21, 66, 1);
    state->quit = textAreaCreate(13, 22, 13, 1);
    state->copyright = textAreaCreate(11, 24, 18, 1);
+
+   state->state = Show;
 }
 static void _splashStateDestroy(SplashState *self) {
    textAreaDestroy(self->select);
@@ -83,7 +93,7 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    verbManagerSetEnabled(view->verbManager, false);
    assetsSetPalette(view->db, stringIntern("splash"));
 
-   state->StartTIme = t_u2m(gameClockGetTime());
+   state->StartTime = t_u2m(gameClockGetTime());
 
 }
 void _splashExit(SplashState *state, StateExit *m) {
@@ -100,9 +110,11 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
 
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
 
-   if (t_u2m(gameClockGetTime()) - state->StartTIme > 5000) {
-      state->pop = true;
-   }
+   //if (state->state == Show) {
+   //   if (t_u2m(gameClockGetTime()) - state->StartTime > 2000) {
+   //      state->state = Conways;
+   //   }
+   //}   
 
    if (state->pop) {
       assetsSetPalette(state->view->db, stringIntern("default"));
@@ -121,7 +133,14 @@ static void _handleKeyboard(SplashState *state) {
 
    while (keyboardPopEvent(k, &e)) {
       if (e.action == SegaKey_Released) {
-         state->pop = true;
+
+         if (state->state == Show) {
+            state->state = Conways;
+         }
+         else {
+            state->pop = true;
+         }
+         
       }
    }
 
@@ -137,22 +156,29 @@ void _splashHandleInput(SplashState *state, GameStateHandleInput *m) {
 }
 
 void _splashRender(SplashState *state, GameStateRender *m) {
-   Milliseconds t = t_u2m(gameClockGetTime());
-   int f = (int)(t / 200.0f) % 10;
+
    Frame *frame = m->frame;
 
-   frameClear(frame, FrameRegionFULL, 0);
+   
+
+   if (state->state == Show) {
+      frameClear(frame, FrameRegionFULL, 0);
+      frameRenderImage(frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->splash));
+      frameRenderSprite(frame, FrameRegionFULL, 79, 80, state->fire);
+
+      textAreaRender(state->select, state->view, frame);
+      textAreaRender(state->cont, state->view, frame);
+      textAreaRender(state->new, state->view, frame);
+      textAreaRender(state->ack, state->view, frame);
+      textAreaRender(state->quit, state->view, frame);
+      textAreaRender(state->copyright, state->view, frame);
+   }
+   else {
+      conwaysRender(frame, FrameRegionFULL);
+   }
 
 
-   frameRenderImage(frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->splash));
-   frameRenderSprite(frame, FrameRegionFULL, 79, 80, state->fire);
-
-   textAreaRender(state->select, state->view, frame);
-   textAreaRender(state->cont, state->view, frame);
-   textAreaRender(state->new, state->view, frame);
-   textAreaRender(state->ack, state->view, frame);
-   textAreaRender(state->quit, state->view, frame);
-   textAreaRender(state->copyright, state->view, frame);
+   
 
 }
 

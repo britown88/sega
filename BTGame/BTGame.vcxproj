@@ -135,6 +135,7 @@
     <ClInclude Include="Calendar.h" />
     <ClInclude Include="ChoicePrompt.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="Conways.h" />
     <ClInclude Include="DB.h" />
     <ClInclude Include="GameClock.h" />
     <ClInclude Include="GameHelpers.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="ChoicePrompt.c" />
     <ClCompile Include="Console.c" />
     <ClCompile Include="ConsoleState.c" />
+    <ClCompile Include="Conways.c" />
     <ClCompile Include="DB.c" />
     <ClCompile Include="EditorState.c" />
     <ClCompile Include="FramerateViewer.c" />
