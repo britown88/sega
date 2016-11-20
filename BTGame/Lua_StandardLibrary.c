@@ -15,6 +15,8 @@
 #include "GridManager.h"
 
 #include "DB.h"
+#include "segautils/String.h"
+#include "segautils/StandardVectors.h"
 
 static int slua_consolePrint(lua_State *L);
 static int slua_consoleClear(lua_State *L);
@@ -25,6 +27,9 @@ static int slua_clearImageCache(lua_State *L);
 static int slua_clearSpriteCache(lua_State *L);
 static int slua_setPalette(lua_State *L);
 static int slua_toggleLightMode(lua_State *L);
+static int slua_intellisense(lua_State *L);
+
+
 
 
 void luaLoadStandardLibrary(lua_State *L) {
@@ -39,11 +44,95 @@ void luaLoadStandardLibrary(lua_State *L) {
    luaPushFunctionGlobal(L, "openEditor", &slua_openEditor);
    luaPushFunctionGlobal(L, "setPalette", &slua_setPalette);
    luaPushFunctionGlobal(L, "toggleLightMode", &slua_toggleLightMode);
+   luaPushFunctionGlobal(L, "intellij", &slua_intellisense);
 
    lua_newtable(L);
    luaPushFunctionTable(L, "clearImageCache", &slua_clearImageCache);
    luaPushFunctionTable(L, "clearSpriteCache", &slua_clearSpriteCache);
    lua_setglobal(L, LLIB_IMG);
+}
+
+// assumes a table is at the top of the stack and attempts to push the value
+// with key <name> as the next item above it
+// returns false if the pushed value is not a table (or is nil)
+static bool _pushTableFromTop(lua_State *L, const char *name) {
+   lua_pushstring(L, name);
+   return lua_gettable(L, -2) == LUA_TTABLE;
+}
+
+
+vec(StringPtr) *luaIntellisense(lua_State *L, const char *line){
+   vec(StringPtr) *out = vecCreate(StringPtr)(&stringPtrDestroy);
+   vec(StringPtr) *split = stringSplit(line, '.');
+
+   size_t itemCount = vecSize(StringPtr)(split);
+   int stack = 0;
+   size_t i = 0;
+
+   bool err = false;
+
+   if (itemCount) {
+      lua_getglobal(L, "_G"); 
+      ++stack;
+
+      //push the tables in the sequence until our searchable table is on top
+      for (i = 0; i < itemCount - 1; ++i) {
+         ++stack;
+         if (!_pushTableFromTop(L, c_str(*vecAt(StringPtr)(split, i)))) {
+            err = true;
+            break;
+         }
+      }
+
+      //now search
+      if (!err) {
+         const char *searchItem = c_str(*vecAt(StringPtr)(split, i));
+         lua_pushnil(L);  // first key
+         while (lua_next(L, -2) != 0) {
+            // uses 'key' (at index -2) and 'value' (at index -1) 
+            if (lua_isstring(L, -2) || lua_isnumber(L, -2)) {
+               //we want to copy the string out to the top before calling tostring
+               //because it mgiht screw up next()
+               lua_pushnil(L);
+               lua_copy(L, -3, -1);
+
+               if (stringStartsWith(lua_tostring(L, -1), searchItem, false)) {
+                  String *newItem = stringCreate(lua_tostring(L, -1));
+                  vecPushBack(StringPtr)(out, &newItem);
+               }
+
+               lua_pop(L, 1);//pop the copy
+
+            }
+
+            // removes 'value'; keeps 'key' for next iteration 
+            lua_pop(L, 1);
+         }
+      }
+
+      //pop the stuff we added to the stack
+      lua_pop(L, stack);
+   }
+
+   vecDestroy(StringPtr)(split);
+   return out;
+}
+
+int slua_intellisense(lua_State *L) {
+   const char *str = luaL_checkstring(L, 1);
+   WorldView *view = luaGetWorldView(L);
+
+   vec(StringPtr) *intellij = luaIntellisense(L, str);
+
+   vecSort(StringPtr)(intellij, &stringPtrCompare);
+
+   vecForEach(StringPtr, item, intellij, {
+      consolePushLine(view->console, c_str(*item));
+   });
+
+
+   vecDestroy(StringPtr)(intellij);
+   return 0;
 }
 
 int slua_consolePrint(lua_State *L) {

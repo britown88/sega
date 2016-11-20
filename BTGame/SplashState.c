@@ -33,11 +33,11 @@ typedef struct {
    WorldView *view;
    bool pop;
 
-   TextArea *select, *cont, *new, *ack, *quit, *copyright;
+   TextArea *select, *cont, *new, *ack, *quit, *copyright, *warning;
    ManagedImage *splash;
    Sprite *fire;
 
-   Milliseconds StartTime;
+   Milliseconds StartTime, WarnTime;
    SplashStates state;
 
 }SplashState;
@@ -50,6 +50,10 @@ static void _splashStateCreate(SplashState *state) {
    state->ack = textAreaCreate(12, 21, 66, 1);
    state->quit = textAreaCreate(13, 22, 13, 1);
    state->copyright = textAreaCreate(11, 24, 18, 1);
+   state->warning = textAreaCreate(0, 0, EGA_TEXT_RES_WIDTH, EGA_TEXT_RES_HEIGHT);
+
+   textAreaSetSpeed(state->warning, 75);
+
 
    state->state = Show;
 }
@@ -60,6 +64,8 @@ static void _splashStateDestroy(SplashState *self) {
    textAreaDestroy(self->ack);
    textAreaDestroy(self->quit);
    textAreaDestroy(self->copyright);
+   textAreaDestroy(self->warning);
+
    checkedFree(self);
 }
 
@@ -110,6 +116,20 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
 
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
 
+   if (state->state == Conways) {
+      textAreaUpdate(state->warning);
+      if (textAreaIsDone(state->warning)) {
+         if (state->WarnTime == 0) {
+            state->WarnTime = t_u2m(gameClockGetTime());
+         }
+         else if (t_u2m(gameClockGetTime()) - state->WarnTime > 5000) {
+            state->pop = true;
+
+         }
+      }
+   }
+   
+
    //if (state->state == Show) {
    //   if (t_u2m(gameClockGetTime()) - state->StartTime > 2000) {
    //      state->state = Conways;
@@ -136,6 +156,14 @@ static void _handleKeyboard(SplashState *state) {
 
          if (state->state == Show) {
             state->state = Conways;
+            textAreaPushText(state->warning, 
+               "[w=4][s][c=3,0] \n \n \n \n \n \n \n"
+               "   Th[c=3,2]i[/c]s world [c=3,2]i[/c]s wr[c=3,2]i[/c]tten,[w=1] not der[c=3,2]i[/c]ved.[w=2]\n \n"
+               "        An actor[w=1] [c=3,2]i[/c]n a dream uncar[c=3,2]i[/c]ng,[w=2]\n \n \n"
+               " How w[c=3,2]i[/c]ll you l[c=3,2]i[/c]ve?[w=2]\n \n"
+               "                    How w[c=3,2]i[/c]ll you d[c=3,2]i[/c]e?[w=4]\n \n \n"
+               "                                -BDT[w=1]\n "               
+               "[/c][/s]");
          }
          else {
             state->pop = true;
@@ -174,7 +202,21 @@ void _splashRender(SplashState *state, GameStateRender *m) {
       textAreaRender(state->copyright, state->view, frame);
    }
    else {
+      //textAreaRender(state->warning, state->view, frame);
+      if (!textAreaIsDone(state->warning)) {
+         frameRenderSprite(frame, FrameRegionFULL, 79, 80, state->fire);
+      }
+
+      if (textAreaIsDone(state->warning)) {
+         int x = appRand(appGet(), 0, EGA_RES_WIDTH);
+         frameRenderRect(frame, FrameRegionFULL, x, 0, x+3, EGA_RES_HEIGHT - 1, 3);
+      }
       conwaysRender(frame, FrameRegionFULL);
+      textAreaRender(state->warning, state->view, frame);
+
+      
+         
+      
    }
 
 

@@ -132,6 +132,10 @@ void textAreaDestroy(TextArea *self) {
    richTextDestroy(self->rt);
    checkedFree(self);
 }
+//void textAreaResize(TextArea *self, short x, short y, short width, short height) {
+//
+//}
+
 void textAreaSetSpeed(TextArea *self, Milliseconds timePerCharacter) {
    self->textSpeed = timePerCharacter;
 }
@@ -256,9 +260,19 @@ void textAreaUpdate(TextArea *self) {
             Milliseconds delay = 0;
 
             richTextLineGetRaw(rtline, self->workingLine);
+
+            if (stringEqualRaw(self->workingLine, "")) {
+               volatile int i = 5;
+               ++i;
+            }
+
             c = (char*)c_str(self->workingLine) + self->currentChar;
 
             switch (*c) {
+            case '|': 
+               delay = 500; 
+               *c = ' ';
+               break;
             case ' ': break;
             case '\\':
                if (c[1] == 'c') {

@@ -169,6 +169,56 @@ void vecRemoveAt(T)(VEC_NAME *self, size_t index){
    }
 }
 
+#define vecSort_PARTITION(TYPE) CONCAT(vecSort_PARTITION_, TYPE)
+#define vecSort_QUICKSORT(TYPE) CONCAT(vecSort_QUICKSORT_, TYPE)
+
+static size_t vecSort_PARTITION(T)(VEC_NAME *self, bool(*lessThan)(T*, T*), size_t lo, size_t hi) {
+   T *pivot = vecAt(T)(self, hi);
+   size_t i = lo;
+   size_t j = 0;
+
+   for (j = lo; j < hi; ++j) {
+      T *atJ = vecAt(T)(self, j);
+      if (lessThan(atJ, pivot)) {
+         T t = self->data[i];
+         self->data[i] = self->data[j];
+         self->data[j] = t;
+
+         ++i;
+      }
+   }
+
+   //swap
+   {
+      T t = self->data[i];
+      self->data[i] = self->data[hi];
+      self->data[hi] = t;
+   }
+
+   return i;
+}
+
+static void vecSort_QUICKSORT(T)(VEC_NAME *self, bool(*lessThan)(T*, T*), size_t lo, size_t hi) {
+   T *l = vecAt(T)(self, lo);
+   T *h = vecAt(T)(self, hi);
+
+   if (lo < hi) {
+      size_t p = vecSort_PARTITION(T)(self, lessThan, lo, hi);
+      if (p > 0) {
+         vecSort_QUICKSORT(T)(self, lessThan, lo, p - 1);
+      }
+      
+      vecSort_QUICKSORT(T)(self, lessThan, p + 1, hi);
+   }
+}
+
+void vecSort(T)(VEC_NAME *self, bool(*lessThan)(T*, T*)) {
+   vecSort_QUICKSORT(T)(self, lessThan, 0, self->count - 1);
+}
+
+#undef vecSort_PARTITION
+#undef vecSort_QUICKSORT
+
 #undef VEC_NAME
 #undef VectorTPart
 #undef T

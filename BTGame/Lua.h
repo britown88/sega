@@ -2,6 +2,7 @@
 
 #include "Verbs.h"
 #include "segashared/Strings.h"
+#include "segautils/String.h"
 
 typedef struct Actor_t Actor;
 typedef struct lua_State lua_State;
@@ -64,5 +65,7 @@ void luaLoadUILibrary(lua_State *L);
 void luaUIAddTextArea(lua_State *L, StringView name, TextArea *area);
 
 void luaLoadDBLibrary(lua_State *L);
+
+vec(StringPtr) *luaIntellisense(lua_State *L, const char *line);
 
 

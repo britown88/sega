@@ -2,6 +2,7 @@
 #include "segashared\CheckedMemory.h"
 #include "segautils\BitTwiddling.h"
 #include <string.h>
+#include "segautils/Defs.h"
 
 #define FONT_CHAR_WIDTH 32
 #define FONT_CHAR_HEIGHT 8
@@ -86,12 +87,12 @@ Font *fontFactoryGetFont(FontFactory *self, byte backgroundColor, byte foregroun
    return &self->fonts[index];
 }
 
-void frameRenderTextSingleChar(Frame *frame, const char c, short x, short y, Font *font) {
+void frameRenderTextSingleChar(Frame *frame, const char c, short x, short y, Font *font, bool spaces) {
    int i, iy;
    byte charY = c / FONT_CHAR_WIDTH;
    byte charX = c % FONT_CHAR_WIDTH;
 
-   if (x >= EGA_TEXT_RES_WIDTH) {
+   if (x >= EGA_TEXT_RES_WIDTH || (!spaces && c == ' ')) {
       return;
    }
 
@@ -104,7 +105,7 @@ void frameRenderTextSingleChar(Frame *frame, const char c, short x, short y, Fon
    }
 }
 
-void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font){
+static void _frameRenderTextEX(Frame *frame, const char *text, short x, short y, Font *font, bool drawSpaces){
    size_t charCount;
    size_t c;
 
@@ -118,6 +119,15 @@ void frameRenderText(Frame *frame, const char *text, short x, short y, Font *fon
       if(x >= EGA_TEXT_RES_WIDTH)
          break;
 
-      frameRenderTextSingleChar(frame, *(unsigned char*)&text[c], x++, y, font);
+      frameRenderTextSingleChar(frame, *(unsigned char*)&text[c], x++, y, font, drawSpaces);
    }
+}
+
+void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font) {
+   _frameRenderTextEX(frame, text, x, y, font, true);
+}
+
+void frameRenderTextWithoutSpaces(Frame *frame, const char *text, short x, short y, Font *font) {
+   _frameRenderTextEX(frame, text, x, y, font, false);
+
 }

@@ -144,3 +144,82 @@ bool stringEqualRaw(String *s1, const char *s2) {
 
    return memcmp(c_str(s1), s2, len1) == 0;
 }
+
+bool stringStartsWith(const char *s1, const char *s2, bool caseSensitive) {
+
+   char *p1 = s1;
+   char *p2 = s2;
+
+   while (*p1 && *p2) {
+      char c1 = *p1++;
+      char c2 = *p2++;
+
+      if (!caseSensitive) {
+         if (c1 >= 'A' && c1 <= 'Z') { c1 -= 'A' - 'a'; }
+         if (c2 >= 'A' && c2 <= 'Z') { c2 -= 'A' - 'a'; }
+      }
+
+      if (c1 != c2) {
+         return false;
+      }
+   }
+
+   return !*p2;
+}
+
+bool stringPtrCompare(StringPtr *str1, StringPtr *str2) {
+   char *p1 = c_str(*str1);
+   char *p2 = c_str(*str2);
+   char c1, c2;
+
+   while (*p1 && *p2) {
+      c1 = *p1;
+      c2 = *p2;
+
+      if (c1 >= 'A' && c1 <= 'Z') { c1 -= 'A' - 'a'; }
+      if (c2 >= 'A' && c2 <= 'Z') { c2 -= 'A' - 'a'; }
+
+      if (c1 != c2) {
+         break;
+      }
+
+      ++p1;
+      ++p2;
+   }
+
+   return c1 == c2 ? stringLen(*str1) < stringLen(*str2) : c1 < c2;
+}
+
+void stringPtrDestroy(StringPtr *self) {
+   stringDestroy(*self);
+}
+#define VectorTPart StringPtr
+#include "Vector_Impl.h"
+
+vec(StringPtr) *stringSplit(const char *self, char delim) {
+   vec(StringPtr) *out = vecCreate(StringPtr)(&stringPtrDestroy);
+   static char buff[256] = { 0 };
+   size_t bufflen = 0;
+   String *item = NULL;
+
+   char c;
+   char *str = self;
+
+   while (c = *str++) {
+      if (c == delim) {         
+         buff[bufflen] = 0;
+         item = stringCreate(buff);
+         vecPushBack(StringPtr)(out, &item);
+         bufflen = 0;
+      }
+      else {
+         buff[bufflen++] = c;
+      }
+   }
+
+   buff[bufflen] = 0;
+   item = stringCreate(buff);
+   vecPushBack(StringPtr)(out, &item);
+
+   return out;
+}

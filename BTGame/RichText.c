@@ -10,8 +10,8 @@ void spanDestroy(Span *self) {
    stringDestroy(self->string);
 }
 
-static void _spanCreate(char *str, size_t len, SpanStyles style, byte bg, byte fg, Span *out) {
-   *out = (Span) { .string = stringCreate(""), .style = { .flags = style,.bg = bg,.fg = fg } };
+static void _spanCreate(char *str, size_t len, SpanStyle *style, Span *out) {
+   *out = (Span) { .string = stringCreate(""), .style =  *style };
    stringConcatEX(out->string, str, len);
 }
 
@@ -63,10 +63,20 @@ void richTextLineCopy(RichTextLine self, RichTextLine other) {
    });
 }
 
+static void richTextLineGetRaw_wait(RichTextLine self, String *out, Span *span) {
+   int i = 0;
+   for (i = 0; i < span->style.wait;++i) {
+      stringConcat(out, "|");
+   }
+}
+
 void richTextLineGetRaw(RichTextLine self, String *out) {
    stringClear(out);
 
    vecForEach(Span, span, self, {
+      if (span->style.flags&Style_Wait) {
+         richTextLineGetRaw_wait(self, out, span);
+      }
       stringConcat(out, c_str(span->string));
    });
 }
@@ -82,7 +92,7 @@ typedef struct {
 
    char buffer[256];
    size_t bufferLen;
-   bool currentInvert, ignoring;
+   bool currentInvert, currentSpaces, ignoring;
 }RTParse;
 
 static void _pushStyle(RichText *self, SpanStyle style) {
@@ -106,14 +116,14 @@ static SpanStyle *_topStyle(RichText *self) {
 
 static void _commitSpan(RichText *self, RTParse *p) {
    Span newSpan;
-   SpanStyle *style = NULL;
+   SpanStyle *style = _topStyle(self);
    
-   if (p->bufferLen == 0) {
+   if (p->bufferLen == 0 && !style->flags&Style_Wait) {
       return;
    }
 
-   style = _topStyle(self);
-   _spanCreate(p->buffer, p->bufferLen, style->flags, style->bg, style->fg, &newSpan);
+   
+   _spanCreate(p->buffer, p->bufferLen, style, &newSpan);
    vecPushBack(Span)(self->spanTable, &newSpan);
 
    p->bufferLen = 0;
@@ -176,6 +186,24 @@ static void _popColor(RichText *self, RTParse *p) {
    else {
       style->flags |= Style_Invert;
    }
+
+   if (!p->currentSpaces) {
+      style->flags &= Style_NoSpace;
+   }
+   else {
+      style->flags |= Style_NoSpace;
+   }
+   
+}
+
+static void _pushWait(RichText *self, RTParse *p, int wait) {
+   SpanStyle newStyle = { 0 };
+   newStyle.flags = Style_Wait;
+   newStyle.wait = wait;
+
+   _pushStyle(self, newStyle);
+   _commitSpan(self, p);
+   _popStyle(self);
 }
 
 static void _pushColor(RichText *self, RTParse *p, byte bg, byte fg) {
@@ -188,6 +216,11 @@ static void _pushColor(RichText *self, RTParse *p, byte bg, byte fg) {
    if (p->currentInvert) {
       newStyle.flags |= Style_Invert;
    }
+
+   if (p->currentSpaces) {
+      newStyle.flags |= Style_NoSpace;
+   }
+   
 
    _pushStyle(self, newStyle);
 }
@@ -236,6 +269,46 @@ static int _parseTag(RichText *self, RTParse *p) {
             }
             return 0;
          }
+      }
+      else if (cmd == 's' || cmd == 'S') {
+         //nospace command
+         _skipWhitespace(p);
+         c = *p->str++;
+         if (c != ']') {
+            return 1;
+         }
+         else {
+            //commit the invert
+            SpanStyle *style = _topStyle(self);
+            p->currentSpaces = !end;
+            if (end) {
+               style->flags &= ~Style_NoSpace;
+            }
+            else {
+               style->flags |= Style_NoSpace;
+            }
+            return 0;
+         }
+      }
+      else if (cmd == 'w' || cmd == 'W') {
+         int wait;
+         _skipWhitespace(p);
+         c = *p->str++;
+         if (c != '=') {
+            return 1;
+         }
+         _skipWhitespace(p);
+         wait = _readNumber(p);
+         _skipWhitespace(p);
+         c = *p->str++;
+         if (c != ']') {
+            return 1;
+         }
+         else {
+            _pushWait(self, p, wait);
+            return 0;
+         }
+         
       }
       else if (cmd == 'c' || cmd == 'C') {
          int bg = 0, fg = 0;
@@ -402,6 +475,12 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
       int i = 0;
       int splitPoint = 0;
 
+      if (iter->style.flags&Style_Wait) {
+         _spanCreate("", 0, &iter->style, &newSpan);
+         vecPushBack(Span)(workingLine, &newSpan);
+         continue;
+      }
+
       //skip empty spans
       if (spanWidth == 0) {
          continue;
@@ -411,7 +490,8 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
       for (i = 0; i < spanWidth; ++i, ++currentWidth) {
 
          if (str[i] == '\n') {
-            _spanCreate(str + splitPoint, i - splitPoint, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
+
+            _spanCreate(str + splitPoint, i - splitPoint, &iter->style, &newSpan);
             vecPushBack(Span)(workingLine, &newSpan);
             vecPushBack(RichTextLine)(outList, &workingLine);
             workingLine = vecCreate(Span)(&spanDestroy);
@@ -441,7 +521,7 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
             }
 
             //create that span, push it to the workingline, and push the workingline
-            _spanCreate(str + splitPoint, segmentLength, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
+            _spanCreate(str + splitPoint, segmentLength, &iter->style, &newSpan);
             vecPushBack(Span)(workingLine, &newSpan);
             vecPushBack(RichTextLine)(outList, &workingLine);
             workingLine = vecCreate(Span)(&spanDestroy);
@@ -465,7 +545,7 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
 
       //push the remaining portions of this span onto the current working line
       if (splitPoint < spanWidth) {
-         _spanCreate(str + splitPoint, spanWidth - splitPoint, iter->style.flags, iter->style.bg, iter->style.fg, &newSpan);
+         _spanCreate(str + splitPoint, spanWidth - splitPoint, &iter->style, &newSpan);
          vecPushBack(Span)(workingLine, &newSpan);
       }
    }

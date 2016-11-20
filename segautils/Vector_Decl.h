@@ -27,6 +27,7 @@ void vecReverse(T)(VEC_NAME *self);
 size_t vecIndexOf(T)(VEC_NAME *self, T*item);
 void vecRemoveAt(T)(VEC_NAME *self, size_t index);
 void vecRemove(T)(VEC_NAME *self, T*item);
+void vecSort(T)(VEC_NAME *self, bool(*lessThan)(T*,T*));
 
 #undef VEC_NAME
 #undef VectorTPart

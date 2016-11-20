@@ -195,6 +195,7 @@ Font *fontFactoryGetFont(FontFactory *self, byte backGroundColor, byte foregroun
 
 void frameRenderTextSingleChar(Frame *frame, const char c, short x, short y, Font *font);
 void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font);
+void frameRenderTextWithoutSpaces(Frame *frame, const char *text, short x, short y, Font *font);
 
 
 

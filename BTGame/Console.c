@@ -36,6 +36,7 @@ void textLineDestroy(TextLine *self) {
 struct Console_t {
    WorldView *view;
    TextArea *notification;
+   TextArea *intellij;
 
    bool enabled;
    vec(StringPtr) *inputHistory, *shiftLines;   
@@ -54,7 +55,11 @@ struct Console_t {
 
    int queuePos;
    int showLineCount;
+
+
 };
+
+static void _initInputLine(Console *self);
 
 Console *consoleCreate(WorldView *view) {
    Console *out = checkedCalloc(1, sizeof(Console));
@@ -72,6 +77,10 @@ Console *consoleCreate(WorldView *view) {
    return out;
 }
 void consoleDestroy(Console *self) {
+   if (self->intellij) {
+      textAreaDestroy(self->intellij);
+   }
+
    textAreaDestroy(self->notification);
    richTextDestroy(self->rt);
    stringDestroy(self->input);
@@ -84,6 +93,44 @@ void consoleDestroy(Console *self) {
 
 static RichTextLine _inputLine(Console *self) {
    return (vecEnd(TextLine)(self->lines) - 1)->line;
+}
+
+static void _updateIntellisense(Console *self) {
+   vec(StringPtr) *list = luaIntellisense(self->view->L, c_str(self->input));
+
+   if (self->intellij) {
+      textAreaDestroy(self->intellij);
+      self->intellij = NULL;
+   }
+
+   if (vecSize(StringPtr)(list) > 0) {
+      size_t i = 0;
+      String *content = stringCreate("");
+
+
+      for (i = 0; i < 5 && i < vecSize(StringPtr)(list); ++i) {
+         stringConcat(content, c_str(*vecAt(StringPtr)(list, i)));
+         stringConcat(content, " \n");
+      }
+      stringConcat(content, " ");
+      self->intellij = textAreaCreate(0, 0, EGA_TEXT_RES_WIDTH, 6);
+      textAreaPushText(self->intellij, c_str(content));
+      textAreaUpdate(self->intellij);
+      stringDestroy(content);
+   }
+
+   vecDestroy(StringPtr)(list);
+}
+
+void _initInputLine(Console *self) {
+   RichTextLine input = _inputLine(self);
+   String *innerString = stringCreate("");
+
+   stringSet(innerString, PREFIX);
+   richTextReset(self->rt, innerString);
+
+   vecClear(Span)(input);
+   richTextLineCopy(richTextGetSpans(self->rt), input);
 }
 
 static void _updateInputLine(Console *self) {
@@ -125,7 +172,8 @@ static void _updateInputLine(Console *self) {
    richTextReset(self->rt, innerString);
 
    vecClear(Span)(input);
-   richTextLineCopy(richTextGetSpans(self->rt), input);  
+   richTextLineCopy(richTextGetSpans(self->rt), input); 
+   _updateIntellisense(self);
 }
 
 static void _updateConsoleLines(Console *self) {
@@ -310,7 +358,7 @@ void consoleCreateLines(Console *self) {
    //consolePushLine(self, "#[c=0,4]c[/c][c=0,10]o[/c][c=0,11]n[/c][c=0,5]s[/c][c=0,3]o[/c][c=0,1]l[/c][c=0,4]e[/c]");
 
    consolePushLine(self, "");
-   _updateInputLine(self);
+   _initInputLine(self);
 }
 
 void consoleClear(Console *self) {
@@ -352,6 +400,7 @@ void consoleInputChar(Console *self, char c) {
    stringInsert(self->input, c, self->cursorPos);
    _cursorMove(self, 1);
    _updateInputLine(self);
+   
 }
 static void _historyUp(Console *self) {
    size_t historyLen = vecSize(StringPtr)(self->inputHistory);
@@ -536,5 +585,9 @@ void consoleRenderLines(Console *self, Frame *frame) {
             frameRenderSpan(self->view, frame, &x, &y, span);
          });
       });
+
+      if (self->intellij) {
+         textAreaRender(self->intellij, self->view, frame);
+      }
    }
 }
