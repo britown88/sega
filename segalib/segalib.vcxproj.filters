@@ -68,5 +68,8 @@
     <ClCompile Include="Rasterizer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

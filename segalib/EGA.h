@@ -193,10 +193,42 @@ void fontFactoryDestroy(FontFactory *self);
 
 Font *fontFactoryGetFont(FontFactory *self, byte backGroundColor, byte foregroundColor);
 
-void frameRenderTextSingleChar(Frame *frame, const char c, short x, short y, Font *font);
 void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font);
 void frameRenderTextWithoutSpaces(Frame *frame, const char *text, short x, short y, Font *font);
 
+/*New texture system 2017
+Textures are flat byte*'s with height, width, and a format specifier
+Going to move to a system wher einstead of Image* and Texture* there is just Image Textures (with alpha channel) and frame textures
+This way we can standardize all drawing functions to allow drawing to arbitrary textures and get FBO functionality
+Image* will be reduced to only being a serialization layer and frame will be reduced to a renderTexture function
+*/
+typedef struct Texture_t Texture;
+
+#define EGA_TEX_FMT_ALPHAPLANE (1 << 0) //adds a 4th bitplane for alpha channel
+
+Texture *textureCreate(int width, int height, byte flags);
+Texture *imageCreateTexture(Image *self);
+void textureDestroy(Texture *self);
+
+int textureGetWidth(Texture *self);
+int textureGetHeight(Texture *self);
+
+/*
+FrameRegion NOTE: Passs NULL as a frameregion to use the full image
+*/
+
+void textureClear(Texture *self, FrameRegion *vp, byte color);
+void textureClearAlpha(Texture *self);
+void textureRenderTexture(Texture *self, FrameRegion *vp, short x, short y, Texture *tex);
+void textureRenderTexturePartial(Texture *self, FrameRegion *vp, short x, short y, Texture *tex, short imgX, short imgY, short imgWidth, short imgHeight);
+void textureRenderPoint(Texture *self, FrameRegion *vp, short x, short y, byte color);
+void textureRenderLine(Texture *self, FrameRegion *vp, short x1, short y1, short x2, short y2, byte color);
+void textureRenderLineRect(Texture *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
+void textureRenderRect(Texture *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
+void textureRenderText(Texture *texture, const char *text, short x, short y, Font *font);
+void textureRenderTextWithoutSpaces(Texture *texture, const char *text, short x, short y, Font *font);
+
+void frameRenderTexture(Frame *self, FrameRegion *vp, short x, short y, Texture *tex);
 
 
 #ifdef __cplusplus
