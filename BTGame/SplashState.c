@@ -190,21 +190,8 @@ void _splashRender(SplashState *state, GameStateRender *m) {
    
 
    if (state->state == Show) {
-
-      Image *crsr = imageDeserialize("D:\\dev\\sega\\BT\\assets\\img\\cursor.ega", EGA_IMGD_FILEPATH | EGA_IMGD_OPTIMIZED | EGA_IMGD_OWN);
-      Texture *crsrTex = imageCreateTexture(crsr);
-      Texture *textTex = imageCreateTexture(managedImageGetImage(state->splash));
       frameClear(frame, FrameRegionFULL, 0);
-      //frameRenderImage(frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->splash));
-
-      
-      textureRenderTexture(textTex, NULL, 100, 100, textTex);
-      textureRenderTexture(textTex, NULL, 50, 50, crsrTex);
-      frameRenderTexture(frame, FrameRegionFULL, 0, 0, textTex);
-
-      textureDestroy(textTex);
-      textureDestroy(crsrTex);
-      imageDestroy(crsr);
+      frameRenderImage(frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->splash));
 
       frameRenderSprite(frame, FrameRegionFULL, 79, 80, state->fire);
 

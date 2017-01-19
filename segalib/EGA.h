@@ -204,9 +204,8 @@ Image* will be reduced to only being a serialization layer and frame will be red
 */
 typedef struct Texture_t Texture;
 
-#define EGA_TEX_FMT_ALPHAPLANE (1 << 0) //adds a 4th bitplane for alpha channel
 
-Texture *textureCreate(int width, int height, byte flags);
+Texture *textureCreate(int width, int height);
 Texture *imageCreateTexture(Image *self);
 void textureDestroy(Texture *self);
 

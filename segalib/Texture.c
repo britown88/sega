@@ -7,22 +7,29 @@
 
 struct Texture_t{
    int w, h;
-   byte flags;
    byte *data;
    size_t size, byteWidth, planeSize;
    FrameRegion full;
 };
 
-Texture *textureCreate(int width, int height, byte flags) {
+static byte *_alphaPlane(Texture *self) { return self->data + self->planeSize * EGA_PLANES; }
+static byte *_plane(Texture *self, byte idx) { return self->data + self->planeSize * idx; }
+static byte *_scanLine(Texture *self, int y, byte plane) { return _plane(self, plane) + y*self->byteWidth; }
+static byte *_alphaScanLine(Texture *self, int y) { return _alphaPlane(self) + y*self->byteWidth; }
+
+Texture *textureCreate(int width, int height) {
    Texture *out = checkedCalloc(1, sizeof(Texture));
    out->full = (FrameRegion) { 0, 0, width, height };
    out->w = width;
    out->h = height;
-   out->flags = flags;
    out->byteWidth = width % 8 ? ((width >> 1) + 1) : (width >> 1);
    out->planeSize = out->byteWidth * height;
-   out->size = out->planeSize * (flags&EGA_TEX_FMT_ALPHAPLANE ? EGA_IMAGE_PLANES : EGA_PLANES);
+   out->size = out->planeSize * EGA_IMAGE_PLANES;
    out->data = checkedCalloc(1, out->size);
+
+   //need to flip alpha
+   memset(_alphaPlane(out), 255, out->planeSize);
+
    return out;
 }
 
@@ -36,14 +43,10 @@ void textureDestroy(Texture *self) {
 int textureGetWidth(Texture *self) { return self->w; }
 int textureGetHeight(Texture *self) { return self->h; }
 
-static bool _hasAlpha(Texture*self) { return !!(self->flags&EGA_TEX_FMT_ALPHAPLANE); }
-static byte *_alphaPlane(Texture *self) { return self->data + self->planeSize * EGA_PLANES; }
-static byte *_plane(Texture *self, byte idx) { return self->data + self->planeSize * idx; }
-static byte *_scanLine(Texture *self, int y, byte plane) { return _plane(self, plane) + y*self->byteWidth; }
-static byte *_alphaScanLine(Texture *self, int y) { return _alphaPlane(self) + y*self->byteWidth; }
+
 
 Texture *imageCreateTexture(Image *self) {
-   Texture *out = textureCreate(imageGetWidth(self), imageGetHeight(self), EGA_TEX_FMT_ALPHAPLANE);
+   Texture *out = textureCreate(imageGetWidth(self), imageGetHeight(self));
    int plane, scanline;
    for (scanline = 0; scanline < out->h; ++scanline) {
       //copy out the color
@@ -67,22 +70,105 @@ static void _scanLineSetBit(byte *sl, short position, byte value) {
    setBitInArray(sl, position, value);
 }
 
+static void _renderAlphaBit(byte *dest, byte *color, int *texX, int *x) {
+   byte c = _scanLineGetBit(color, *texX);//c
+   byte s = _scanLineGetBit(dest, *x);//screen
+   _scanLineSetBit(dest, *x, (s & c));
+   ++(*x);
+   ++(*texX);
+}
+
+static void _renderAlpha8Bits(byte *dest, byte *color, int *texX, int *x, int byteRun) {
+   int i;
+   int frac = (*texX) % 8;  //how far we are into the image 
+
+                            //1 << 3 == 8
+   uint8_t *screenArr = ((uint8_t*)dest) + ((*x) >> 3);
+   uint8_t *imgArr = ((uint8_t*)color) + ((*texX) >> 3);
+   
+   if (!frac) { //fast path!
+      for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
+         *screenArr++ &= *imgArr++;
+      }
+   }
+   else {//slow path...
+      for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
+         *screenArr &= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
+         ++imgArr;
+         ++screenArr;
+      }
+   }
+}
+
+static void _renderAlpha32Bits(byte *dest, byte *color, int *texX, int *x, int intRun) {
+   int i;
+   int intBits = sizeof(uint32_t) * 8;
+   int frac = *texX % intBits;  //how far we are into the image 
+
+                                //1 << 5 == 32
+   uint32_t *screenArr = ((uint32_t*)dest) + (*x >> 5);
+   uint32_t *imgArr = ((uint32_t*)color) + (*texX >> 5);
+
+   if (!frac) { //fast path!
+      for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
+         *screenArr++ &= *imgArr++;
+      }
+   }
+   else {//slow path...
+      for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
+         *screenArr &= (*imgArr >> frac) | ((*(imgArr + 1)) << (intBits - frac));
+         ++imgArr;
+         ++screenArr;
+      }
+   }
+
+
+
+}
+
+static void _renderAlphaScanLine(byte *dest, int x, byte *color, int bitOffset, int width) {
+   int intRun, byteRun, alignRun;
+   int texX = bitOffset;
+   int last = x + width;
+
+   int intBits = sizeof(uint32_t) * 8;
+   int alignedBits = x % 8;
+
+   if (alignedBits) {
+      while (x < last && alignedBits++ < 8) {
+         _renderAlphaBit(dest, color, &texX, &x);
+      }
+   }
+
+   if (x == last) {
+      return;
+   }
+
+   byteRun = (last - x) / 8;
+   alignRun = (4 - ((x % intBits) / 8)) % 4;
+   _renderAlpha8Bits(dest, color, &texX, &x, MIN(alignRun, byteRun));
+
+   intRun = (last - x) / intBits;
+   _renderAlpha32Bits(dest, color, &texX, &x, intRun);
+
+   byteRun = (last - x) / 8;
+   _renderAlpha8Bits(dest, color, &texX, &x, byteRun);
+
+   while (x < last) {
+      _renderAlphaBit(dest, color, &texX, &x);
+   }
+
+}
+
+
 static void _renderBit(byte *dest, byte *color, byte *alpha, int *texX, int *x) {
-   if (alpha) {
-      //setbits...
-      byte t = _scanLineGetBit(alpha, *texX);//trans
-      byte c = _scanLineGetBit(color, *texX);//c
-      byte s = _scanLineGetBit(dest, *x);//screen
+   //setbits...
+   byte t = _scanLineGetBit(alpha, *texX);//trans
+   byte c = _scanLineGetBit(color, *texX);//c
+   byte s = _scanLineGetBit(dest, *x);//screen
 
-                                         //if alpha, use color, else use screen
-      _scanLineSetBit(dest, *x, ((s & t) | c));
-   }
-   else {
-      byte c = _scanLineGetBit(color, *texX);//c
-      byte s = _scanLineGetBit(dest, *x);//screen
-
-      _scanLineSetBit(dest, *x, (s | c));
-   }
+                                       //if alpha, use color, else use screen
+   _scanLineSetBit(dest, *x, ((s & t) | c));
 
    ++(*x);
    ++(*texX);
@@ -95,44 +181,26 @@ static void _render8Bits(byte *dest, byte *color, byte *alpha, int *texX, int *x
                             //1 << 3 == 8
    uint8_t *screenArr = ((uint8_t*)dest) + ((*x) >> 3);
    uint8_t *imgArr = ((uint8_t*)color) + ((*texX) >> 3);
-   uint8_t *alphaArr = alpha ? (((uint8_t*)alpha) + ((*texX) >> 3)) : 0;
+   uint8_t *alphaArr = ((uint8_t*)alpha) + ((*texX) >> 3);
 
-   if (alpha) {
-      if (!frac) { //fast path!
-         for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
-            //simply aligned, do regular int operations
-            *screenArr &= *alphaArr++;
-            *screenArr++ |= *imgArr++;
-         }
-      }
-      else {//slow path...
-         for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
-            //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
-            *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (8 - frac));
-            *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
-
-            ++imgArr;
-            ++screenArr;
-            ++alphaArr;
-         }
+   if (!frac) { //fast path!
+      for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
+         //simply aligned, do regular int operations
+         *screenArr &= *alphaArr++;
+         *screenArr++ |= *imgArr++;
       }
    }
-   else {
-      if (!frac) { //fast path!
-         for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
-            *screenArr++ |= *imgArr++;
-         }
-      }
-      else {//slow path...
-         for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
-            *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
-            ++imgArr;
-            ++screenArr;
-         }
+   else {//slow path...
+      for (i = 0; i < byteRun; ++i, (*x) += 8, (*texX) += 8) {
+         //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
+         *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (8 - frac));
+         *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
+
+         ++imgArr;
+         ++screenArr;
+         ++alphaArr;
       }
    }
-
-   
 
 }
 
@@ -144,42 +212,27 @@ static void _render32Bits(byte *dest, byte *color, byte *alpha, int *texX, int *
                                 //1 << 5 == 32
    uint32_t *screenArr = ((uint32_t*)dest) + (*x >> 5);
    uint32_t *imgArr = ((uint32_t*)color) + (*texX >> 5);
-   uint32_t *alphaArr = alpha ? (((uint32_t*)alpha) + (*texX >> 5)) : 0;
+   uint32_t *alphaArr = ((uint32_t*)alpha) + (*texX >> 5);
 
-   if (alpha) {
-      if (!frac) { //fast path!
-         for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
-            //simply aligned, do regular int operations
-            *screenArr &= *alphaArr++;
-            *screenArr++ |= *imgArr++;
-         }
-      }
-      else {//slow path...
-         for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
-            //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
-            *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (intBits - frac));
-            *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (intBits - frac));
-
-            ++imgArr;
-            ++screenArr;
-            ++alphaArr;
-         }
+   if (!frac) { //fast path!
+      for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
+         //simply aligned, do regular int operations
+         *screenArr &= *alphaArr++;
+         *screenArr++ |= *imgArr++;
       }
    }
-   else {
-      if (!frac) { //fast path!
-         for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
-            *screenArr++ |= *imgArr++;
-         }
-      }
-      else {//slow path...
-         for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
-            *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (intBits - frac));
-            ++imgArr;
-            ++screenArr;
-         }
+   else {//slow path...
+      for (i = 0; i < intRun; ++i, *x += intBits, *texX += intBits) {
+         //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
+         *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (intBits - frac));
+         *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (intBits - frac));
+
+         ++imgArr;
+         ++screenArr;
+         ++alphaArr;
       }
    }
+   
 
    
 }
@@ -215,16 +268,13 @@ static void _renderScanLine(byte *dest, int x, byte *color, byte *alpha, int bit
    while (x < last) {
       _renderBit(dest, color, alpha, &texX, &x);
    }
-
 }
 
 void textureClear(Texture *self, FrameRegion *vp, byte color) {
    if (!vp) {
       int i;
 
-      if (!_hasAlpha(self)) {
-         memset(_alphaPlane(self), 255, self->planeSize);
-      }
+      memset(_alphaPlane(self), 0, self->planeSize);
      
       for (i = 0; i < EGA_PLANES; ++i) {
          byte current = getBit(color, i) ? 255 : 0;
@@ -239,9 +289,10 @@ void textureClear(Texture *self, FrameRegion *vp, byte color) {
    }
 }
 void textureClearAlpha(Texture *self) {
-   if (_hasAlpha(self)) {
-      memset(_alphaPlane(self), 0, self->planeSize);
-   }
+
+   memset(self->data, 0, self->planeSize*EGA_IMAGE_PLANES);
+   memset(_alphaPlane(self), 255, self->planeSize);
+
 }
 
 void textureRenderTexture(Texture *self, FrameRegion *vp, short x, short y, Texture *tex) {
@@ -282,23 +333,22 @@ void textureRenderTexture(Texture *self, FrameRegion *vp, short x, short y, Text
    for (yIter = 0; yIter < clipSizeY; ++yIter) {
       int yLine = yIter + ignoreOffsetY;
 
-      if (_hasAlpha(tex)) {
-         alpha = _alphaScanLine(tex, yLine);
-      }
+      alpha = _alphaScanLine(tex, yLine);
 
       for (plane = 0; plane < EGA_PLANES; ++plane) {
          color = _scanLine(tex, yLine, plane);
          _renderScanLine(_scanLine(self, y + yLine, plane), x + ignoreOffsetX, color, alpha, ignoreOffsetX, clipSizeX);
       }
 
-      if (_hasAlpha(self)) {
-         //now we 'render' the alpha scanline onto our own alpha plane!
-         _renderScanLine(_alphaScanLine(self, y + yLine), x + ignoreOffsetX, alpha, 0, ignoreOffsetX, clipSizeX);
-      }
+      //now we 'render' the alpha scanline onto our own alpha plane!
+      _renderAlphaScanLine(_alphaScanLine(self, y + yLine), x + ignoreOffsetX, alpha, ignoreOffsetX, clipSizeX);
    }
 }
 
-void textureRenderTexturePartial(Texture *self, FrameRegion *vp, short x, short y, Texture *tex, short imgX, short imgY, short imgWidth, short imgHeight) {}
+void textureRenderTexturePartial(Texture *self, FrameRegion *vp, short x, short y, Texture *tex, short imgX, short imgY, short imgWidth, short imgHeight) {
+
+}
+
 void textureRenderPoint(Texture *self, FrameRegion *vp, short x, short y, byte color) {}
 void textureRenderLine(Texture *self, FrameRegion *vp, short x1, short y1, short x2, short y2, byte color) {}
 void textureRenderLineRect(Texture *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color) {}
@@ -339,13 +389,11 @@ void frameRenderTexture(Frame *self, FrameRegion *vp, short x, short y, Texture 
 
    for (yIter = 0; yIter < clipSizeY; ++yIter) {
       int yLine = yIter + ignoreOffsetY;
-
-      if (_hasAlpha(tex)) {
-         alpha = _alphaScanLine(tex, yLine);
-      }
+      alpha = _alphaScanLine(tex, yLine);
 
       for (plane = 0; plane < EGA_PLANES; ++plane) {
          color = _scanLine(tex, yLine, plane);
+
          _renderScanLine(&self->planes[plane].lines[y + yLine], x + ignoreOffsetX, color, alpha, ignoreOffsetX, clipSizeX);
       }
    }
