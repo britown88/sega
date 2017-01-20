@@ -46,7 +46,7 @@ int textureGetHeight(Texture *self) { return self->h; }
 byte *textureGetScanline(Texture *self, byte plane, int y) { return _scanLine(self, y, plane); }
 byte *textureGetAlphaScanline(Texture *self, int y) { return _alphaScanLine(self, y); }
 
-
+FrameRegion *textureGetFullRegion(Texture *self) { return &self->full; }
 
 Texture *imageCreateTexture(Image *self) {
    Texture *out = textureCreate(imageGetWidth(self), imageGetHeight(self));

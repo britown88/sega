@@ -406,60 +406,52 @@ static void _renderSquare(EditorState *state, Texture *tex) {
    }
 }
 
-void _renderTestMesh(EditorState *state, Texture *frame) {
+void _renderGridAsMesh(EditorState *state, Texture *frame) {
    static int fboSize = 100;
 
    int fbowidth = fboSize += 1;
-   int fboheight = fbowidth * ((float)GRID_SIZE_Y / GRID_SIZE_X) - 1;
+   int fboheight = fbowidth * ((float)GRID_SIZE_Y / GRID_SIZE_X);
 
-   Viewport *oldv = state->view->viewport;
-   Viewport tempv = { .region = {0, 0, fbowidth, fboheight }, .worldPos = oldv->worldPos };
+   Viewport *oldview = state->view->viewport;
+   Viewport tempview = { .region = {0, 0, fbowidth, fboheight }, .worldPos = oldview->worldPos };
    vec(Vertex) *vbo = vecCreate(Vertex)(NULL);
    vec(size_t) *ibo = vecCreate(size_t)(NULL);
-   Texture *tex;
-   Transform t = {
-      .size = (Int3) { GRID_SIZE_X - 1, GRID_SIZE_Y - 1, 1 },
-      .offset = (Int3) { GRID_POS_X, GRID_POS_Y, 0 },
-      .rotation = quaternionFromAxisAngle((Float3){0}, 0.0f)
-   };
+
+   FrameRegion gridRegion = {.origin_x = GRID_POS_X, .origin_y = GRID_POS_Y, .width = GRID_SIZE_X, .height = GRID_SIZE_Y};   
+   Transform mt = { .size = (Int3) { gridRegion.width, gridRegion.height }  };
+   Transform tt = { .size = (Int3) { fbowidth, fboheight } };
 
    Texture *fbo = textureCreate(fbowidth, fboheight);
    textureClear(fbo, NULL, 0);
 
    vecPushStackArray(Vertex, vbo, {
-      { .coords = { 0.0f, 0.0f, 0.0f },.texCoords = { 0, 0 } },
-      { .coords = { 1.0f, 0.0f, 0.0f },.texCoords = { fbowidth, 0 } },
-      { .coords = { 0.0f, 1.0f, 0.0f },.texCoords = { 0, fboheight } },
-      { .coords = { 1.0f, 1.0f, 0.0f },.texCoords = { fbowidth, fboheight } },
+      { .coords = { 0.0f, 0.0f, 0.0f },.texCoords = {   0, 0 } },
+      { .coords = { 1.0f, 0.0f, 0.0f },.texCoords = { 1.0, 0 } },
+      { .coords = { 0.0f, 1.0f, 0.0f },.texCoords = {   0, 1.0 } },
+      { .coords = { 1.0f, 1.0f, 0.0f },.texCoords = { 1.0, 1.0 } },
    });
 
    vecPushStackArray(size_t, ibo, { 0, 2, 1, 2, 3, 1});
 
-   state->view->viewport = &tempv;
+   state->view->viewport = &tempview;
    gridManagerRender(state->view->gridManager, fbo);
    actorManagerRender(state->view->actorManager, fbo);
    weatherRender(state->view->weather, fbo);
    gridManagerRenderLighting(state->view->gridManager, fbo);
-   state->view->viewport = oldv;
+   state->view->viewport = oldview;
 
-   renderMesh(vbo, ibo, fbo, t, frame);
+   textureRenderMesh(frame, &gridRegion, vbo, ibo, fbo, mt, tt);
 
    vecDestroy(Vertex)(vbo);
    vecDestroy(size_t)(ibo);
    textureDestroy(fbo);
-
 }
 
 void _editorRender(EditorState *state, GameStateRender *m) {
    Texture *frame = m->frame;
    textureClear(frame, NULL, 0);
 
-   //gridManagerRender(state->view->gridManager, frame);
-   //actorManagerRender(state->view->actorManager, frame);
-   //weatherRender(state->view->weather, frame);
-   //gridManagerRenderLighting(state->view->gridManager, frame);  
-
-   _renderTestMesh(state, frame);
+   _renderGridAsMesh(state, frame);
 
    if (state->state == Square) {
       _renderSquare(state, frame);

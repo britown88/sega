@@ -221,6 +221,9 @@ int textureGetHeight(Texture *self);
 byte *textureGetScanline(Texture *self, byte plane, int y);
 byte *textureGetAlphaScanline(Texture *self, int y);
 
+//useful in certian circumstances, dont use this for normal calls
+//passing NULL to a texturerender will use this automatically
+FrameRegion *textureGetFullRegion(Texture *self);
 /*
 FrameRegion NOTE: Passs NULL as a frameregion to use the full image
 */

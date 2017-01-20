@@ -15,9 +15,9 @@ player:teleport(31, 15)
 --openEditor()
 --map.setAmbient(0)
 
---time.jumpHours(12)
---time.pause()
---openEditor()
+time.jumpHours(12)
+time.pause()
+openEditor()
 --toggleLightMode()
 
 function reloadSchemas()

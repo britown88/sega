@@ -6,7 +6,7 @@
 
 typedef struct{
    Float3 coords;
-   Int2 texCoords;
+   Float2 texCoords;
 }Vertex;
 
 #define VectorTPart Vertex
@@ -17,7 +17,8 @@ typedef struct{
    Quaternion rotation;
 } Transform;
 
-typedef struct Image_t Image;
-typedef struct Texture_t Texture;
 
-void renderMesh(vec(Vertex) *vbo, vec(size_t) *ibo, Texture *tex, Transform t, Texture *frame);
+typedef struct Texture_t Texture;
+typedef struct FrameRegion_t FrameRegion;
+
+void textureRenderMesh(Texture *frame, FrameRegion *vp, vec(Vertex) *vbo, vec(size_t) *ibo, Texture *tex, Transform modelTrans, Transform texTrans);
