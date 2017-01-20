@@ -402,22 +402,19 @@ void textureRenderPoint(Texture *self, FrameRegion *vp, int x, int y, byte color
    int plane;
    if (!vp) { vp = &self->full; }
 
-   if (x < 0 || x >= vp->width || x >= self->w || y < 0 || y >= vp->height || y >= self->h) {
+   if (x < 0 || x >= vp->width || y < 0 || y >= vp->height) {
       return;
    }
 
    x += vp->origin_x;
    y += vp->origin_y;
 
-   if (x < 0 || x >= vp->width || x >= self->w || y < 0 || y >= vp->height || y >= self->h) {
-      return;
+   if (x >= 0 && x < self->w && y >= 0 && y < self->h) {
+      for (plane = 0; plane < EGA_PLANES; ++plane) {
+         _scanLineSetBit(_scanLine(self, y, plane), x, getBitFromArray(&color, plane));
+      }
+      _scanLineSetBit(_alphaScanLine(self, y), x, 0);
    }
-
-   for (plane = 0; plane < EGA_PLANES; ++plane) {
-      _scanLineSetBit(_scanLine(self, y, plane), x, getBitFromArray(&color, plane));
-   }
-
-   _scanLineSetBit(_alphaScanLine(self, y), x, 0);
 }
 
 void textureRenderLine(Texture *self, FrameRegion *vp, int _x0, int _y0, int _x1, int _y1, byte color) {
