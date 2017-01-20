@@ -432,13 +432,18 @@ void gridManagerUpdate(GridManager *self) {
 
 }
 
+static int _cellCount(int pixels) {
+   bool aligned = !(pixels % GRID_CELL_SIZE);
+   return (pixels / GRID_CELL_SIZE) + (aligned ? 0 : 1);
+}
+
 vec(ActorPtr) *gridManagerQueryActors(GridManager *self) {
    Viewport *vp = self->view->viewport;
-   bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
-   bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
+   int xaligned = vp->worldPos.x % GRID_CELL_SIZE;
+   int yaligned = vp->worldPos.y % GRID_CELL_SIZE;
 
-   byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
-   byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
+   byte xcount = _cellCount(xaligned + vp->region.width);
+   byte ycount = _cellCount(yaligned + vp->region.height);
 
    int x = vp->worldPos.x / GRID_CELL_SIZE;
    int y = vp->worldPos.y / GRID_CELL_SIZE;

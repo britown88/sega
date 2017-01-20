@@ -11,15 +11,19 @@ typedef struct Texture_t Texture;
 typedef struct FrameRegion_t FrameRegion;
 typedef struct WorldView_t WorldView;
 
+//defines screen area for grid display
 #define GRID_POS_X 13
 #define GRID_POS_Y 11
 
-#define GRID_CELL_SIZE 14
-#define GRID_WIDTH 21
-#define GRID_HEIGHT 11
+#define _GRID_WIDTH 21
+#define _GRID_HEIGHT 11
 
-#define GRID_PX_WIDTH (GRID_WIDTH * GRID_CELL_SIZE)
-#define GRID_PX_HEIGHT (GRID_HEIGHT * GRID_CELL_SIZE)
+#define GRID_CELL_SIZE 14
+#define GRID_SIZE_X (_GRID_WIDTH * GRID_CELL_SIZE)
+#define GRID_SIZE_Y (_GRID_HEIGHT * GRID_CELL_SIZE)
+
+
+
 
 //in milliseconds, for grid traversal
 #define DEFAULT_MOVE_SPEED 250
