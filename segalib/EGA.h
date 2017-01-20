@@ -214,6 +214,10 @@ Texture *textureCreate(int width, int height);
 Texture *imageCreateTexture(Image *self);
 void textureDestroy(Texture *self);
 
+//used to re-use an existing texture buffer,
+//cuts down on allocs
+void textureResize(Texture *self, int width, int height);
+
 int textureGetWidth(Texture *self);
 int textureGetHeight(Texture *self);
 

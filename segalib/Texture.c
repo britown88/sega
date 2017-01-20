@@ -8,7 +8,7 @@
 struct Texture_t{
    int w, h;
    byte *data;
-   size_t size, byteWidth, planeSize;
+   size_t size, alloc, byteWidth, planeSize;
    FrameRegion full;
 };
 
@@ -24,13 +24,37 @@ Texture *textureCreate(int width, int height) {
    out->h = height;
    out->byteWidth = width % 8 ? ((width >> 1) + 1) : (width >> 1);
    out->planeSize = out->byteWidth * height;
-   out->size = out->planeSize * EGA_IMAGE_PLANES;
+   out->size = out->alloc = out->planeSize * EGA_IMAGE_PLANES;
    out->data = checkedCalloc(1, out->size);
 
    //need to flip alpha
    memset(_alphaPlane(out), 255, out->planeSize);
 
    return out;
+}
+
+void textureResize(Texture *self, int width, int height) {
+   if (width != self->w || height != self->h) {
+      size_t bwidth = width % 8 ? ((width >> 1) + 1) : (width >> 1);
+      size_t planeSize = bwidth * height;
+      size_t newSize = planeSize * EGA_IMAGE_PLANES;
+
+      if (newSize > self->alloc) {
+         checkedFree(self->data);
+         self->data = checkedCalloc(1, newSize);
+         self->alloc = newSize;
+      }
+
+      self->full = (FrameRegion) { 0, 0, width, height };
+      self->w = width;
+      self->h = height;
+      self->byteWidth = bwidth;
+      self->planeSize = planeSize;
+      self->size = newSize;
+   }
+
+   memset(self->data, 0, self->planeSize * EGA_PLANES);
+   memset(_alphaPlane(self), 255, self->planeSize);
 }
 
 

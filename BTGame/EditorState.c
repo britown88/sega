@@ -32,6 +32,47 @@ typedef enum {
 }PaintStates;
 
 typedef struct {
+   Viewport gridRenderingVP;
+   vec(Vertex) *vbo;
+   vec(size_t) *ibo;
+   FrameRegion gridRegion;
+   Texture *fbo;
+}MeshRenderData;
+
+MeshRenderData *meshRenderDataCreate() {
+   MeshRenderData *out = checkedCalloc(1, sizeof(MeshRenderData));
+   out->vbo = vecCreate(Vertex)(NULL);
+   out->ibo = vecCreate(size_t)(NULL);
+
+   vecPushStackArray(Vertex, out->vbo, {
+      { .coords = { 0.0f, 0.0f, 0.0f },.texCoords = { 0, 0 } },
+      { .coords = { 1.0f, 0.0f, 0.0f },.texCoords = { 1.0, 0 } },
+      { .coords = { 0.0f, 1.0f, 0.0f },.texCoords = { 0, 1.0 } },
+      { .coords = { 1.0f, 1.0f, 0.0f },.texCoords = { 1.0, 1.0 } },
+   });
+
+   vecPushStackArray(size_t, out->ibo, { 0, 2, 1, 2, 3, 1 });
+
+   out->gridRegion = (FrameRegion) {
+      .origin_x = GRID_POS_X,
+         .origin_y = GRID_POS_Y,
+         .width = GRID_SIZE_X,
+         .height = GRID_SIZE_Y
+   };
+
+   out->fbo = textureCreate(out->gridRegion.width, out->gridRegion.height);
+
+   return out;
+}
+
+void meshRenderDataDestroy(MeshRenderData *self) {
+   textureDestroy(self->fbo);
+   vecDestroy(Vertex)(self->vbo);
+   vecDestroy(size_t)(self->ibo);
+   checkedFree(self);
+}
+
+typedef struct {
    WorldView *view;
    MapEditor *editor;
    ManagedImage *bg;
@@ -42,10 +83,14 @@ typedef struct {
 
    PaintStates state;
    Int2 squareStart, squareEnd;
+
+   MeshRenderData *gridMesh;
+   float scale, targetScale;
 }EditorState;
 
 static void _editorStateCreate(EditorState *state) {
    state->editor = mapEditorCreate(state->view);
+   state->scale = state->targetScale = 1.0f;
 }
 static void _editorStateDestroy(EditorState *self) {
    mapEditorDestroy(self->editor);
@@ -72,8 +117,12 @@ void _editorEnter(EditorState *state, StateEnter *m) {
    mapEditorReset(state->editor);
    calendarPause(state->view->calendar);
    pcManagerUpdate(state->view->pcManager);
+
+   state->gridMesh = meshRenderDataCreate();
 }
 void _editorExit(EditorState *state, StateExit *m) {
+
+   meshRenderDataDestroy(state->gridMesh);
    managedImageDestroy(state->bg);
    calendarResume(state->view->calendar);
 }
@@ -82,6 +131,8 @@ void _editorUpdate(EditorState *state, GameStateUpdate *m) {
    WorldView *view = state->view;
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
+
+   state->scale = state->targetScale;
 
    
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
@@ -335,12 +386,15 @@ static void _handleMouse(EditorState *state) {
    bool schemaOperation = mapEditorPointInSchemaWindow(me, pos);
 
    while (mousePopEvent(mouse, &event)) {    
-      calendarEditorMouse(state->view->calendar, &event, pos);
+      int calendarOperation = calendarEditorMouse(state->view->calendar, &event, pos);
 
       if (event.action == SegaMouse_Scrolled) {
          
          if (schemaOperation) {
             mapEditorScrollSchemas(me, event.pos.y);
+         }
+         else if(!calendarOperation){
+            state->targetScale += event.pos.y > 0 ? -0.1f : 0.1f;
          }
       }
       else if (event.action == SegaMouse_Pressed) {
@@ -406,52 +460,49 @@ static void _renderSquare(EditorState *state, Texture *tex) {
    }
 }
 
-void _renderGridAsMesh(EditorState *state, Texture *frame) {
-   static int fboSize = 100;
+void renderGridMesh(EditorState *state, Texture *frame) {
+   MeshRenderData *d = state->gridMesh;
 
-   int fbowidth = fboSize += 1;
-   int fboheight = fbowidth * ((float)GRID_SIZE_Y / GRID_SIZE_X);
+   int fboWidth = GRID_SIZE_X * state->scale;
+   int fboHeight = GRID_SIZE_Y * state->scale;
+   Transform modelTrans = { .size = (Int3) { d->gridRegion.width, d->gridRegion.height } };
+   Transform texTrans = { .size = (Int3) { fboWidth, fboHeight } };
 
    Viewport *oldview = state->view->viewport;
-   Viewport tempview = { .region = {0, 0, fbowidth, fboheight }, .worldPos = oldview->worldPos };
-   vec(Vertex) *vbo = vecCreate(Vertex)(NULL);
-   vec(size_t) *ibo = vecCreate(size_t)(NULL);
+   d->gridRenderingVP = (Viewport) {
+      .region = { 0, 0, fboWidth, fboHeight },
+      .worldPos = oldview->worldPos
+   };
 
-   FrameRegion gridRegion = {.origin_x = GRID_POS_X, .origin_y = GRID_POS_Y, .width = GRID_SIZE_X, .height = GRID_SIZE_Y};   
-   Transform mt = { .size = (Int3) { gridRegion.width, gridRegion.height }  };
-   Transform tt = { .size = (Int3) { fbowidth, fboheight } };
+   textureResize(d->fbo, fboWidth, fboHeight);
+   textureClear(d->fbo, NULL, 0);
 
-   Texture *fbo = textureCreate(fbowidth, fboheight);
-   textureClear(fbo, NULL, 0);
+   state->view->viewport = &d->gridRenderingVP;
 
-   vecPushStackArray(Vertex, vbo, {
-      { .coords = { 0.0f, 0.0f, 0.0f },.texCoords = {   0, 0 } },
-      { .coords = { 1.0f, 0.0f, 0.0f },.texCoords = { 1.0, 0 } },
-      { .coords = { 0.0f, 1.0f, 0.0f },.texCoords = {   0, 1.0 } },
-      { .coords = { 1.0f, 1.0f, 0.0f },.texCoords = { 1.0, 1.0 } },
-   });
+   gridManagerRender(state->view->gridManager, d->fbo);
+   actorManagerRender(state->view->actorManager, d->fbo);
+   weatherRender(state->view->weather, d->fbo);
+   gridManagerRenderLighting(state->view->gridManager, d->fbo);
 
-   vecPushStackArray(size_t, ibo, { 0, 2, 1, 2, 3, 1});
-
-   state->view->viewport = &tempview;
-   gridManagerRender(state->view->gridManager, fbo);
-   actorManagerRender(state->view->actorManager, fbo);
-   weatherRender(state->view->weather, fbo);
-   gridManagerRenderLighting(state->view->gridManager, fbo);
    state->view->viewport = oldview;
 
-   textureRenderMesh(frame, &gridRegion, vbo, ibo, fbo, mt, tt);
-
-   vecDestroy(Vertex)(vbo);
-   vecDestroy(size_t)(ibo);
-   textureDestroy(fbo);
+   textureRenderMesh(frame, &d->gridRegion, d->vbo, d->ibo, d->fbo, modelTrans, texTrans);
 }
+
 
 void _editorRender(EditorState *state, GameStateRender *m) {
    Texture *frame = m->frame;
    textureClear(frame, NULL, 0);
 
-   _renderGridAsMesh(state, frame);
+   if (fabs(state->scale - 1.0f) < 0.0001f){
+      gridManagerRender(state->view->gridManager, frame);
+      actorManagerRender(state->view->actorManager, frame);
+      weatherRender(state->view->weather, frame);
+      gridManagerRenderLighting(state->view->gridManager, frame);
+   }
+   else {
+      renderGridMesh(state, frame);
+   }
 
    if (state->state == Square) {
       _renderSquare(state, frame);
