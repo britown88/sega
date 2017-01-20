@@ -270,11 +270,48 @@ void _onStart(BTGame *self){
 }
 
 
+
+#include "MeshRendering.h"
+#include "segautils/Math.h"
+#include <math.h>
+
 void _onStep(BTGame *self){
    fsmSend(self->gameState, GameStateHandleInput);
    fsmSend(self->gameState, GameStateUpdate);
    fsmSendData(self->gameState, GameStateRender, self->frameBuffer);
-   frameRenderTexture(self->vApp.currentFrame, FrameRegionFULL, 0, 0, self->frameBuffer);
+   
+
+   {
+      static float angle = 0.0f;
+      float swaving = sinf(angle)/4;
+      vec(Vertex) *vbo = vecCreate(Vertex)(NULL);
+      vec(size_t) *ibo = vecCreate(size_t)(NULL);
+      Texture *tex;
+      Transform t = {
+         .size = (Int3) { EGA_RES_WIDTH, EGA_RES_HEIGHT, 1 },
+         .offset = (Int3) { EGA_RES_WIDTH/2, EGA_RES_HEIGHT /2, 0 },
+         .rotation = quaternionFromAxisAngle((Float3){0.5f + swaving, 0.0f + swaving, 1.0f - swaving}, angle += 0.05f)
+      };
+      Texture *frame = textureCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
+
+
+      vecPushStackArray(Vertex, vbo, {
+         { .coords = { -0.5f, -0.5f, 0.0f },.texCoords = { 0, 0 } },
+         { .coords = { 0.5f, -0.5f, 0.0f },.texCoords = { EGA_RES_WIDTH, 0 } },
+         { .coords = { -0.5f, 0.5f, 0.0f },.texCoords = { 0, EGA_RES_HEIGHT } },
+         { .coords = { 0.5f, 0.5f, 0.0f },.texCoords = { EGA_RES_WIDTH, EGA_RES_HEIGHT } },
+      });
+
+      vecPushStackArray(size_t, ibo, { 0, 2, 1, 2, 3, 1});
+
+      renderMesh(vbo, ibo, self->frameBuffer, t, frame);
+      frameClear(self->vApp.currentFrame, FrameRegionFULL, 0);
+      frameRenderTexture(self->vApp.currentFrame, FrameRegionFULL, 0, 0, frame);
+
+      textureDestroy(frame);
+      vecDestroy(Vertex)(vbo);
+      vecDestroy(size_t)(ibo);
+   }
 }
 
 
