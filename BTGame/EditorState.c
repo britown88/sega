@@ -410,7 +410,7 @@ void _renderTestMesh(EditorState *state, Texture *frame) {
    static int fboSize = 100;
 
    int fbowidth = fboSize += 1;
-   int fboheight = fbowidth * ((float)GRID_SIZE_Y / GRID_SIZE_X);
+   int fboheight = fbowidth * ((float)GRID_SIZE_Y / GRID_SIZE_X) - 1;
 
    Viewport *oldv = state->view->viewport;
    Viewport tempv = { .region = {0, 0, fbowidth, fboheight }, .worldPos = oldv->worldPos };
@@ -418,8 +418,8 @@ void _renderTestMesh(EditorState *state, Texture *frame) {
    vec(size_t) *ibo = vecCreate(size_t)(NULL);
    Texture *tex;
    Transform t = {
-      .size = (Int3) { GRID_SIZE_X, GRID_SIZE_Y, 1 },
-      .offset = (Int3) { GRID_POS_X + GRID_SIZE_X/2, GRID_POS_Y + GRID_SIZE_Y /2, 0 },
+      .size = (Int3) { GRID_SIZE_X - 1, GRID_SIZE_Y - 1, 1 },
+      .offset = (Int3) { GRID_POS_X, GRID_POS_Y, 0 },
       .rotation = quaternionFromAxisAngle((Float3){0}, 0.0f)
    };
 
@@ -427,10 +427,10 @@ void _renderTestMesh(EditorState *state, Texture *frame) {
    textureClear(fbo, NULL, 0);
 
    vecPushStackArray(Vertex, vbo, {
-      { .coords = { -0.5f, -0.5f, 0.0f },.texCoords = { 0, 0 } },
-      { .coords = { 0.5f, -0.5f, 0.0f },.texCoords = { fbowidth, 0 } },
-      { .coords = { -0.5f, 0.5f, 0.0f },.texCoords = { 0, fboheight } },
-      { .coords = { 0.5f, 0.5f, 0.0f },.texCoords = { fbowidth, fboheight } },
+      { .coords = { 0.0f, 0.0f, 0.0f },.texCoords = { 0, 0 } },
+      { .coords = { 1.0f, 0.0f, 0.0f },.texCoords = { fbowidth, 0 } },
+      { .coords = { 0.0f, 1.0f, 0.0f },.texCoords = { 0, fboheight } },
+      { .coords = { 1.0f, 1.0f, 0.0f },.texCoords = { fbowidth, fboheight } },
    });
 
    vecPushStackArray(size_t, ibo, { 0, 2, 1, 2, 3, 1});
@@ -459,6 +459,8 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    //weatherRender(state->view->weather, frame);
    //gridManagerRenderLighting(state->view->gridManager, frame);  
 
+   _renderTestMesh(state, frame);
+
    if (state->state == Square) {
       _renderSquare(state, frame);
    }
@@ -474,7 +476,7 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    framerateViewerRender(state->view->framerateViewer, frame);
    lightDebuggerRender(state->view->lightDebugger, m->frame);
 
-   _renderTestMesh(state, frame);
+   
 }
 
 StateClosure gameStateCreateEditor(WorldView *view) {
