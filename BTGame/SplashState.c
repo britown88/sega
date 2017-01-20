@@ -187,11 +187,62 @@ void _splashRender(SplashState *state, GameStateRender *m) {
 
    Frame *frame = m->frame;
 
-   
-
    if (state->state == Show) {
       frameClear(frame, FrameRegionFULL, 0);
-      frameRenderImage(frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->splash));
+      //frameRenderImage(frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->splash));
+
+      {
+         Image *splash = managedImageGetImage(state->splash);
+         ManagedImage *cursor = imageLibraryGetImage(state->view->imageLibrary, stringIntern("cursor"));
+         Image *crsr = managedImageGetImage(cursor);
+         Texture *crsrTex = imageCreateTexture(crsr);
+         Texture *splashTex = imageCreateTexture(splash);
+         Texture *empty = textureCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
+         static int animateTest = 0;
+         int i = ((animateTest++) / 10) % 5;
+         int colorindex;
+
+         //rendertexture
+         textureRenderTexture(empty, NULL, 0, 0, splashTex);
+         textureRenderTexture(empty, NULL, 100, 100, splashTex);
+         textureRenderTexture(empty, NULL, 10, 10, crsrTex);
+
+         //renderpartialtexture
+         textureRenderTexturePartial(empty, NULL, 110, 110, crsrTex, 22*i, 0, 22, 33);
+
+         //renderpoint
+         for (colorindex = 0; colorindex < EGA_PALETTE_COLORS; ++colorindex) {
+            textureRenderPoint(empty, NULL, 10 * colorindex, 10, colorindex);
+         }
+
+         //renderline
+         for (colorindex = 0; colorindex < EGA_PALETTE_COLORS; ++colorindex) {
+            textureRenderLine(empty, NULL, 100 + 10 * colorindex, 50, 100 - 10 * colorindex, 150, colorindex);
+         }
+
+         //textureClearAlpha(empty);
+
+         //rects
+         for (colorindex = 0; colorindex < EGA_PALETTE_COLORS; ++colorindex) {
+            int w = EGA_RES_WIDTH / EGA_PALETTE_COLORS;
+            textureRenderRect(empty, NULL, w*colorindex, EGA_RES_HEIGHT - w, w + w*colorindex, EGA_RES_HEIGHT, colorindex);
+         }
+
+         //rectLines
+         for (colorindex = 0; colorindex < EGA_PALETTE_COLORS; ++colorindex) {
+            int w = EGA_RES_WIDTH / EGA_PALETTE_COLORS;
+            textureRenderLineRect(empty, NULL, w*colorindex, EGA_RES_HEIGHT - w*2, w + w*colorindex, EGA_RES_HEIGHT - w, colorindex);
+         }
+
+
+         frameRenderTexture(frame, FrameRegionFULL, 0, 0, splashTex);
+         frameRenderTexture(frame, FrameRegionFULL, 0, 0, empty);
+
+         textureDestroy(empty);
+         textureDestroy(crsrTex);
+         textureDestroy(splashTex);
+         managedImageDestroy(cursor);      
+      }
 
       frameRenderSprite(frame, FrameRegionFULL, 79, 80, state->fire);
 

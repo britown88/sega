@@ -292,10 +292,9 @@ void textureClearAlpha(Texture *self) {
 
    memset(self->data, 0, self->planeSize*EGA_IMAGE_PLANES);
    memset(_alphaPlane(self), 255, self->planeSize);
-
 }
 
-void textureRenderTexture(Texture *self, FrameRegion *vp, short x, short y, Texture *tex) {
+void textureRenderTexture(Texture *self, FrameRegion *vp, int x, int y, Texture *tex) {
    int texWidth = tex->w;
    int texHeight = tex->h;
 
@@ -345,16 +344,198 @@ void textureRenderTexture(Texture *self, FrameRegion *vp, short x, short y, Text
    }
 }
 
-void textureRenderTexturePartial(Texture *self, FrameRegion *vp, short x, short y, Texture *tex, short imgX, short imgY, short imgWidth, short imgHeight) {
+void textureRenderTexturePartial(Texture *self, FrameRegion *vp, int x, int y, Texture *tex, int texX, int texY, int subtexWidth, int subtexHeight) {
+   int texWidth = MIN(subtexWidth, tex->w);
+   int texHeight = MIN(subtexHeight, tex->h);
 
+   int clipSizeX, clipSizeY, ignoreOffsetX, ignoreOffsetY;
+   int borderRight, borderBottom;
+   int yIter, plane;
+
+   byte *color = 0, *alpha = 0;
+
+   if (!vp) {
+      vp = &self->full;
+   }
+
+   ignoreOffsetX = x < 0 ? -x : 0;
+   ignoreOffsetY = y < 0 ? -y : 0;
+
+   x += vp->origin_x;
+   y += vp->origin_y;
+
+   borderRight = MIN(self->w, vp->origin_x + vp->width);
+   borderBottom = MIN(self->h, vp->origin_y + vp->height);
+
+   clipSizeX = texWidth;
+   clipSizeY = texHeight;
+   if (clipSizeX + x > borderRight) clipSizeX = borderRight - x;
+   if (clipSizeY + y > borderBottom) clipSizeY = borderBottom - y;
+
+   clipSizeX -= ignoreOffsetX;
+   clipSizeY -= ignoreOffsetY;
+
+   if (clipSizeX <= 0 || clipSizeY <= 0) {
+      return;
+   }
+
+   for (yIter = 0; yIter < clipSizeY && yIter + ignoreOffsetY < texHeight; ++yIter) {
+      int yLineSrc = yIter + ignoreOffsetY + texY;
+      int yLineDest = yIter + y + ignoreOffsetY;
+
+      alpha = _alphaScanLine(tex, yLineSrc);
+
+      for (plane = 0; plane < EGA_PLANES; ++plane) {
+         color = _scanLine(tex, yLineSrc, plane);
+         _renderScanLine(_scanLine(self, yLineDest, plane), x + ignoreOffsetX, color, alpha, texX + ignoreOffsetX, clipSizeX);
+      }
+
+      //now we 'render' the alpha scanline onto our own alpha plane!
+      _renderAlphaScanLine(_alphaScanLine(self, yLineDest), x + ignoreOffsetX, alpha, ignoreOffsetX, clipSizeX);
+   }
 }
 
-void textureRenderPoint(Texture *self, FrameRegion *vp, short x, short y, byte color) {}
-void textureRenderLine(Texture *self, FrameRegion *vp, short x1, short y1, short x2, short y2, byte color) {}
-void textureRenderLineRect(Texture *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color) {}
-void textureRenderRect(Texture *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color) {}
-void textureRenderText(Texture *texture, const char *text, short x, short y, Font *font) {}
-void textureRenderTextWithoutSpaces(Texture *texture, const char *text, short x, short y, Font *font) {}
+void textureRenderPoint(Texture *self, FrameRegion *vp, int x, int y, byte color) {
+   int plane;
+   if (!vp) { vp = &self->full; }
+
+   x += vp->origin_x;
+   y += vp->origin_y;
+
+   if (x < 0 || x >= vp->width || x >= self->w || y < 0 || y >= vp->height || y >= self->h) {
+      return;
+   }
+
+   for (plane = 0; plane < EGA_PLANES; ++plane) {
+      _scanLineSetBit(_scanLine(self, y, plane), x, getBitFromArray(&color, plane));
+   }
+
+   _scanLineSetBit(_alphaScanLine(self, y), x, 0);
+}
+
+void textureRenderLine(Texture *self, FrameRegion *vp, int _x0, int _y0, int _x1, int _y1, byte color) {
+   int dx = abs(_x1 - _x0);
+   int dy = abs(_y1 - _y0);
+   int x0, x1, y0, y1;
+   float x, y, slope;
+
+   //len=0
+   if (!dx && !dy) {
+      return;
+   }
+
+   if (dx > dy) {
+      if (_x0 > _x1) {//flip
+         x0 = _x1; y0 = _y1;
+         x1 = _x0; y1 = _y0;
+      }
+      else {
+         x0 = _x0; y0 = _y0;
+         x1 = _x1; y1 = _y1;
+      }
+
+      x = x0;
+      y = y0;
+      slope = (float)(y1 - y0) / (float)(x1 - x0);
+
+      while (x < x1) {
+         textureRenderPoint(self, vp, x, y, color);
+
+         x += 1.0f;
+         y += slope;
+      }
+
+      textureRenderPoint(self, vp, x1, y1, color);
+   }
+   else {
+      if (_y0 > _y1) {//flip
+         x0 = _x1; y0 = _y1;
+         x1 = _x0; y1 = _y0;
+      }
+      else {
+         x0 = _x0; y0 = _y0;
+         x1 = _x1; y1 = _y1;
+      }
+
+      x = x0;
+      y = y0;
+      slope = (float)(x1 - x0) / (float)(y1 - y);
+
+      while (y < y1) {
+
+         textureRenderPoint(self, vp, x, y, color);
+
+         y += 1.0f;
+         x += slope;
+      }
+
+      textureRenderPoint(self, vp, x1, y1, color);
+   }
+}
+
+void textureRenderLineRect(Texture *self, FrameRegion *vp, int left, int top, int right, int bottom, byte color) {
+   textureRenderLine(self, vp, left, top, right, top, color);
+   textureRenderLine(self, vp, left, bottom, right, bottom, color);
+   textureRenderLine(self, vp, left, top, left, bottom, color);
+   textureRenderLine(self, vp, right, top, right, bottom, color);
+}
+void textureRenderRect(Texture *self, FrameRegion *vp, int left, int top, int right, int bottom, byte color) {
+   int width = right - left;
+   int height = bottom - top;
+   int x = left;
+   int y = top;
+
+   int clipSizeX, clipSizeY, ignoreOffsetX, ignoreOffsetY;
+   int borderRight, borderBottom;
+   int yIter, plane;
+
+   byte colorBuffer[MAX_IMAGE_WIDTH] = { 0 };
+   byte alphaBuffer[MAX_IMAGE_WIDTH] = { 0 };
+
+
+   if (!vp) {
+      vp = &self->full;
+   }
+
+   ignoreOffsetX = x < 0 ? -x : 0;
+   ignoreOffsetY = y < 0 ? -y : 0;
+
+   x += vp->origin_x;
+   y += vp->origin_y;
+
+   borderRight = MIN(self->w, vp->origin_x + vp->width);
+   borderBottom = MIN(self->h, vp->origin_y + vp->height);
+
+   clipSizeX = width;
+   clipSizeY = height;
+   if (clipSizeX + x > borderRight) clipSizeX = borderRight - x;
+   if (clipSizeY + y > borderBottom) clipSizeY = borderBottom - y;
+
+   clipSizeX -= ignoreOffsetX;
+   clipSizeY -= ignoreOffsetY;
+
+   if (clipSizeX <= 0 || clipSizeY <= 0) {
+      return;
+   }
+
+   for (yIter = 0; yIter < clipSizeY; ++yIter) {
+      int yLine = yIter + ignoreOffsetY;
+
+      memset(alphaBuffer, 0, sizeof(alphaBuffer));
+
+      for (plane = 0; plane < EGA_PLANES; ++plane) {
+         byte bit = getBitFromArray(&color, plane) ? 255 : 0;
+         memset(colorBuffer, bit, sizeof(colorBuffer));
+
+         _renderScanLine(_scanLine(self, y + yLine, plane), x + ignoreOffsetX, colorBuffer, alphaBuffer, ignoreOffsetX, clipSizeX);
+      }
+
+      //now we 'render' the alpha scanline onto our own alpha plane!
+      _renderAlphaScanLine(_alphaScanLine(self, y + yLine), x + ignoreOffsetX, alphaBuffer, ignoreOffsetX, clipSizeX);
+   }
+}
+void textureRenderText(Texture *texture, const char *text, int x, int y, Font *font) {}
+void textureRenderTextWithoutSpaces(Texture *texture, const char *text, int x, int y, Font *font) {}
 
 void frameRenderTexture(Frame *self, FrameRegion *vp, short x, short y, Texture *tex) {
    int texWidth = tex->w;

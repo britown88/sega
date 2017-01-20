@@ -218,14 +218,14 @@ FrameRegion NOTE: Passs NULL as a frameregion to use the full image
 
 void textureClear(Texture *self, FrameRegion *vp, byte color);
 void textureClearAlpha(Texture *self);
-void textureRenderTexture(Texture *self, FrameRegion *vp, short x, short y, Texture *tex);
-void textureRenderTexturePartial(Texture *self, FrameRegion *vp, short x, short y, Texture *tex, short imgX, short imgY, short imgWidth, short imgHeight);
-void textureRenderPoint(Texture *self, FrameRegion *vp, short x, short y, byte color);
-void textureRenderLine(Texture *self, FrameRegion *vp, short x1, short y1, short x2, short y2, byte color);
-void textureRenderLineRect(Texture *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
-void textureRenderRect(Texture *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
-void textureRenderText(Texture *texture, const char *text, short x, short y, Font *font);
-void textureRenderTextWithoutSpaces(Texture *texture, const char *text, short x, short y, Font *font);
+void textureRenderTexture(Texture *self, FrameRegion *vp, int x, int y, Texture *tex);
+void textureRenderTexturePartial(Texture *self, FrameRegion *vp, int x, int y, Texture *tex, int texX, int texY, int texWidth, int texHeight);
+void textureRenderPoint(Texture *self, FrameRegion *vp, int x, int y, byte color);
+void textureRenderLine(Texture *self, FrameRegion *vp, int x1, int y1, int x2, int y2, byte color);
+void textureRenderLineRect(Texture *self, FrameRegion *vp, int left, int top, int right, int bottom, byte color);
+void textureRenderRect(Texture *self, FrameRegion *vp, int left, int top, int right, int bottom, byte color);
+void textureRenderText(Texture *texture, const char *text, int x, int y, Font *font);
+void textureRenderTextWithoutSpaces(Texture *texture, const char *text, int x, int y, Font *font);
 
 void frameRenderTexture(Frame *self, FrameRegion *vp, short x, short y, Texture *tex);
 
