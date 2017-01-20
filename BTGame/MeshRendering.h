@@ -18,6 +18,6 @@ typedef struct{
 } Transform;
 
 typedef struct Image_t Image;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 
-void renderMesh(vec(Vertex) *vbo, vec(size_t) *ibo, Image *tex, Transform t, Frame *frame);
+void renderMesh(vec(Vertex) *vbo, vec(size_t) *ibo, Texture *tex, Transform t, Texture *frame);

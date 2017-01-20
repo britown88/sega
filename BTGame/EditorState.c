@@ -377,7 +377,7 @@ void _editorHandleInput(EditorState *state, GameStateHandleInput *m) {
    _handleMouse(state);
 }
 
-static void _renderSquare(EditorState *state, Frame *frame) {
+static void _renderSquare(EditorState *state, Texture *tex) {
    int x, y;
    GridManager *gm = state->view->gridManager;
    Viewport *vp = state->view->viewport;
@@ -395,16 +395,16 @@ static void _renderSquare(EditorState *state, Frame *frame) {
             int renderY = y * GRID_CELL_SIZE - vp->worldPos.y;
             byte schema = mapEditorGetSelectedSchema(state->editor);
             
-            frameRenderRect(frame, &vp->region, renderX, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 0);
-            gridManagerRenderSchema(gm, schema, frame, &vp->region, renderX, renderY);;
+            textureRenderRect(tex, &vp->region, renderX, renderY, renderX + GRID_CELL_SIZE, renderY + GRID_CELL_SIZE, 0);
+            gridManagerRenderSchema(gm, schema, tex, &vp->region, renderX, renderY);;
          }
       }
    }
 }
 
 void _editorRender(EditorState *state, GameStateRender *m) {
-   Frame *frame = m->frame;
-   frameClear(frame, FrameRegionFULL, 0);
+   Texture *frame = m->frame;
+   textureClear(frame, NULL, 0);
 
    gridManagerRender(state->view->gridManager, frame);
    actorManagerRender(state->view->actorManager, frame);
@@ -415,7 +415,8 @@ void _editorRender(EditorState *state, GameStateRender *m) {
       _renderSquare(state, frame);
    }
 
-   frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
+   textureRenderTexture(frame, NULL, 0, 0, managedImageGetTexture(state->bg));
+
    calendarRenderClock(state->view->calendar, m->frame);
   
    mapEditorRenderSchemas(state->editor, m->frame);

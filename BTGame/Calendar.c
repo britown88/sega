@@ -333,7 +333,7 @@ void calendarSetPaletteByTime(Calendar *self) {
    }
 }
 
-void calendarRenderClock(Calendar *self, Frame *frame) {
+void calendarRenderClock(Calendar *self, Texture *tex) {
    Minute sunRise = minuteFromTime(calendarGetSunrise(self));
    Minute sunSet = minuteFromTime(calendarGetSunset(self));
    Minute currentTime = self->current % MINUTES_PER_DAY;
@@ -359,8 +359,8 @@ void calendarRenderClock(Calendar *self, Frame *frame) {
    int x = cycle.c.x + (int)(cycle.r * cosf(a));
    int y = cycle.c.y + (int)(cycle.r * sinf(a));
 
-   frameRenderImage(frame, &self->clockRegion, x - 3, y - 3, managedImageGetImage(night ? self->moon : self->sun));
-   frameRenderImage(frame, &self->clockRegion, 0, 0, managedImageGetImage(self->clock));
+   textureRenderTexture(tex, &self->clockRegion, x - 3, y - 3, managedImageGetTexture(night ? self->moon : self->sun));
+   textureRenderTexture(tex, &self->clockRegion, 0, 0, managedImageGetTexture(self->clock));
 }
 
 int calendarMouseButton(Calendar *self, MouseEvent *e) {
@@ -395,7 +395,7 @@ void calendarToggleTestReadout(Calendar *self) {
    self->showReadout = !self->showReadout;
 }
 
-void calendarRenderTestReadout(Calendar *self, Frame *frame) {
+void calendarRenderTestReadout(Calendar *self, Texture *tex) {
 
    if (self->showReadout) {
       char buff[256];
@@ -412,7 +412,7 @@ void calendarRenderTestReadout(Calendar *self, Frame *frame) {
          );
 
       textAreaSetText(self->testReadout, buff);
-      textAreaRender(self->testReadout, self->view, frame);
+      textAreaRender(self->testReadout, self->view, tex);
    }
 }
 

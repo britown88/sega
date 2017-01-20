@@ -77,9 +77,9 @@ static void _renderUpdateFrameTime(Frame *frame, Microseconds frameLength) {
          color = 2;
       }
 
-      frameRenderLine(frame, FrameRegionFULL,
-         i, EGA_RES_HEIGHT - 16 - MAX(0, frameTimes[i] - 10),
-         i, EGA_RES_HEIGHT - 16, color);
+      //frameRenderLine(frame, FrameRegionFULL,
+      //   i, EGA_RES_HEIGHT - 16 - MAX(0, frameTimes[i] - 10),
+      //   i, EGA_RES_HEIGHT - 16, color);
    }
 
 

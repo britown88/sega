@@ -115,15 +115,17 @@ ImplManagerVTable(RenderManager)
 RenderManager *createRenderManager(WorldView *view, double *fps){
    RenderManager *out = checkedCalloc(1, sizeof(RenderManager));
    Image *fontImage = imageDeserialize("assets/img/font.ega", EGA_IMGD_LEGACY );
+   Texture *fontTex = imageCreateTexture(fontImage);
    out->view = view;
    out->m.vTable = CreateManagerVTable(RenderManager);
-   out->fontFactory = fontFactoryCreate(fontImage);
+   out->fontFactory = fontFactoryCreate(fontTex);
    out->fps = fps;
    _initLayers(out);
 
    _registerUpdateDelegate(out, view->entitySystem);
 
    imageDestroy(fontImage);
+   textureDestroy(fontTex);
    return out;
 }
 

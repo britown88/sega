@@ -303,7 +303,7 @@ void textAreaUpdate(TextArea *self) {
       }
    }
 }
-void textAreaRender(TextArea *self, WorldView *view, Frame *frame) {
+void textAreaRender(TextArea *self, WorldView *view, Texture *tex) {
    byte x = self->x;
    byte y = self->y;
 
@@ -313,7 +313,7 @@ void textAreaRender(TextArea *self, WorldView *view, Frame *frame) {
 
    vecForEach(RichTextLine, line, self->shownLines, {      
       vecForEach(Span, span, *line, {
-         frameRenderSpan(view, frame, &x, &y, span);
+         textureRenderSpan(view, tex, &x, &y, span);
       });
       x = self->x;
       ++y;

@@ -39,7 +39,7 @@ void lightSourceSetPosition(LightSource *self, Int2 pos);//world positions!
 void lightSourceDestroy(LightSource *self);//lightsources are registered inside the grid so make sure to free these
 
 typedef struct LightGrid_t LightGrid;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 typedef struct FrameRegion_t FrameRegion;
 typedef struct WorldView_t WOrldView;
 
@@ -60,8 +60,8 @@ void lightGridUpdate(LightGrid *self, short vpx, short vpy);
 LightData *lightGridAt(LightGrid *self, byte x, byte y);
 
 //render a given lightData tile at a given x,y (pixel coordinates in region)
-void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, short y);
-void testLightRender(LightGrid *self, Frame *frame, Viewport *vp);
+void lightDataRender(LightData *light, Texture *tex, FrameRegion *vp, short x, short y);
+void testLightRender(LightGrid *self, Texture *tex, Viewport *vp);
 
 void lightGridDebug(LightGrid *self, Int2 source, Int2 target);//VP GRID COORDS
 

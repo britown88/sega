@@ -248,12 +248,12 @@ void _worldHandleInput(WorldState *state, GameStateHandleInput *m){
 }
 
 void _worldRender(WorldState *state, GameStateRender *m){
-   Frame *frame = m->frame;
+   Texture *frame = m->frame;
 
    if (!state->conways) {
-      frameClear(frame, FrameRegionFULL, 0);
+      textureClear(frame, NULL, 0);
 
-      frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
+      textureRenderTexture(frame, NULL, 0, 0, managedImageGetTexture(state->bg));
 
       gridManagerRender(state->view->gridManager, frame);
 
@@ -280,7 +280,7 @@ void _worldRender(WorldState *state, GameStateRender *m){
       cursorManagerRender(state->view->cursorManager, frame);
 
 
-      conwaysRender(frame, FrameRegionFULL);
+      conwaysRender(frame, NULL);
 
    }
 

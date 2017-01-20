@@ -57,7 +57,7 @@ void lightDebuggerClear(LightDebugger *self) {
    
 }
 
-void lightDebuggerRender(LightDebugger *self, Frame *frame) {
+void lightDebuggerRender(LightDebugger *self, Texture *tex) {
    if (self->enabled) {
       byte rectColor = 7;
       Viewport *vp = self->view->viewport;
@@ -68,8 +68,8 @@ void lightDebuggerRender(LightDebugger *self, Frame *frame) {
       bool showAll = (delta % (period << 1)) >= period;
       size_t rayCount = vecSize(Ray)(self->rays);
 
-      frameRenderLineRect(frame, &vp->region, self->source.left - vpx, self->source.top - vpy, self->source.right - vpx, self->source.bottom - vpy, 6);
-      frameRenderLineRect(frame, &vp->region, self->target.left - vpx, self->target.top - vpy, self->target.right - vpx, self->target.bottom - vpy, 7);
+      textureRenderLineRect(tex, &vp->region, self->source.left - vpx, self->source.top - vpy, self->source.right - vpx, self->source.bottom - vpy, 6);
+      textureRenderLineRect(tex, &vp->region, self->target.left - vpx, self->target.top - vpy, self->target.right - vpx, self->target.bottom - vpy, 7);
 
       if (rayCount > 0) {
          size_t rayIndex = (delta / (period << 1)) % rayCount;
@@ -78,13 +78,13 @@ void lightDebuggerRender(LightDebugger *self, Frame *frame) {
             size_t i = 0;
             for (i = 0; i < rayIndex; ++i) {
                Ray *r = vecAt(Ray)(self->rays, i);
-               frameRenderLine(frame, &vp->region, r->p1.x - vpx, r->p1.y - vpy, r->p2.x - vpx, r->p2.y - vpy, r->blocked ? 9 : 5);
+               textureRenderLine(tex, &vp->region, r->p1.x - vpx, r->p1.y - vpy, r->p2.x - vpx, r->p2.y - vpy, r->blocked ? 9 : 5);
             }
          }
 
          {
             Ray *r = vecAt(Ray)(self->rays, rayIndex);
-            frameRenderLine(frame, &vp->region, r->p1.x - vpx, r->p1.y - vpy, r->p2.x - vpx, r->p2.y - vpy, r->blocked ? 9 : 5);
+            textureRenderLine(tex, &vp->region, r->p1.x - vpx, r->p1.y - vpy, r->p2.x - vpx, r->p2.y - vpy, r->blocked ? 9 : 5);
          }
          
       }

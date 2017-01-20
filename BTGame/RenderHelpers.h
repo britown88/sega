@@ -4,8 +4,8 @@
 
 typedef struct WorldView_t WorldView;
 typedef struct FontFactory_t FontFactory;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 typedef struct Span_t Span;
 
 FontFactory *initFontFactory(WorldView *view);
-void frameRenderSpan(WorldView *view, Frame *frame, byte *x, byte *y, Span *span);
+void textureRenderSpan(WorldView *view, Texture *tex, byte *x, byte *y, Span *span);

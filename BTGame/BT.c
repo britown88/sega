@@ -57,6 +57,8 @@ typedef struct {
 
    vec(ActorPtr) *testActors;
 
+   Texture *frameBuffer;
+
 } BTGame;
 
 #pragma region App_Things
@@ -115,6 +117,8 @@ VirtualApp *btCreate() {
 
    r->view.gameClock = gameClockGet();
 
+   r->frameBuffer = textureCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
+
    CREATE_AND_VIEW(imageLibrary, imageLibraryCreate(&r->view));
    CREATE_AND_VIEW(spriteManager, spriteManagerCreate(&r->view));
    CREATE_AND_VIEW(gameState, fsmCreate());
@@ -171,6 +175,8 @@ void _destroy(BTGame *self){
 
    spriteManagerDestroy(self->spriteManager);
    imageLibraryDestroy(self->imageLibrary);
+
+   textureDestroy(self->frameBuffer);
    
    luaDestroy(self->L);
    checkedFree(self);
@@ -267,7 +273,8 @@ void _onStart(BTGame *self){
 void _onStep(BTGame *self){
    fsmSend(self->gameState, GameStateHandleInput);
    fsmSend(self->gameState, GameStateUpdate);
-   fsmSendData(self->gameState, GameStateRender, self->vApp.currentFrame);
+   fsmSendData(self->gameState, GameStateRender, self->frameBuffer);
+   frameRenderTexture(self->vApp.currentFrame, FrameRegionFULL, 0, 0, self->frameBuffer);
 }
 
 

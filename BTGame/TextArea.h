@@ -3,7 +3,7 @@
 #include "segashared/Strings.h"
 #include "GameClock.h"
 
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 typedef struct WorldView_t WorldView;
 
 typedef struct TextArea_t TextArea;
@@ -29,4 +29,4 @@ void textAreaHide(TextArea *self);
 void textAreaShow(TextArea *self);
 
 void textAreaUpdate(TextArea *self);
-void textAreaRender(TextArea *self, WorldView *view, Frame *frame);
+void textAreaRender(TextArea *self, WorldView *view, Texture *tex);

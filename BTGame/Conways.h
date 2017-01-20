@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 typedef struct FrameRegion_t FrameRegion;
 
-void conwaysRender(Frame *frame, FrameRegion *region);
+void conwaysRender(Texture *tex, FrameRegion *region);

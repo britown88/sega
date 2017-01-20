@@ -18,14 +18,14 @@ typedef struct ActorManager_t ActorManager;
 typedef struct ClockManager_t ClockManager;
 typedef struct FramerateViewer_t FramerateViewer;
 
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 typedef struct WorldView_t WorldView;
 typedef struct Actor_t Actor;
 
 FramerateViewer *framerateViewerCreate(WorldView *view, double *fps);
 void framerateViewerDestroy(FramerateViewer *self);
 void framerateViewerToggle(FramerateViewer *self);
-void framerateViewerRender(FramerateViewer *self, Frame *frame);
+void framerateViewerRender(FramerateViewer *self, Texture *texture);
 
 CursorManager *cursorManagerCreate(WorldView *view);
 void cursorManagerDestroy(CursorManager *self);
@@ -33,7 +33,7 @@ void cursorManagerCreateCursor(CursorManager *self);
 void cursorManagerUpdate(CursorManager *self, int x, int y);
 void cursorManagerSetVerb(CursorManager *self, Verbs v);
 void cursorManagerClearVerb(CursorManager *self);
-void cursorManagerRender(CursorManager *self, Frame *frame);
+void cursorManagerRender(CursorManager *self, Texture *tex);
 
 PCManager *pcManagerCreate(WorldView *view);
 void pcManagerDestroy(PCManager *self);

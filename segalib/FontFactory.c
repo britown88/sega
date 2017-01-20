@@ -31,19 +31,19 @@ struct FontFactory_t {
 };
 
 
-FontFactory *fontFactoryCreate(Image *fontImage) {
+FontFactory *fontFactoryCreate(Texture *fontTexture) {
    FontFactory *r = 0;
    int y;
 
-   if(imageGetWidth(fontImage) < FONT_FILE_WIDTH ||
-      imageGetHeight(fontImage) < FONT_FILE_HEIGHT) {
+   if(textureGetWidth(fontTexture) < FONT_FILE_WIDTH ||
+      textureGetHeight(fontTexture) < FONT_FILE_HEIGHT) {
          return 0;
    }
       
    r = checkedCalloc(1, sizeof(FontFactory));
 
    for(y = 0; y < FONT_FILE_HEIGHT; ++y) {
-      imageScanLineRender(imageGetScanLine(fontImage, y, 1), r->textPlane.lines[y].pixels);      
+      memcpy(r->textPlane.lines[y].pixels, textureGetScanline(fontTexture, 0, y), sizeof(FontScanLine));     
    }
 
    return r;

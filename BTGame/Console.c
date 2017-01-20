@@ -568,12 +568,12 @@ void consoleMacroActor(Console *self, Actor *a) {
    }
 }
 
-void consoleRenderNotification(Console *self, Frame *frame) {
+void consoleRenderNotification(Console *self, Texture *tex) {
    if (self->errorCount > 0) {
-      textAreaRender(self->notification, self->view, frame);
+      textAreaRender(self->notification, self->view, tex);
    }
 }
-void consoleRenderLines(Console *self, Frame *frame) {
+void consoleRenderLines(Console *self, Texture *tex) {
    if (self->lines) {
       //default font
       Font *defaultFont = fontFactoryGetFont(self->view->fontFactory, 0, 15);
@@ -582,12 +582,12 @@ void consoleRenderLines(Console *self, Frame *frame) {
          byte x = line->x;
          byte y = line->y;
          vecForEach(Span, span, line->line,{
-            frameRenderSpan(self->view, frame, &x, &y, span);
+            textureRenderSpan(self->view, tex, &x, &y, span);
          });
       });
 
       if (self->intellij) {
-         textAreaRender(self->intellij, self->view, frame);
+         textAreaRender(self->intellij, self->view, tex);
       }
    }
 }

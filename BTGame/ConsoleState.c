@@ -141,10 +141,10 @@ void _consoleHandleInput(ConsoleState *state, GameStateHandleInput *m) {
 }
 
 void _consoleRender(ConsoleState *state, GameStateRender *m) {
-   Frame *frame = m->frame;
-   frameClear(frame, FrameRegionFULL, 0);
+   Texture *frame = m->frame;
+   textureClear(frame, NULL, 0);
 
-   frameRenderImage(m->frame, FrameRegionFULL, 0, 0, managedImageGetImage(state->bg));
+   textureRenderTexture(frame, NULL, 0, 0, managedImageGetTexture(state->bg));
 
    gridManagerRender(state->view->gridManager, frame);
    actorManagerRender(state->view->actorManager, frame);

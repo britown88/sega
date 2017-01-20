@@ -100,7 +100,7 @@ static void _setSelected(ChoicePrompt *self) {
 void choicePromptUpdate(ChoicePrompt *self) {
 }
 
-void choicePromptRender(ChoicePrompt *self, Frame *frame) {
+void choicePromptRender(ChoicePrompt *self, Texture *tex) {
    if (self->enabled) {
       Font *defaultFont = fontFactoryGetFont(self->view->fontFactory, 0, 15);
 
@@ -108,7 +108,7 @@ void choicePromptRender(ChoicePrompt *self, Frame *frame) {
          byte x = line->x;
          byte y = line->y;
          vecForEach(Span, span, line->line,{
-            frameRenderSpan(self->view, frame, &x, &y, span);
+            textureRenderSpan(self->view, tex, &x, &y, span);
          });
       });
    }

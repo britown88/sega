@@ -174,7 +174,7 @@ void verbManagerKeyButton(VerbManager *self, Verbs v, SegaKeyActions action) {
    
 }
 
-void verbManagerRender(VerbManager *self, Frame *frame) {
+void verbManagerRender(VerbManager *self, Texture *tex) {
    if (self->enabled) {
       int i;
       if (!self->atlasImg) {
@@ -182,9 +182,9 @@ void verbManagerRender(VerbManager *self, Frame *frame) {
       }
 
       for (i = 0; i < Verb_COUNT; ++i) {
-         frameRenderImagePartial(frame, FrameRegionFULL,
+         textureRenderTexturePartial(tex, NULL,
             self->verbs[i].pos.x, self->verbs[i].pos.y,
-            managedImageGetImage(self->atlasImg),
+            managedImageGetTexture(self->atlasImg),
             self->verbs[i].imgPos.x, self->verbs[i].imgPos.y, 
             BTN_SIZE, BTN_SIZE);
       }

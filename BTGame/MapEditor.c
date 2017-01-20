@@ -98,7 +98,7 @@ void mapEditorSetSelectedSchema(MapEditor *self, byte schema) {
    }
 }
 
-void mapEditorRenderSchemas(MapEditor *self, Frame *frame)  {
+void mapEditorRenderSchemas(MapEditor *self, Texture *tex)  {
    
    GridManager *gm = self->view->gridManager;
    int count = (int)gridManagerGetSchemaCount(gm);
@@ -112,11 +112,11 @@ void mapEditorRenderSchemas(MapEditor *self, Frame *frame)  {
       for (x = 0; x < SCHEMA_COLUMNS && i < count; ++x) {
          short renderX = SCHEMA_LEFT + (x * GRID_CELL_SIZE);
 
-         gridManagerRenderSchema(gm, i, frame, FrameRegionFULL, renderX, renderY);
+         gridManagerRenderSchema(gm, i, tex, NULL, renderX, renderY);
 
          if (i == self->schemaIndex) {
             //hjighlight the selected schema
-            frameRenderLineRect(frame, FrameRegionFULL,
+            textureRenderLineRect(tex, NULL,
                renderX, renderY,
                renderX + GRID_CELL_SIZE - 1, renderY + GRID_CELL_SIZE - 1, 15);
          }
@@ -128,8 +128,8 @@ void mapEditorRenderSchemas(MapEditor *self, Frame *frame)  {
    
 }
 
-void mapEditorRenderXYDisplay(MapEditor *self, Frame *frame) {
-   textAreaRender(self->xyDisplay, self->view, frame);
+void mapEditorRenderXYDisplay(MapEditor *self, Texture *tex) {
+   textAreaRender(self->xyDisplay, self->view, tex);
 }
 
 void mapEditorUpdateStats(MapEditor *self, Int2 mouseGridPos) {

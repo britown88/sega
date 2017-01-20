@@ -4,7 +4,7 @@
 #include "SEGA/Input.h"
 #include "WorldView.h"
 
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 typedef struct Console_t Console;
 typedef struct Actor_t Actor;
 
@@ -24,8 +24,8 @@ void consoleMacroGridPos(Console *self, short x, short y);
 void consoleMacroActor(Console *self, Actor *a);
 void consolePrintLuaError(Console *self, const char *tag);
 
-void consoleRenderNotification(Console *self, Frame *frame);
-void consoleRenderLines(Console *self, Frame *frame);
+void consoleRenderNotification(Console *self, Texture *tex);
+void consoleRenderLines(Console *self, Texture *tex);
 
 #define consolePrintLine(CONSOLE, STR, ...) {\
    char buffer[256] = {0}; \

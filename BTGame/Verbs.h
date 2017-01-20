@@ -13,7 +13,7 @@ typedef enum {
 
 typedef struct VerbManager_t VerbManager;
 
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 
 VerbManager *verbManagerCreate(WorldView *view);
 void verbManagerDestroy(VerbManager *self);
@@ -24,4 +24,4 @@ void verbManagerSetEnabled(VerbManager *self, bool enabled);
 int verbManagerMouseButton(VerbManager *self, MouseEvent *e);
 void verbManagerKeyButton(VerbManager *self, Verbs v, SegaKeyActions action);
 
-void verbManagerRender(VerbManager *self, Frame *frame);
+void verbManagerRender(VerbManager *self, Texture *tex);

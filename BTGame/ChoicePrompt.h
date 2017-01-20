@@ -6,13 +6,13 @@
 #include "SEGA/Input.h"
 
 typedef struct ChoicePrompt_t ChoicePrompt;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 
 ChoicePrompt *createChoicePrompt(WorldView *view);
 void choicePromptDestroy(ChoicePrompt *self);
 
 void choicePromptUpdate(ChoicePrompt *self);
-void choicePromptRender(ChoicePrompt *self, Frame *frame);
+void choicePromptRender(ChoicePrompt *self, Texture *tex);
 
 //assumes ownership of the vector
 void choicePromptSetChoices(ChoicePrompt *self, vec(StringPtr) *choices);

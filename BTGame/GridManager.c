@@ -495,37 +495,37 @@ size_t gridManagerGetSchemaCount(GridManager *self) {
 }
 
 
-static void _renderBlank(Frame *frame, FrameRegion *region, short x, short y, byte color) {
+static void _renderBlank(Texture *tex, FrameRegion *region, short x, short y, byte color) {
 
-   frameRenderRect(frame, region, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, color);
+   textureRenderRect(tex, region, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, color);
 }
 
-void gridManagerRenderSchema(GridManager *self, size_t index, Frame *frame, FrameRegion *region, short x, short y) {
+void gridManagerRenderSchema(GridManager *self, size_t index, Texture *tex, FrameRegion *region, short x, short y) {
    Viewport *vp = self->view->viewport;
    TileSchema *schema = gridManagerGetSchema(self, index);
 
    if (self->lightMode) {
       if (schema->occlusion) {
          if (schema->lit) {
-            _renderBlank(frame, region, x, y, 13);
+            _renderBlank(tex, region, x, y, 13);
          }
          else {
-            _renderBlank(frame, region, x, y, 4);
+            _renderBlank(tex, region, x, y, 4);
          }
       }
       else if (schema->lit) {
-         _renderBlank(frame, region, x, y, GRID_CELL_SIZE);
+         _renderBlank(tex, region, x, y, GRID_CELL_SIZE);
       }
       else {
-         _renderBlank(frame, region, x, y, 15);
+         _renderBlank(tex, region, x, y, 15);
       }
    }
    else {
-      frameRenderSprite(frame, region, x, y, schema->sprite);
+      textureRenderSprite(tex, region, x, y, schema->sprite);
    }
 }
 
-void gridManagerRender(GridManager *self, Frame *frame) {
+void gridManagerRender(GridManager *self, Texture *tex) {
    Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
    bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
@@ -562,16 +562,16 @@ void gridManagerRender(GridManager *self, Frame *frame) {
                short renderY = (y * GRID_CELL_SIZE) - vp->worldPos.y;
 
 
-               gridManagerRenderSchema(self, schema, frame, region, renderX, renderY);
+               gridManagerRenderSchema(self, schema, tex, region, renderX, renderY);
             }
          }
       }
    }
 }
 
-void gridManagerRenderGridLineTest(GridManager *self, Frame *frame);
+void gridManagerRenderGridLineTest(GridManager *self, Texture *tex);
 
-void gridManagerRenderLighting(GridManager *self, Frame *frame) {
+void gridManagerRenderLighting(GridManager *self, Texture *tex) {
    Viewport *vp = self->view->viewport;
    bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
    bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
@@ -599,7 +599,7 @@ void gridManagerRenderLighting(GridManager *self, Frame *frame) {
 
          LightData *lightLevel = lightGridAt(self->lightGrid, x - xstart, y - ystart);
          if (lightLevel) {
-            lightDataRender(lightLevel, frame, &vp->region, renderX, renderY);
+            lightDataRender(lightLevel, tex, &vp->region, renderX, renderY);
          }
       }
    }
@@ -615,7 +615,7 @@ void gridManagerToggleLightMode(GridManager *self) {
    self->lightMode = !self->lightMode;
 }
 
-void gridManagerRenderGridLineTest(GridManager *self, Frame *frame) {
+void gridManagerRenderGridLineTest(GridManager *self, Texture *tex) {
    Viewport *vp = self->view->viewport;
    Int2 wp = self->view->viewport->worldPos;
    Int2 start = { 100, 100 };
@@ -646,11 +646,11 @@ void gridManagerRenderGridLineTest(GridManager *self, Frame *frame) {
          int rx = ix * GRID_CELL_SIZE - wp.x;
          int ry = iy * GRID_CELL_SIZE - wp.y;
          currentTile = t;
-         frameRenderRect(frame, &vp->region, rx, ry, rx + GRID_CELL_SIZE, ry + GRID_CELL_SIZE, 15);
+         textureRenderRect(tex, &vp->region, rx, ry, rx + GRID_CELL_SIZE, ry + GRID_CELL_SIZE, 15);
       }
    }
 
-   frameRenderLine(frame, &vp->region, start.x - wp.x, start.y - wp.y, end.x - wp.x, end.y - wp.y, 0);
+   textureRenderLine(tex, &vp->region, start.x - wp.x, start.y - wp.y, end.x - wp.x, end.y - wp.y, 0);
 }
 
 void gridManagerDebugLights(GridManager *self, Int2 source, Int2 target) {

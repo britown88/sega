@@ -5,7 +5,7 @@
 #include "GameClock.h"
 
 typedef struct WorldView_t WorldView;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 typedef struct FrameRegion_t FrameRegion;
 
 typedef struct Sprite_t Sprite;
@@ -18,7 +18,7 @@ void spriteDetachFromGlobalSpeed(Sprite *self);
 void spriteSetAnimationSpeed(Sprite *self, Milliseconds timePerFrame);
 void spriteSetRepeat(Sprite *self, bool repeat);//default repeat is true
 void spriteReset(Sprite *self);//resets the animation
-void frameRenderSprite(Frame *frame, FrameRegion *vp, short x, short y, Sprite *sprite);
+void textureRenderSprite(Texture *texture, FrameRegion *vp, short x, short y, Sprite *sprite);
 
 typedef struct SpriteManager_t SpriteManager;
 

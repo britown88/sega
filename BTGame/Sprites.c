@@ -232,16 +232,14 @@ static SpriteFrame *_getFrame(Sprite *self) {
    return vecAt(SpriteFrame)(self->frames, index);
 }
 
-void frameRenderSprite(Frame *frame, FrameRegion *vp, short x, short y, Sprite *sprite) {
-   
-   
+void textureRenderSprite(Texture *texture, FrameRegion *vp, short x, short y, Sprite *sprite) {
    if (sprite) {
       SpriteFrame *f = NULL;
       _loadSprite(sprite);
       f = _getFrame(sprite);
 
       if (f) {
-         frameRenderImagePartial(frame, vp, x, y, managedImageGetImage(f->img),
+         textureRenderTexturePartial(texture, vp, x, y, managedImageGetTexture(f->img),
             f->imgPos.x * sprite->size.x, f->imgPos.y * sprite->size.y,
             sprite->size.x, sprite->size.y);
       }

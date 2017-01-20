@@ -3,13 +3,13 @@
 #include "WorldView.h"
 
 typedef struct MapEditor_t MapEditor;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 
 MapEditor *mapEditorCreate(WorldView *view);
 void mapEditorDestroy(MapEditor *self);
 
-void mapEditorRenderSchemas(MapEditor *self, Frame *frame);
-void mapEditorRenderXYDisplay(MapEditor *self, Frame *frame);
+void mapEditorRenderSchemas(MapEditor *self, Texture *tex);
+void mapEditorRenderXYDisplay(MapEditor *self, Texture *tex);
 
 void mapEditorUpdateStats(MapEditor *self, Int2 mouseGridPos);
 void mapEditorReset(MapEditor *self);

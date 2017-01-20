@@ -402,6 +402,10 @@ void textureRenderPoint(Texture *self, FrameRegion *vp, int x, int y, byte color
    int plane;
    if (!vp) { vp = &self->full; }
 
+   if (x < 0 || x >= vp->width || x >= self->w || y < 0 || y >= vp->height || y >= self->h) {
+      return;
+   }
+
    x += vp->origin_x;
    y += vp->origin_y;
 

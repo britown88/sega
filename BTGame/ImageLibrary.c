@@ -18,7 +18,7 @@ typedef struct {
 struct ManagedImage_t{   
    ImageLibrary *parent;
    StringView name;
-   Image *image;
+   Texture *texture;
    size_t useCount;
    bool loaded;
 };
@@ -37,22 +37,25 @@ void managedImageDestroy(ManagedImage *self){
       htErase(iEntry)(self->parent->table, &entry);
    }
 }
-Image *managedImageGetImage(ManagedImage *self){
+Texture *managedImageGetTexture(ManagedImage *self){
 
    if (!self->loaded) {
       DBImage img = dbImageSelectFirstByid(self->parent->view->db, self->name);
+      Image *loadedImage;
 
       if (!img.image) {
          return NULL;
       }
 
-      self->image = imageDeserialize(img.image, EGA_IMGD_OPTIMIZED);
+      loadedImage = imageDeserialize(img.image, EGA_IMGD_OPTIMIZED);
+      self->texture = imageCreateTexture(loadedImage);
       self->loaded = true;
 
+      imageDestroy(loadedImage);
       dbImageDestroy(&img);
    }
 
-   return self->image;
+   return self->texture;
 }
 
 
@@ -67,7 +70,7 @@ static size_t _iEntryHash(iEntry *p){
 
 static void _iEntryDestroy(iEntry *p){
    if (p->value->loaded) {
-      imageDestroy(p->value->image);
+      textureDestroy(p->value->texture);
    }   
    checkedFree(p->value);
 }
@@ -123,11 +126,9 @@ ManagedImage *imageLibraryGetImage(ImageLibrary *self, StringView name){
 }
 
 void imageLibraryClear(ImageLibrary *self) {
-  
-   
    htForEach(iEntry, entry, self->table, {
       if (entry->value->loaded) {
-         imageDestroy(entry->value->image);
+         textureDestroy(entry->value->texture);
          entry->value->loaded = false;
       }
    });

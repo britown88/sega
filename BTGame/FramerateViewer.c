@@ -30,7 +30,7 @@ void framerateViewerDestroy(FramerateViewer *self) {
 void framerateViewerToggle(FramerateViewer *self) {
    self->show = !self->show;
 }
-void framerateViewerRender(FramerateViewer *self, Frame *frame) {
+void framerateViewerRender(FramerateViewer *self, Texture *tex) {
    if (self->show) {
       static char buffer[256] = { 0 };
       short y = 2;
@@ -38,6 +38,6 @@ void framerateViewerRender(FramerateViewer *self, Frame *frame) {
       sprintf(buffer, "FPS: %.2f", *self->fps);
 
       x = EGA_TEXT_RES_WIDTH - (byte)strlen(buffer) - 2;
-      frameRenderText(frame, buffer, x, y, fontFactoryGetFont(self->view->fontFactory, 0, 15));
+      textureRenderText(tex, buffer, x, y, fontFactoryGetFont(self->view->fontFactory, 0, 15));
    }
 }

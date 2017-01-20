@@ -37,15 +37,15 @@ void menuPanelSetSize(MenuPanel *self, Int2 size) {
 
 typedef struct {
    MenuPanel *mp;
-   Image *img;
-   Frame *f;
+   Texture *img;
+   Texture *frame;
    FrameRegion *r;
 }MPRenderData;
 
 
 
 static void _renderPieceEX(MPRenderData *data, short x, short y, short ix, short iy, short w, short h) {
-   frameRenderImagePartial(data->f, data->r, x, y, data->img, ix * BORDER_SIZE, iy * BORDER_SIZE, w, h);
+   textureRenderTexturePartial(data->frame, data->r, x, y, data->img, ix * BORDER_SIZE, iy * BORDER_SIZE, w, h);
 }
 
 static void _renderPiece(MPRenderData *data, short x, short y, short ix, short iy) {
@@ -105,8 +105,8 @@ static void _renderRight(MPRenderData *data) {
 
 
 
-void menuPanelRender(MenuPanel *s, Frame *f, FrameRegion *r) {
-   MPRenderData data = {s, managedImageGetImage(s->borderImg), f, r};
+void menuPanelRender(MenuPanel *s, Texture *tex, FrameRegion *r) {
+   MPRenderData data = {s, managedImageGetTexture(s->borderImg), tex, r};
 
    _renderCorners(&data);
    _renderTop(&data);
@@ -114,7 +114,7 @@ void menuPanelRender(MenuPanel *s, Frame *f, FrameRegion *r) {
    _renderLeft(&data);
    _renderRight(&data);
 
-   frameRenderRect(f, r, s->x, s->y, s->x + s->width, s->y + s->height, 0);
+   textureRenderRect(tex, r, s->x, s->y, s->x + s->width, s->y + s->height, 0);
 
    
 }

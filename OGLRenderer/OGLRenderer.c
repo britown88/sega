@@ -127,9 +127,9 @@ static void _renderFrameTime(Scene *scene) {
          color = 7;
       }      
 
-      frameRenderLine(&scene->frame, FrameRegionFULL,
-         i, EGA_RES_HEIGHT - 14,
-         i, EGA_RES_HEIGHT - 14 + MIN(13, MAX(0, frameTimes[i] - 10)), color);
+      //frameRenderLine(&scene->frame, FrameRegionFULL,
+      //   i, EGA_RES_HEIGHT - 14,
+      //   i, EGA_RES_HEIGHT - 14 + MIN(13, MAX(0, frameTimes[i] - 10)), color);
    }
 }
 

@@ -11,3 +11,9 @@
 */
 #define EGA_MODE_0Dh
 
+
+/*
+this re-exposes all the old framerender calls
+*/
+//#define USE_DEPRECATED_RENDER_API
+

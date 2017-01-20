@@ -46,7 +46,7 @@ typedef struct {
 
 typedef struct Calendar_t Calendar;
 typedef struct WorldView_t WorldView;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 
 Calendar *calendarCreate(WorldView *view);
 void calendarDestroy(Calendar *self);
@@ -68,12 +68,12 @@ Time calendarGetSunset(Calendar *self);
 void calendarSetTickDelay(Calendar *self, Milliseconds msPerTick);
 void calendarSetTickLength(Calendar *self, DateTime tick);
 
-void calendarRenderClock(Calendar *self, Frame *frame);
+void calendarRenderClock(Calendar *self, Texture *tex);
 
 void calendarSetAmbientByTime(Calendar *self);
 void calendarSetPaletteByTime(Calendar *self);
 
-void calendarRenderTestReadout(Calendar *self, Frame *frame);
+void calendarRenderTestReadout(Calendar *self, Texture *tex);
 void calendarToggleTestReadout(Calendar *self);
 
 //returns nonzero if event occurs

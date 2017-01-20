@@ -150,19 +150,19 @@ void actorManagerClearErrorFlag(ActorManager *self) {
    self->errorTripped = false;
 }
 
-static void _renderActor(ActorManager *self, Frame *f, Actor *a) {
+static void _renderActor(ActorManager *self, Texture *tex, Actor *a) {
    Viewport *vp = self->view->viewport;
 
    short renderX = a->worldPos.x - vp->worldPos.x;
    short renderY = a->worldPos.y - vp->worldPos.y;
 
-   frameRenderImagePartial(f, &vp->region, renderX, renderY,
-      managedImageGetImage(a->img), a->imgPos.x, a->imgPos.y, GRID_CELL_SIZE, GRID_CELL_SIZE);
+   textureRenderTexturePartial(tex, &vp->region, renderX, renderY,
+      managedImageGetTexture(a->img), a->imgPos.x, a->imgPos.y, GRID_CELL_SIZE, GRID_CELL_SIZE);
 }
 
-void actorManagerRender(ActorManager *self, Frame *f) {
+void actorManagerRender(ActorManager *self, Texture *tex) {
    vecForEach(ActorPtr, a, gridManagerQueryActors(self->view->gridManager), {
-      _renderActor(self, f, *a);
+      _renderActor(self, tex, *a);
    });
 }
 

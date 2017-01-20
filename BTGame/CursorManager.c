@@ -55,10 +55,10 @@ void cursorManagerUpdate(CursorManager *self, int x, int y){
    self->pos = (Int2) { x, y };
 }
 
-void cursorManagerRender(CursorManager *self, Frame *frame) {
-   frameRenderImagePartial(frame, FrameRegionFULL,
+void cursorManagerRender(CursorManager *self, Texture *tex) {
+   textureRenderTexturePartial(tex, NULL,
       self->pos.x, self->pos.y,
-      managedImageGetImage(self->cursorImg),
+      managedImageGetTexture(self->cursorImg),
       self->imgPos.x, self->imgPos.y, CURSOR_SIZE, CURSOR_SIZE);
 }
 

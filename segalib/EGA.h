@@ -79,18 +79,30 @@ void paletteCopy(Palette *dest, Palette *src);
 
 typedef struct Image_t Image;
 
+/*New texture system 2017
+Textures are flat byte*'s with height, width, and a format specifier
+Going to move to a system wher einstead of Image* and Texture* there is just Image Textures (with alpha channel) and frame textures
+This way we can standardize all drawing functions to allow drawing to arbitrary textures and get FBO functionality
+Image* will be reduced to only being a serialization layer and frame will be reduced to a renderTexture function
+*/
+typedef struct Texture_t Texture;
+
 Frame *frameCreate();
 void frameDestroy(Frame *self);
+void frameClear(Frame *self, FrameRegion *vp, byte color);
+
+#ifdef USE_DEPRECATED_RENDER_API
 void frameRenderImage(Frame *self, FrameRegion *vp, short x, short y, Image *img);
 void frameRenderImagePartial(Frame *self, FrameRegion *vp, short x, short y, Image *img, short imgX, short imgY, short imgWidth, short imgHeight);
 void frameRenderPoint(Frame *self, FrameRegion *vp, short x, short y, byte color);
 void frameRenderLine(Frame *self, FrameRegion *vp, short x1, short y1, short x2, short y2, byte color);
 void frameRenderLineRect(Frame *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
 void frameRenderRect(Frame *self, FrameRegion *vp, short left, short top, short right, short bottom, byte color);
-void frameClear(Frame *self, FrameRegion *vp, byte color);
+#endif
 
 void scanLineSetBit(ScanLine *self, short position, byte value);
 byte scanLineGetBit(ScanLine *self, short position);
+
 
 typedef struct ImageScanLine_t ImageScanLine;
 
@@ -188,22 +200,15 @@ Image must be:
    - solid 1 alpha (no transparency)
    - 2-color palette; 0 or background and 1 for foreground
 */
-FontFactory *fontFactoryCreate(Image *fontImage);
+FontFactory *fontFactoryCreate(Texture *texture);
 void fontFactoryDestroy(FontFactory *self);
 
 Font *fontFactoryGetFont(FontFactory *self, byte backGroundColor, byte foregroundColor);
 
+#ifdef USE_DEPRECATED_RENDER_API
 void frameRenderText(Frame *frame, const char *text, short x, short y, Font *font);
 void frameRenderTextWithoutSpaces(Frame *frame, const char *text, short x, short y, Font *font);
-
-/*New texture system 2017
-Textures are flat byte*'s with height, width, and a format specifier
-Going to move to a system wher einstead of Image* and Texture* there is just Image Textures (with alpha channel) and frame textures
-This way we can standardize all drawing functions to allow drawing to arbitrary textures and get FBO functionality
-Image* will be reduced to only being a serialization layer and frame will be reduced to a renderTexture function
-*/
-typedef struct Texture_t Texture;
-
+#endif
 
 Texture *textureCreate(int width, int height);
 Texture *imageCreateTexture(Image *self);

@@ -5,7 +5,7 @@
 #include "segashared/Strings.h"
 
 typedef struct WorldView_t WorldView;
-typedef struct Frame_t Frame;
+typedef struct Texture_t Texture;
 
 typedef struct Actor_t Actor;
 
@@ -22,7 +22,7 @@ void actorManagerDestroy(ActorManager *self);
 Actor *actorManagerCreateActor(ActorManager *self);
 void actorManagerUpdate(ActorManager *self);
 void actorManagerClearErrorFlag(ActorManager *self);//resumes execution of script steps if it was halted by an error
-void actorManagerRender(ActorManager *self, Frame *f);
+void actorManagerRender(ActorManager *self, Texture *t);
 
 void actorDestroy(Actor *self);
 

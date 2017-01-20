@@ -10,7 +10,7 @@ FontFactory *initFontFactory(WorldView *view) {
    ManagedImage *fontImg = imageLibraryGetImage(view->imageLibrary, stringIntern(IMG_FONT));
 
    if (fontImg) {
-      FontFactory *out = fontFactoryCreate(managedImageGetImage(fontImg));
+      FontFactory *out = fontFactoryCreate(managedImageGetTexture(fontImg));
       managedImageDestroy(fontImg);
       return out;
    }
@@ -18,7 +18,7 @@ FontFactory *initFontFactory(WorldView *view) {
    return NULL;
 }
 
-void frameRenderSpan(WorldView *view, Frame *frame, byte *x, byte *y, Span *span) {
+void textureRenderSpan(WorldView *view, Texture *tex, byte *x, byte *y, Span *span) {
    Font *font;
    byte bg = 0, fg = 15;//default colors
    bool noSpace = span->style.flags&Style_NoSpace;
@@ -37,10 +37,10 @@ void frameRenderSpan(WorldView *view, Frame *frame, byte *x, byte *y, Span *span
    font = fontFactoryGetFont(view->fontFactory, bg, fg);
 
    if (span->style.flags&Style_NoSpace) {
-      frameRenderTextWithoutSpaces(frame, c_str(span->string), *x, *y, font);
+      textureRenderTextWithoutSpaces(tex, c_str(span->string), *x, *y, font);
    }
    else {
-      frameRenderText(frame, c_str(span->string), *x, *y, font);
+      textureRenderText(tex, c_str(span->string), *x, *y, font);
    }
 
    

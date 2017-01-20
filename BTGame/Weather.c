@@ -67,7 +67,7 @@ void weatherDestroy(Weather *self) {
    checkedFree(self);
 }
 
-static void _renderRaindrop(Weather *self, Raindrop *r, Frame *frame) {
+static void _renderRaindrop(Weather *self, Raindrop *r, Texture *tex) {
    Microseconds currentTime = gameClockGetTime();
 
    if (currentTime - r->startTime > t_m2u(r->distance * r->speed)) {
@@ -91,15 +91,15 @@ static void _renderRaindrop(Weather *self, Raindrop *r, Frame *frame) {
       int vpx = self->view->viewport->worldPos.x;
       int vpy = self->view->viewport->worldPos.y;
 
-      frameRenderLine(frame, &self->view->viewport->region,
+      textureRenderLine(tex, &self->view->viewport->region,
           x0 - vpx, y0 - vpy, x1 - vpx, y1 - vpy, r->color );
    }
 }
 
-void weatherRender(Weather *self, Frame *frame) {
+void weatherRender(Weather *self, Texture *tex) {
    FrameRegion *region = &self->view->viewport->region;
    vecForEach(Raindrop, r, self->rain, {
-      _renderRaindrop(self, r, frame);
+      _renderRaindrop(self, r, tex);
    });
 
 }

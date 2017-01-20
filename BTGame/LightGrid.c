@@ -766,7 +766,7 @@ LightData *lightGridAt(LightGrid *self, byte x, byte y) {
    return self->grid + (y * LIGHT_GRID_WIDTH + x);
 }
 
-void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, short y) {
+void lightDataRender(LightData *light, Texture *tex, FrameRegion *vp, short x, short y) {
    short shadex, shadey;
    if (!light || light->level >= MAX_BRIGHTNESS) {
       return;
@@ -778,19 +778,19 @@ void lightDataRender(LightData *light, Frame *frame, FrameRegion *vp, short x, s
          byte maskIndex = maskY * 4 + maskX;
 
          if (LightMasks[light->level][maskIndex]) {
-            frameRenderPoint(frame, vp, x + shadex, y + shadey, 0);
+            textureRenderPoint(tex, vp, x + shadex, y + shadey, 0);
          }
       }
    }
 }
 
-void testLightRender(LightGrid *self, Frame *frame, Viewport *vp) {
+void testLightRender(LightGrid *self, Texture *tex, Viewport *vp) {
    int x, y;
    for (y = self->lightArea.top; y <= self->lightArea.bottom; ++y) {
       for (x = self->lightArea.left; x <= self->lightArea.right; ++x) {
          int rX = x * GRID_CELL_SIZE - vp->worldPos.x;
          int rY = y * GRID_CELL_SIZE - vp->worldPos.y;
-         frameRenderRect(frame, &vp->region, rX, rY, rX + GRID_CELL_SIZE, rY + GRID_CELL_SIZE, 5);
+         textureRenderRect(tex, &vp->region, rX, rY, rX + GRID_CELL_SIZE, rY + GRID_CELL_SIZE, 5);
       }
    }
 }
