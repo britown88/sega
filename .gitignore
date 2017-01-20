@@ -168,3 +168,5 @@ $RECYCLE.BIN/
 /Shift/EntityLeaks_StatusManager.c_73.txt
 /Shift/mem.txt
 /BT/EntityLeaks_bt.c_78.txt
+/BTGame/allocReport.csv
+/BTGame/memleak.txt

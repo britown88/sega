@@ -6,9 +6,9 @@
 #define LIGHT_LEVEL_COUNT 7
 #define MAX_BRIGHTNESS (LIGHT_LEVEL_COUNT - 1)
 
-#define LIGHT_GRID_WIDTH (GRID_WIDTH + 1)
-#define LIGHT_GRID_HEIGHT (GRID_HEIGHT + 1)
-#define LIGHT_GRID_CELL_COUNT (LIGHT_GRID_WIDTH * LIGHT_GRID_HEIGHT)
+//#define LIGHT_GRID_WIDTH (GRID_WIDTH + 1)
+//#define LIGHT_GRID_HEIGHT (GRID_HEIGHT + 1)
+//#define LIGHT_GRID_CELL_COUNT (LIGHT_GRID_WIDTH * LIGHT_GRID_HEIGHT)
 
 #define LIGHTFLAGS_DIRECTLYLIT 1 << 0
 #define LIGHTFLAGS_FILTERED 1 << 1
@@ -54,7 +54,7 @@ LightSource *lightGridCreateLightSource(LightGrid *self);
 void lightGridSetAmbientLight(LightGrid *self, byte level);
 
 //clears the light levels and recalculates (give grid position of the viewport)
-void lightGridUpdate(LightGrid *self, short vpx, short vpy);
+void lightGridUpdate(LightGrid *self, int vpx, int vpy, int vpwidth, int vpheight);
 
 //returns null if out of bounds (x and y are coordinates into the last-updated light grid)
 LightData *lightGridAt(LightGrid *self, byte x, byte y);

@@ -499,7 +499,6 @@ size_t gridManagerGetSchemaCount(GridManager *self) {
    return vecSize(TileSchema)(self->schemas);
 }
 
-
 static void _renderBlank(Texture *tex, FrameRegion *region, short x, short y, byte color) {
 
    textureRenderRect(tex, region, x, y, x + GRID_CELL_SIZE, y + GRID_CELL_SIZE, color);
@@ -532,11 +531,11 @@ void gridManagerRenderSchema(GridManager *self, size_t index, Texture *tex, Fram
 
 void gridManagerRender(GridManager *self, Texture *tex) {
    Viewport *vp = self->view->viewport;
-   bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
-   bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
+   int xaligned = vp->worldPos.x % GRID_CELL_SIZE;
+   int yaligned = vp->worldPos.y % GRID_CELL_SIZE;
 
-   byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
-   byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
+   byte xcount = _cellCount(xaligned + vp->region.width);
+   byte ycount = _cellCount(yaligned + vp->region.height);
 
    int x = vp->worldPos.x / GRID_CELL_SIZE;
    int y = vp->worldPos.y / GRID_CELL_SIZE;
@@ -553,7 +552,7 @@ void gridManagerRender(GridManager *self, Texture *tex) {
       self->tilePalette = imageLibraryGetImage(self->view->imageLibrary, stringIntern(IMG_TILE_ATLAS));
    }
 
-   lightGridUpdate(self->lightGrid, x, y);
+   lightGridUpdate(self->lightGrid, x, y, xcount, ycount);
 
    for (y = ystart; y < yend; ++y) {
       for (x = xstart; x < xend; ++x) {
@@ -578,11 +577,11 @@ void gridManagerRenderGridLineTest(GridManager *self, Texture *tex);
 
 void gridManagerRenderLighting(GridManager *self, Texture *tex) {
    Viewport *vp = self->view->viewport;
-   bool xaligned = !(vp->worldPos.x % GRID_CELL_SIZE);
-   bool yaligned = !(vp->worldPos.y % GRID_CELL_SIZE);
+   int xaligned = vp->worldPos.x % GRID_CELL_SIZE;
+   int yaligned = vp->worldPos.y % GRID_CELL_SIZE;
 
-   byte xcount = GRID_WIDTH + (xaligned ? 0 : 1);
-   byte ycount = GRID_HEIGHT + (yaligned ? 0 : 1);
+   byte xcount = _cellCount(xaligned + vp->region.width);
+   byte ycount = _cellCount(yaligned + vp->region.height);
 
    int x = vp->worldPos.x / GRID_CELL_SIZE;
    int y = vp->worldPos.y / GRID_CELL_SIZE;

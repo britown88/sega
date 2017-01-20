@@ -18,6 +18,12 @@ struct LightData_t {
    bool tileLightAdded;
 };
 
+#define VectorT LightData
+#include "segautils\Vector_Create.h"
+
+#define VectorT OcclusionCell
+#include "segautils\Vector_Create.h"
+
 byte lightDataGetLevel(LightData *self) {
    return self->level;
 }
@@ -103,8 +109,11 @@ typedef struct  {
 
 typedef struct LightGrid_t {
    WorldView *view;
-   LightData grid[LIGHT_GRID_CELL_COUNT];
-   OcclusionCell *occlusion;
+
+   vec(LightData) *grid;
+   Int2 gridSize;
+
+   vec(OcclusionCell) *occlusion;
    byte ambientLevel;
    vec(LightSourcePtr) *sources;
 
@@ -119,7 +128,9 @@ typedef struct LightGrid_t {
 
 LightGrid *lightGridCreate(WorldView *view) {
    LightGrid *out = checkedCalloc(1, sizeof(LightGrid));
-   out->occlusion = checkedCalloc(LIGHT_GRID_CELL_COUNT, sizeof(OcclusionCell));
+
+   out->occlusion = vecCreate(OcclusionCell)(NULL);
+   out->grid = vecCreate(LightData)(NULL);
    out->view = view;
 
    out->sources = vecCreate(LightSourcePtr)(&lightSourcePtrDestroy);
@@ -133,7 +144,10 @@ void lightGridDestroy(LightGrid *self) {
    vecDestroy(TileLights(self->tileGrid));
    vecDestroy(size_t)(self->usedLights);
    vecDestroy(OcclusionMapEntry)(self->occMap);
-   checkedFree(self->occlusion);
+
+   vecDestroy(OcclusionCell)(self->occlusion);
+   vecDestroy(LightData)(self->grid);
+
    checkedFree(self);
 }
 
@@ -588,10 +602,10 @@ static void _addPoint(LightGrid *self, PointLight light) {
    };
 
    lightArea = (Recti){
-      .left =   MIN(LIGHT_GRID_WIDTH - 1, MAX(0, unboundedLightArea.left)),
-      .top =    MIN(LIGHT_GRID_HEIGHT - 1, MAX(0, unboundedLightArea.top)),
-      .right =  MIN(LIGHT_GRID_WIDTH - 1, MAX(0, unboundedLightArea.right)),
-      .bottom = MIN(LIGHT_GRID_HEIGHT - 1, MAX(0, unboundedLightArea.bottom))
+      .left =   MIN(self->gridSize.x - 1, MAX(0, unboundedLightArea.left)),
+      .top =    MIN(self->gridSize.y - 1, MAX(0, unboundedLightArea.top)),
+      .right =  MIN(self->gridSize.x - 1, MAX(0, unboundedLightArea.right)),
+      .bottom = MIN(self->gridSize.y - 1, MAX(0, unboundedLightArea.bottom))
    };
 
    width = rectiWidth(&lightArea);
@@ -604,7 +618,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
 
    //get our occlusion list and generate their rects
    //gridmanager will modify our rect to not go out of bounds
-   occluderCount = gridManagerQueryOcclusion(gm, &unboundedLightArea, self->occlusion);
+   occluderCount = gridManagerQueryOcclusion(gm, &unboundedLightArea, self->occlusion->data);
    self->lightArea = unboundedLightArea;
    if (occluderCount > 0) {
       int left = self->lightArea.left;
@@ -616,7 +630,7 @@ static void _addPoint(LightGrid *self, PointLight light) {
       vecResize(OcclusionMapEntry)(self->occMap, w * h, &(OcclusionMapEntry){INF, 0});
 
       for (i = 0; i < occluderCount; ++i) {
-         OcclusionCell *oc = self->occlusion + i;
+         OcclusionCell *oc = self->occlusion->data + i;
          oc->area = (Recti) {
             .left = ((oc->x * GRID_CELL_SIZE) << 1),
             .top = ((oc->y * GRID_CELL_SIZE) << 1),
@@ -701,20 +715,30 @@ static void _addTileLight(LightGrid *self, size_t tile, short vpx, short vpy) {
    }
 }
 
-void lightGridUpdate(LightGrid *self, short vpx, short vpy) {
-   int i = 0;
-   
-   Recti worldGrid = { vpx, vpy, vpx + LIGHT_GRID_WIDTH , vpy + LIGHT_GRID_HEIGHT };
-   Recti tileGrid = _tileGridAABB(self, &worldGrid);
+void lightGridUpdate(LightGrid *self, int vpx, int vpy, int vpwidth, int vpheight) {
+   size_t i;   
+   Recti worldGrid, tileGrid;
    int x, y;
+   size_t cellCount;
+
+   self->gridSize = (Int2) { vpwidth + 1, vpheight + 1 };
+   cellCount = self->gridSize.x * self->gridSize.y;
+
+   vecClear(LightData)(self->grid);
+   vecClear(OcclusionCell)(self->occlusion);
+
+   vecResize(LightData)(self->grid, cellCount, &(LightData){0});
+   vecResize(OcclusionCell)(self->occlusion, cellCount, &(OcclusionCell){0});
+
+   worldGrid = (Recti) { vpx, vpy, vpx + self->gridSize.x, vpy + self->gridSize.y};
+   tileGrid = _tileGridAABB(self, &worldGrid);
 
    self->vpPos.x = vpx;
    self->vpPos.y = vpy;
 
-   //ambient lights/reset
-   memset(self->grid, 0, sizeof(self->grid));   
-   for (i = 0; i < LIGHT_GRID_CELL_COUNT; ++i) {
-      self->grid[i].level = self->ambientLevel;
+   //ambient lights/reset 
+   for (i = 0; i < cellCount; ++i) {
+      vecAt(LightData)(self->grid, i)->level = self->ambientLevel;
    }
 
    //add lightsd from tiles
@@ -759,11 +783,11 @@ void lightGridSetAmbientLight(LightGrid *self, byte level) {
 }
 
 LightData *lightGridAt(LightGrid *self, byte x, byte y) {
-   if (x < 0 || x >= LIGHT_GRID_WIDTH || y < 0 || y >= LIGHT_GRID_HEIGHT) {
+   if (x < 0 || x >= self->gridSize.x || y < 0 || y >= self->gridSize.y) {
       return NULL;
    }
 
-   return self->grid + (y * LIGHT_GRID_WIDTH + x);
+   return self->grid->data + (y * self->gridSize.x + x);
 }
 
 void lightDataRender(LightData *light, Texture *tex, FrameRegion *vp, short x, short y) {

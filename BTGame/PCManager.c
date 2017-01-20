@@ -92,8 +92,8 @@ void pcManagerUpdate(PCManager *self) {
    Int2 aPos = actorGetWorldPosition(self->pc);
    int gridWidth = gridManagerWidth(self->view->gridManager) * GRID_CELL_SIZE;
    int gridHeight = gridManagerHeight(self->view->gridManager) * GRID_CELL_SIZE;
-   int xCenter = (GRID_WIDTH / 2) * GRID_CELL_SIZE;
-   int yCenter = (GRID_HEIGHT / 2) * GRID_CELL_SIZE;
+   int xCenter = (vp->region.width / 2)/* * GRID_CELL_SIZE*/;
+   int yCenter = (vp->region.height / 2)/* * GRID_CELL_SIZE*/;
    int xOffset = MIN(gridWidth - (vp->region.width), MAX(0, aPos.x - xCenter));
    int yOffset = MIN(gridHeight - (vp->region.height), MAX(0, aPos.y - yCenter));
 
