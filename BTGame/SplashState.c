@@ -198,6 +198,7 @@ void _splashRender(SplashState *state, GameStateRender *m) {
          Texture *crsrTex = imageCreateTexture(crsr);
          Texture *splashTex = imageCreateTexture(splash);
          Texture *empty = textureCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
+         Font *testfont = fontFactoryGetFont(state->view->fontFactory, 5, 10);
          static int animateTest = 0;
          int i = ((animateTest++) / 10) % 5;
          int colorindex;
@@ -234,10 +235,12 @@ void _splashRender(SplashState *state, GameStateRender *m) {
             textureRenderLineRect(empty, NULL, w*colorindex, EGA_RES_HEIGHT - w*2, w + w*colorindex, EGA_RES_HEIGHT - w, colorindex);
          }
 
+         textureRenderText(empty, "Hello world!", 10, 8, testfont);
+
 
          frameRenderTexture(frame, FrameRegionFULL, 0, 0, splashTex);
          frameRenderTexture(frame, FrameRegionFULL, 0, 0, empty);
-
+         
          textureDestroy(empty);
          textureDestroy(crsrTex);
          textureDestroy(splashTex);

@@ -129,5 +129,52 @@ void frameRenderText(Frame *frame, const char *text, short x, short y, Font *fon
 
 void frameRenderTextWithoutSpaces(Frame *frame, const char *text, short x, short y, Font *font) {
    _frameRenderTextEX(frame, text, x, y, font, false);
+}
 
+void textureRenderTextSingleChar(Texture *tex, const char c, int x, int y, Font *font, bool spaces) {
+   int yIter, plane;
+   byte charY = c / FONT_CHAR_WIDTH;
+   byte charX = c % FONT_CHAR_WIDTH;
+
+   if (!spaces && c == ' ') {
+      return;
+   }
+
+   for (yIter = 0; yIter < EGA_TEXT_CHAR_HEIGHT; ++yIter) {
+      short linePos = y * EGA_TEXT_CHAR_HEIGHT + yIter;
+      short charLinePos = charY * EGA_TEXT_CHAR_HEIGHT + yIter;
+
+      for (plane = 0; plane < EGA_PLANES; ++plane) {
+         *(textureGetScanline(tex, plane, linePos) + x) = font->planes[plane].lines[charLinePos].pixels[charX];
+      }
+
+      *(textureGetAlphaScanline(tex, linePos) + x) = 0;
+   }
+}
+
+static void _textureRenderTextEX(Texture *tex, const char *text, int x, int y, Font *font, bool drawSpaces) {
+   size_t charCount;
+   size_t c;
+   int texCharCount = textureGetWidth(tex) / EGA_TEXT_CHAR_WIDTH;
+
+   if (!text) {
+      return;
+   }
+
+   charCount = strlen(text);
+
+   for (c = 0; c < charCount; ++c) {
+      if (x >= texCharCount)
+         break;
+
+      textureRenderTextSingleChar(tex, *(unsigned char*)&text[c], x++, y, font, drawSpaces);
+   }
+}
+
+void textureRenderText(Texture *tex, const char *text, int x, int y, Font *font) {
+   _textureRenderTextEX(tex, text, x, y, font, true);
+}
+
+void textureRenderTextWithoutSpaces(Texture *tex, const char *text, int x, int y, Font *font) {
+   _textureRenderTextEX(tex, text, x, y, font, false);
 }

@@ -43,6 +43,9 @@ void textureDestroy(Texture *self) {
 int textureGetWidth(Texture *self) { return self->w; }
 int textureGetHeight(Texture *self) { return self->h; }
 
+byte *textureGetScanline(Texture *self, byte plane, int y) { return _scanLine(self, y, plane); }
+byte *textureGetAlphaScanline(Texture *self, int y) { return _alphaScanLine(self, y); }
+
 
 
 Texture *imageCreateTexture(Image *self) {
@@ -534,8 +537,6 @@ void textureRenderRect(Texture *self, FrameRegion *vp, int left, int top, int ri
       _renderAlphaScanLine(_alphaScanLine(self, y + yLine), x + ignoreOffsetX, alphaBuffer, ignoreOffsetX, clipSizeX);
    }
 }
-void textureRenderText(Texture *texture, const char *text, int x, int y, Font *font) {}
-void textureRenderTextWithoutSpaces(Texture *texture, const char *text, int x, int y, Font *font) {}
 
 void frameRenderTexture(Frame *self, FrameRegion *vp, short x, short y, Texture *tex) {
    int texWidth = tex->w;

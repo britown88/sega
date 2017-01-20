@@ -212,6 +212,10 @@ void textureDestroy(Texture *self);
 int textureGetWidth(Texture *self);
 int textureGetHeight(Texture *self);
 
+//raw data! ten cuidado!
+byte *textureGetScanline(Texture *self, byte plane, int y);
+byte *textureGetAlphaScanline(Texture *self, int y);
+
 /*
 FrameRegion NOTE: Passs NULL as a frameregion to use the full image
 */
