@@ -231,6 +231,28 @@ static void _render8Bits(byte *dest, byte *color, byte *alpha, int *texX, int *x
 
 }
 
+static void _renderPartialByte(byte *dest, byte *color, byte *alpha, int texX) {
+   int i;
+   int frac = texX % 8;  //how far we are into the image 
+
+                            //1 << 3 == 8
+   uint8_t *screenArr = (uint8_t*)dest;
+   uint8_t *imgArr = ((uint8_t*)color) + (texX >> 3);
+   uint8_t *alphaArr = ((uint8_t*)alpha) + (texX >> 3);
+
+   if (!frac) { //fast path!
+      //simply aligned, do regular int operations
+      *screenArr &= *alphaArr;
+      *screenArr |= *imgArr;
+   }
+   else {//slow path...
+      //since this is unaligned, we do it in two slices.  Let's build the image bits into an aligned int32_t.
+      *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (8 - frac));
+      *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
+   }
+
+}
+
 static void _render32Bits(byte *dest, byte *color, byte *alpha, int *texX, int *x, int intRun) {
    int i;
    int intBits = sizeof(uint32_t) * 8;
@@ -270,12 +292,39 @@ static void _renderScanLine(byte *dest, int x, byte *color, byte *alpha, int bit
    int last = x + width;
 
    int intBits = sizeof(uint32_t) * 8;
-   int alignedBits = x % 8;
+   byte alignedBits = x % 8;
 
-   if (alignedBits) {
-      while (x < last && alignedBits++ < 8) {
-         _renderBit(dest, color, alpha, &texX, &x);
+   if (alignedBits) {//not aligned
+      byte current = *(dest + (x >> 3));      
+      byte buffer = current, mask = 255;
+      byte untilAligned = MIN(8 - alignedBits, last - x);
+      int tempTexX = texX - alignedBits;
+      int postoffset = 0;
+
+      if (texX < alignedBits) {
+         tempTexX = 0;
+         postoffset = alignedBits - texX;
+         buffer >>= postoffset;
       }
+
+      _renderPartialByte(&buffer, color, alpha, tempTexX);
+
+      buffer <<= postoffset;      
+      buffer &= (mask << alignedBits);
+      if (alignedBits + untilAligned < 8) {
+         buffer &= (mask >> (8 - (alignedBits + untilAligned)));
+      }
+
+      *(dest + (x >> 3)) = buffer | (current & (mask >> untilAligned));
+      //*(dest + (x >> 3)) = buffer | (*(dest + (x >> 3)) & (mask << untilAligned));
+
+      x += untilAligned;
+      texX += untilAligned;
+
+    
+      //while (x < last && alignedBits++ < 8) {
+      //   _renderBit(dest, color, alpha, &texX, &x);
+      //}
    }
 
    if (x == last) {

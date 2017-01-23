@@ -519,7 +519,7 @@ void _editorRender(EditorState *state, GameStateRender *m) {
    framerateViewerRender(state->view->framerateViewer, frame);
    lightDebuggerRender(state->view->lightDebugger, m->frame);
 
-   
+   //
 }
 
 StateClosure gameStateCreateEditor(WorldView *view) {

@@ -32,7 +32,7 @@ void pcManagerDestroy(PCManager *self) {
 static void _updateSprite(PCManager *self) {
 
    if (self->sneaking) {
-      actorSetImagePos(self->pc, (Int2) {8, 8});
+      actorSetImagePos(self->pc, (Int2) {0, 0});
    }
    else if (self->usingTorch) {
       actorSetImagePos(self->pc, (Int2) { 28, 0 });

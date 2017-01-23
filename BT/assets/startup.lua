@@ -17,7 +17,9 @@ player:teleport(31, 15)
 
 time.jumpHours(12)
 time.pause()
+setPalette 'defaultMask'
 openEditor()
+
 --toggleLightMode()
 
 function reloadSchemas()
