@@ -127,6 +127,20 @@ static void _renderAlpha8Bits(byte *dest, byte *color, int *texX, int *x, int by
    }
 }
 
+static void _renderAlphaPartialByte(byte *dest, byte *color, int texX) {
+   int i;
+   int frac = texX % 8;
+   uint8_t *screenArr = (uint8_t*)dest;
+   uint8_t *imgArr = ((uint8_t*)color) + (texX >> 3);
+
+   if (!frac) {
+      *screenArr &= *imgArr;
+   }
+   else {
+      *screenArr &= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
+   }
+}
+
 static void _renderAlpha32Bits(byte *dest, byte *color, int *texX, int *x, int intRun) {
    int i;
    int intBits = sizeof(uint32_t) * 8;
@@ -157,13 +171,44 @@ static void _renderAlphaScanLine(byte *dest, int x, byte *color, int bitOffset, 
    int intRun, byteRun, alignRun;
    int texX = bitOffset;
    int last = x + width;
+   static const byte mask = 255;
 
    int intBits = sizeof(uint32_t) * 8;
    int alignedBits = x % 8;
 
-   if (alignedBits) {
-      while (x < last && alignedBits++ < 8) {
-         _renderAlphaBit(dest, color, &texX, &x);
+   if (alignedBits) {//not aligned
+      int xover8 = x >> 3;
+      byte current = *(dest + xover8);
+      byte buffer = current;
+      byte untilAligned = MIN(8 - alignedBits, last - x);
+
+      //if the total draw doesnt even get us to aligned, just draw
+      //using renderbit
+      if (alignedBits + untilAligned == 8) {
+         int postoffset = 0;
+         bool texunderflow = texX < alignedBits;
+         int tempTexX = MAX(0, texX - alignedBits);
+
+         if (texunderflow) {
+            postoffset = alignedBits - texX;
+            buffer >>= postoffset;
+         }
+
+         _renderAlphaPartialByte(&buffer, color, tempTexX);
+
+         if (texunderflow) {
+            buffer <<= postoffset;
+         }
+
+         *(dest + xover8) = (buffer & (mask << alignedBits)) | (current & (mask >> untilAligned));
+
+         x += untilAligned;
+         texX += untilAligned;
+      }
+      else {
+         while (x < last && alignedBits++ < 8) {
+            _renderAlphaBit(dest, color, &texX, &x);
+         }
       }
    }
 
@@ -181,8 +226,15 @@ static void _renderAlphaScanLine(byte *dest, int x, byte *color, int bitOffset, 
    byteRun = (last - x) / 8;
    _renderAlpha8Bits(dest, color, &texX, &x, byteRun);
 
-   while (x < last) {
-      _renderAlphaBit(dest, color, &texX, &x);
+   if (x < last) {
+      int xover8 = x >> 3;
+      int remaining = last - x;
+      byte current = *(dest + xover8);
+      byte buffer = current;
+      int tempTexX = texX;
+
+      _renderAlphaPartialByte(&buffer, color, tempTexX);
+      *(dest + xover8) = (buffer & (mask >> (8 - remaining))) | (current & (mask << remaining));
    }
 
 }
@@ -250,7 +302,6 @@ static void _renderPartialByte(byte *dest, byte *color, byte *alpha, int texX) {
       *screenArr &= (*alphaArr >> frac) | ((*(alphaArr + 1)) << (8 - frac));
       *screenArr |= (*imgArr >> frac) | ((*(imgArr + 1)) << (8 - frac));
    }
-
 }
 
 static void _render32Bits(byte *dest, byte *color, byte *alpha, int *texX, int *x, int intRun) {
@@ -290,35 +341,36 @@ static void _renderScanLine(byte *dest, int x, byte *color, byte *alpha, int bit
    int intRun, byteRun, alignRun;
    int texX = bitOffset;
    int last = x + width;
+   static const byte mask = 255;
 
    int intBits = sizeof(uint32_t) * 8;
    byte alignedBits = x % 8;
 
    if (alignedBits) {//not aligned
-      byte current = *(dest + (x >> 3));      
-      byte buffer = current, mask = 255;
+      int xover8 = x >> 3;
+      byte current = *(dest + xover8);
+      byte buffer = current;
       byte untilAligned = MIN(8 - alignedBits, last - x);
 
-
-      if (untilAligned > 1) {
-         int tempTexX = texX - alignedBits;
+      //if the total draw doesnt even get us to aligned, just draw
+      //using renderbit
+      if (alignedBits + untilAligned == 8) {         
          int postoffset = 0;
+         bool texunderflow = texX < alignedBits;
+         int tempTexX = MAX(0, texX - alignedBits);
 
-         if (texX < alignedBits) {
-            tempTexX = 0;
+         if (texunderflow) {
             postoffset = alignedBits - texX;
             buffer >>= postoffset;
          }
 
          _renderPartialByte(&buffer, color, alpha, tempTexX);
 
-         buffer <<= postoffset;
-         buffer &= (mask << alignedBits);
-         if (alignedBits + untilAligned < 8) {
-            buffer &= (mask >> (8 - (alignedBits + untilAligned)));
+         if (texunderflow) {
+            buffer <<= postoffset;
          }
 
-         *(dest + (x >> 3)) = buffer | (current & (mask >> untilAligned));
+         *(dest + xover8) = (buffer & (mask << alignedBits)) | (current & (mask >> untilAligned));
 
          x += untilAligned;
          texX += untilAligned;
@@ -328,7 +380,6 @@ static void _renderScanLine(byte *dest, int x, byte *color, byte *alpha, int bit
             _renderBit(dest, color, alpha, &texX, &x);
          }
       }
-
    }
 
    if (x == last) {
@@ -346,22 +397,14 @@ static void _renderScanLine(byte *dest, int x, byte *color, byte *alpha, int bit
    _render8Bits(dest, color, alpha, &texX, &x, byteRun);
 
    if (x < last) {
-      int remaining = last - x;      
+      int xover8 = x >> 3;
+      int remaining = last - x; 
+      byte current = *(dest + xover8);
+      byte buffer = current;
+      int tempTexX = texX;
 
-      if (remaining > 1) {
-         byte current = *(dest + (x >> 3));
-         byte buffer = current, mask = 255;
-         int tempTexX = texX;
-
-         _renderPartialByte(&buffer, color, alpha, tempTexX);
-         buffer &= (mask >> (8 - remaining));
-         *(dest + (x >> 3)) = buffer | (current & (mask << remaining));
-      }
-      else {
-         while (x < last) {
-            _renderBit(dest, color, alpha, &texX, &x);
-         }
-      }
+      _renderPartialByte(&buffer, color, alpha, tempTexX);
+      *(dest + xover8) = (buffer & (mask >> (8 - remaining))) | (current & (mask << remaining));
    }
 }
 
