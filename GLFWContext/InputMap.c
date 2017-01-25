@@ -20,7 +20,7 @@ int getSegaAction(int GLFWAction){
 }
 
 int getSegaMouseButton(int GLFWAction){
-   static SegaMouseButtons actionMap[GLFW_MOUSE_BUTTON_LAST];
+   static SegaMouseButtons actionMap[GLFW_MOUSE_BUTTON_LAST+1];
    static bool mapInit = false;
 
    if (!mapInit){
