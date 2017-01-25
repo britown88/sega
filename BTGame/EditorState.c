@@ -219,6 +219,7 @@ static void _handleKeyboard(EditorState *state) {
    }
 
    speed = keyboardIsDown(k, SegaKey_LeftShift) ? VP_FAST_SPEED : VP_SPEED;
+   speed *= state->scale;
 
    if (keyboardIsDown(k, SegaKey_W)) {
       vp->worldPos.y = MAX(0, vp->worldPos.y - speed);
