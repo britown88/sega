@@ -298,33 +298,37 @@ static void _renderScanLine(byte *dest, int x, byte *color, byte *alpha, int bit
       byte current = *(dest + (x >> 3));      
       byte buffer = current, mask = 255;
       byte untilAligned = MIN(8 - alignedBits, last - x);
-      int tempTexX = texX - alignedBits;
-      int postoffset = 0;
 
-      if (texX < alignedBits) {
-         tempTexX = 0;
-         postoffset = alignedBits - texX;
-         buffer >>= postoffset;
+
+      if (untilAligned > 1) {
+         int tempTexX = texX - alignedBits;
+         int postoffset = 0;
+
+         if (texX < alignedBits) {
+            tempTexX = 0;
+            postoffset = alignedBits - texX;
+            buffer >>= postoffset;
+         }
+
+         _renderPartialByte(&buffer, color, alpha, tempTexX);
+
+         buffer <<= postoffset;
+         buffer &= (mask << alignedBits);
+         if (alignedBits + untilAligned < 8) {
+            buffer &= (mask >> (8 - (alignedBits + untilAligned)));
+         }
+
+         *(dest + (x >> 3)) = buffer | (current & (mask >> untilAligned));
+
+         x += untilAligned;
+         texX += untilAligned;
+      }
+      else {
+         while (x < last && alignedBits++ < 8) {
+            _renderBit(dest, color, alpha, &texX, &x);
+         }
       }
 
-      _renderPartialByte(&buffer, color, alpha, tempTexX);
-
-      buffer <<= postoffset;      
-      buffer &= (mask << alignedBits);
-      if (alignedBits + untilAligned < 8) {
-         buffer &= (mask >> (8 - (alignedBits + untilAligned)));
-      }
-
-      *(dest + (x >> 3)) = buffer | (current & (mask >> untilAligned));
-      //*(dest + (x >> 3)) = buffer | (*(dest + (x >> 3)) & (mask << untilAligned));
-
-      x += untilAligned;
-      texX += untilAligned;
-
-    
-      //while (x < last && alignedBits++ < 8) {
-      //   _renderBit(dest, color, alpha, &texX, &x);
-      //}
    }
 
    if (x == last) {
@@ -341,8 +345,23 @@ static void _renderScanLine(byte *dest, int x, byte *color, byte *alpha, int bit
    byteRun = (last - x) / 8;
    _render8Bits(dest, color, alpha, &texX, &x, byteRun);
 
-   while (x < last) {
-      _renderBit(dest, color, alpha, &texX, &x);
+   if (x < last) {
+      int remaining = last - x;      
+
+      if (remaining > 1) {
+         byte current = *(dest + (x >> 3));
+         byte buffer = current, mask = 255;
+         int tempTexX = texX;
+
+         _renderPartialByte(&buffer, color, alpha, tempTexX);
+         buffer &= (mask >> (8 - remaining));
+         *(dest + (x >> 3)) = buffer | (current & (mask << remaining));
+      }
+      else {
+         while (x < last) {
+            _renderBit(dest, color, alpha, &texX, &x);
+         }
+      }
    }
 }
 
