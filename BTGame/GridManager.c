@@ -495,6 +495,11 @@ void gridManagerChangeTileSchema(GridManager *self, size_t tile, byte schema) {
    tileSetSchema(t, schema);
 }
 
+void gridManagerSetTileCollision(GridManager *self, size_t tile, byte coll) {
+   Tile *t = mapTileAt(self->map, tile);
+   tileSetCollision(t, coll);
+}
+
 size_t gridManagerGetSchemaCount(GridManager *self) {
    return vecSize(TileSchema)(self->schemas);
 }

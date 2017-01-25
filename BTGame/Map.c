@@ -20,14 +20,14 @@ struct Tile_t {
 
 #pragma pack(pop)
 
-#define COLL_MASK   0xF
-#define FLAGS_MASK 0xF0
+#define COLL_MASK  15
+#define FLAGS_MASK 240
 
 byte tileGetCollision(Tile *self) {
    return self->collAndFlags & COLL_MASK;
 }
 void tileSetCollision(Tile *self, byte col) {
-   self->collAndFlags &= (FLAGS_MASK + (col&COLL_MASK));
+   self->collAndFlags &= (FLAGS_MASK | (col&COLL_MASK));
 }
 
 byte tileGetSchema(Tile *self) {

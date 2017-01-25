@@ -77,6 +77,7 @@ Tile *gridManagerTileAtScreenPos(GridManager *self, int x, int y);
 
 //use this or else lighting wont be udpated
 void gridManagerChangeTileSchema(GridManager *self, size_t tile, byte schema);
+void gridManagerSetTileCollision(GridManager *self, size_t tile, byte coll);
 
 int gridDistance(int x0, int y0, int x1, int y1);
 

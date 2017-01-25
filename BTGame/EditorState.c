@@ -256,7 +256,8 @@ static void _floodFill(EditorState *state, byte baseSchema, byte selectedSchema,
    if (tile && tileGetSchema(tile) == baseSchema) {
       int x, y;
 
-      gridManagerChangeTileSchema(gm, t, selectedSchema);
+      gridManagerSetTileCollision(gm, t, 0);
+      gridManagerChangeTileSchema(gm, t, selectedSchema);      
       gridManagerXYFromCellID(gm, t, &x, &y);
 
       _addTileToFloodFill(gm, baseSchema, x - 1, y, openList, closedList);
@@ -331,6 +332,7 @@ static void gridClickUp(EditorState *state, Int2 pos) {
             size_t tile = gridManagerCellIDFromXY(state->view->gridManager, x, y);
             if (tile < INF) {
                gridManagerChangeTileSchema(state->view->gridManager, tile, mapEditorGetSelectedSchema(me));
+               gridManagerSetTileCollision(state->view->gridManager, tile, 0);
             }
          }
       }
@@ -360,6 +362,7 @@ static void gridClickMove(EditorState *state, Int2 pos) {
       tile = gridManagerCellIDFromXY(state->view->gridManager, vpPos.x, vpPos.y);
       if (tile < INF) {
          gridManagerChangeTileSchema(state->view->gridManager, tile, mapEditorGetSelectedSchema(me));
+         gridManagerSetTileCollision(state->view->gridManager, tile, 0);
       }
       break;
 
