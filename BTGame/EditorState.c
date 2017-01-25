@@ -24,6 +24,8 @@
 
 #define VP_SPEED 3
 #define VP_FAST_SPEED 8
+#define SCALE_INC 0.1f
+#define SCALE_TIME_US 500000
 
 typedef enum {
    None = 0,
@@ -85,15 +87,57 @@ typedef struct {
    Int2 squareStart, squareEnd;
 
    MeshRenderData *gridMesh;
-   float scale, targetScale;
+
+   float targetStartScale, scale, targetScale;
+   float minScale, maxScale;
+   Microseconds scaleStartTime;
+
 }EditorState;
+
+static void _setScaleRanges(EditorState *state) {
+   state->minScale = 0.1f;
+   state->maxScale = 1000000.0f;
+}
+
+static void _increaseScale(EditorState *state) {
+   state->targetStartScale = state->scale;
+   state->targetScale = MIN(state->maxScale, state->targetScale + SCALE_INC * state->scale );
+   state->scaleStartTime = appGetTime(appGet());
+}
+static void _decreaseScale(EditorState *state) {
+   state->targetStartScale = state->scale;
+   state->targetScale = MAX(state->minScale, state->targetScale - SCALE_INC * state->scale);
+   state->scaleStartTime = appGetTime(appGet());
+}
+static void _resetScale(EditorState *state) {
+   state->targetStartScale = state->scale;
+   state->targetScale = 1.0f;
+   state->scaleStartTime = appGetTime(appGet());
+}
+static bool _scaleIsReset(EditorState *state) {
+   return fabs(state->scale - 1.0f) < 0.001f && fabs(state->targetScale - 1.0f) < 0.001f;
+}
+
+static void _updateScale(EditorState *state) {   
+   Microseconds deltaTime = appGetTime(appGet()) - state->scaleStartTime;
+
+   if (deltaTime < SCALE_TIME_US) {
+      float deltaScale = state->targetScale - state->targetStartScale;
+      state->scale = state->targetStartScale + (deltaTime / (float)SCALE_TIME_US) * deltaScale;
+   }
+   else {
+      state->scale = state->targetScale;
+   }
+}
 
 static void _editorStateCreate(EditorState *state) {
    state->editor = mapEditorCreate(state->view);
-   state->scale = state->targetScale = 1.0f;
+   state->targetStartScale = state->scale = state->targetScale = 1.0f;
+   state->gridMesh = meshRenderDataCreate();
 }
 static void _editorStateDestroy(EditorState *self) {
    mapEditorDestroy(self->editor);
+   meshRenderDataDestroy(self->gridMesh);
    checkedFree(self);
 }
 
@@ -118,11 +162,9 @@ void _editorEnter(EditorState *state, StateEnter *m) {
    calendarPause(state->view->calendar);
    pcManagerUpdate(state->view->pcManager);
 
-   state->gridMesh = meshRenderDataCreate();
+   _setScaleRanges(state);
 }
 void _editorExit(EditorState *state, StateExit *m) {
-
-   meshRenderDataDestroy(state->gridMesh);
    managedImageDestroy(state->bg);
    calendarResume(state->view->calendar);
 }
@@ -132,8 +174,7 @@ void _editorUpdate(EditorState *state, GameStateUpdate *m) {
    Mouse *mouse = appGetMouse(appGet());
    Int2 mousePos = mouseGetPosition(mouse);
 
-   state->scale = state->targetScale;
-
+   _updateScale(state);
    
    cursorManagerUpdate(view->cursorManager, mousePos.x, mousePos.y);
    calendarUpdate(view->calendar);
@@ -397,7 +438,12 @@ static void _handleMouse(EditorState *state) {
             mapEditorScrollSchemas(me, event.pos.y);
          }
          else if(!calendarOperation){
-            state->targetScale += event.pos.y > 0 ? -0.1f : 0.1f;
+            if (event.pos.y > 0) {
+               _decreaseScale(state);
+            }
+            else {
+               _increaseScale(state);
+            }
          }
       }
       else if (event.action == SegaMouse_Pressed) {
