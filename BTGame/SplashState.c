@@ -33,7 +33,7 @@ typedef struct {
    WorldView *view;
    bool pop;
 
-   TextArea *select, *cont, *new, *ack, *quit, *copyright, *warning;
+   TextArea *options, *warning;
    ManagedImage *splash;
    Sprite *fire;
 
@@ -44,26 +44,30 @@ typedef struct {
 
 static void _splashStateCreate(SplashState *state) {
 
-   state->select = textAreaCreate(17, 17, 6, 1);
-   state->cont = textAreaCreate(13, 19, 13, 1);
-   state->new = textAreaCreate(15, 20, 10, 1);
-   state->ack = textAreaCreate(12, 21, 66, 1);
-   state->quit = textAreaCreate(13, 22, 13, 1);
-   state->copyright = textAreaCreate(11, 24, 18, 1);
+   state->options = textAreaCreate(0, 17, EGA_TEXT_RES_WIDTH, 8);
+   //state->select = textAreaCreate(0, 17, EGA_TEXT_RES_WIDTH, 1);
+   //state->cont = textAreaCreate(0, 19, EGA_TEXT_RES_WIDTH, 1);
+   //state->new = textAreaCreate(0, 20, EGA_TEXT_RES_WIDTH, 1);
+   //state->ack = textAreaCreate(0, 21, EGA_TEXT_RES_WIDTH, 1);
+   //state->quit = textAreaCreate(0, 22, EGA_TEXT_RES_WIDTH, 1);
+   //state->copyright = textAreaCreate(0, EGA_TEXT_RES_WIDTH, 18, 1);
    state->warning = textAreaCreate(0, 0, EGA_TEXT_RES_WIDTH, EGA_TEXT_RES_HEIGHT);
 
    textAreaSetSpeed(state->warning, 75);
 
+   textAreaSetJustify(state->options, TextAreaJustify_Center);
 
    state->state = Show;
 }
 static void _splashStateDestroy(SplashState *self) {
-   textAreaDestroy(self->select);
-   textAreaDestroy(self->cont);
-   textAreaDestroy(self->new);
-   textAreaDestroy(self->ack);
-   textAreaDestroy(self->quit);
-   textAreaDestroy(self->copyright);
+   //textAreaDestroy(self->select);
+   //textAreaDestroy(self->cont);
+   //textAreaDestroy(self->new);
+   //textAreaDestroy(self->ack);
+   //textAreaDestroy(self->quit);
+   //textAreaDestroy(self->copyright);
+
+   textAreaDestroy(self->options);
    textAreaDestroy(self->warning);
 
    checkedFree(self);
@@ -89,12 +93,22 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    state->splash = imageLibraryGetImage(state->view->imageLibrary, stringIntern("splash.bg"));
    state->fire = spriteManagerGetSprite(view->spriteManager, stringIntern("splash.fire"));
 
-   textAreaSetText(state->select, "Select");
-   textAreaSetText(state->cont, "[i]Journey forth[/i]");
-   textAreaSetText(state->new, "Begin anew");
-   textAreaSetText(state->ack, "Acknowledgements");
-   textAreaSetText(state->quit, "Retire to DOS");
-   textAreaSetText(state->copyright, "Copyright 1988 BDT");
+   textAreaSetText(state->options, 
+      "Select\n\n"
+
+      "[i]Journey forth[/i]\n"
+      "Begin anew\n"
+      "Acknowledgements\n"
+      "Retire to DOS\n\n"
+
+      "Copyright 1988 BDT");
+
+   //textAreaSetText(state->select, "Select");
+   //textAreaSetText(state->cont, "[i]Journey forth[/i]");
+   //textAreaSetText(state->new, "Begin anew");
+   //textAreaSetText(state->ack, "Acknowledgements");
+   //textAreaSetText(state->quit, "Retire to DOS");
+   //textAreaSetText(state->copyright, "Copyright 1988 BDT");
    
    verbManagerSetEnabled(view->verbManager, false);
    assetsSetPalette(view->db, stringIntern("splash"));
@@ -193,12 +207,15 @@ void _splashRender(SplashState *state, GameStateRender *m) {
 
       textureRenderSprite(frame, NULL, 79, 80, state->fire);
 
-      textAreaRender(state->select, state->view, frame);
-      textAreaRender(state->cont, state->view, frame);
-      textAreaRender(state->new, state->view, frame);
-      textAreaRender(state->ack, state->view, frame);
-      textAreaRender(state->quit, state->view, frame);
-      textAreaRender(state->copyright, state->view, frame);
+      //textAreaRender(state->select, state->view, frame);
+      //textAreaRender(state->cont, state->view, frame);
+      //textAreaRender(state->new, state->view, frame);
+      //textAreaRender(state->ack, state->view, frame);
+      //textAreaRender(state->quit, state->view, frame);
+      //textAreaRender(state->copyright, state->view, frame);
+
+
+      textAreaRender(state->options, state->view, frame);
    }
    else {
       //textAreaRender(state->warning, state->view, frame);

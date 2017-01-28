@@ -25,4 +25,11 @@ void imageLibraryClear(ImageLibrary *self);
 #define IMG_BG_CONSOLE "bgconsole"
 #define IMG_VERBS "verbs"
 #define IMG_CURSOR "cursor"
+
+#include "segalib/EGA.h"
+
+#ifdef EGA_MODE_10h
+#define IMG_FONT "font814"
+#else
 #define IMG_FONT "font"
+#endif

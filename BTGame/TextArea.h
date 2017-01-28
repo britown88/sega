@@ -28,5 +28,12 @@ void textAreaSetVisibility(TextArea *self, bool visible);
 void textAreaHide(TextArea *self);
 void textAreaShow(TextArea *self);
 
+typedef enum {
+   TextAreaJustify_Left = 0,
+   TextAreaJustify_Center
+}TextAreaJustify;
+
+void textAreaSetJustify(TextArea *self, TextAreaJustify j);
+
 void textAreaUpdate(TextArea *self);
 void textAreaRender(TextArea *self, WorldView *view, Texture *tex);

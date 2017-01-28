@@ -176,6 +176,7 @@
     <ClCompile Include="EditorState.c" />
     <ClCompile Include="FramerateViewer.c" />
     <ClCompile Include="GameHelpers.c" />
+    <ClCompile Include="GBSplash.c" />
     <ClCompile Include="GridManager.c" />
     <ClCompile Include="GridSolver.c" />
     <ClCompile Include="LightDebugger.c" />

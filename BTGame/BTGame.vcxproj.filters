@@ -263,5 +263,8 @@
     <ClCompile Include="Conways.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GBSplash.c">
+      <Filter>Source Files\Game States</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

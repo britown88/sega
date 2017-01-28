@@ -24,6 +24,7 @@ typedef struct Span_t{
 } Span;
 
 void spanRenderToString(Span *self, String *out);
+size_t spanRenderedLength(Span *self);
 void spanDestroy(Span *self);
 
 #define VectorTPart Span

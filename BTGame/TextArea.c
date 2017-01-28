@@ -50,6 +50,8 @@ struct TextArea_t {
 
    Microseconds nextChar;
    Milliseconds textSpeed;
+
+   TextAreaJustify justify;
 };
 
 
@@ -57,7 +59,7 @@ TextAreaManager *textAreaManagerCreate(WorldView *view) {
    TextAreaManager *out = checkedCalloc(1, sizeof(TextAreaManager));
    out->view = view;
 
-   out->areaTable = htCreate(GTA)(_gtaBoxCompare, _gtaBoxHash, _gtaBoxDestroy);
+   out->areaTable = htCreate(GTA)(_gtaBoxCompare, _gtaBoxHash, _gtaBoxDestroy);   
 
    return out;
 }
@@ -161,6 +163,10 @@ void textAreaHide(TextArea *self) {
 }
 void textAreaShow(TextArea *self) {
    self->shown = true;
+}
+
+void textAreaSetJustify(TextArea *self, TextAreaJustify j) {
+   self->justify = j;
 }
 
 static void _renderNextMessageToLines(TextArea *self) {
@@ -311,10 +317,21 @@ void textAreaRender(TextArea *self, WorldView *view, Texture *tex) {
       return;
    }
 
-   vecForEach(RichTextLine, line, self->shownLines, {      
+   vecForEach(RichTextLine, line, self->shownLines, {   
+
+      if (self->justify == TextAreaJustify_Center) {
+         size_t spanLengthTotal = 0;
+         vecForEach(Span, span, *line, {
+            spanLengthTotal += stringLen(span->string);
+         });
+
+         x += (self->width - spanLengthTotal) / 2;
+      }
+
       vecForEach(Span, span, *line, {
          textureRenderSpan(view, tex, &x, &y, span);
       });
+      
       x = self->x;
       ++y;
    });

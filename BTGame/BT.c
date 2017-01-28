@@ -249,7 +249,7 @@ void _onStart(BTGame *self){
 
    //sesneless default palette woohoo
    {
-      Palette defPal = { {0, 1, 2, 3, 4, 58, 20, 7, 56, 57, 60, 62, 63, 60, 62, 63} };
+      Palette defPal = { {0, 1, 2, 3, 4, 58, 20, 7, 56, 57, 60, 62, 63, 60, 62, 63} };//the default CGA palette
       appSetPalette(appGet(), &defPal);
    }
 

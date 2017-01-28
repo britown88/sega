@@ -38,6 +38,10 @@ void spanRenderToString(Span *self, String *out) {
    }
 }
 
+size_t spanRenderedLength(Span *self) {
+   stringLen(self->string);
+}
+
 #define VectorTPart Span
 #include "segautils/Vector_Impl.h"
 
@@ -496,13 +500,13 @@ void richTextRenderToLines(RichText *self, size_t lineWidth, vec(RichTextLine) *
             vecPushBack(RichTextLine)(outList, &workingLine);
             workingLine = vecCreate(Span)(&spanDestroy);
             
-            if (++i == spanWidth) {
-               break;
-            }
+            //if (++i == spanWidth) {
+            //   break;
+            //}
 
             lastSpace = -1;
             currentWidth = 0;
-            splitPoint = i;            
+            splitPoint = i+1;            
          }
 
          //we're over our line length, need to split

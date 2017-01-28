@@ -15,3 +15,6 @@ StateClosure gameStateCreateWorld(WorldView *view);
 StateClosure gameStateCreateConsole(WorldView *view);
 StateClosure gameStateCreateEditor(WorldView *view);
 StateClosure gameStateCreateSplash(WorldView *view);
+
+//giantrom
+StateClosure gameStateCreateGBSplash(WorldView *view);
