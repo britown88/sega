@@ -39,9 +39,15 @@ typedef struct {
    int marqueeOffset;
 
    TextArea *txt;
-   ManagedImage *gblogo;
+   ManagedImage *sun, *gorilla;
 
    Texture *buildingsTexture;
+
+   Int2 bCoor[30];
+   Int2 gPos[2];
+   int bCount;
+
+   String *pNames[2];
 }SplashState;
 
 static int CINT(double d) { return round(d); }
@@ -83,7 +89,7 @@ static void doSun(Texture *frame) {
 }
 
 //porting from gorillas, bcoor is topleft coords of buildings
-static Texture *makeCityScape(Int2 *bcoor) {
+static Texture *makeCityScape(SplashState *state) {
    Texture *buildingFrame = textureCreate(EGA_RES_WIDTH, EGA_RES_HEIGHT);
 
    int x = 2;   
@@ -142,15 +148,14 @@ static Texture *makeCityScape(Int2 *bcoor) {
          bHeight = maxHeight + GHeight - 5;
       }
 
-      bcoor[curBuilding].x = x;
-      bcoor[curBuilding].y = bottomLine - bHeight;
+      state->bCoor[curBuilding].x = x;
+      state->bCoor[curBuilding].y = bottomLine - bHeight;
       
       //render
       {
-         int color = appRand(appGet(), 0, 3);
-         color = color == 0 ? 3 : (color == 1 ? 4 : 7);         
+         int color = appRand(appGet(), 1, 4) + 4;     
 
-         textureRenderLineRect(buildingFrame, NULL, x - 1, bottomLine - bHeight - 1, x + bWidth + 1+1, bottomLine + 1+1, 1);
+         textureRenderLineRect(buildingFrame, NULL, x - 1, bottomLine - bHeight - 1, x + bWidth + 1+1, bottomLine + 1+1, 0);
          textureRenderRect(buildingFrame, NULL, x, bottomLine - bHeight, x + bWidth+1, bottomLine+1, color);
 
          int c = x + 3;
@@ -168,15 +173,48 @@ static Texture *makeCityScape(Int2 *bcoor) {
       ++curBuilding;
    } while (x <= screenWidth - htInc);
 
+   state->bCount = curBuilding;
    return buildingFrame;
 }
+static void placeGorillas(Texture *frame, SplashState *state) {
+   int xAdj = 14;
+   int yAdj = 30;
+
+   Texture *gorilla = managedImageGetTexture(state->gorilla);
+   size_t gWidth = textureGetWidth(gorilla);
+   size_t gHeight = textureGetHeight(gorilla);
+
+   int i;
+
+   for (i = 0; i < 2; ++i) {
+      int bNum = i == 0 ? appRand(appGet(), 1, 3) + 1 : state->bCount - 1 - appRand(appGet(), 0, 2);
+      int bWidth = state->bCoor[bNum].x - state->bCoor[bNum - 1].x;
+      state->gPos[i].x = state->bCoor[bNum - 1].x + bWidth / 2 - xAdj;
+      state->gPos[i].y = state->bCoor[bNum - 1].y - yAdj + 1;
+
+      textureRenderTexture(frame, NULL, state->gPos[i].x, state->gPos[i].y, gorilla);
+   }
+}
+
 static void testCity(SplashState *state) {
-   Int2 buildings[30];
+
    if (state->buildingsTexture) {
       textureDestroy(state->buildingsTexture);
    }
 
-   state->buildingsTexture = makeCityScape(buildings);
+   state->buildingsTexture = makeCityScape(state);
+   placeGorillas(state->buildingsTexture, state);
+}
+
+
+
+static void _startGame(SplashState *state) {
+   assetsSetPalette(state->view->db, stringIntern("GORILLAS"));
+   testCity(state);
+   state->state = Game;
+
+   stringSet(state->pNames[0], "Jeff");
+   stringSet(state->pNames[1], "Vinny");
 }
 
 static void gbUpdateSplash(SplashState *state) {
@@ -220,6 +258,8 @@ static void gbRenderSplash(SplashState *state, GameStateRender *m) {
 
    textAreaRender(state->txt, state->view, frame);
 
+   textureRenderEllipseQB(frame, NULL, EGA_RES_WIDTH/2, 25, 12, 14, -1.0);
+
    //textureRenderEllipse(frame, NULL, 10, 10, 5, 5, 3);
    //textureRenderEllipse(frame, NULL, 100, 100, 50, 75, 4);
    //textureRenderEllipse(frame, NULL, 100, 100, 100, 25, 6);
@@ -238,8 +278,7 @@ static void gbHandleKeyboardSplash(SplashState *state) {
             appQuit(appGet());
             break;
          default:
-            testCity(state);
-            state->state = Game;
+            _startGame(state);
             return;
          }
       }
@@ -248,15 +287,34 @@ static void gbHandleKeyboardSplash(SplashState *state) {
 
 static void gbUpdateGame(SplashState *state) {
 }
+
+static void _drawGameUI(SplashState *state, Texture *frame) {
+   Font *UIFont = fontFactoryGetFont(state->view->fontFactory, 0, 9);
+   //player names
+   textureRenderText(frame, c_str(state->pNames[0]), 0, 0, UIFont);
+   textureRenderText(frame, c_str(state->pNames[1]), EGA_TEXT_RES_WIDTH - 2 - stringLen(state->pNames[1]), 0, UIFont);
+
+   textureRenderText(frame, "Angle: 60", 0, 1, UIFont);
+   textureRenderText(frame, "Velovity: 72_", 0, 2, UIFont);
+}
+
 static void gbRenderGame(SplashState *state, GameStateRender *m) {
    Texture *frame = m->frame;
-   textureClear(frame, NULL, 1);
+   textureClear(frame, NULL, 0);
 
+   //do buildings/gorillas
    if (state->buildingsTexture) {
       textureRenderTexture(frame, NULL, 0, 0, state->buildingsTexture);
    }
 
-   doSun(frame);
+   //doSun(frame);
+
+   //dosun
+   Texture *sun = managedImageGetTexture(state->sun);
+   textureRenderTexture(frame, NULL, (EGA_RES_WIDTH - textureGetWidth(sun)) / 2, 25 - textureGetHeight(sun) / 2, sun);
+
+   //do UI
+   _drawGameUI(state, frame);
 }
 
 
@@ -286,17 +344,31 @@ static void gbHandleKeyboardGame(SplashState *state) {
 
 
 static void _splashStateCreate(SplashState *state) {
+   int i = 0;
+   for (i = 0; i < 2; ++i) {
+      state->pNames[i] = stringCreate("");
+   }
+
    state->txt = textAreaCreate(0, 4, EGA_TEXT_RES_WIDTH, 9);   
    textAreaSetJustify(state->txt, TextAreaJustify_Center);
-   state->gblogo = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gb_logo"));
+
+   state->sun = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla-sun"));
+   state->gorilla = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla"));
+
+
 }
 static void _splashStateDestroy(SplashState *self) {
+   int i = 0;
+   for (i = 0; i < 2; ++i) {
+      stringDestroy(self->pNames[i]);
+   }
 
    if (self->buildingsTexture) {
       textureDestroy(self->buildingsTexture);
    }
    
-   managedImageDestroy(self->gblogo);
+   managedImageDestroy(self->sun);
+   managedImageDestroy(self->gorilla);
    textAreaDestroy(self->txt);
    checkedFree(self);
 }
