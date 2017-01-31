@@ -744,6 +744,62 @@ void textureRenderEllipse(Texture *self, FrameRegion *vp, int xc, int yc, int wi
    }
 }
 
+//void drawEllipse(Texture *self, FrameRegion *vp, int xc, int yc, int x, int y, byte color)
+//{
+//   /*This function plots a pixel at coordinates(x,y) specified by first 2 arguments and third argument specifies the color of the pixel*/
+//   textureRenderPoint(self, vp, xc + x, yc + y, color);
+//   textureRenderPoint(self, vp, xc - x, yc + y, color);
+//   textureRenderPoint(self, vp, xc + x, yc - y, color);
+//   textureRenderPoint(self, vp, xc - x, yc - y, color);
+//}
+//
+///* Function to draw ellipse using the mid point algorithm */
+//
+//void textureRenderEllipse(Texture *self, FrameRegion *vp, int xc, int yc, int rx, int ry, byte color)
+//{
+//   float rxSq = rx * rx;
+//   float rySq = ry * ry;
+//   float x = 0, y = ry, p;
+//   float px = 0, py = 2 * rxSq * y;
+//
+//   drawEllipse(self, vp, xc, yc, x, y, color);
+//
+//   //Region 1
+//   p = rySq - (rxSq * ry) + (0.25 * rxSq);
+//   while (px < py)
+//   {
+//      x++;
+//      px = px + 2 * rySq;
+//      if (p < 0)
+//         p = p + rySq + px;
+//      else
+//      {
+//         y--;
+//         py = py - 2 * rxSq;
+//         p = p + rySq + px - py;
+//      }
+//      drawEllipse(self, vp, xc, yc, x, y, color);
+//   }
+//
+//   //Region 2
+//   p = rySq*(x + 0.5)*(x + 0.5) + rxSq*(y - 1)*(y - 1) - rxSq*rySq;
+//   while (y > 0)
+//   {
+//      y--;
+//      py = py - 2 * rxSq;
+//      if (p > 0)
+//         p = p + rxSq - py;
+//      else
+//      {
+//         x++;
+//         px = px + 2 * rySq;
+//         p = p + rxSq - py + px;
+//      }
+//      drawEllipse(self, vp, xc, yc, x, y, color);
+//   }
+//}
+
+
 
 void textureRenderEllipseQB(Texture *self, FrameRegion *vp, int xc, int yc, int radius, byte color, double aspect) {
    if (aspect < 0) {
