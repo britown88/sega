@@ -70,6 +70,10 @@ static void doSun(Texture *frame) {
    textureRenderLine(frame, NULL, x - 18, y-5, x + 18, y+5, 14);
    textureRenderLine(frame, NULL, x - 18, y+5, x + 18, y-5, 14);
 
+   //mouth
+   textureRenderEllipseQB(frame, NULL, x, y + 5, 3, 0, -1.0);
+   textureRenderFloodFill(frame, NULL, x, y+5, 0, 0);
+
    //eyes
    textureRenderEllipseQB(frame, NULL, x-3, y-2, 1, 0, -1.0);
    textureRenderEllipseQB(frame, NULL, x + 3, y - 2, 1, 0, -1.0);
@@ -216,9 +220,9 @@ static void gbRenderSplash(SplashState *state, GameStateRender *m) {
 
    textAreaRender(state->txt, state->view, frame);
 
-   textureRenderEllipse(frame, NULL, 10, 10, 5, 5, 3);
-   textureRenderEllipse(frame, NULL, 100, 100, 50, 75, 4);
-   textureRenderEllipse(frame, NULL, 100, 100, 100, 25, 6);
+   //textureRenderEllipse(frame, NULL, 10, 10, 5, 5, 3);
+   //textureRenderEllipse(frame, NULL, 100, 100, 50, 75, 4);
+   //textureRenderEllipse(frame, NULL, 100, 100, 100, 25, 6);
 
    //textureRenderFloodFill(frame, NULL, 200, 200, 6, 6);
 }
