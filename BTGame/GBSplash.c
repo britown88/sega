@@ -226,6 +226,7 @@ static void _startGame(SplashState *state) {
    testCity(state);
    state->state = Game;
 
+
    stringSet(state->pNames[0], "Jeff");
    stringSet(state->pNames[1], "Vinny");
 }
@@ -271,7 +272,7 @@ static void gbRenderSplash(SplashState *state, GameStateRender *m) {
 
    textAreaRender(state->txt, state->view, frame);
 
-   textureRenderEllipseQB(frame, NULL, EGA_RES_WIDTH/2, 25, 12, 14, -1.0);
+   //textureRenderEllipseQB(frame, NULL, EGA_RES_WIDTH/2, 25, 12, 14, -1.0);
 
    //textureRenderEllipse(frame, NULL, 10, 10, 5, 5, 3);
    //textureRenderEllipse(frame, NULL, 100, 100, 50, 75, 4);
@@ -298,27 +299,28 @@ static void gbHandleKeyboardSplash(SplashState *state) {
    }
 }
 
-#define BAR_WIDTH (EGA_TEXT_CHAR_WIDTH*30)
-#define MAX_POWER 100
-#define US_TO_MAX 2000000
+#define BAR_WIDTH (EGA_TEXT_CHAR_WIDTH*20)
+#define MAX_POWER 200
+#define MS_TO_MAX 2000
 
 static void gbUpdateGame(SplashState *state) {
    if (state->turnState == GetPower) {
-      Microseconds delta = appGetTime(appGet()) - state->time;
+      Milliseconds delta = t_u2m(appGetTime(appGet()) - state->time);
 
-      if (delta > US_TO_MAX) {
+      if (delta > MS_TO_MAX) {
          state->power[state->player] = MAX_POWER;
          state->turnState = Throw;
          state->time = appGetTime(appGet());
       }
       else {
-         double d = delta / (double)US_TO_MAX;
+         double d = delta / (double)MS_TO_MAX;
          state->power[state->player] = MAX_POWER * d;
       }
    }
    else if (state->turnState == Throw) {
       if (t_u2m(appGetTime(appGet()) - state->time) > 1000) {
          state->turnState = GetAngle;
+         state->player = !state->player;
          state->time = appGetTime(appGet());
       }
    }
@@ -333,7 +335,7 @@ static void _drawGameUI(SplashState *state, Texture *frame) {
    textureRenderText(frame, c_str(state->pNames[1]), EGA_TEXT_RES_WIDTH - 2 - stringLen(state->pNames[1]), 0, UIFont);
 
    if (state->player == 0) {
-      static char buff[10] = { 0 };
+      char buff[10] = { 0 };
       sprintf(buff, "%i", state->angle[state->player]);
 
       textureRenderText(frame, "Angle [ \x18 \x19 ]:", 0, 1, UIFont);
@@ -342,7 +344,20 @@ static void _drawGameUI(SplashState *state, Texture *frame) {
       sprintf(buff, "%i", state->power[state->player]);
       textureRenderText(frame, "Velocity [ Hold SPACE ]:", 0, 2, UIFont);
       textureRenderText(frame, buff, 25, 2, UIGreenFont);
+   }
+   else {
+      char buff[10] = { 0 };
+      sprintf(buff, "%i", state->angle[state->player]);
+      int angleLen = 15 + strlen(buff) + 2;
 
+      textureRenderText(frame, "Angle [ \x18 \x19 ]:", EGA_TEXT_RES_WIDTH - angleLen, 1, UIFont);
+      textureRenderText(frame, buff, EGA_TEXT_RES_WIDTH - strlen(buff) - 2, 1, UIGreenFont);
+
+      sprintf(buff, "%i", state->power[state->player]);
+      angleLen = 25 + strlen(buff) + 2;
+
+      textureRenderText(frame, "Velocity [ Hold SPACE ]:", EGA_TEXT_RES_WIDTH - angleLen, 2, UIFont);
+      textureRenderText(frame, buff, EGA_TEXT_RES_WIDTH - strlen(buff) - 2, 2, UIGreenFont);
    }
 }
 
@@ -356,22 +371,35 @@ static void _drawAngleArrow(SplashState *state, Texture *frame) {
    pos1.x += 14;
    pos1.y += 15;
 
-   pos2.x = cosf(rad)*arrowLen + pos1.x;
+   pos2.x = state->player == 0 ? (cosf(rad)*arrowLen + pos1.x) : (pos1.x - cosf(rad)*arrowLen);
    pos2.y = pos1.y - sinf(rad)*arrowLen;
 
-   textureRenderLine(frame, NULL, pos1.x, pos1.y, pos2.x, pos2.y, 2);
+   textureRenderLine(frame, NULL, pos1.x, pos1.y, pos2.x, pos2.y, 3);
 
 }
 
 static void _drawPowerBar(SplashState *state, Texture *frame) {
    int i;
-   Int2 pos = { 0, EGA_TEXT_CHAR_HEIGHT * (EGA_TEXT_RES_HEIGHT - 1) };
+   Font *UIFont = fontFactoryGetFont(state->view->fontFactory, 0, 9);
+   Int2 pos = { EGA_TEXT_CHAR_WIDTH*6, EGA_TEXT_CHAR_HEIGHT * (EGA_TEXT_RES_HEIGHT - 1) };
+
+   if (state->player == 1) {
+      pos.x = (EGA_TEXT_RES_WIDTH - 2) * EGA_TEXT_CHAR_WIDTH - BAR_WIDTH;
+   }
 
    int powerWidth = state->power[state->player];
 
    powerWidth = (powerWidth / (float)MAX_POWER) * BAR_WIDTH;
 
-   textureRenderRect(frame, NULL, pos.x, pos.y, pos.x + BAR_WIDTH, pos.y + EGA_TEXT_CHAR_HEIGHT, 1);
+   if (state->player == 0) {
+      textureRenderText(frame, "POWER:", 0, EGA_TEXT_RES_HEIGHT - 1, UIFont);
+   }
+   else {
+      textureRenderText(frame, "POWER:", EGA_TEXT_RES_WIDTH - (BAR_WIDTH/EGA_TEXT_CHAR_WIDTH) - 6-2, EGA_TEXT_RES_HEIGHT - 1, UIFont);
+   }
+   
+
+   textureRenderRect(frame, NULL, pos.x, pos.y, pos.x + BAR_WIDTH, pos.y + EGA_TEXT_CHAR_HEIGHT, 6);
    textureRenderRect(frame, NULL, pos.x, pos.y, pos.x + powerWidth, pos.y + EGA_TEXT_CHAR_HEIGHT, 10);
 
    for (i = 0; i < 4; ++i) {
@@ -444,6 +472,9 @@ static void gbHandleKeyboardGame(SplashState *state) {
       }
       if (keyboardIsDown(k, SegaKey_Down)) {
          *angle = (*angle - 1) % 360;
+         if (*angle < 0) {
+            *angle += 360;
+         }
       }
    }   
 }
