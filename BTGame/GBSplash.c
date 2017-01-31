@@ -21,6 +21,9 @@
 #include "AssetHelpers.h"
 
 #include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include "segautils/Math.h"
 
 typedef enum {
    Splash = 0,
@@ -29,6 +32,12 @@ typedef enum {
    Game,
    Credits
 }GBStates;
+
+typedef enum {
+   GetAngle = 0,
+   GetPower,
+   Throw
+}TurnStates;
 
 typedef struct {
    WorldView *view;
@@ -48,6 +57,10 @@ typedef struct {
    int bCount;
 
    String *pNames[2];
+   int player;
+   TurnStates turnState;
+   int angle[2], power[2];
+   
 }SplashState;
 
 static int CINT(double d) { return round(d); }
@@ -285,17 +298,87 @@ static void gbHandleKeyboardSplash(SplashState *state) {
    }
 }
 
+#define BAR_WIDTH (EGA_TEXT_CHAR_WIDTH*30)
+#define MAX_POWER 100
+#define US_TO_MAX 2000000
+
 static void gbUpdateGame(SplashState *state) {
+   if (state->turnState == GetPower) {
+      Microseconds delta = appGetTime(appGet()) - state->time;
+
+      if (delta > US_TO_MAX) {
+         state->power[state->player] = MAX_POWER;
+         state->turnState = Throw;
+         state->time = appGetTime(appGet());
+      }
+      else {
+         double d = delta / (double)US_TO_MAX;
+         state->power[state->player] = MAX_POWER * d;
+      }
+   }
+   else if (state->turnState == Throw) {
+      if (t_u2m(appGetTime(appGet()) - state->time) > 1000) {
+         state->turnState = GetAngle;
+         state->time = appGetTime(appGet());
+      }
+   }
+
 }
 
 static void _drawGameUI(SplashState *state, Texture *frame) {
    Font *UIFont = fontFactoryGetFont(state->view->fontFactory, 0, 9);
+   Font *UIGreenFont = fontFactoryGetFont(state->view->fontFactory, 0, 10);
    //player names
    textureRenderText(frame, c_str(state->pNames[0]), 0, 0, UIFont);
    textureRenderText(frame, c_str(state->pNames[1]), EGA_TEXT_RES_WIDTH - 2 - stringLen(state->pNames[1]), 0, UIFont);
 
-   textureRenderText(frame, "Angle: 60", 0, 1, UIFont);
-   textureRenderText(frame, "Velovity: 72_", 0, 2, UIFont);
+   if (state->player == 0) {
+      static char buff[10] = { 0 };
+      sprintf(buff, "%i", state->angle[state->player]);
+
+      textureRenderText(frame, "Angle [ \x18 \x19 ]:", 0, 1, UIFont);
+      textureRenderText(frame, buff, 15, 1, UIGreenFont);
+
+      sprintf(buff, "%i", state->power[state->player]);
+      textureRenderText(frame, "Velocity [ Hold SPACE ]:", 0, 2, UIFont);
+      textureRenderText(frame, buff, 25, 2, UIGreenFont);
+
+   }
+}
+
+static void _drawAngleArrow(SplashState *state, Texture *frame) {
+   Int2 pos1 = state->gPos[state->player];
+   int arrowLen = 50;
+
+   Int2 pos2 = { 0 };
+   float rad = state->angle[state->player]*(PI / 180.0f);
+
+   pos1.x += 14;
+   pos1.y += 15;
+
+   pos2.x = cosf(rad)*arrowLen + pos1.x;
+   pos2.y = pos1.y - sinf(rad)*arrowLen;
+
+   textureRenderLine(frame, NULL, pos1.x, pos1.y, pos2.x, pos2.y, 2);
+
+}
+
+static void _drawPowerBar(SplashState *state, Texture *frame) {
+   int i;
+   Int2 pos = { 0, EGA_TEXT_CHAR_HEIGHT * (EGA_TEXT_RES_HEIGHT - 1) };
+
+   int powerWidth = state->power[state->player];
+
+   powerWidth = (powerWidth / (float)MAX_POWER) * BAR_WIDTH;
+
+   textureRenderRect(frame, NULL, pos.x, pos.y, pos.x + BAR_WIDTH, pos.y + EGA_TEXT_CHAR_HEIGHT, 1);
+   textureRenderRect(frame, NULL, pos.x, pos.y, pos.x + powerWidth, pos.y + EGA_TEXT_CHAR_HEIGHT, 10);
+
+   for (i = 0; i < 4; ++i) {
+      int lineX = pos.x + ((BAR_WIDTH / 4.0f) * (i + 1));
+      textureRenderLine(frame, NULL, lineX, pos.y, lineX, pos.y + EGA_TEXT_CHAR_HEIGHT, 4);
+   }
+   
 }
 
 static void gbRenderGame(SplashState *state, GameStateRender *m) {
@@ -315,9 +398,13 @@ static void gbRenderGame(SplashState *state, GameStateRender *m) {
 
    //do UI
    _drawGameUI(state, frame);
+
+   if (state->turnState != Throw) {
+      _drawAngleArrow(state, frame);
+      _drawPowerBar(state, frame);
+   }
+   
 }
-
-
 
 static void gbHandleKeyboardGame(SplashState *state) {
    WorldView *view = state->view;
@@ -330,13 +417,35 @@ static void gbHandleKeyboardGame(SplashState *state) {
          case SegaKey_Escape:
             appQuit(appGet());
             break;
-         default:
+         case SegaKey_F1:
             testCity(state);
             break;
+         case SegaKey_Space:
+            if (state->turnState == GetPower) {
+               state->time = appGetTime(appGet());
+               state->turnState = Throw;
+            }
+            break;
+         }         
+      }
+      if (e.action == SegaKey_Pressed) {
+         if (e.key == SegaKey_Space && state->turnState == GetAngle) {
+            state->power[state->player] = 0;
+            state->time = appGetTime(appGet());
+            state->turnState = GetPower;
          }
-         
       }
    }
+
+   if (state->turnState == GetAngle) {
+      int *angle = state->angle + state->player;
+      if (keyboardIsDown(k, SegaKey_Up)) {
+         *angle = (*angle + 1) % 360;         
+      }
+      if (keyboardIsDown(k, SegaKey_Down)) {
+         *angle = (*angle - 1) % 360;
+      }
+   }   
 }
 
 
