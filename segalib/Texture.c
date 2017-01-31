@@ -2,8 +2,10 @@
 #include "segashared/CheckedMemory.h"
 #include "segautils/BitTwiddling.h"
 #include "segautils/Defs.h"
+#include "segautils/StandardVectors.h"
 
 #include <string.h>
+#include <math.h>
 
 struct Texture_t{
    int w, h;
@@ -672,6 +674,182 @@ void textureRenderRect(Texture *self, FrameRegion *vp, int left, int top, int ri
       //now we 'render' the alpha scanline onto our own alpha plane!
       _renderAlphaScanLine(_alphaScanLine(self, y + yLine), x + ignoreOffsetX, alphaBuffer, ignoreOffsetX, clipSizeX);
    }
+}
+
+void textureRenderCircle(Texture *self, FrameRegion *vp, int xc, int yc, int radius, byte color){
+   int x = 0;
+   int y = radius;
+   int delta = 2 - 2 * radius;
+   int error = 0;
+
+   while (y >= 0)
+   {
+      textureRenderPoint(self, vp, xc + x, yc + y, color);
+      textureRenderPoint(self, vp, xc - x, yc + y, color);
+      textureRenderPoint(self, vp, xc + x, yc - y, color);
+      textureRenderPoint(self, vp, xc - x, yc - y, color);
+
+      error = 2 * (delta + y) - 1;
+      if (delta < 0 && error <= 0) {
+         ++x;
+         delta += 2 * x + 1;
+         continue;
+      }
+      error = 2 * (delta - x) - 1;
+      if (delta > 0 && error > 0) {
+         --y;
+         delta += 1 - 2 * y;
+         continue;
+      }
+      ++x;
+      delta += 2 * (x - y);
+      --y;
+   }
+}
+
+void textureRenderEllipse(Texture *self, FrameRegion *vp, int xc, int yc, int width, int height, byte color){
+   int a2 = width * width;
+   int b2 = height * height;
+   int fa2 = 4 * a2, fb2 = 4 * b2;
+   int x, y, sigma;
+
+   /* first half */
+   for (x = 0, y = height, sigma = 2 * b2 + a2*(1 - 2 * height); b2*x <= a2*y; x++)
+   {
+      textureRenderPoint(self, vp, xc + x, yc + y, color);
+      textureRenderPoint(self, vp, xc - x, yc + y, color);
+      textureRenderPoint(self, vp, xc + x, yc - y, color);
+      textureRenderPoint(self, vp, xc - x, yc - y, color);
+      if (sigma >= 0)
+      {
+         sigma += fa2 * (1 - y);
+         y--;
+      }
+      sigma += b2 * ((4 * x) + 6);
+   }
+
+   /* second half */
+   for (x = width, y = 0, sigma = 2 * a2 + b2*(1 - 2 * width); a2*y <= b2*x; y++)
+   {
+      textureRenderPoint(self, vp, xc + x, yc + y, color);
+      textureRenderPoint(self, vp, xc - x, yc + y, color);
+      textureRenderPoint(self, vp, xc + x, yc - y, color);
+      textureRenderPoint(self, vp, xc - x, yc - y, color);
+      if (sigma >= 0)
+      {
+         sigma += fb2 * (1 - x);
+         x--;
+      }
+      sigma += a2 * ((4 * y) + 6);
+   }
+}
+
+
+void textureRenderEllipseQB(Texture *self, FrameRegion *vp, int xc, int yc, int radius, byte color, double aspect) {
+   if (aspect < 0) {
+      aspect = 4.0 * (EGA_RES_HEIGHT / (double)EGA_RES_WIDTH  ) / 3.0;
+   }
+   
+   textureRenderEllipse(self, vp, xc, yc, radius, round(radius * aspect), color);
+}
+
+
+static byte _colorAt(Texture *self, int x, int y) {
+   byte out = 0;
+   int plane = 0;
+   if (getBitFromArray(_alphaScanLine(self, y), x)) {
+      //1 means invis, return black
+      return 0;
+   }
+
+   for (plane = 0; plane < EGA_PLANES; ++plane) {
+      setBitInArray(&out, plane, getBitFromArray(_scanLine(self, y, plane), x));
+   }
+   return out;
+}
+
+static void _addTileToFloodFill(Texture *self, FrameRegion *vp, byte border, int x, int y, vec(size_t) *openList, vec(size_t) *closedList) {
+   int vpx = x + vp->origin_x;
+   int vpy = y + vp->origin_y;
+   size_t pxid = vpy * self->w + vpx;
+
+   if (!(x < 0 || x >= vp->width || y < 0 || y >= vp->height)) {
+      if (vpx >= 0 && vpx < self->w && vpy >= 0 && vpy < self->h) {
+         if (_colorAt(self, vpx, vpy) != border) {            
+            vecPushBack(size_t)(openList, &pxid);
+            return;
+         }
+      }
+   }
+
+   vecPushBack(size_t)(closedList, &pxid);
+}
+
+static void _floodFill(Texture *self, FrameRegion *vp, byte color, byte border, vec(size_t) *openList, vec(size_t) *closedList) {
+
+
+   size_t pxid = *vecAt(size_t)(openList, 0);
+   int x = pxid % self->w;
+   int y = pxid / self->w;
+
+   int vpx = x + vp->origin_x;
+   int vpy = y + vp->origin_y;
+
+   if (!(x < 0 || x >= vp->width || y < 0 || y >= vp->height)) {
+      if (vpx >= 0 && vpx < self->w && vpy >= 0 && vpy < self->h) {
+         if (_colorAt(self, vpx, vpy) != border) {
+            textureRenderPoint(self, vp, x, y, color);
+
+            _addTileToFloodFill(self, vp, border, x - 1, y, openList, closedList);
+            _addTileToFloodFill(self, vp, border, x, y - 1, openList, closedList);
+            _addTileToFloodFill(self, vp, border, x + 1, y, openList, closedList);
+            _addTileToFloodFill(self, vp, border, x, y + 1, openList, closedList);
+         }
+      }
+   }
+
+   vecRemoveAt(size_t)(openList, 0);
+   vecPushBack(size_t)(closedList, &pxid);
+}
+
+
+void textureRenderFloodFill(Texture *self, FrameRegion *vp, int x, int y, byte color, byte borderColor) {
+   if (!vp) { vp = &self->full; }
+
+   if (x < 0 || x >= vp->width || y < 0 || y >= vp->height) {
+      return;
+   }
+
+   int vpx = x + vp->origin_x;
+   int vpy = y + vp->origin_y;
+   size_t pxid = vpy * self->w + vpx;
+
+   vec(size_t) *openList = vecCreate(size_t)(NULL);
+   vec(size_t) *closedList = vecCreate(size_t)(NULL);
+
+   vecPushBack(size_t)(openList, &pxid);
+   while (!vecIsEmpty(size_t)(openList)) {
+      _floodFill(self, vp, color, borderColor, openList, closedList);
+   }
+
+   vecDestroy(size_t)(openList);
+   vecDestroy(size_t)(closedList);
+
+
+
+
+   //if (vpx >= 0 && vpx < self->w && vpy >= 0 && vpy < self->h) {
+   //   byte oColor = _colorAt(self, vpx, vpy);
+   //   if (oColor == borderColor) {
+   //      return;
+   //   }
+
+   //   textureRenderPoint(self, vp, x, y, color);
+   //   textureRenderFloodFill(self, vp, x + 1, y, color, borderColor);
+   //   textureRenderFloodFill(self, vp, x - 1, y, color, borderColor);
+   //   textureRenderFloodFill(self, vp, x, y+1, color, borderColor);
+   //   textureRenderFloodFill(self, vp, x, y-1, color, borderColor);
+   //}
 }
 
 void frameRenderTexture(Frame *self, FrameRegion *vp, short x, short y, Texture *tex) {

@@ -91,7 +91,8 @@ AppData createData() {
       data.dcFlags |= DC_FLAG_FULLSCREEN;
    }
 
-   data.windowTitle = stringIntern("Chronicles IV: Ebonheim");
+   //data.windowTitle = stringIntern("Chronicles IV: Ebonheim");
+   data.windowTitle = stringIntern("BOMBILLAS.BAS");
 
    return data;
 }
@@ -265,7 +266,7 @@ void _onStart(BTGame *self){
    _addTestEntities(self);
 
    //push the opening state
-   fsmPush(self->gameState, gameStateCreateSplash(&self->view));
+   fsmPush(self->gameState, gameStateCreateGBSplash(&self->view));
    
 }
 

@@ -5,7 +5,7 @@
 #include "segautils/extern_c.h"
 
 #define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define WINDOW_HEIGHT 350
 #define FULLSCREEN 0
 #define FRAME_RATE 60
 

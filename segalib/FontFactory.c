@@ -131,7 +131,7 @@ void frameRenderTextWithoutSpaces(Frame *frame, const char *text, short x, short
    _frameRenderTextEX(frame, text, x, y, font, false);
 }
 
-void textureRenderTextSingleChar(Texture *tex, const char c, int x, int y, Font *font, bool spaces) {
+void textureRenderTextSingleChar(Texture *tex, const char c, int x, int y, Font *font, int spaces) {
    int yIter, plane;
    byte charY = c / FONT_CHAR_WIDTH;
    byte charX = c % FONT_CHAR_WIDTH;

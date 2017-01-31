@@ -17,7 +17,7 @@ typedef struct BitBuffer_t BitBuffer;
 #define EGA_RES_HEIGHT 350
 #define EGA_TEXT_CHAR_WIDTH 8
 #define EGA_TEXT_CHAR_HEIGHT 14
-#define EGA_PIXEL_HEIGHT 1.37f
+#define EGA_PIXEL_HEIGHT 1.00f//1.37f
 #define EGA_PIXEL_WIDTH 1.00f
 #else
 #error segalib: You must define a video mode in config.h
@@ -240,8 +240,18 @@ void textureRenderPoint(Texture *self, FrameRegion *vp, int x, int y, byte color
 void textureRenderLine(Texture *self, FrameRegion *vp, int x1, int y1, int x2, int y2, byte color);
 void textureRenderLineRect(Texture *self, FrameRegion *vp, int left, int top, int right, int bottom, byte color);
 void textureRenderRect(Texture *self, FrameRegion *vp, int left, int top, int right, int bottom, byte color);
+
+void textureRenderCircle(Texture *self, FrameRegion *vp, int x, int y, int radius, byte color);
+void textureRenderEllipse(Texture *self, FrameRegion *vp, int xc, int yc, int width, int height, byte color);
+void textureRenderEllipseQB(Texture *self, FrameRegion *vp, int xc, int yc, int radius, byte color, double aspect);
+
+//will flood fill until it reaches a defined border color
+void textureRenderFloodFill(Texture *self, FrameRegion *vp, int x, int y, byte color, byte borderColor);
+
+void textureRenderTextSingleChar(Texture *tex, const char c, int x, int y, Font *font, int spaces);
 void textureRenderText(Texture *texture, const char *text, int x, int y, Font *font);
 void textureRenderTextWithoutSpaces(Texture *texture, const char *text, int x, int y, Font *font);
+
 
 void frameRenderTexture(Frame *self, FrameRegion *vp, short x, short y, Texture *tex);
 
