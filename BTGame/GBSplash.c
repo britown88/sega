@@ -36,8 +36,17 @@ typedef enum {
 typedef enum {
    GetAngle = 0,
    GetPower,
-   Throw
+   Throw,
+   Explode
 }TurnStates;
+
+typedef struct {
+   float initXVel, initYVel;
+   int startXPos, startYPos;
+   float t;
+   bool onScreen, impact;
+}PlotData;
+
 
 typedef struct {
    WorldView *view;
@@ -48,7 +57,7 @@ typedef struct {
    int marqueeOffset;
 
    TextArea *txt;
-   ManagedImage *sun, *gorilla;
+   ManagedImage *sun, *gorilla, *bomb;
 
    Texture *buildingsTexture;
 
@@ -63,6 +72,15 @@ typedef struct {
 
    int wind;
    float gravity;
+
+   PlotData plotData;
+   Int2 bombPos;
+   float expC;
+   bool explosionOut;
+   bool expRadius;
+   bool expColor;
+
+   bool kill;
    
 }SplashState;
 
@@ -133,7 +151,7 @@ static Texture *makeCityScape(SplashState *state) {
    int wDifV = 15;
    int wDifh = 10;
    int curBuilding = 0;
-   int GHeight = 25;//?
+   int GHeight = 100;//?
    int maxHeight = 0;   
 
    do {
@@ -246,13 +264,43 @@ static void _startGame(SplashState *state) {
 
    state->gravity = 9.8;
 
-   
+
+   state->player = 0;
+   state->turnState = GetAngle;
+   state->angle[0] = state->angle[1] = state->power[0] = state->power[1] = 0;
+
+   state->kill = false;   
 }
 
-static void _plotShot(SplashState *state) {
+
+
+static void updateExplosion(SplashState *state) {
+
+   float radius = state->expRadius;
+   float inc = 0.5f;
+
+   if (state->explosionOut) {
+      byte color = state->expColor++%3 < 2 ? 2 : 3;
+
+      textureRenderEllipseQB(state->buildingsTexture, NULL, state->bombPos.x, state->bombPos.y, state->expC, color, -1.0f);
+      state->expC += inc;
+
+      if (state->expC >= radius) {
+         state->explosionOut = false;
+      }
+   }
+   else {
+      textureRenderEllipseQB(state->buildingsTexture, NULL, state->bombPos.x, state->bombPos.y, state->expC, 0, -1.0f);
+      state->expC -= inc;
+   }
+
+}
+
+
+static PlotData _plotShot(SplashState *state) {
    int power = state->power[state->player];
    int angle = state->angle[state->player];
-   Int2 gPos = { state->gPos[state->player].x + 14,  state->gPos[state->player].y + 15 };
+   Int2 gPos = { state->gPos[state->player].x + 14,  state->gPos[state->player].y-3 };
 
    if (state->player) { angle = 180 - angle; }
 
@@ -286,25 +334,79 @@ static void _plotShot(SplashState *state) {
       direction = -4;
    }
 
-   if (power < 2) {
-      return;//too slow
+   PlotData out = { 0 };
+
+   out.initXVel = initXVel;
+   out.initYVel = initYVel;
+   out.onScreen = true;
+   out.startXPos = startXPos;
+   out.startYPos = startYPos;
+
+   return out;
+
+   //if (power < 2) {
+   //   return;//too slow
+   //}
+
+   //float t = 0.0f;
+   //while (!impact && onScreen) {
+   //   int x = startXPos + (initXVel * t) + (0.5f * (state->wind / 5.0f) * t * t);
+   //   int y = startYPos + ((-1 * (initYVel * t)) + (0.5f * state->gravity * t * t)) * (EGA_RES_HEIGHT / 350.0f);
+
+   //   if (x >= EGA_RES_WIDTH - 10 || x <= 3 || y >= EGA_RES_HEIGHT - 3) {
+   //      onScreen = false;
+   //   }
+
+   //   if (onScreen && y > 0) {
+   //      byte color = textureGetColorAt(state->buildingsTexture, NULL, x, y);
+
+   //      if (color == 5 || color == 6 || color == 7) {
+   //         _doExplosion(state, x, y);
+   //         return;
+   //      }
+
+   //      textureRenderPoint(state->buildingsTexture, NULL, x, y, 9);
+   //   }
+
+   //   t += 0.001f;
+   //}
+}
+
+static void _updateShot(SplashState *state, PlotData *p) {
+   int x = p->startXPos + (p->initXVel * p->t) + (0.5f * (state->wind / 5.0f) * p->t * p->t);
+   int y = p->startYPos + ((-1 * (p->initYVel * p->t)) + (0.5f * state->gravity * p->t * p->t)) * (EGA_RES_HEIGHT / 350.0f);
+
+   if (x >= EGA_RES_WIDTH - 10 || x <= 3 || y >= EGA_RES_HEIGHT - 3) {
+      p->onScreen = false;
    }
 
-   float t = 0.0f;
-   while (!impact && onScreen) {
-      int x = startXPos + (initXVel * t) + (0.5f * (state->wind / 5.0f) * t * t);
-      int y = startYPos + ((-1 * (initYVel * t)) + (0.5f * state->gravity * t * t)) * (EGA_RES_HEIGHT / 350.0f);
+   state->bombPos = (Int2) { x, y };
 
-      if (x >= EGA_RES_WIDTH - 10 || x <= 3 || y >= EGA_RES_HEIGHT - 3) {
-         onScreen = false;
+   if (p->onScreen && y > 0) {
+      int lookX, lookY;
+
+      for (lookY = -1; lookY < 1; ++lookY) {
+         for (lookX = -1; lookX < 1; ++lookX) {
+            byte color = textureGetColorAt(state->buildingsTexture, NULL, x+lookX, y+lookY);
+
+            if (color == 5 || color == 6 || color == 7) {
+               p->impact = true;
+               break;
+            }
+
+            if (color == 1) {
+               state->kill = true;
+            }
+         }
       }
-
-      if (onScreen && y > 0) {
-         textureRenderPoint(state->buildingsTexture, NULL, x, y, 9);
-      }
-
-      t += 0.001f;
    }
+}
+
+static void throwBomb(SplashState *state){
+   state->time = appGetTime(appGet());
+   state->turnState = Throw;
+
+   state->plotData = _plotShot(state);
 }
 
 static void _drawWindArrow(SplashState *state, Texture *frame) {
@@ -389,7 +491,7 @@ static void gbHandleKeyboardSplash(SplashState *state) {
 }
 
 #define BAR_WIDTH (EGA_TEXT_CHAR_WIDTH*20)
-#define MAX_POWER 200
+#define MAX_POWER 100
 #define MS_TO_MAX 2000
 
 static void gbUpdateGame(SplashState *state) {
@@ -398,8 +500,7 @@ static void gbUpdateGame(SplashState *state) {
 
       if (delta > MS_TO_MAX) {
          state->power[state->player] = MAX_POWER;
-         state->turnState = Throw;
-         state->time = appGetTime(appGet());
+         throwBomb(state);
       }
       else {
          double d = delta / (double)MS_TO_MAX;
@@ -407,11 +508,56 @@ static void gbUpdateGame(SplashState *state) {
       }
    }
    else if (state->turnState == Throw) {
-      if (t_u2m(appGetTime(appGet()) - state->time) > 100) {
-         _plotShot(state);
+      Milliseconds delta = t_u2m(appGetTime(appGet()) - state->time);
+      int updateCount = MIN(delta / 100, 10);
+      state->time += t_m2u(updateCount * 100);
+
+      while (updateCount-- >= 0 && !state->plotData.impact) {
+         state->plotData.t += 0.05f;
+         _updateShot(state, &state->plotData);
+      }
+
+      if (state->kill) {
+         state->explosionOut = true;
+         state->expC = 0.0f;
+         state->expRadius = EGA_RES_HEIGHT / 5.0f;
+         state->turnState = Explode;
+         state->time = appGetTime(appGet());
+      }
+      else if (state->plotData.impact) {
+         state->explosionOut = true;
+         state->expC = 0.0f;
+         state->expRadius = EGA_RES_HEIGHT / 30.0f;
+         state->turnState = Explode;
+         state->time = appGetTime(appGet());
+      }
+      else if ((!rectiContains((Recti) { 0, 0, EGA_RES_WIDTH - 1, EGA_RES_HEIGHT - 1 }, state->bombPos) && state->bombPos.y > 0)) {
          state->turnState = GetAngle;
          state->player = !state->player;
          state->time = appGetTime(appGet());
+      }
+   }
+
+   else if (state->turnState == Explode) {
+      Milliseconds delta = t_u2m(appGetTime(appGet()) - state->time);
+      int updateCount = MIN(delta / 10, 1000);
+      state->time += t_m2u(updateCount * 10);
+
+      while (updateCount-- >= 0 && state->expC >= 0.0f) {
+         updateExplosion(state);
+      }
+
+      if (state->expC < 0.0f) {
+         if (state->kill) {
+            _startGame(state);
+         }
+         else {
+            state->turnState = GetAngle;
+            state->player = !state->player;
+            state->time = appGetTime(appGet());
+         }
+
+         
       }
    }
 
@@ -480,9 +626,11 @@ static void _drawAngleArrow(SplashState *state, Texture *frame) {
    Int2 gPos = state->gPos[state->player];
    int angle = state->angle[state->player];
 
-   _drawAngledArrow(frame, NULL, gPos.x + 14, gPos.y + 15, 50, angle, 3, state->player);
+   _drawAngledArrow(frame, NULL, gPos.x + 14, gPos.y-3, 50, angle, 3, state->player);
 
 }
+
+
 
 static void _drawPowerBar(SplashState *state, Texture *frame) {
    int i;
@@ -533,9 +681,13 @@ static void gbRenderGame(SplashState *state, GameStateRender *m) {
    //do UI
    _drawGameUI(state, frame);
 
-   if (state->turnState != Throw) {
+   if (state->turnState < Throw) {
       _drawAngleArrow(state, frame);
       _drawPowerBar(state, frame);
+   }
+   else if (state->turnState == Throw) {
+      Texture *bomb = managedImageGetTexture(state->bomb);
+      textureRenderTexture(frame, NULL, state->bombPos.x - textureGetWidth(bomb) / 2, state->bombPos.y - textureGetHeight(bomb) / 2, bomb);
    }
    
 }
@@ -556,8 +708,7 @@ static void gbHandleKeyboardGame(SplashState *state) {
             break;
          case SegaKey_Space:
             if (state->turnState == GetPower) {
-               state->time = appGetTime(appGet());
-               state->turnState = Throw;
+               throwBomb(state);
             }
             break;
          }         
@@ -600,6 +751,7 @@ static void _splashStateCreate(SplashState *state) {
 
    state->sun = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla-sun"));
    state->gorilla = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla"));
+   state->bomb = imageLibraryGetImage(state->view->imageLibrary, stringIntern("bomb"));
 
 
 }
@@ -615,6 +767,7 @@ static void _splashStateDestroy(SplashState *self) {
    
    managedImageDestroy(self->sun);
    managedImageDestroy(self->gorilla);
+   managedImageDestroy(self->bomb);
    textAreaDestroy(self->txt);
    checkedFree(self);
 }

@@ -17,7 +17,7 @@ typedef struct BitBuffer_t BitBuffer;
 #define EGA_RES_HEIGHT 350
 #define EGA_TEXT_CHAR_WIDTH 8
 #define EGA_TEXT_CHAR_HEIGHT 14
-#define EGA_PIXEL_HEIGHT 1.00f//1.37f
+#define EGA_PIXEL_HEIGHT 1.37f
 #define EGA_PIXEL_WIDTH 1.00f
 #else
 #error segalib: You must define a video mode in config.h
@@ -224,6 +224,8 @@ int textureGetHeight(Texture *self);
 //raw data! ten cuidado!
 byte *textureGetScanline(Texture *self, byte plane, int y);
 byte *textureGetAlphaScanline(Texture *self, int y);
+
+byte textureGetColorAt(Texture *self, FrameRegion *vp, int x, int y);
 
 //useful in certian circumstances, dont use this for normal calls
 //passing NULL to a texturerender will use this automatically

@@ -713,6 +713,10 @@ void textureRenderEllipse(Texture *self, FrameRegion *vp, int xc, int yc, int wi
    int fa2 = 4 * a2, fb2 = 4 * b2;
    int x, y, sigma;
 
+   if (width == 0 || height == 0) {
+      return;
+   }
+
    /* first half */
    for (x = 0, y = height, sigma = 2 * b2 + a2*(1 - 2 * height); b2*x <= a2*y; x++)
    {
@@ -807,6 +811,33 @@ void textureRenderEllipseQB(Texture *self, FrameRegion *vp, int xc, int yc, int 
    }
    
    textureRenderEllipse(self, vp, xc, yc, radius, round(radius * aspect), color);
+}
+
+byte textureGetColorAt(Texture *self, FrameRegion *vp, int x, int y) {
+   byte out = 0;
+   int plane = 0;
+
+   if (!vp) { vp = &self->full; }
+
+   if (x < 0 || x >= vp->width || y < 0 || y >= vp->height) {
+      return 0;
+   }
+
+   x += vp->origin_x;
+   y += vp->origin_y;
+
+   if (x >= 0 && x < self->w && y >= 0 && y < self->h) {
+      if (getBitFromArray(_alphaScanLine(self, y), x)) {
+         //1 means invis, return black
+         return 0;
+      }
+
+      for (plane = 0; plane < EGA_PLANES; ++plane) {
+         setBitInArray(&out, plane, getBitFromArray(_scanLine(self, y, plane), x));
+      }
+   }
+   
+   return out;
 }
 
 
