@@ -103,6 +103,8 @@ typedef struct {
    bool sunShock;
 
    Duder duders[2];
+
+   int selectSection, selectOption;
    
 }SplashState;
 
@@ -278,7 +280,7 @@ static void refreshGorilla(SplashState *state, Arms arms) {
    _drawGorilla(state, state->buildingsTexture, state->gPos[state->player].x, state->gPos[state->player].y, arms, state->duders[state->player]);
 }
 
-static void testCity(SplashState *state) {
+static void buildCity(SplashState *state) {
 
    if (state->buildingsTexture) {
       textureDestroy(state->buildingsTexture);
@@ -290,9 +292,20 @@ static void testCity(SplashState *state) {
    _setWind(state);
 }
 
+static void _initCharSelect(SplashState *state) {
+   state->state = Characters;
+
+   textAreaSetText(state->txt, 
+      "\n\n"
+      "[c=0,3]BEST COAST\n\n\n\n\n\n\n\n"
+      "BEAST COAST\n\n\n\n\n\n\n\n"
+      "GRAVITY[/c]");
+
+   state->selectOption = state->selectSection = 0;
+}
+
 static void _startGame(SplashState *state) {
    assetsSetPalette(state->view->db, stringIntern("GORILLAS"));
-
 
    stringSet(state->pNames[0], "Drew");
    stringSet(state->pNames[1], "Brad");
@@ -308,9 +321,13 @@ static void _startGame(SplashState *state) {
    state->angle[0] = state->angle[1] = state->power[0] = state->power[1] = 0;
 
    state->kill = false;   
+   
+   _initCharSelect(state);
+}
 
-   testCity(state);
+static void _playGame(SplashState *state) {
    state->state = Game;
+   buildCity(state);
 }
 
 
@@ -780,9 +797,6 @@ static void gbHandleKeyboardGame(SplashState *state) {
          case SegaKey_Escape:
             appQuit(appGet());
             break;
-         case SegaKey_F1:
-            testCity(state);
-            break;
          case SegaKey_Space:
             if (state->turnState == GetPower) {
                throwBomb(state);
@@ -814,6 +828,112 @@ static void gbHandleKeyboardGame(SplashState *state) {
 }
 
 
+static void gbUpdateSelect(SplashState *state) {
+   
+}
+static void gbRenderSelect(SplashState *state, GameStateRender *m) {
+   Texture *frame = m->frame;
+   int gWidth = 40;
+   int spacing = 16;
+   int i;
+
+   int gStartX = (EGA_RES_WIDTH - (gWidth * 4) - (spacing * 3)) / 2;
+   int bestCoastY = EGA_TEXT_CHAR_HEIGHT * 4;
+   int beastCoastY = EGA_TEXT_CHAR_HEIGHT * 12;
+   int gravY = EGA_TEXT_CHAR_HEIGHT * 20;
+
+
+   textureClear(frame, NULL, 0);
+
+   textAreaRender(state->txt, state->view, frame);
+
+   switch (state->selectSection) {
+   case 0:textureRenderLineRect(frame, NULL, gStartX + state->selectOption * (gWidth + spacing), bestCoastY - 5, gStartX + state->selectOption * (gWidth + spacing) + gWidth, bestCoastY + 35, 7);
+      break;
+   case 1:textureRenderLineRect(frame, NULL, gStartX + state->selectOption * (gWidth + spacing), beastCoastY - 5, gStartX + state->selectOption * (gWidth + spacing) + gWidth, beastCoastY + 35, 7);
+      break;
+   case 2:textureRenderLineRect(frame, NULL, gStartX + state->selectOption * (gWidth + spacing) - 3, gravY - 5, gStartX + state->selectOption * (gWidth + spacing) + gWidth + 5, gravY + 20, 7);
+      break;
+   }
+
+   
+   
+   for (i = 0; i < 4; ++i) {
+      bool westAnim = (i == state->selectOption && state->selectSection == 0) || (state->selectSection != 0 && i == state->duders[0] - Drew);
+      bool eastAnim = (i == state->selectOption && state->selectSection == 1) || (state->selectSection != 1 && i == state->duders[1] - Dan);
+      Milliseconds t = t_u2m(appGetTime(appGet()));
+
+      _drawGorilla(state, frame, gStartX + 6 + i * (gWidth + spacing), bestCoastY, westAnim ? LeftArm + (t / 300) % 2 :  NoArms, Drew + i);
+      _drawGorilla(state, frame, gStartX + 6 + i * (gWidth + spacing), beastCoastY, eastAnim ? LeftArm + (t / 300) % 2 : NoArms, Dan + i);
+   }
+
+   Font *nameFont = fontFactoryGetFont(state->view->fontFactory, 0, 2);
+   textureRenderText(frame, " DREW   BRAD   JEFF  JASON", gStartX / EGA_TEXT_CHAR_WIDTH, 7, nameFont);
+   textureRenderText(frame, " DAN   VINNY  ALEX   JEFF B", gStartX / EGA_TEXT_CHAR_WIDTH, 15, nameFont);
+
+
+   textureRenderText(frame, "EARTH", gStartX / EGA_TEXT_CHAR_WIDTH, 20, nameFont);
+   textureRenderText(frame, "MOON", gStartX / EGA_TEXT_CHAR_WIDTH + 8, 20, nameFont);
+   textureRenderText(frame, "MARS", gStartX / EGA_TEXT_CHAR_WIDTH + 15, 20, nameFont);
+   textureRenderText(frame, "SUN", gStartX / EGA_TEXT_CHAR_WIDTH + 22, 20, nameFont);
+
+   
+}
+static void _saveChoice(SplashState *state) {
+   if (state->selectSection == 0) {//west coast
+      switch (state->selectOption) {
+      case 0:stringSet(state->pNames[0], "Drew"); state->duders[0] = Drew;break;
+      case 1:stringSet(state->pNames[0], "Brad"); state->duders[0] = Brad;break;
+      case 2:stringSet(state->pNames[0], "Jeff"); state->duders[0] = Jeff;break;
+      case 3:stringSet(state->pNames[0], "Jason-kun"); state->duders[0] = Jason;break;
+      }
+   }
+   else if (state->selectSection == 1) {//east coast
+      switch (state->selectOption) {
+      case 0:stringSet(state->pNames[1], "Dirty Dan"); state->duders[1] = Dan;break;
+      case 1:stringSet(state->pNames[1], "Vinny"); state->duders[1] = Vinny;break;
+      case 2:stringSet(state->pNames[1], "Alex"); state->duders[1] = Alex;break;
+      case 3:stringSet(state->pNames[1], "Bakalar"); state->duders[1] = Jeff2;break;
+      }
+   }
+   else {
+      switch (state->selectOption) {
+      case 0:state->gravity = 9.81f;break;
+      case 1:state->gravity = 1.622f;break;
+      case 2:state->gravity = 3.711f;break;
+      case 3:state->gravity = 274.87f;break;
+      }
+   }
+}
+
+static void gbHandleKeyboardSelect(SplashState *state) {
+   WorldView *view = state->view;
+   Keyboard *k = appGetKeyboard(appGet());
+   KeyboardEvent e = { 0 };
+
+   while (keyboardPopEvent(k, &e)) {
+      if (e.action == SegaKey_Released) {
+         if (e.key == SegaKey_Left) {
+            state->selectOption = MAX(state->selectOption - 1, 0);
+         }
+
+         if (e.key == SegaKey_Right) {
+            state->selectOption = MIN(state->selectOption + 1, 3);            
+         }
+
+         if (e.key == SegaKey_Enter || e.key == SegaKey_Space) {
+            _saveChoice(state);
+            ++state->selectSection;
+            state->selectOption = 0;
+            if (state->selectSection > 2) {
+               _playGame(state);
+               return;
+            }
+         }
+      }
+   }
+}
+
 
 
 
@@ -823,12 +943,12 @@ static void _splashStateCreate(SplashState *state) {
       state->pNames[i] = stringCreate("");
    }
 
-   state->txt = textAreaCreate(0, 4, EGA_TEXT_RES_WIDTH, 9);   
+   state->txt = textAreaCreate(0, 0, EGA_TEXT_RES_WIDTH, EGA_TEXT_RES_HEIGHT);   
    textAreaSetJustify(state->txt, TextAreaJustify_Center);
 
    state->sun = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla-sun"));
    state->sun2 = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla-sun2"));
-   state->gorilla = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla"));
+   state->gorilla = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla2"));
    state->bomb = imageLibraryGetImage(state->view->imageLibrary, stringIntern("bomb"));
 
 
@@ -874,6 +994,7 @@ void _splashEnter(SplashState *state, StateEnter *m) {
    state->marqueeOffset = 0;
 
    textAreaSetText(state->txt, 
+      "\n\n\n\n"
       "Q B a s i c   B O M B I L L A S\n\n"
       "[c=0,7]Copyright (C) Macrofurst Corporation 1990\n\n"
       "Your mission is to hit the opponent with the exploding\n"
@@ -897,6 +1018,9 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
    case Game:
       gbUpdateGame(state);
       break;
+   case Characters:
+      gbUpdateSelect(state);
+      break;
    }
 
 }
@@ -910,6 +1034,9 @@ void _splashHandleInput(SplashState *state, GameStateHandleInput *m) {
    case Game:
       gbHandleKeyboardGame(state);
       break;
+   case Characters:
+      gbHandleKeyboardSelect(state);
+      break;
    }
 }
 
@@ -920,6 +1047,9 @@ void _splashRender(SplashState *state, GameStateRender *m) {
       break;
    case Game:
       gbRenderGame(state, m);
+      break;
+   case Characters:
+      gbRenderSelect(state, m);
       break;
    }
 }
