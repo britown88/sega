@@ -37,7 +37,8 @@ typedef enum {
    GetAngle = 0,
    GetPower,
    Throw,
-   Explode
+   Explode,
+   Win
 }TurnStates;
 
 typedef struct {
@@ -46,6 +47,24 @@ typedef struct {
    float t;
    bool onScreen, impact;
 }PlotData;
+
+typedef enum
+{
+   NoArms = 0,
+   LeftArm = 1,
+   RightArm = 2
+}Arms;
+
+typedef enum {
+   Drew = 3,
+   Brad = 4,
+   Jeff = 5,
+   Jason = 6,
+   Dan = 7,
+   Vinny = 8,
+   Alex = 9,
+   Jeff2 = 10
+}Duder;
 
 
 typedef struct {
@@ -57,7 +76,7 @@ typedef struct {
    int marqueeOffset;
 
    TextArea *txt;
-   ManagedImage *sun, *gorilla, *bomb;
+   ManagedImage *sun, *sun2, *gorilla, *bomb;
 
    Texture *buildingsTexture;
 
@@ -81,6 +100,9 @@ typedef struct {
    bool expColor;
 
    bool kill;
+   bool sunShock;
+
+   Duder duders[2];
    
 }SplashState;
 
@@ -131,6 +153,17 @@ static void _setWind(SplashState *state) {
    else {
       state->wind -= appRand(appGet(), 1, 11);
    }
+}
+
+static void _drawGorilla(SplashState *state, Texture *frame, int x, int y, Arms arms, Duder duder) {
+   static int gWidth = 28;
+   static int gHeight = 31;
+
+   textureRenderRect(frame, NULL, x, y, x + gWidth, y + gHeight, 0);
+
+   Texture *gorilla = managedImageGetTexture(state->gorilla);
+   textureRenderTexturePartial(frame, NULL, x, y, gorilla, arms*gWidth, 0, gWidth, gHeight);
+   textureRenderTexturePartial(frame, NULL, x, y, gorilla, duder*gWidth, 0, gWidth, gHeight);
 }
 
 //porting from gorillas, bcoor is topleft coords of buildings
@@ -235,10 +268,14 @@ static void placeGorillas(Texture *frame, SplashState *state) {
       int bNum = i == 0 ? appRand(appGet(), 1, 3) + 1 : state->bCount - 1 - appRand(appGet(), 0, 2);
       int bWidth = state->bCoor[bNum].x - state->bCoor[bNum - 1].x;
       state->gPos[i].x = state->bCoor[bNum - 1].x + bWidth / 2 - xAdj;
-      state->gPos[i].y = state->bCoor[bNum - 1].y - yAdj + 1;
+      state->gPos[i].y = state->bCoor[bNum - 1].y - yAdj - 1;
 
-      textureRenderTexture(frame, NULL, state->gPos[i].x, state->gPos[i].y, gorilla);
+      _drawGorilla(state, frame, state->gPos[i].x, state->gPos[i].y, NoArms, state->duders[i]);
    }
+}
+
+static void refreshGorilla(SplashState *state, Arms arms) {
+   _drawGorilla(state, state->buildingsTexture, state->gPos[state->player].x, state->gPos[state->player].y, arms, state->duders[state->player]);
 }
 
 static void testCity(SplashState *state) {
@@ -255,12 +292,13 @@ static void testCity(SplashState *state) {
 
 static void _startGame(SplashState *state) {
    assetsSetPalette(state->view->db, stringIntern("GORILLAS"));
-   testCity(state);
-   state->state = Game;
 
 
-   stringSet(state->pNames[0], "Jeff");
-   stringSet(state->pNames[1], "Vinny");
+   stringSet(state->pNames[0], "Drew");
+   stringSet(state->pNames[1], "Brad");
+
+   state->duders[0] = Drew;
+   state->duders[1] = Brad;
 
    state->gravity = 9.8;
 
@@ -270,8 +308,10 @@ static void _startGame(SplashState *state) {
    state->angle[0] = state->angle[1] = state->power[0] = state->power[1] = 0;
 
    state->kill = false;   
-}
 
+   testCity(state);
+   state->state = Game;
+}
 
 
 static void updateExplosion(SplashState *state) {
@@ -385,9 +425,13 @@ static void _updateShot(SplashState *state, PlotData *p) {
    if (p->onScreen && y > 0) {
       int lookX, lookY;
 
-      for (lookY = -1; lookY < 1; ++lookY) {
-         for (lookX = -1; lookX < 1; ++lookX) {
+      for (lookY = -3; lookY < 3; ++lookY) {
+         for (lookX = -3; lookX < 3; ++lookX) {
             byte color = textureGetColorAt(state->buildingsTexture, NULL, x+lookX, y+lookY);
+
+            if (color == 3 && x > EGA_RES_WIDTH/2 - 30 && x < EGA_RES_WIDTH / 2 + 30) {
+               state->sunShock = true;
+            }
 
             if (color == 5 || color == 6 || color == 7) {
                p->impact = true;
@@ -407,6 +451,8 @@ static void throwBomb(SplashState *state){
    state->turnState = Throw;
 
    state->plotData = _plotShot(state);
+
+   refreshGorilla(state, state->player ? LeftArm : RightArm);
 }
 
 static void _drawWindArrow(SplashState *state, Texture *frame) {
@@ -523,6 +569,9 @@ static void gbUpdateGame(SplashState *state) {
          state->expRadius = EGA_RES_HEIGHT / 5.0f;
          state->turnState = Explode;
          state->time = appGetTime(appGet());
+         refreshGorilla(state, NoArms);
+         state->sunShock = false;
+
       }
       else if (state->plotData.impact) {
          state->explosionOut = true;
@@ -530,11 +579,15 @@ static void gbUpdateGame(SplashState *state) {
          state->expRadius = EGA_RES_HEIGHT / 30.0f;
          state->turnState = Explode;
          state->time = appGetTime(appGet());
+         refreshGorilla(state, NoArms);
+         state->sunShock = false;
       }
       else if ((!rectiContains((Recti) { 0, 0, EGA_RES_WIDTH - 1, EGA_RES_HEIGHT - 1 }, state->bombPos) && state->bombPos.y > 0)) {
          state->turnState = GetAngle;
+         refreshGorilla(state, NoArms);
          state->player = !state->player;
          state->time = appGetTime(appGet());
+         state->sunShock = false;
       }
    }
 
@@ -549,7 +602,10 @@ static void gbUpdateGame(SplashState *state) {
 
       if (state->expC < 0.0f) {
          if (state->kill) {
-            _startGame(state);
+            state->player = state->bombPos.x > EGA_RES_WIDTH / 2 ? 0 : 1;
+
+            state->turnState = Win;
+            state->time = appGetTime(appGet());
          }
          else {
             state->turnState = GetAngle;
@@ -558,6 +614,13 @@ static void gbUpdateGame(SplashState *state) {
          }
 
          
+      }
+   }
+   else if (state->turnState == Win) {
+      Milliseconds delta = t_u2m(appGetTime(appGet()) - state->time);
+      refreshGorilla(state, LeftArm + (delta / 500) % 2);
+      if (delta > 4000) {
+         _startGame(state);
       }
    }
 
@@ -667,16 +730,21 @@ static void gbRenderGame(SplashState *state, GameStateRender *m) {
    Texture *frame = m->frame;
    textureClear(frame, NULL, 0);
 
+   //dosun
+   textureRenderRect(state->buildingsTexture, NULL, (EGA_RES_WIDTH - 41) / 2, 25 - 31 / 2, (EGA_RES_WIDTH - 41) / 2 + 41, 25 - 31 / 2 + 31, 0);
+   if (state->sunShock) {
+      Texture *sun = managedImageGetTexture(state->sun2);
+      textureRenderTexture(state->buildingsTexture, NULL, (EGA_RES_WIDTH - textureGetWidth(sun)) / 2, 25 - textureGetHeight(sun) / 2, sun);
+   }
+   else {
+      Texture *sun = managedImageGetTexture(state->sun);
+      textureRenderTexture(state->buildingsTexture, NULL, (EGA_RES_WIDTH - textureGetWidth(sun)) / 2, 25 - textureGetHeight(sun) / 2, sun);
+   }
+
    //do buildings/gorillas
    if (state->buildingsTexture) {
       textureRenderTexture(frame, NULL, 0, 0, state->buildingsTexture);
    }
-
-   //doSun(frame);
-
-   //dosun
-   Texture *sun = managedImageGetTexture(state->sun);
-   textureRenderTexture(frame, NULL, (EGA_RES_WIDTH - textureGetWidth(sun)) / 2, 25 - textureGetHeight(sun) / 2, sun);
 
    //do UI
    _drawGameUI(state, frame);
@@ -689,7 +757,16 @@ static void gbRenderGame(SplashState *state, GameStateRender *m) {
       Texture *bomb = managedImageGetTexture(state->bomb);
       textureRenderTexture(frame, NULL, state->bombPos.x - textureGetWidth(bomb) / 2, state->bombPos.y - textureGetHeight(bomb) / 2, bomb);
    }
-   
+
+
+   if (state->sunShock) {
+      Texture *sun = managedImageGetTexture(state->sun2);
+      textureRenderTexture(frame, NULL, (EGA_RES_WIDTH - textureGetWidth(sun)) / 2, 25 - textureGetHeight(sun) / 2, sun);
+   }
+   else {
+      Texture *sun = managedImageGetTexture(state->sun);
+      textureRenderTexture(frame, NULL, (EGA_RES_WIDTH - textureGetWidth(sun)) / 2, 25 - textureGetHeight(sun) / 2, sun);
+   }
 }
 
 static void gbHandleKeyboardGame(SplashState *state) {
@@ -750,6 +827,7 @@ static void _splashStateCreate(SplashState *state) {
    textAreaSetJustify(state->txt, TextAreaJustify_Center);
 
    state->sun = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla-sun"));
+   state->sun2 = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla-sun2"));
    state->gorilla = imageLibraryGetImage(state->view->imageLibrary, stringIntern("gorilla"));
    state->bomb = imageLibraryGetImage(state->view->imageLibrary, stringIntern("bomb"));
 
@@ -766,6 +844,7 @@ static void _splashStateDestroy(SplashState *self) {
    }
    
    managedImageDestroy(self->sun);
+   managedImageDestroy(self->sun2);
    managedImageDestroy(self->gorilla);
    managedImageDestroy(self->bomb);
    textAreaDestroy(self->txt);
