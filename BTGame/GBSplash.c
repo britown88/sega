@@ -60,6 +60,9 @@ typedef struct {
    int player;
    TurnStates turnState;
    int angle[2], power[2];
+
+   int wind;
+   float gravity;
    
 }SplashState;
 
@@ -99,6 +102,17 @@ static void doSun(Texture *frame) {
    textureRenderPoint(frame, NULL, x - 3, y - 2, 0);
    textureRenderPoint(frame, NULL, x + 3, y - 2, 0);
 
+}
+
+static void _setWind(SplashState *state) {
+   //set wind
+   state->wind = appRand(appGet(), 1, 11) - 5;
+   if (appRand(appGet(), 0, 3) == 0) {
+      state->wind += appRand(appGet(), 1, 11);
+   }
+   else {
+      state->wind -= appRand(appGet(), 1, 11);
+   }
 }
 
 //porting from gorillas, bcoor is topleft coords of buildings
@@ -217,9 +231,9 @@ static void testCity(SplashState *state) {
 
    state->buildingsTexture = makeCityScape(state);
    placeGorillas(state->buildingsTexture, state);
+
+   _setWind(state);
 }
-
-
 
 static void _startGame(SplashState *state) {
    assetsSetPalette(state->view->db, stringIntern("GORILLAS"));
@@ -229,6 +243,81 @@ static void _startGame(SplashState *state) {
 
    stringSet(state->pNames[0], "Jeff");
    stringSet(state->pNames[1], "Vinny");
+
+   state->gravity = 9.8;
+
+   
+}
+
+static void _plotShot(SplashState *state) {
+   int power = state->power[state->player];
+   int angle = state->angle[state->player];
+   Int2 gPos = { state->gPos[state->player].x + 14,  state->gPos[state->player].y + 15 };
+
+   if (state->player) { angle = 180 - angle; }
+
+   float rad = angle * (PI / 180.0f);
+
+   float initXVel = cosf(rad)*power;
+   float initYVel = sinf(rad)*power;
+
+   int oldX = gPos.x;
+   int oldY = gPos.y;
+
+   int adjust = 4;
+
+   int xedge = 9 * (1 - state->player);
+
+   bool impact = false;
+   bool shotInSun = false;
+   bool onScreen = true;
+   int playerHit = 0;
+   
+   int startXPos = gPos.x;
+   int startYPos = gPos.y;
+
+   int direction = 0;
+
+   if (state->player) {
+      //startXPos += 25;
+      direction = 4;
+   }
+   else {
+      direction = -4;
+   }
+
+   if (power < 2) {
+      return;//too slow
+   }
+
+   float t = 0.0f;
+   while (!impact && onScreen) {
+      int x = startXPos + (initXVel * t) + (0.5f * (state->wind / 5.0f) * t * t);
+      int y = startYPos + ((-1 * (initYVel * t)) + (0.5f * state->gravity * t * t)) * (EGA_RES_HEIGHT / 350.0f);
+
+      if (x >= EGA_RES_WIDTH - 10 || x <= 3 || y >= EGA_RES_HEIGHT - 3) {
+         onScreen = false;
+      }
+
+      if (onScreen && y > 0) {
+         textureRenderPoint(state->buildingsTexture, NULL, x, y, 9);
+      }
+
+      t += 0.001f;
+   }
+}
+
+static void _drawWindArrow(SplashState *state, Texture *frame) {
+   int windLine = state->wind * 3 * (EGA_RES_WIDTH / 320.0f);
+
+   textureRenderLine(frame, NULL, EGA_RES_WIDTH / 2, EGA_RES_HEIGHT - 6, EGA_RES_WIDTH / 2 + windLine, EGA_RES_HEIGHT - 6, 2);
+
+   int arrowDir = state->wind > 0 ? -1 : 2;
+
+   textureRenderLine(frame, NULL, EGA_RES_WIDTH / 2 + windLine, EGA_RES_HEIGHT - 6, EGA_RES_WIDTH / 2 + windLine + arrowDir, EGA_RES_HEIGHT - 6-2, 2);
+   textureRenderLine(frame, NULL, EGA_RES_WIDTH / 2 + windLine, EGA_RES_HEIGHT - 6, EGA_RES_WIDTH / 2 + windLine + arrowDir, EGA_RES_HEIGHT - 6+2, 2);
+
+
 }
 
 static void gbUpdateSplash(SplashState *state) {
@@ -318,7 +407,8 @@ static void gbUpdateGame(SplashState *state) {
       }
    }
    else if (state->turnState == Throw) {
-      if (t_u2m(appGetTime(appGet()) - state->time) > 1000) {
+      if (t_u2m(appGetTime(appGet()) - state->time) > 100) {
+         _plotShot(state);
          state->turnState = GetAngle;
          state->player = !state->player;
          state->time = appGetTime(appGet());
@@ -359,22 +449,38 @@ static void _drawGameUI(SplashState *state, Texture *frame) {
       textureRenderText(frame, "Velocity [ Hold SPACE ]:", EGA_TEXT_RES_WIDTH - angleLen, 2, UIFont);
       textureRenderText(frame, buff, EGA_TEXT_RES_WIDTH - strlen(buff) - 2, 2, UIGreenFont);
    }
+
+   _drawWindArrow(state, frame);
+}
+
+
+static void _drawAngledLine(Texture *frame, FrameRegion *vp, int xc, int yc, int len, int angle, byte color, byte xFlipped) {
+   float rad = angle * (PI / 180.0f);
+   Int2 pos2 = {
+      xFlipped ? xc - cosf(rad)*len : cosf(rad)*len + xc,
+      yc - sinf(rad)*len
+   };
+
+   textureRenderLine(frame, vp, xc, yc, pos2.x, pos2.y, color);
+}
+
+static void _drawAngledArrow(Texture *frame, FrameRegion *vp, int xc, int yc, int len, int angle, byte color, byte xFlipped) {
+   float rad = angle * (PI / 180.0f);
+   Int2 pos2 = {  
+      xFlipped ? xc - cosf(rad)*len : cosf(rad)*len + xc,
+      yc - sinf(rad)*len
+   };
+
+   textureRenderLine(frame, vp, xc, yc, pos2.x, pos2.y, color);
+   _drawAngledLine(frame, vp, pos2.x, pos2.y, 10, angle - 180 + 45, color, xFlipped);
+   _drawAngledLine(frame, vp, pos2.x, pos2.y, 10, angle - 180 - 45, color, xFlipped);
 }
 
 static void _drawAngleArrow(SplashState *state, Texture *frame) {
-   Int2 pos1 = state->gPos[state->player];
-   int arrowLen = 50;
+   Int2 gPos = state->gPos[state->player];
+   int angle = state->angle[state->player];
 
-   Int2 pos2 = { 0 };
-   float rad = state->angle[state->player]*(PI / 180.0f);
-
-   pos1.x += 14;
-   pos1.y += 15;
-
-   pos2.x = state->player == 0 ? (cosf(rad)*arrowLen + pos1.x) : (pos1.x - cosf(rad)*arrowLen);
-   pos2.y = pos1.y - sinf(rad)*arrowLen;
-
-   textureRenderLine(frame, NULL, pos1.x, pos1.y, pos2.x, pos2.y, 3);
+   _drawAngledArrow(frame, NULL, gPos.x + 14, gPos.y + 15, 50, angle, 3, state->player);
 
 }
 
