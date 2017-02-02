@@ -650,31 +650,35 @@ static void _drawGameUI(SplashState *state, Texture *frame) {
    textureRenderText(frame, c_str(state->pNames[0]), 0, 0, UIFont);
    textureRenderText(frame, c_str(state->pNames[1]), EGA_TEXT_RES_WIDTH - 2 - stringLen(state->pNames[1]), 0, UIFont);
 
-   if (state->player == 0) {
-      char buff[10] = { 0 };
-      sprintf(buff, "%i", state->angle[state->player]);
+   if (state->turnState < Throw) {
+      if (state->player == 0) {
+         char buff[10] = { 0 };
+         sprintf(buff, "%i", state->angle[state->player]);
 
-      textureRenderText(frame, "Angle [ \x18 \x19 ]:", 0, 1, UIFont);
-      textureRenderText(frame, buff, 15, 1, UIGreenFont);
+         textureRenderText(frame, "Angle [ \x18 \x19 ]:", 0, 1, UIFont);
+         textureRenderText(frame, buff, 15, 1, UIGreenFont);
 
-      sprintf(buff, "%i", state->power[state->player]);
-      textureRenderText(frame, "Velocity [ Hold SPACE ]:", 0, 2, UIFont);
-      textureRenderText(frame, buff, 25, 2, UIGreenFont);
+         sprintf(buff, "%i", state->power[state->player]);
+         textureRenderText(frame, "Velocity [ Hold SPACE ]:", 0, 2, UIFont);
+         textureRenderText(frame, buff, 25, 2, UIGreenFont);
+      }
+      else {
+         char buff[10] = { 0 };
+         sprintf(buff, "%i", state->angle[state->player]);
+         int angleLen = 15 + strlen(buff) + 2;
+
+         textureRenderText(frame, "Angle [ \x18 \x19 ]:", EGA_TEXT_RES_WIDTH - angleLen, 1, UIFont);
+         textureRenderText(frame, buff, EGA_TEXT_RES_WIDTH - strlen(buff) - 2, 1, UIGreenFont);
+
+         sprintf(buff, "%i", state->power[state->player]);
+         angleLen = 25 + strlen(buff) + 2;
+
+         textureRenderText(frame, "Velocity [ Hold SPACE ]:", EGA_TEXT_RES_WIDTH - angleLen, 2, UIFont);
+         textureRenderText(frame, buff, EGA_TEXT_RES_WIDTH - strlen(buff) - 2, 2, UIGreenFont);
+      }
    }
-   else {
-      char buff[10] = { 0 };
-      sprintf(buff, "%i", state->angle[state->player]);
-      int angleLen = 15 + strlen(buff) + 2;
 
-      textureRenderText(frame, "Angle [ \x18 \x19 ]:", EGA_TEXT_RES_WIDTH - angleLen, 1, UIFont);
-      textureRenderText(frame, buff, EGA_TEXT_RES_WIDTH - strlen(buff) - 2, 1, UIGreenFont);
-
-      sprintf(buff, "%i", state->power[state->player]);
-      angleLen = 25 + strlen(buff) + 2;
-
-      textureRenderText(frame, "Velocity [ Hold SPACE ]:", EGA_TEXT_RES_WIDTH - angleLen, 2, UIFont);
-      textureRenderText(frame, buff, EGA_TEXT_RES_WIDTH - strlen(buff) - 2, 2, UIGreenFont);
-   }
+   
 
    _drawWindArrow(state, frame);
 }
