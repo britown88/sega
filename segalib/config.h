@@ -9,7 +9,7 @@
    EGA_MODE_10h   |  640x350x16c    |  8x14 (80x25)
 
 */
-#define EGA_MODE_10h
+#define EGA_MODE_0Dh
 
 
 /*

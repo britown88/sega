@@ -266,7 +266,7 @@ void _onStart(BTGame *self){
    _addTestEntities(self);
 
    //push the opening state
-   fsmPush(self->gameState, gameStateCreateGBSplash(&self->view));
+   fsmPush(self->gameState, gameStateCreateSplash(&self->view));
    
 }
 
