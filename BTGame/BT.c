@@ -232,7 +232,6 @@ void _onStart(BTGame *self){
    consoleCreateLines(self->console);   
 
    luaLoadAllLibraries(self->L, &self->view);
-   luaLoadAssets(self->L);
 
    //gonna do our initial db connection here
    if (dbConnect((DBBase*)self->db, "chronicles.db", false) != DB_SUCCESS){
@@ -247,6 +246,8 @@ void _onStart(BTGame *self){
       SEGASSERT(true);
 #endif
    }
+
+   luaLoadAssets(self->L);
 
    //sesneless default palette woohoo
    {

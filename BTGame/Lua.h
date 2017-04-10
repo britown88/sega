@@ -68,4 +68,6 @@ void luaLoadDBLibrary(lua_State *L);
 
 vec(StringPtr) *luaIntellisense(lua_State *L, const char *line);
 
+void luaCreateScriptLoaders(lua_State *L);
+
 

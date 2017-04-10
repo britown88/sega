@@ -4,6 +4,8 @@
 #include "liblua/lauxlib.h"
 #include "liblua/lualib.h"
 
+#include "assets.h"
+
 lua_State *luaCreate() {
    lua_State *L = luaL_newstate();   
 
@@ -86,4 +88,38 @@ void luaRequire(lua_State *L, const char *modname) {
 
    
    lua_pop(L, 1);
+}
+
+static int slua_loadDBScript(lua_State *L) {
+   char *c = luaL_checkstring(L, 1);
+   WorldView *view = luaGetWorldView(L);
+
+   DBLuaScript script = dbLuaScriptSelectFirstBymodule(view->db, c);
+   if (!script.script) {
+      lua_pushstring(L, "Unable require module");
+      lua_error(L);
+   }
+
+   luaL_dostring(L, c_str(script.script));
+   return 0;
+}
+
+static void _addScriptLoader(lua_State *L, DBLuaScript *script) {
+   
+   lua_pushcfunction(L, slua_loadDBScript);
+   lua_setfield(L, -2, c_str(script->module));
+   
+}
+
+void luaCreateScriptLoaders(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+
+   luaL_getsubtable(L, LUA_REGISTRYINDEX, "_PRELOAD");
+
+   vec(DBLuaScript) *scripts = dbLuaScriptSelectAll(view->db);
+   vecForEach(DBLuaScript, script, scripts, {
+      _addScriptLoader(L, script);      
+   });
+
+   lua_pop(L, 1);  // remove _PRELOAD table
 }

@@ -15,8 +15,6 @@ function dir(o)
   end
 end
 
-
-
 function reload(m)
   package.loaded[m] = nil
   require(m)

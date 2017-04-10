@@ -23,6 +23,7 @@ static int slua_DBInsertTileSchema(lua_State *L);
 static int slua_DBBegin(lua_State *L);
 static int slua_DBEnd(lua_State *L);
 
+static int slua_DBInsertLuaScript(lua_State *L);
 
 void luaLoadDBLibrary(lua_State *L) {
 
@@ -33,6 +34,7 @@ void luaLoadDBLibrary(lua_State *L) {
    luaPushFunctionTable(L, "insertPaletteFolder", &slua_DBInsertPaletteFolder);
    luaPushFunctionTable(L, "insertSprite", &slua_DBInsertSprite);
    luaPushFunctionTable(L, "insertTileSchema", &slua_DBInsertTileSchema);
+   luaPushFunctionTable(L, "insertLuaScript", &slua_DBInsertLuaScript);
 
    luaPushFunctionTable(L, "beginTransaction", &slua_DBBegin);
    luaPushFunctionTable(L, "endTransaction", &slua_DBEnd);
@@ -110,6 +112,35 @@ int slua_DBInsertImage(lua_State *L) {
 
    dbImageDestroy(&img);
    consolePrintLine(view->console, "Image [c=0,5]%s[/c] inserted.", id);
+   return 0;
+}
+
+int slua_DBInsertLuaScript(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   const char *module = lua_tostring(L, 1);
+   const char *path = lua_tostring(L, 2);
+
+   DBLuaScript script = { .module = stringCreate(module) };
+
+   byte *file;
+   long fSize;
+
+   if (!(file = readFullFile(path, &fSize))) {
+      dbLuaScriptDestroy(&script);
+      lua_pushstring(L, "Unable to open script file");
+      lua_error(L);
+   }
+
+   script.script = stringCreate(file);
+
+   if (dbLuaScriptInsert(view->db, &script)) {
+      dbLuaScriptDestroy(&script);
+      lua_pushstring(L, dbGetError((DBBase*)view->db));
+      lua_error(L);
+   }
+
+   dbLuaScriptDestroy(&script);
+   consolePrintLine(view->console, "Script [c=0,5]%s[/c] inserted.", module);
    return 0;
 }
 

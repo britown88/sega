@@ -25,10 +25,10 @@ static int slua_actorSetMoveSpeed(lua_State *L);
 //C API FUNCTIONS
 static int slua_actorAddActor(lua_State *L) {
    Actor *a = lua_touserdata(L, 1);
-   lua_getglobal(L, LLIB_ACTORS);
-   lua_pushliteral(L, "add");
-   lua_gettable(L, -2);
-   lua_pushvalue(L, -2);
+   lua_getglobal(L, LLIB_ACTORS); //stack: [actors]
+   lua_pushliteral(L, "add"); //stack: [actors, "add"]
+   lua_gettable(L, -2); //stack: [actors, addFunc]
+   lua_pushvalue(L, -2); //stack: [actors, addFunc, actors]
 
    //call new
    lua_pushcfunction(L, &luaNewObject);
