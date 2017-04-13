@@ -1,4 +1,4 @@
-require 'img'
-require 'pal'
-require 'maps.schemas'
-require 'lua'
+require 'img.buildDB'
+require 'pal.buildDB'
+require 'maps.buildDB'
+require 'lua.buildDB'

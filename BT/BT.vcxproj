@@ -78,11 +78,11 @@
     <ProjectReference Include="..\BTGame\BTGame.vcxproj">
       <Project>{73586aa7-f78c-4aca-aa0a-7583e035d0cc}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\GLFWContext\GLFWContext.vcxproj">
-      <Project>{ffb94248-0cc7-4f3e-a0f1-165a4dc07fa4}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\OGLRenderer\OGLRenderer.vcxproj">
       <Project>{8c0896e9-2a31-46aa-9ed8-e97e32199648}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SDL2Context\SDL2Context.vcxproj">
+      <Project>{55d95000-b2a7-413e-91af-eb0d9816f879}</Project>
     </ProjectReference>
     <ProjectReference Include="..\segalib\segalib.vcxproj">
       <Project>{57b143e8-2941-478d-9873-8fd793813fa2}</Project>

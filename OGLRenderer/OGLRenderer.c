@@ -56,6 +56,8 @@ void _performRender(OGLRenderer *self, Rectf *vp) {
    glLoadIdentity();
 
    egaTextureRenderFrame(self->tex);
+
+   //glFinish();
 }
 
 typedef struct {
@@ -152,24 +154,24 @@ DWORD WINAPI _renderThread(LPVOID lpParam) {
       if (scene) {;
          //_renderFrameTime(scene);
 
-         if (lastFrame == data->frame) {
-            int tries = 10;
-            while (tries-- && lastFrame == data->frame) {
-               Sleep(1);
-            }
-         }
+         //if (lastFrame == data->frame) {
+         //   int tries = 10;
+         //   while (tries-- && lastFrame == data->frame) {
+         //      Sleep(1);
+         //   }
+         //}
 
          if (WaitForSingleObject(data->mutex, INFINITE) == WAIT_OBJECT_0) {
-            if (lastFrame == data->frame) {
-               _pushFrameResult(scene, deltaTime, DUPE);
-               //Sleep(8);
-            }
-            else if (data->frame - lastFrame > 1) {
-               _pushFrameResult(scene, deltaTime, DROP);
-            }
-            else{
-               _pushFrameResult(scene, deltaTime, NONE);
-            }
+            //if (lastFrame == data->frame) {
+            //   _pushFrameResult(scene, deltaTime, DUPE);
+            //   //Sleep(8);
+            //}
+            //else if (data->frame - lastFrame > 1) {
+            //   _pushFrameResult(scene, deltaTime, DROP);
+            //}
+            //else{
+            //   _pushFrameResult(scene, deltaTime, NONE);
+            //}
 
             lastFrame = data->frame;            
 
@@ -182,9 +184,9 @@ DWORD WINAPI _renderThread(LPVOID lpParam) {
          iDeviceContextCommitRender(data->renderer->context);
 
       }
-      else {
-         Sleep(0);
-      }
+      //else {
+      //   Sleep(0);
+      //}
    }
 
    egaTextureDestructOGL(data->renderer->tex);
@@ -194,33 +196,40 @@ DWORD WINAPI _renderThread(LPVOID lpParam) {
 void _Init(OGLRenderer *self) {
    //init the thread
    self->tex = egaTextureCreate();
-   _startThread(self);
+   iDeviceContextInitRendering(self->context);
+   egaTextureInitOGL(self->tex);
+   //_startThread(self);
 }
 void _RenderFrame(OGLRenderer *self, Frame *frame, byte *palette, Rectf *vp) {
 	//swap frames and palettes
-   Scene *scene = self->thread->back;
-   memcpy(&scene->frame, frame, sizeof(Frame));
-   memcpy(scene->palette.colors, palette, sizeof(Palette));
-   memcpy(&scene->vp, vp, sizeof(Rectf));
+   //Scene *scene = self->thread->back;
+   //memcpy(&scene->frame, frame, sizeof(Frame));
+   //memcpy(scene->palette.colors, palette, sizeof(Palette));
+   //memcpy(&scene->vp, vp, sizeof(Rectf));
 
-   if (WaitForSingleObject(self->thread->mutex, INFINITE) == WAIT_OBJECT_0) {
-      Scene *temp = self->thread->back;
-      self->thread->back = self->thread->front;
-      self->thread->front = temp;
+   //if (WaitForSingleObject(self->thread->mutex, INFINITE) == WAIT_OBJECT_0) {
+   //   Scene *temp = self->thread->back;
+   //   self->thread->back = self->thread->front;
+   //   self->thread->front = temp;
 
-      _InterlockedExchange(&self->thread->frame, self->thread->frame+1);
+   //   _InterlockedExchange(&self->thread->frame, self->thread->frame+1);
 
-      ReleaseMutex(self->thread->mutex);
-   }
+   //   ReleaseMutex(self->thread->mutex);
+   //}
+
+
+   egaTextureUpdateTexture(self->tex, frame, palette);
+   _performRender(self, vp);
+   iDeviceContextCommitRender(self->context);
 }
 void _Destroy(OGLRenderer *self){
    //close the thread and join
-   _InterlockedExchange(&self->thread->running, false);
-   WaitForSingleObject(self->thread->handle, INFINITE);
-   CloseHandle(self->thread->handle);
-   CloseHandle(self->thread->mutex);
+   //_InterlockedExchange(&self->thread->running, false);
+   //WaitForSingleObject(self->thread->handle, INFINITE);
+   //CloseHandle(self->thread->handle);
+   //CloseHandle(self->thread->mutex);
 
-   checkedFree(self->thread);
+   //checkedFree(self->thread);
    egaTextureDestroy(self->tex);
    checkedFree(self);
 }

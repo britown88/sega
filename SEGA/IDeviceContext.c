@@ -24,6 +24,9 @@ Int2 iDeviceContextWindowSize(IDeviceContext *self){
 Microseconds iDeviceContextTime(IDeviceContext *self){
    return self->vTable->time(self);
 }
+Microseconds iDeviceContextTimeMS(IDeviceContext *self) {
+   return self->vTable->timeMS(self);
+}
 void iDeviceContextDestroy(IDeviceContext *self){
    self->vTable->destroy(self);
 }

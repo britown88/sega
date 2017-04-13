@@ -49,6 +49,9 @@
     <ClCompile Include="Math.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FrameProfiler.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Preprocessor.h">
@@ -139,6 +142,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Vector_Impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameProfiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

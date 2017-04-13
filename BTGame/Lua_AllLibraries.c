@@ -12,7 +12,7 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view) {
 
    luaPushUserDataGlobal(L, LLIB_VIEW, view);
 
-   luaRequire(L, "core");
+   
 
    luaLoadDBLibrary(L);
   
@@ -25,6 +25,7 @@ void luaLoadAllLibraries(lua_State *L, WorldView *view) {
 
 void luaLoadAssets(lua_State *L) {
    luaCreateScriptLoaders(L);
+   luaRequire(L, "core");
    luaRequire(L, "assets");
 }
 

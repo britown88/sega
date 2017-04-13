@@ -57,7 +57,7 @@ void egaTextureRenderFrame(EGATexture *self) {
    if (self->currentHandle == HANDLE_COUNT) {
       self->currentHandle = 0;
    }
-
+   
    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, EGA_RES_WIDTH, EGA_RES_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, self->pixels);
 
    glBegin(GL_QUADS);

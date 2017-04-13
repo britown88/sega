@@ -144,11 +144,11 @@ void _splashUpdate(SplashState *state, GameStateUpdate *m) {
    }
    
 
-   //if (state->state == Show) {
-   //   if (t_u2m(gameClockGetTime()) - state->StartTime > 2000) {
-   //      state->state = Conways;
-   //   }
-   //}   
+   if (state->state == Show) {
+      if (t_u2m(gameClockGetTime()) - state->StartTime > 5000) {
+         state->pop = true;
+      }
+   }   
 
    if (state->pop) {
       assetsSetPalette(state->view->db, stringIntern("default"));

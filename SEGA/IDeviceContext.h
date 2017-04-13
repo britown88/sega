@@ -17,6 +17,7 @@ typedef struct {
    int(*shouldClose)(IDeviceContext*);
    Int2(*windowSize)(IDeviceContext*);
    Microseconds(*time)(IDeviceContext*);
+   Milliseconds(*timeMS)(IDeviceContext*);
    Keyboard*(*keyboard)(IDeviceContext*);
    Mouse*(*mouse)(IDeviceContext*);
    void(*destroy)(IDeviceContext*);
@@ -36,6 +37,7 @@ void iDeviceContextPostRender(IDeviceContext *self);
 int iDeviceContextShouldClose(IDeviceContext *self);
 Int2 iDeviceContextWindowSize(IDeviceContext *self);
 Microseconds iDeviceContextTime(IDeviceContext *self);
+Microseconds iDeviceContextTimeMS(IDeviceContext *self);
 Keyboard *iDeviceContextKeyboard(IDeviceContext *self);
 Mouse *iDeviceContextMouse(IDeviceContext *self);
 void iDeviceContextDestroy(IDeviceContext *self);

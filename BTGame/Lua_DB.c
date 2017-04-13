@@ -20,6 +20,7 @@ static int slua_DBInsertPalette(lua_State *L);
 static int slua_DBInsertPaletteFolder(lua_State *L);
 static int slua_DBInsertSprite(lua_State *L);
 static int slua_DBInsertTileSchema(lua_State *L);
+static int slua_DBInsertMap(lua_State *L);
 static int slua_DBBegin(lua_State *L);
 static int slua_DBEnd(lua_State *L);
 
@@ -35,6 +36,7 @@ void luaLoadDBLibrary(lua_State *L) {
    luaPushFunctionTable(L, "insertSprite", &slua_DBInsertSprite);
    luaPushFunctionTable(L, "insertTileSchema", &slua_DBInsertTileSchema);
    luaPushFunctionTable(L, "insertLuaScript", &slua_DBInsertLuaScript);
+   luaPushFunctionTable(L, "insertMap", &slua_DBInsertMap);
 
    luaPushFunctionTable(L, "beginTransaction", &slua_DBBegin);
    luaPushFunctionTable(L, "endTransaction", &slua_DBEnd);
@@ -143,6 +145,32 @@ int slua_DBInsertLuaScript(lua_State *L) {
    consolePrintLine(view->console, "Script [c=0,5]%s[/c] inserted.", module);
    return 0;
 }
+
+int slua_DBInsertMap(lua_State *L) {
+   WorldView *view = luaGetWorldView(L);
+   const char *id = lua_tostring(L, 1);
+   const char *path = lua_tostring(L, 2);
+
+   DBMap map = { .id = stringCreate(id) };
+
+   if (!(map.map = readFullFile(path, &map.mapSize))) {
+      dbMapDestroy(&map);
+      lua_pushstring(L, "Unable to open map file");
+      lua_error(L);
+   }
+
+
+   if (dbMapInsert(view->db, &map)) {
+      dbMapDestroy(&map);
+      lua_pushstring(L, dbGetError((DBBase*)view->db));
+      lua_error(L);
+   }
+
+   dbMapDestroy(&map);
+   consolePrintLine(view->console, "Map [c=0,5]%s[/c] inserted.", id);
+   return 0;
+}
+
 
 int slua_DBInsertPalette(lua_State *L) {
    WorldView *view = luaGetWorldView(L);

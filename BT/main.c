@@ -10,11 +10,11 @@ COPYRIGHT TODAY
 #include "BTGame\BT.h"
 #include "segashared\CheckedMemory.h"
 #include "OGLRenderer\OGLRenderer.h"
-#include "GLFWContext\GLFWContext.h"
+#include "SDL2Context\SDLContext.h"
 
 int main()
 {
-   IDeviceContext *context = createGLFWContext();
+   IDeviceContext *context = createSDLContext();
    runApp(btCreate(), createOGLRenderer(context), context);
    printMemoryLeaks();
 

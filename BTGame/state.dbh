@@ -1,0 +1,3 @@
+struct Actor{
+   SELECT PRIMARY_KEY UNIQUE REPLACE_ON_CONFLICT String id;
+};

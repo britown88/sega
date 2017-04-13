@@ -36,6 +36,7 @@ typedef struct WorldView_t {
    TextAreaManager *textAreaManager;
 
    FramerateViewer *framerateViewer;
+
    FontFactory *fontFactory;
    ImageLibrary *imageLibrary;
    SpriteManager *spriteManager;

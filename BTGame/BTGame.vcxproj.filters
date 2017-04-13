@@ -135,6 +135,9 @@
     <ClInclude Include="Conways.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="state.h">
+      <Filter>Header Files\Generated</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BT.c">
@@ -266,5 +269,13 @@
     <ClCompile Include="GBSplash.c">
       <Filter>Source Files\Game States</Filter>
     </ClCompile>
+    <ClCompile Include="state.c">
+      <Filter>Source Files\Generated</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="state.dbh">
+      <Filter>Header Files\DBGen</Filter>
+    </None>
   </ItemGroup>
 </Project>

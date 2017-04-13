@@ -21,6 +21,7 @@
     <ClInclude Include="Defs.h" />
     <ClInclude Include="DLLBullshit.h" />
     <ClInclude Include="extern_c.h" />
+    <ClInclude Include="FrameProfiler.h" />
     <ClInclude Include="FSM.h" />
     <ClInclude Include="HashTable_Create.h" />
     <ClInclude Include="HashTable_Functions.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="BitTwiddling.c" />
     <ClCompile Include="Coroutine.c" />
     <ClCompile Include="Dijkstras.c" />
+    <ClCompile Include="FrameProfiler.c" />
     <ClCompile Include="FSM.c" />
     <ClCompile Include="IntrusiveHeap.c" />
     <ClCompile Include="LispContext.c" />

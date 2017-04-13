@@ -15,6 +15,8 @@
 #include "IDeviceContext.h"
 #include "Input.h"
 
+#include "segautils/FrameProfiler.h"
+
 App *g_App;
 
 App *appGet(){
@@ -110,7 +112,13 @@ static void _appUpdateWindowSize(App *self) {
    self->viewport = _buildProportionalViewport(self->winSize.x, self->winSize.y, &self->vpScale);
 }
 
-static void _singleUpdate(App *self, Microseconds frameLength) {
+static void _singleUpdate(App *self) {
+
+   iDeviceContextPostRender(self->context);
+
+   if (iDeviceContextShouldClose(self->context)) {
+      self->running = false;
+   }
 
    virtualAppOnStep(self->subclass);
    iDeviceContextPreRender(self->context);
@@ -122,29 +130,35 @@ static void _singleUpdate(App *self, Microseconds frameLength) {
       self->subclass->currentFrame,
       self->subclass->currentPalette.colors,
       &self->viewport);
-   iDeviceContextPostRender(self->context);
+   
+}
 
-   if (iDeviceContextShouldClose(self->context))
-      self->running = false;
+FILE *fpsOut;
+
+static void freeUpCPU(Microseconds timeOffset) {
+   if (timeOffset > 1500) {
+      Sleep((DWORD)((timeOffset - 500) / 1000));
+   }
+   else if (timeOffset > 500) {
+      SwitchToThread();
+   }
 }
 
 static void _step(App *self) {
    //dt
    Microseconds usPerFrame = appGetFrameTime(self);
-   Microseconds time = appGetTime(self);
-   Microseconds deltaTime = time - self->lastUpdated;   
 
-   //update
-   if(deltaTime >= usPerFrame)
-   {      
-      self->lastUpdated = time;      
-      _updateFPS(deltaTime, &virtualAppGetData(self->subclass)->fps);
-      _singleUpdate(self, deltaTime);
-      
+   Microseconds time = appGetTime(self);
+   Microseconds deltaTime = time - self->lastUpdated;
+
+   frameProfilerReset();
+
+   if (deltaTime >= usPerFrame) {
+      self->lastUpdated = time;
+      _singleUpdate(self);
    }
-   else if(usPerFrame - deltaTime > 3000){
-      //only yield if we're more than 3ms out
-      appSleep(0);
+   else {
+      freeUpCPU(usPerFrame - deltaTime);
    }
 }
 
@@ -156,12 +170,12 @@ App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *render
    out->winSize = iDeviceContextWindowSize(context);
    out->subclass = subclass;
 
-   out->lastUpdated = 0;
-   out->desiredFrameRate = data->desiredFrameRate;
-
    out->renderer = renderer;
    out->context = context;
 
+   out->lastUpdated = appGetTime(out);
+   out->desiredFrameRate = data->desiredFrameRate;
+   
    out->viewport = _buildProportionalViewport(out->winSize.x, out->winSize.y, &out->vpScale);
 
    out->running = true;
@@ -170,8 +184,6 @@ App *_createApp(VirtualApp *subclass, IDeviceContext *context, IRenderer *render
    subclass->currentFrame = frameCreate();
    iRendererInit(renderer);
    virtualAppOnStart(subclass);
-
-   
 
    return out;
 }
@@ -213,11 +225,15 @@ void appDestroy() {
 void runApp(VirtualApp *subclass, IRenderer *renderer, IDeviceContext *context) {
    appStart(subclass, renderer, context);
 
+
+   fpsOut = fopen("FRAMETIME_REPORT.log", "w");
+
    while (appRunning()) {
       appStep();
    }
 
    appDestroy();
+   fclose(fpsOut);
    
    return;
 }
@@ -247,7 +263,9 @@ Mouse *appGetMouse(App *self){
    return iDeviceContextMouse(self->context);
 }
 
-Microseconds appGetTime(App *self){return iDeviceContextTime(self->context);}
+Microseconds appGetTime(App *self){ return iDeviceContextTime(self->context); }
+Milliseconds appGetTimeMS(App *self) { return iDeviceContextTimeMS(self->context); }
+
 Microseconds appGetFrameTime(App *self){ 
    static Microseconds out;
    static bool outSet = false;

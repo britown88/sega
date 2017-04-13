@@ -67,6 +67,7 @@ DLL_PUBLIC int appRand(App *self, int lower, int upper);
 DLL_PUBLIC Int2 appWindowToWorld(App *self, Float2 coords);
 
 DLL_PUBLIC Microseconds appGetTime(App *self);
+DLL_PUBLIC Milliseconds appGetTimeMS(App *self);
 Microseconds appGetFrameTime(App *self);
 double appGetFrameRate(App *self);
 

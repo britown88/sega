@@ -229,7 +229,7 @@ void _onStart(BTGame *self){
    self->view.L = self->L;
 
    //we need the console alive to print errors!
-   consoleCreateLines(self->console);   
+   consoleCreateLines(self->console);  
 
    luaLoadAllLibraries(self->L, &self->view);
 
@@ -248,6 +248,7 @@ void _onStart(BTGame *self){
    }
 
    luaLoadAssets(self->L);
+   
 
    //sesneless default palette woohoo
    {

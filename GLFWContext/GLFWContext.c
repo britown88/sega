@@ -79,8 +79,10 @@ int _init(GLFWContext *self, int width, int height, StringView winTitle, int fla
       return 1;
    }
 
+   
    QueryPerformanceFrequency((LARGE_INTEGER*)&self->clockFreq);
    QueryPerformanceCounter((LARGE_INTEGER*)&self->startTime);
+   timeBeginPeriod(1);
    return 0;
 }
 

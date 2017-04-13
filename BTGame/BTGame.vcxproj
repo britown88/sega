@@ -60,7 +60,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>$(OutDir)DBGen.exe assets.dbh</Command>
+      <Command>$(OutDir)DBGen.exe assets.dbh
+$(OutDir)DBGen.exe state.dbh</Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -92,7 +93,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PreBuildEvent>
-      <Command>$(OutDir)DBGen.exe assets.dbh</Command>
+      <Command>$(OutDir)DBGen.exe assets.dbh
+$(OutDir)DBGen.exe state.dbh</Command>
     </PreBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -156,6 +158,7 @@
     <ClInclude Include="RichText.h" />
     <ClInclude Include="assets.dbh" />
     <ClInclude Include="Sprites.h" />
+    <ClInclude Include="state.h" />
     <ClInclude Include="TextArea.h" />
     <ClInclude Include="Tiles.h" />
     <ClInclude Include="Verbs.h" />
@@ -197,6 +200,7 @@
     <ClCompile Include="RichText.c" />
     <ClCompile Include="SplashState.c" />
     <ClCompile Include="Sprites.c" />
+    <ClCompile Include="state.c" />
     <ClCompile Include="TextArea.c" />
     <ClCompile Include="VerbManager.c" />
     <ClCompile Include="Weather.c" />
@@ -207,6 +211,9 @@
     <ClCompile Include="GameState.c" />
     <ClCompile Include="ImageLibrary.c" />
     <ClCompile Include="MeshRendering.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="state.dbh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

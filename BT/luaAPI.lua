@@ -83,6 +83,7 @@ Global
       insertSprite(sprite) -- inserts a new sprite: {id:string, size:{width, height}, frames:[{image:string, pos:{x, y}}]}
       insertTileSchema(schema) -- inserts new schema: {set:string, tiles:[{sprite:string, occlusion:bool, lit:bool, <radius:int, fadeWidth:int, centerLevel:int>}]} //3 lighting properties onlyt for lit
       insertLuaScript(modName, path) -- reads .lua file at path and loads it into the database under a given module name
+      insertMap(name, mapPath) -- adds a loaded raw map to the db
       beginTransaction() -- call BEGIN TRANSACTION on db
       endTransaction() -- call END TRANSACTION on db
 

@@ -6,6 +6,7 @@
 #include "Lua.h"
 #include "Actors.h"
 #include "GameClock.h"
+#include "SEGA/App.h"
 
 
 struct PCManager_t {
@@ -14,13 +15,14 @@ struct PCManager_t {
 
    bool usingTorch;
    bool sneaking;
+   Microseconds startTime;
 };
 
 
 
 PCManager *pcManagerCreate(WorldView *view) {
    PCManager *out = checkedCalloc(1, sizeof(PCManager));
-   out->view = view;
+   out->view = view;   
    return out;
 }
 
@@ -97,7 +99,12 @@ void pcManagerUpdate(PCManager *self) {
    int xOffset = MIN(gridWidth - (vp->region.width), MAX(0, aPos.x - xCenter));
    int yOffset = MIN(gridHeight - (vp->region.height), MAX(0, aPos.y - yCenter));
 
-   vp->worldPos = (Int2) { xOffset, yOffset };
+   //vp->worldPos = (Int2) { xOffset, yOffset };
+
+   //vp->worldPos.x = (t_u2s(appGetTime(appGet()) - self->startTime) / 50.0) * gridWidth;
+   
+
+   vp->worldPos.x += 1;
 
    //if (self->usingTorch && !self->sneaking) {
    //   _testLightFlicker(self);
@@ -117,6 +124,8 @@ void pcManagerCreatePC(PCManager *self) {
    _updateSprite(self);
 
    luaActorMakeActorGlobal(self->view->L, self->pc, LLIB_PLAYER);
+
+   self->startTime = appGetTime(appGet());
 }
 
 void pcManagerStop(PCManager *self) {

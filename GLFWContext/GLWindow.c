@@ -10,7 +10,7 @@
 
 
 struct GLWindow_T {
-   GLFWwindow* window, *threadWin;
+   GLFWwindow* window;
    Int2 winSize;
    Keyboard *keyboard;
    Mouse *mouse;
@@ -26,7 +26,7 @@ static void registerNewWindow(GLWindow *win){
 static GLWindow *getGLWindow(GLFWwindow *glfw){
    int i = 0;
    for (i = 0; i < WinCount; ++i){
-      if (WinList[i]->threadWin == glfw){
+      if (WinList[i]->window == glfw){
          return WinList[i];
       }
    }
@@ -107,43 +107,38 @@ static void glWindowMouseMoveFunc(GLFWwindow *win, double x, double y){
 
 static void _glWindowInitMouseClosure(GLWindow *self){
    MousePos getPos;
-   closureInit(MousePos)(&getPos, self->threadWin, (MousePosFunc)&_getMousePos, NULL);
+   closureInit(MousePos)(&getPos, self->window, (MousePosFunc)&_getMousePos, NULL);
    self->mouse = mouseCreate(getPos);
 }
 
 GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monitor){
    Int2 actualSize;
    GLWindow *r;
-   GLFWwindow *window, *threadWin;
+   GLFWwindow *window = 0;
    
    if(!monitor) {
       glfwWindowHint(GLFW_RESIZABLE, 0);
    }
 
-   glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-   window = glfwCreateWindow(1, 1, "", NULL, NULL);
-
    glfwWindowHint(GLFW_VISIBLE, GL_TRUE);
-   threadWin = glfwCreateWindow(winSize.x, winSize.y, windowName, monitor, window);
+   window = glfwCreateWindow(winSize.x, winSize.y, windowName, monitor, window);
 
-   if (!window || !threadWin) {      
+   if (!window) {      
       return NULL;
    }
 
    FreeConsole();
    
-   glfwSetInputMode(threadWin, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-   glfwGetFramebufferSize(threadWin, &actualSize.x, &actualSize.y);
-   glfwMakeContextCurrent(window);
-   glfwSetKeyCallback(threadWin, &glWindowKeyFunc);
-   glfwSetCharCallback(threadWin, &glWindowCharFun);
-   glfwSetMouseButtonCallback(threadWin, &glWindowMouseButtonFunc);
-   glfwSetCursorPosCallback(threadWin, &glWindowMouseMoveFunc);
-   glfwSetScrollCallback(threadWin, &glWindowMouseScrollFunc);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+   glfwGetFramebufferSize(window, &actualSize.x, &actualSize.y);
+   glfwSetKeyCallback(window, &glWindowKeyFunc);
+   glfwSetCharCallback(window, &glWindowCharFun);
+   glfwSetMouseButtonCallback(window, &glWindowMouseButtonFunc);
+   glfwSetCursorPosCallback(window, &glWindowMouseMoveFunc);
+   glfwSetScrollCallback(window, &glWindowMouseScrollFunc);
 
    r = checkedCalloc(1, sizeof(GLWindow));
    r->window = window;
-   r->threadWin = threadWin;
    r->winSize = actualSize;   
    r->keyboard = keyboardCreate();
    _glWindowInitMouseClosure(r);
@@ -154,15 +149,14 @@ GLWindow *glWindowCreate(Int2 winSize, StringView windowName, GLFWmonitor *monit
 }
 
 void glWindowBeginRendering(GLWindow *self) {
-   glfwMakeContextCurrent(self->threadWin);
-   glfwSwapInterval(1);
+   glfwMakeContextCurrent(self->window);
+   //glfwSwapInterval(1);
 }
 
 void glWindowDestroy(GLWindow *self){
    keyboardDestroy(self->keyboard);
    mouseDestroy(self->mouse);
    glfwDestroyWindow(self->window);
-   glfwDestroyWindow(self->threadWin);
    glfwTerminate();
    checkedFree(self);
 }
@@ -173,10 +167,10 @@ void glWindowPollEvents(GLWindow *self){
    glfwPollEvents();
 }
 void glWindowSwapBuffers(GLWindow *self){
-   glfwSwapBuffers(self->threadWin);
+   glfwSwapBuffers(self->window);
 }
 int glWindowShouldClose(GLWindow *self){
-   return glfwWindowShouldClose(self->threadWin);
+   return glfwWindowShouldClose(self->window);
 }
 Int2 glWindowGetSize(GLWindow *self){
    return self->winSize;

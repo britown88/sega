@@ -71,6 +71,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uwp_sqlite", "uwp_sqlite\uw
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "segasound", "segasound\segasound.vcxproj", "{04C27234-F55F-4E6A-9FBD-A96A88E81747}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2Context", "SDL2Context\SDL2Context.vcxproj", "{55D95000-B2A7-413E-91AF-EB0D9816F879}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -319,6 +321,16 @@ Global
 		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Release|Win32.Build.0 = Release|Win32
 		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Release|x64.ActiveCfg = Release|x64
 		{04C27234-F55F-4E6A-9FBD-A96A88E81747}.Release|x64.Build.0 = Release|x64
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Debug|ARM.ActiveCfg = Debug|Win32
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Debug|Win32.ActiveCfg = Debug|Win32
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Debug|Win32.Build.0 = Debug|Win32
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Debug|x64.ActiveCfg = Debug|x64
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Debug|x64.Build.0 = Debug|x64
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Release|ARM.ActiveCfg = Release|Win32
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Release|Win32.ActiveCfg = Release|Win32
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Release|Win32.Build.0 = Release|Win32
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Release|x64.ActiveCfg = Release|x64
+		{55D95000-B2A7-413E-91AF-EB0D9816F879}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
